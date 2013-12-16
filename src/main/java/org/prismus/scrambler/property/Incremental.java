@@ -1,14 +1,19 @@
 package org.prismus.scrambler.property;
 
+import com.google.common.collect.ImmutableMap;
+import org.apache.commons.lang.time.DateUtils;
 import org.prismus.scrambler.Property;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Map;
 
 /**
  * @author Serge Pruteanu
  */
 public class Incremental extends Generic {
-    private static Map<Class, Class<? extends Property>> propertyTypeMap /*=
+    private static Map<Class, Class<? extends Property>> propertyTypeMap =
             ImmutableMap.<Class, Class<? extends Property>>builder()
                     .put(Byte.class, IncrementalByte.class)
                     .put(Short.class, IncrementalShort.class)
@@ -21,10 +26,10 @@ public class Incremental extends Generic {
                     .put(Date.class, IncrementalDate.class)
                     .put(java.sql.Date.class, IncrementalDate.class)
                     .put(Timestamp.class, IncrementalDate.class)
-                    .build()*/;
+                    .build();
 
     private static Map<Class, Number> defaultTypeStep
-            /* = ImmutableMap.<Class, Number>builder()
+             = ImmutableMap.<Class, Number>builder()
                     .put(Byte.class, Integer.valueOf(1).byteValue())
                     .put(Short.class, Integer.valueOf(1).shortValue())
                     .put(Double.class, Integer.valueOf(1).doubleValue())
@@ -36,7 +41,7 @@ public class Incremental extends Generic {
                     .put(Date.class, DateUtils.MILLIS_PER_DAY)
                     .put(java.sql.Date.class, DateUtils.MILLIS_PER_DAY)
                     .put(Timestamp.class, DateUtils.MILLIS_PER_DAY)
-                    .build()*/;
+                    .build();
 
     @Override
     @SuppressWarnings({"unchecked"})
@@ -82,16 +87,16 @@ public class Incremental extends Generic {
                                      Class<T> clazzType,
                                      T defaultValue,
                                      Number step) {
-//        if (propertyTypeMap.containsKey(clazzType)) {
-//            if (step == null) {
-//                step = defaultTypeStep.get(clazzType);
-//            }
-//            return (Property<T>) Util.createInstance(
-//                    propertyTypeMap.get(clazzType),
-//                    new Object[]{propertyName, defaultValue, step},
-//                    new Class[]{String.class, clazzType, clazzType}
-//            );
-//        }
+        if (propertyTypeMap.containsKey(clazzType)) {
+            if (step == null) {
+                step = defaultTypeStep.get(clazzType);
+            }
+            return (Property<T>) Util.createInstance(
+                    propertyTypeMap.get(clazzType),
+                    new Object[]{propertyName, defaultValue, step},
+                    new Class[]{String.class, clazzType, clazzType}
+            );
+        }
         throw new UnsupportedOperationException(String.format("The of method is not supported for property: %s, class type: %s, default value: %s",
                 propertyName, clazzType, defaultValue));
     }

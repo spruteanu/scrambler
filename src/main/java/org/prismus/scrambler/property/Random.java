@@ -1,7 +1,10 @@
 package org.prismus.scrambler.property;
 
+import com.google.common.collect.ImmutableMap;
 import org.prismus.scrambler.Property;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.*;
 
 /**
@@ -9,7 +12,7 @@ import java.util.*;
  */
 public class Random extends RandomRange {
     private static final String NOT_SUPPORTED_RANGE_TYPE_MSG = "Not supported range method for provided class type: %s, range of [%s, %s]";
-    private static Map<Class, Class<? extends Property>> propertyTypeMap /*=
+    private static Map<Class, Class<? extends Property>> propertyTypeMap =
             ImmutableMap.<Class, Class<? extends Property>>builder()
                     .put(Byte.class, RandomByte.class)
                     .put(Short.class, RandomShort.class)
@@ -23,7 +26,7 @@ public class Random extends RandomRange {
                     .put(Date.class, RandomDate.class)
                     .put(java.sql.Date.class, RandomDate.class)
                     .put(Timestamp.class, RandomDate.class)
-                    .build()*/;
+                    .build();
 
     @Override
     @SuppressWarnings({"unchecked"})
@@ -75,13 +78,13 @@ public class Random extends RandomRange {
 
     @SuppressWarnings({"unchecked"})
     public static <T> Property<T> of(String propertyName, Class<T> clazzType, T defaultValue) {
-//        if (propertyTypeMap.containsKey(clazzType)) {
-//            return (Property) Util.createInstance(
-//                    propertyTypeMap.get(clazzType),
-//                    new Object[]{propertyName, defaultValue},
-//                    new Class[]{String.class, clazzType}
-//            );
-//        }
+        if (propertyTypeMap.containsKey(clazzType)) {
+            return (Property) Util.createInstance(
+                    propertyTypeMap.get(clazzType),
+                    new Object[]{propertyName, defaultValue},
+                    new Class[]{String.class, clazzType}
+            );
+        }
         throw new UnsupportedOperationException(String.format("The of method is not supported for property: %s, class type: %s, default value: %s",
                 propertyName, clazzType, defaultValue));
     }
