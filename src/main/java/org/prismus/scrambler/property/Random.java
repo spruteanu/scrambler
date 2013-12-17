@@ -1,6 +1,5 @@
 package org.prismus.scrambler.property;
 
-import com.google.common.collect.ImmutableMap;
 import org.prismus.scrambler.Property;
 
 import java.math.BigDecimal;
@@ -12,21 +11,8 @@ import java.util.*;
  */
 public class Random extends RandomRange {
     private static final String NOT_SUPPORTED_RANGE_TYPE_MSG = "Not supported range method for provided class type: %s, range of [%s, %s]";
-    private static Map<Class, Class<? extends Property>> propertyTypeMap =
-            ImmutableMap.<Class, Class<? extends Property>>builder()
-                    .put(Byte.class, RandomByte.class)
-                    .put(Short.class, RandomShort.class)
-                    .put(Boolean.class, RandomBoolean.class)
-                    .put(Double.class, RandomDouble.class)
-                    .put(BigDecimal.class, RandomBigDecimal.class)
-                    .put(Float.class, RandomFloat.class)
-                    .put(Integer.class, RandomInteger.class)
-                    .put(Long.class, RandomLong.class)
-                    .put(String.class, RandomString.class)
-                    .put(Date.class, RandomDate.class)
-                    .put(java.sql.Date.class, RandomDate.class)
-                    .put(Timestamp.class, RandomDate.class)
-                    .build();
+
+    private static Map<Class, Class<? extends Property>> propertyTypeMap = lookupPropertyTypeMap();
 
     @Override
     @SuppressWarnings({"unchecked"})
@@ -96,4 +82,22 @@ public class Random extends RandomRange {
     public static <T> Property<T> of(String propertyName, List<T> values) {
         return new RandomListElement<T>(propertyName, values);
     }
+
+    static Map<Class, Class<? extends Property>> lookupPropertyTypeMap() {
+        final Map<Class, Class<? extends Property>> typeMap = new LinkedHashMap<Class, Class<? extends Property>>();
+        typeMap.put(Byte.class, RandomByte.class);
+        typeMap.put(Short.class, RandomShort.class);
+        typeMap.put(Boolean.class, RandomBoolean.class);
+        typeMap.put(Double.class, RandomDouble.class);
+        typeMap.put(BigDecimal.class, RandomBigDecimal.class);
+        typeMap.put(Float.class, RandomFloat.class);
+        typeMap.put(Integer.class, RandomInteger.class);
+        typeMap.put(Long.class, RandomLong.class);
+        typeMap.put(String.class, RandomString.class);
+        typeMap.put(Date.class, RandomDate.class);
+        typeMap.put(java.sql.Date.class, RandomDate.class);
+        typeMap.put(Timestamp.class, RandomDate.class);
+        return typeMap;
+    }
+
 }

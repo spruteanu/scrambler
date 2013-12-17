@@ -1,6 +1,5 @@
 package org.prismus.scrambler.builder.meta;
 
-import com.google.common.collect.ImmutableMap;
 import org.springframework.jdbc.support.DatabaseMetaDataCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.MetaDataAccessException;
@@ -18,32 +17,7 @@ import java.util.Date;
  * @author Serge Pruteanu
  */
 public class JdbcMetaReader {
-    static Map<Integer, Class> jdbcTypeClassMap = ImmutableMap.<Integer, Class>builder()
-            .put(java.sql.Types.CHAR, String.class)
-            .put(java.sql.Types.VARCHAR, String.class)
-            .put(java.sql.Types.LONGVARCHAR, String.class)
-            .put(java.sql.Types.NUMERIC, BigDecimal.class)
-            .put(java.sql.Types.DECIMAL, BigDecimal.class)
-            .put(java.sql.Types.BIT, BigDecimal.class)
-            .put(java.sql.Types.BOOLEAN, Boolean.class)
-            .put(java.sql.Types.TINYINT, Byte.class)
-            .put(java.sql.Types.SMALLINT, Short.class)
-            .put(java.sql.Types.INTEGER, Integer.class)
-            .put(java.sql.Types.BIGINT, Long.class)
-            .put(java.sql.Types.REAL, Float.class)
-            .put(java.sql.Types.FLOAT, Double.class)
-            .put(java.sql.Types.DOUBLE, Double.class)
-            .put(java.sql.Types.BINARY, byte[].class)
-            .put(java.sql.Types.VARBINARY, byte[].class)
-            .put(java.sql.Types.LONGVARBINARY, byte[].class)
-            .put(java.sql.Types.DATE, Date.class)
-            .put(java.sql.Types.TIME, Date.class)
-            .put(java.sql.Types.TIMESTAMP, Date.class)
-            .put(java.sql.Types.CLOB, Clob.class)
-            .put(java.sql.Types.BLOB, Blob.class)
-            .put(java.sql.Types.ARRAY, ArrayList.class)
-            .put(java.sql.Types.DATALINK, URL.class)
-            .build();
+    static Map<Integer, Class> jdbcTypeClassMap = lookupTypeMap();
 
     private DataSource dataSource;
     private String entity;
@@ -139,7 +113,7 @@ public class JdbcMetaReader {
         }
 
         final int columnSize = resultSet.getInt("COLUMN_SIZE");
-        if (Arrays.asList(String.class, Date.class).contains(propertyTypeClass)) {
+        if (String.class == propertyTypeClass || Date.class.isAssignableFrom(Date.class)) {
             propertyMeta.setLength(columnSize);
         } else if (Number.class.isAssignableFrom(propertyTypeClass)) {
             propertyMeta.setPrecision(columnSize);
@@ -230,4 +204,34 @@ public class JdbcMetaReader {
         }
         return entityName;
     }
+
+    private static Map<Integer, Class> lookupTypeMap() {
+        final Map<Integer, Class> typeMap = new LinkedHashMap<Integer, Class>(30);
+        typeMap.put(java.sql.Types.CHAR, String.class);
+        typeMap.put(java.sql.Types.VARCHAR, String.class);
+        typeMap.put(java.sql.Types.LONGVARCHAR, String.class);
+        typeMap.put(java.sql.Types.NUMERIC, BigDecimal.class);
+        typeMap.put(java.sql.Types.DECIMAL, BigDecimal.class);
+        typeMap.put(java.sql.Types.BIT, BigDecimal.class);
+        typeMap.put(java.sql.Types.BOOLEAN, Boolean.class);
+        typeMap.put(java.sql.Types.TINYINT, Byte.class);
+        typeMap.put(java.sql.Types.SMALLINT, Short.class);
+        typeMap.put(java.sql.Types.INTEGER, Integer.class);
+        typeMap.put(java.sql.Types.BIGINT, Long.class);
+        typeMap.put(java.sql.Types.REAL, Float.class);
+        typeMap.put(java.sql.Types.FLOAT, Double.class);
+        typeMap.put(java.sql.Types.DOUBLE, Double.class);
+        typeMap.put(java.sql.Types.BINARY, byte[].class);
+        typeMap.put(java.sql.Types.VARBINARY, byte[].class);
+        typeMap.put(java.sql.Types.LONGVARBINARY, byte[].class);
+        typeMap.put(java.sql.Types.DATE, Date.class);
+        typeMap.put(java.sql.Types.TIME, Date.class);
+        typeMap.put(java.sql.Types.TIMESTAMP, Date.class);
+        typeMap.put(java.sql.Types.CLOB, Clob.class);
+        typeMap.put(java.sql.Types.BLOB, Blob.class);
+        typeMap.put(java.sql.Types.ARRAY, ArrayList.class);
+        typeMap.put(java.sql.Types.DATALINK, URL.class);
+        return typeMap;
+    }
+
 }

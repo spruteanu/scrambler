@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="instanceBuilder" class="org.prismus.scrambler.builder.Instance">
+        <property name="value" value="java.util.HashMap"/>
+    </bean>
+
+    <!--
+test3=12
+test4=value,13
+test41=java.io.File,/test.xml
+test8=RandomLong.class,1,11
+test9=[RandomLong.class],10
+test91=[RandomLong.class]
+
+test1=incremental,2
+test11=incremental,
+test12=incremental
+
+test=random, 1,100
+test=random, randomText,12
+test7=random,[1,2,3,4]
+
+test22=factory, test22-instance.properties
+test2=factory, mumu-context.xml
+test21=factory, [mumu-context.xml,classpath:/cucu-context.xml,cucu-override.properties]
+test211=factory, [beanName, mumu-context.xml,cucu-context.xml,cucu-override.properties]
+
+.*testNumber={any above}
+test\w+String={any above}
+
+PropertyContext.class
+properties(name, arguments, name1, arguments1, name2, arguments2, ...)
+
+    -->
+
+</beans>
