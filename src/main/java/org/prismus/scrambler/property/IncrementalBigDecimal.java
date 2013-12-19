@@ -10,19 +10,15 @@ public class IncrementalBigDecimal extends Constant<BigDecimal> {
     private static final BigDecimal DEFAULT_STEP = BigDecimal.valueOf(1L);
 
     public IncrementalBigDecimal() {
-        this(null, null, DEFAULT_STEP);
+        this(null, DEFAULT_STEP);
     }
 
-    public IncrementalBigDecimal(String name) {
-        this(name, null, DEFAULT_STEP);
+    public IncrementalBigDecimal(BigDecimal value) {
+        this(value, DEFAULT_STEP);
     }
 
-    public IncrementalBigDecimal(String name, BigDecimal value) {
-        this(name, value, DEFAULT_STEP);
-    }
-
-    public IncrementalBigDecimal(String name, BigDecimal value, BigDecimal step) {
-        super(name, value);
+    public IncrementalBigDecimal(BigDecimal value, BigDecimal step) {
+        super(value);
         this.step = step != null ? step : DEFAULT_STEP;
     }
 

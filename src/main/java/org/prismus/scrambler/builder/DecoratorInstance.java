@@ -19,11 +19,6 @@ public class DecoratorInstance<T> extends Constant<T> {
     }
 
     @Override
-    public void setName(String name) {
-        instance.setName(name);
-    }
-
-    @Override
     public void setValue(T value) {
         instance.setValue(value);
     }
@@ -32,11 +27,6 @@ public class DecoratorInstance<T> extends Constant<T> {
     public DecoratorInstance<T> usingValue(T value) {
         instance.usingValue(value);
         return this;
-    }
-
-    @Override
-    public String getName() {
-        return instance.getName();
     }
 
     @Override

@@ -1,6 +1,6 @@
 package org.prismus.scrambler.property;
 
-import org.prismus.scrambler.Property;
+import org.prismus.scrambler.Value;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -12,57 +12,57 @@ import java.util.*;
 public class Random {
     private static final String NOT_SUPPORTED_RANGE_TYPE_MSG = "Not supported range method for provided class type: %s, range of [%s, %s]";
 
-    private static Map<Class, Class<? extends Property>> propertyTypeMap = lookupPropertyTypeMap();
+    private static Map<Class, Class<? extends Value>> propertyTypeMap = lookupPropertyTypeMap();
 
-    public static <T> Property<T> of(String propertyName, Class<T> clazzType) {
-        return of(propertyName, clazzType, null);
+    public static <T> Value<T> of(Class<T> clazzType) {
+        return of(clazzType, null);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Property<T> of(String propertyName, T value) {
-        return of(propertyName, (Class<T>) value.getClass(), value);
+    public static <T> Value<T> of(T value) {
+        return of((Class<T>) value.getClass(), value);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Property<T> of(String propertyName, T minimum, T maximum) {
-        return of(propertyName, (Class<T>) minimum.getClass(), minimum, maximum);
+    public static <T> Value<T> of(T minimum, T maximum) {
+        return of((Class<T>) minimum.getClass(), minimum, maximum);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Property<T> of(String propertyName, Class<T> clazzType, T minimum, T maximum) {
-        final Property<T> property = of(propertyName, clazzType, null);
-        if (property instanceof AbstractRandomRange) {
-            final AbstractRandomRange<T> randomRangeValue = (AbstractRandomRange<T>) property;
+    public static <T> Value<T> of(Class<T> clazzType, T minimum, T maximum) {
+        final Value<T> value = of(clazzType, null);
+        if (value instanceof AbstractRandomRange) {
+            final AbstractRandomRange<T> randomRangeValue = (AbstractRandomRange<T>) value;
             randomRangeValue.minimumBound(minimum).maximumBound(maximum);
         } else {
             throw new UnsupportedOperationException(String.format(NOT_SUPPORTED_RANGE_TYPE_MSG, clazzType, minimum, maximum));
         }
-        return property;
+        return value;
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Property<T> of(String propertyName, Class<T> clazzType, T defaultValue) {
+    public static <T> Value<T> of(Class<T> clazzType, T defaultValue) {
         if (propertyTypeMap.containsKey(clazzType)) {
-            return (Property) Util.createInstance(
+            return (Value) Util.createInstance(
                     propertyTypeMap.get(clazzType),
-                    new Object[]{propertyName, defaultValue},
+                    new Object[]{defaultValue},
                     new Class[]{String.class, clazzType}
             );
         }
-        throw new UnsupportedOperationException(String.format("The of method is not supported for property: %s, class type: %s, default value: %s",
-                propertyName, clazzType, defaultValue));
+        throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s",
+                clazzType, defaultValue));
     }
 
-    public static <T> Property<T> of(String propertyName, List<T> values) {
-        return new RandomElement<T>(propertyName, values);
+    public static <T> Value<T> of(List<T> values) {
+        return new RandomElement<T>(values);
     }
 
-    public static <T> Property<T> of(String propertyName, Collection<T> collection) {
-        return new RandomElement<T>(propertyName, new ArrayList<T>(collection));
+    public static <T> Value<T> of(Collection<T> collection) {
+        return new RandomElement<T>(new ArrayList<T>(collection));
     }
 
-    static Map<Class, Class<? extends Property>> lookupPropertyTypeMap() {
-        final Map<Class, Class<? extends Property>> typeMap = new LinkedHashMap<Class, Class<? extends Property>>();
+    static Map<Class, Class<? extends Value>> lookupPropertyTypeMap() {
+        final Map<Class, Class<? extends Value>> typeMap = new LinkedHashMap<Class, Class<? extends Value>>();
         typeMap.put(Byte.class, RandomByte.class);
         typeMap.put(Short.class, RandomShort.class);
         typeMap.put(Boolean.class, RandomBoolean.class);

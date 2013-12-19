@@ -1,8 +1,5 @@
 package org.prismus.scrambler.builder.meta;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,8 +82,4 @@ public class EntityMeta {
         return sqlTypes;
     }
 
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
-    }
 }

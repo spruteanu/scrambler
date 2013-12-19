@@ -7,20 +7,16 @@ import java.util.Random;
  */
 public class RandomDouble extends AbstractRandomRange<Double> {
     public RandomDouble() {
-        this(null, null);
+        this(null);
     }
 
-    public RandomDouble(String name) {
-        this(name, null);
-    }
-
-    public RandomDouble(String name, Double value) {
-        super(name, value);
+    public RandomDouble(Double value) {
+        super(value);
         usingDefaults(0.0, Double.MAX_VALUE);
     }
 
-    public RandomDouble(String name, Double minimum, Double maximum) {
-        super(name, minimum, maximum);
+    public RandomDouble(Double minimum, Double maximum) {
+        super(minimum, maximum);
         usingDefaults(0.0, Double.MAX_VALUE);
     }
 

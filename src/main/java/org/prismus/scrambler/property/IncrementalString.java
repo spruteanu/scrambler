@@ -11,27 +11,23 @@ public class IncrementalString extends Constant<String> {
     private String pattern;
 
     public IncrementalString() {
-        this(null, null, DEFAULT_PATTERN, DEFAULT_STEP);
+        this(null, DEFAULT_PATTERN, DEFAULT_STEP);
     }
 
-    public IncrementalString(String name) {
-        this(name, null, DEFAULT_PATTERN, DEFAULT_STEP);
+    public IncrementalString(String value) {
+        this(value, DEFAULT_PATTERN, DEFAULT_STEP);
     }
 
-    public IncrementalString(String name, String value) {
-        this(name, value, DEFAULT_PATTERN, DEFAULT_STEP);
+    public IncrementalString(String value, String pattern) {
+        this(value, pattern, DEFAULT_STEP);
     }
 
-    public IncrementalString(String name, String value, String pattern) {
-        this(name, value, pattern, DEFAULT_STEP);
+    public IncrementalString(String value, Integer index) {
+        this(value, DEFAULT_PATTERN, index);
     }
 
-    public IncrementalString(String name, String value, Integer index) {
-        this(name, value, DEFAULT_PATTERN, index);
-    }
-
-    public IncrementalString(String name, String value, String pattern, Integer index) {
-        super(name, value);
+    public IncrementalString(String value, String pattern, Integer index) {
+        super(value);
         this.pattern = pattern;
         this.index = index != null ? index : DEFAULT_STEP;
     }
@@ -47,9 +43,6 @@ public class IncrementalString extends Constant<String> {
     @Override
     public String value() {
         String value = super.value();
-        if (value == null) {
-            value = getName();
-        }
         if (value == null) {
             value = "RandomString";
         }

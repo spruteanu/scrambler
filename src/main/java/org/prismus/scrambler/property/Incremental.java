@@ -1,6 +1,6 @@
 package org.prismus.scrambler.property;
 
-import org.prismus.scrambler.Property;
+import org.prismus.scrambler.Value;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -12,36 +12,32 @@ import java.util.Map;
  * @author Serge Pruteanu
  */
 public class Incremental {
-    private static Map<Class, Class<? extends Property>> propertyTypeMap = lookupPropertyTypeMap();
+    private static Map<Class, Class<? extends Value>> propertyTypeMap = lookupPropertyTypeMap();
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Property<T> of(String propertyName, T value) {
-        return of(propertyName, (Class<T>) value.getClass(), value, null);
+    public static <T> Value<T> of(T value) {
+        return of((Class<T>) value.getClass(), value, null);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Property<T> of(String propertyName, T value, Number step) {
-        return of(propertyName, (Class<T>) value.getClass(), value, step);
+    public static <T> Value<T> of(T value, Number step) {
+        return of((Class<T>) value.getClass(), value, step);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Property<T> of(String propertyName,
-                                     Class<T> clazzType,
-                                     T defaultValue,
-                                     Number step) {
+    public static <T> Value<T> of(Class<T> clazzType, T defaultValue, Number step) {
         if (propertyTypeMap.containsKey(clazzType)) {
-            return (Property<T>) Util.createInstance(
+            return (Value<T>) Util.createInstance(
                     propertyTypeMap.get(clazzType),
-                    new Object[]{propertyName, defaultValue, step},
+                    new Object[]{defaultValue, step},
                     new Class[]{String.class, clazzType, clazzType}
             );
         }
-        throw new UnsupportedOperationException(String.format("The of method is not supported for property: %s, class type: %s, default value: %s",
-                propertyName, clazzType, defaultValue));
+        throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s", clazzType, defaultValue));
     }
 
-    static Map<Class, Class<? extends Property>> lookupPropertyTypeMap() {
-        final Map<Class, Class<? extends Property>> typeMap = new LinkedHashMap<Class, Class<? extends Property>>();
+    static Map<Class, Class<? extends Value>> lookupPropertyTypeMap() {
+        final Map<Class, Class<? extends Value>> typeMap = new LinkedHashMap<Class, Class<? extends Value>>();
         typeMap.put(Byte.class, IncrementalByte.class);
         typeMap.put(Short.class, IncrementalShort.class);
         typeMap.put(Double.class, IncrementalDouble.class);

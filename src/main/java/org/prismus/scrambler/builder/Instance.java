@@ -1,6 +1,6 @@
 package org.prismus.scrambler.builder;
 
-import org.prismus.scrambler.Property;
+import org.prismus.scrambler.Value;
 import org.prismus.scrambler.property.*;
 import org.prismus.scrambler.property.Random;
 import org.apache.commons.beanutils.BeanUtilsBean;
@@ -48,7 +48,7 @@ public class Instance<T> extends Constant<T> {
     }
 
     public Instance(String name, T instance) {
-        super(name, instance);
+        super(instance);
         properties = new LinkedHashMap<String, Object>();
         beanUtilsBean = Util.createBeanUtilsBean();
     }
@@ -65,8 +65,8 @@ public class Instance<T> extends Constant<T> {
         final Map<String, Object> resultMap = new HashMap<String, Object>(properties.size());
         for (final Map.Entry<String, Object> entry : properties.entrySet()) {
             Object value = entry.getValue();
-            if (value instanceof Property) {
-                value = ((Property) value).value();
+            if (value instanceof Value) {
+                value = ((Value) value).value();
             }
             resultMap.put(entry.getKey(), value);
         }
@@ -121,7 +121,7 @@ public class Instance<T> extends Constant<T> {
         for (final Map.Entry<String, Object> entry : properties.entrySet()) {
             final String propertyName = entry.getKey();
             final Object value = entry.getValue();
-            final Property instance = match(propertyName, value, patternObjectMap);
+            final Value instance = match(propertyName, value, patternObjectMap);
             if (instance != null) {
                 addProperty(instance);
             }
@@ -133,8 +133,8 @@ public class Instance<T> extends Constant<T> {
         return matchProperties(properties, PERSISTENCE_PROPERTIES_MATCH_MAP);
     }
 
-    Property match(String name, Object value, Map<Pattern, Object> regExObjectMap) {
-        Property instance = null;
+    Value match(String name, Object value, Map<Pattern, Object> regExObjectMap) {
+        Value instance = null;
         if (regExObjectMap != null) {
             for (final Map.Entry<Pattern, Object> entry : regExObjectMap.entrySet()) {
                 if (entry.getKey().matcher(name).matches()) {
@@ -158,10 +158,10 @@ public class Instance<T> extends Constant<T> {
     }
 
     @SuppressWarnings({"unchecked"})
-    Property matchProperty(String name, Object value, Object defaultValue) {
-        Property instance = null;
-        if (Property.class.isInstance(value)) {
-            instance = (Property) value;
+    Value matchProperty(String name, Object value, Object defaultValue) {
+        Value instance = null;
+        if (Value.class.isInstance(value)) {
+            instance = (Value) value;
             if (instance instanceof Constant) {
                 ((Constant) instance).setValue(defaultValue);
             }
@@ -177,10 +177,10 @@ public class Instance<T> extends Constant<T> {
     }
 
     @SuppressWarnings({"unchecked"})
-    Property matchProperty(String name, Class valueClass, Object defaultValue) {
-        Property instance = null;
-        if (Property.class.isAssignableFrom(valueClass)) {
-            instance = (Property) Util.createInstance(
+    Value matchProperty(String name, Class valueClass, Object defaultValue) {
+        Value instance = null;
+        if (Value.class.isAssignableFrom(valueClass)) {
+            instance = (Value) Util.createInstance(
                     valueClass, new Object[]{name}, new Class[]{String.class}
             );
             if (instance instanceof Constant) {
@@ -191,7 +191,7 @@ public class Instance<T> extends Constant<T> {
                 instance = Random.of(name, (Collection) defaultValue);
             } else {
                 if (defaultValue != null) {
-                    instance = new ValueCollection(name,
+                    instance = new ValueCollection(
                             (List) Util.createInstance(valueClass, null, null),
                             Random.of(name, defaultValue)
                     );
@@ -199,30 +199,30 @@ public class Instance<T> extends Constant<T> {
             }
         } else {
             if (defaultValue == null || valueClass.isInstance(defaultValue)) {
-                instance = Random.of(name, valueClass, defaultValue);
+                instance = Random.of(valueClass, defaultValue);
             }
         }
         return instance;
     }
 
-    public Instance addProperty(Property property) {
-        properties.put(property.getName(), property);
+    public Instance addProperty(Value value) {
+//        properties.put(value.getName(), value); todo Serge: implement me
         return this;
     }
 
-    public Instance addProperties(Collection<Property> propertyCollection) {
-        for (final Property property : propertyCollection) {
-            addProperty(property);
+    public Instance addProperties(Collection<Value> valueCollection) {
+        for (final Value value : valueCollection) {
+            addProperty(value);
         }
         return this;
     }
 
-    public Instance value(String propertyName, Object value) {
-        return addProperty(new Constant<Object>(propertyName, value));
+    public Instance value(Object value) {
+        return addProperty(new Constant<Object>(value));
     }
 
-    public Instance random(String propertyName, Class classType) {
-        return random(propertyName, classType, null);
+    public Instance random(Class classType) {
+        return random(classType, null);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -230,41 +230,41 @@ public class Instance<T> extends Constant<T> {
                                Class<V> elementClassType,
                                List<V> collection,
                                int count) {
-        return addProperty(new ValueCollection(propertyName, collection, count, Random.of(propertyName, elementClassType, null)));
+        return addProperty(new ValueCollection(collection, count, Random.of(elementClassType, null)));
     }
 
     @SuppressWarnings({"unchecked"})
-    public Instance random(String propertyName, Class classType, Object defaultValue) {
-        return addProperty(Random.of(propertyName, classType, defaultValue));
+    public Instance random(Class classType, Object defaultValue) {
+        return addProperty(Random.of(classType, defaultValue));
     }
 
     public Instance random(Map<String, Class> propertyClassTypeMap) {
         for (final Map.Entry<String, Class> entry : propertyClassTypeMap.entrySet()) {
-            random(entry.getKey(), entry.getValue());
+            random(entry.getValue());
         }
         return this;
     }
 
     public Instance incremental(Map<String, Class> propertyClassTypeMap) {
         for (final Map.Entry<String, Class> entry : propertyClassTypeMap.entrySet()) {
-            incremental(entry.getKey(), entry.getValue());
+            incremental(entry.getValue());
         }
         return this;
     }
 
     @SuppressWarnings({"unchecked"})
-    public Instance incremental(String propertyName, Class clazzType) {
-        return incremental(propertyName, clazzType, null);
+    public Instance incremental(Class clazzType) {
+        return incremental(clazzType, null);
     }
 
     @SuppressWarnings({"unchecked"})
-    public Instance incremental(String propertyName, Class clazzType, Number step) {
-        return incremental(propertyName, clazzType, null, step);
+    public Instance incremental(Class clazzType, Number step) {
+        return incremental(clazzType, null, step);
     }
 
     @SuppressWarnings({"unchecked"})
-    public Instance incremental(String propertyName, Class clazzType, Object defaultValue, Number step) {
-        return addProperty(Incremental.of(propertyName, clazzType, defaultValue, step));
+    public Instance incremental(Class clazzType, Object defaultValue, Number step) {
+        return addProperty(Incremental.of(clazzType, defaultValue, step));
     }
 
     BeanUtilsBean getBeanUtilsBean() {

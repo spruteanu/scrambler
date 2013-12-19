@@ -5,27 +5,23 @@ package org.prismus.scrambler.property;
  */
 public class RandomFloat extends AbstractRandomRange<Float> {
     public RandomFloat() {
-        this(null, null);
+        this(null);
     }
 
-    public RandomFloat(String name) {
-        this(name, null);
-    }
-
-    public RandomFloat(String name, Float value) {
-        super(name, value);
+    public RandomFloat(Float value) {
+        super(value);
         usingDefaults(0F, Float.MAX_VALUE);
     }
 
-    public RandomFloat(String name, Float minimum, Float maximum) {
-        super(name, minimum, maximum);
+    public RandomFloat(Float minimum, Float maximum) {
+        super(minimum, maximum);
         usingDefaults(0F, Float.MAX_VALUE);
     }
 
     @Override
     public Float value() {
         final Float value = super.value();
-        return new RandomDouble(getName(), value != null ? value.doubleValue() : null)
+        return new RandomDouble(value != null ? value.doubleValue() : null)
                 .usingDefaults(defaultMinimum.doubleValue(), defaultMaximum.doubleValue())
                 .between(
                         minimum != null ? minimum.doubleValue() : null,

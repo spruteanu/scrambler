@@ -1,6 +1,6 @@
 package org.prismus.scrambler.builder;
 
-import org.prismus.scrambler.Property;
+import org.prismus.scrambler.Value;
 import org.springframework.beans.factory.config.PropertyOverrideConfigurer;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.support.BeanDefinitionReader;
@@ -21,7 +21,7 @@ import java.util.Set;
  *
  * @author Serge Pruteanu
  */
-public class SpringFactory implements Property {
+public class SpringFactory implements Value {
     private static final String NOT_SUPPORTED_FILE_TYPE_MSG = "Not supported spring file: %s for provided list: %s, Supported extensions: %s";
     private static final String NO_CONTEXT_FILES_MSG = "At least one spring context file should be specified for files: %s";
 
@@ -34,7 +34,7 @@ public class SpringFactory implements Property {
     private String name = "instanceBuilder";
     private List<String> contextFiles;
     private boolean fileResource;
-    private Property property;
+    private Value value;
 
     public SpringFactory() {
     }
@@ -56,10 +56,6 @@ public class SpringFactory implements Property {
         this.name = name;
     }
 
-    public String getName() {
-        return name;
-    }
-
     public SpringFactory usingContextFiles(List<String> contextFiles) {
         return usingContextFiles(contextFiles, false);
     }
@@ -71,17 +67,17 @@ public class SpringFactory implements Property {
     }
 
     public Object value() {
-        return getProperty().value();
+        return getValue().value();
     }
 
-    public Property getProperty() {
-        if (property == null) {
-            property = createProperty();
+    public Value getValue() {
+        if (value == null) {
+            value = createProperty();
         }
-        return property;
+        return value;
     }
 
-    Property createProperty() {
+    Value createProperty() {
         final Set<String> contextXmls = new LinkedHashSet<String>();
         final Set<String> contextProperties = new LinkedHashSet<String>();
         final Set<String> overrideProperties = new LinkedHashSet<String>();
@@ -100,7 +96,7 @@ public class SpringFactory implements Property {
         addPropertyOverrides(overrideProperties, context);
 
         context.refresh();
-        return context.getBean(getName(), Property.class);
+        return context.getBean(Value.class);
     }
 
     boolean representsSpringContext(Set<String> contextXmls, Set<String> contextProperties) {

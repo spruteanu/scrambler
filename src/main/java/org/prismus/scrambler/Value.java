@@ -7,7 +7,6 @@ import java.io.Serializable;
  *
  * @author Serge Pruteanu
  */
-public interface Property<T> extends Serializable, Cloneable {
-    String getName();
+public interface Value<T> extends Serializable, Cloneable {
     T value();
 }

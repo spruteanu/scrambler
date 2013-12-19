@@ -8,19 +8,15 @@ public class IncrementalInteger extends Constant<Integer> {
     private int step;
 
     public IncrementalInteger() {
-        this(null, null, DEFAULT_STEP);
+        this(null, DEFAULT_STEP);
     }
 
-    public IncrementalInteger(String name) {
-        this(name, null, DEFAULT_STEP);
+    public IncrementalInteger(Integer value) {
+        this(value, DEFAULT_STEP);
     }
 
-    public IncrementalInteger(String name, Integer value) {
-        this(name, value, DEFAULT_STEP);
-    }
-
-    public IncrementalInteger(String name, Integer value, Integer step) {
-        super(name, value);
+    public IncrementalInteger(Integer value, Integer step) {
+        super(value);
         this.step = step != null ? step : DEFAULT_STEP;
     }
 

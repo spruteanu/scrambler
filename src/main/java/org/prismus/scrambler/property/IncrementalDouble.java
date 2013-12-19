@@ -8,19 +8,15 @@ public class IncrementalDouble extends Constant<Double> {
     private double step;
 
     public IncrementalDouble() {
-        this(null, null, DEFAULT_STEP);
+        this(null, DEFAULT_STEP);
     }
 
-    public IncrementalDouble(String name) {
-        this(name, null, DEFAULT_STEP);
+    public IncrementalDouble(Double value) {
+        this(value, DEFAULT_STEP);
     }
 
-    public IncrementalDouble(String name, Double value) {
-        this(name, value, DEFAULT_STEP);
-    }
-
-    public IncrementalDouble(String name, Double value, Double step) {
-        super(name, value);
+    public IncrementalDouble(Double value, Double step) {
+        super(value);
         this.step = step != null ? step : DEFAULT_STEP;
     }
 

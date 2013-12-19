@@ -5,27 +5,23 @@ package org.prismus.scrambler.property;
  */
 public class RandomShort extends AbstractRandomRange<Short> {
     public RandomShort() {
-        this(null, null);
+        this(null);
     }
 
-    public RandomShort(String name) {
-        this(name, null);
-    }
-
-    public RandomShort(String name, Short value) {
-        super(name, value);
+    public RandomShort(Short value) {
+        super(value);
         usingDefaults(Integer.valueOf(0).shortValue(), Short.MAX_VALUE);
     }
 
-    public RandomShort(String name, Short minimum, Short maximum) {
-        super(name, minimum, maximum);
+    public RandomShort(Short minimum, Short maximum) {
+        super(minimum, maximum);
         usingDefaults(Integer.valueOf(0).shortValue(), Short.MAX_VALUE);
     }
 
     @Override
     public Short value() {
         final Short value = super.value();
-        return new RandomInteger(getName(), value != null ? value.intValue() : null)
+        return new RandomInteger(value != null ? value.intValue() : null)
                 .usingDefaults(defaultMinimum.intValue(), defaultMaximum.intValue())
                 .between(
                         minimum != null ? minimum.intValue() : null,

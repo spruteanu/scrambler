@@ -11,11 +11,8 @@ public class CurrentTime extends Constant<Date> {
         super();
     }
 
-    public CurrentTime(String name) {
-        super(name);
-    }
-
     public Date value() {
         return new Timestamp(System.currentTimeMillis());
     }
+
 }

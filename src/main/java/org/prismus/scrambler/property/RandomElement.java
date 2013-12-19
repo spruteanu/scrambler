@@ -13,8 +13,8 @@ public class RandomElement<T> extends Constant<T> {
         super();
     }
 
-    public RandomElement(String name, List<T> values) {
-        super(name);
+    public RandomElement(List<T> values) {
+        super();
         this.values = values;
     }
 

@@ -8,19 +8,15 @@ public class IncrementalShort extends Constant<Short> {
     private short step;
 
     public IncrementalShort() {
-        this(null, null, DEFAULT_STEP);
+        this(null, DEFAULT_STEP);
     }
 
-    public IncrementalShort(String name) {
-        this(name, null, DEFAULT_STEP);
+    public IncrementalShort(Short value) {
+        this(value, DEFAULT_STEP);
     }
 
-    public IncrementalShort(String name, Short value) {
-        this(name, value, DEFAULT_STEP);
-    }
-
-    public IncrementalShort(String name, Short value, Short step) {
-        super(name, value);
+    public IncrementalShort(Short value, Short step) {
+        super(value);
         this.step = step != null ? step : DEFAULT_STEP;
     }
 
@@ -35,4 +31,5 @@ public class IncrementalShort extends Constant<Short> {
         setValue(value);
         return value;
     }
+
 }

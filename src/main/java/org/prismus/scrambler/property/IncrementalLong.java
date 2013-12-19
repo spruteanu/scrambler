@@ -8,19 +8,15 @@ public class IncrementalLong extends Constant<Long> {
     private long step;
 
     public IncrementalLong() {
-        this(null, null, DEFAULT_STEP);
+        this(null, DEFAULT_STEP);
     }
 
-    public IncrementalLong(String name) {
-        this(name, null, DEFAULT_STEP);
+    public IncrementalLong(Long value) {
+        this(value, DEFAULT_STEP);
     }
 
-    public IncrementalLong(String name, Long value) {
-        this(name, value, DEFAULT_STEP);
-    }
-
-    public IncrementalLong(String name, Long value, Long step) {
-        super(name, value);
+    public IncrementalLong(Long value, Long step) {
+        super(value);
         this.step = step != null ? step : DEFAULT_STEP;
     }
 

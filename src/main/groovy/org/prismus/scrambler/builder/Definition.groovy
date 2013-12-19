@@ -22,6 +22,7 @@ class Definition extends Script {
     }
 
     def methodMissing(String name, def args) {
+        // todo Serge: implement dynamic method lookup
         definitionMap.put(name, args)
         return this;
     }

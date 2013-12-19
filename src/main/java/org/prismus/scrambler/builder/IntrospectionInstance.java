@@ -1,6 +1,6 @@
 package org.prismus.scrambler.builder;
 
-import org.prismus.scrambler.Property;
+import org.prismus.scrambler.Value;
 
 import java.beans.PropertyDescriptor;
 import java.util.LinkedHashMap;
@@ -53,7 +53,7 @@ public class IntrospectionInstance<T> extends DecoratorInstance<T> {
         return propertyDescriptorMap;
     }
 
-    public IntrospectionInstance<T> property(Property property, Property... properties) {
+    public IntrospectionInstance<T> property(Value value, Value... properties) {
         throw new UnsupportedOperationException("The property method is not supported for given implementation");
     }
 

@@ -10,12 +10,8 @@ public class RandomBoolean extends Constant<Boolean> {
         super();
     }
 
-    public RandomBoolean(String name) {
-        this(name, null);
-    }
-
-    public RandomBoolean(String name, Boolean value) {
-        super(name, value);
+    public RandomBoolean(Boolean value) {
+        super(value);
     }
 
     @Override

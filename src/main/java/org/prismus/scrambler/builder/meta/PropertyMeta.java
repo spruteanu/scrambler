@@ -1,8 +1,5 @@
 package org.prismus.scrambler.builder.meta;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-
 /**
  * todo: add description
  *
@@ -96,11 +93,6 @@ public class PropertyMeta {
 
     void setPrecision(Integer precision) {
         this.precision = precision;
-    }
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
     }
 
 }

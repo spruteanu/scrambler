@@ -13,22 +13,18 @@ public abstract class AbstractRandomRange<T> extends Constant<T> {
         super();
     }
 
-    public AbstractRandomRange(String name) {
-        super(name);
+    public AbstractRandomRange(T value) {
+        super(value);
     }
 
-    public AbstractRandomRange(String name, T value) {
-        super(name, value);
-    }
-
-    public AbstractRandomRange(String name, T minimum, T maximum) {
-        super(name);
+    public AbstractRandomRange(T minimum, T maximum) {
+        super();
         this.minimum = minimum;
         this.maximum = maximum;
     }
 
-    public AbstractRandomRange(String name, T value, T minimum, T maximum) {
-        super(name, value);
+    public AbstractRandomRange(T value, T minimum, T maximum) {
+        super(value);
         this.minimum = minimum;
         this.maximum = maximum;
     }

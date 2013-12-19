@@ -11,27 +11,23 @@ public class RandomString extends Constant<String> {
     private boolean includeNumbers;
 
     public RandomString() {
-        this(null, null);
+        this(null);
     }
 
-    public RandomString(String name) {
-        this(name, null);
+    public RandomString(String value) {
+        super(value);
     }
 
-    public RandomString(String name, String value) {
-        super(name, value);
+    public RandomString(String value, Integer count) {
+        this(value, count, false, false);
     }
 
-    public RandomString(String name, String value, Integer count) {
-        this(name, value, count, false, false);
+    public RandomString(String value, Integer count, boolean includeLetters) {
+        this(value, count, includeLetters, false);
     }
 
-    public RandomString(String name, String value, Integer count, boolean includeLetters) {
-        this(name, value, count, includeLetters, false);
-    }
-
-    public RandomString(String name, String value, Integer count, boolean includeLetters, boolean includeNumbers) {
-        super(name, value);
+    public RandomString(String value, Integer count, boolean includeLetters, boolean includeNumbers) {
+        super(value);
         this.count = count;
     }
 
@@ -50,9 +46,6 @@ public class RandomString extends Constant<String> {
     @Override
     public String value() {
         String value = super.value();
-        if (value == null) {
-            value = getName();
-        }
         if (value == null) {
             value = "RandomString";
         }

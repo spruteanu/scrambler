@@ -8,19 +8,15 @@ public class IncrementalByte extends Constant<Byte> {
     private byte step;
 
     public IncrementalByte() {
-        this(null, null, DEFAULT_STEP);
+        this(null, DEFAULT_STEP);
     }
 
-    public IncrementalByte(String name) {
-        this(name, null, DEFAULT_STEP);
+    public IncrementalByte(Byte value) {
+        this(value, DEFAULT_STEP);
     }
 
-    public IncrementalByte(String name, Byte value) {
-        this(name, value, DEFAULT_STEP);
-    }
-
-    public IncrementalByte(String name, Byte value, Byte step) {
-        super(name, value);
+    public IncrementalByte(Byte value, Byte step) {
+        super(value);
         this.step = step != null ? step : DEFAULT_STEP;
     }
 

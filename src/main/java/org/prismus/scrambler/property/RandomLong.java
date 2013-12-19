@@ -7,20 +7,16 @@ import java.util.Random;
  */
 public class RandomLong extends AbstractRandomRange<Long> {
     public RandomLong() {
-        this(null, null);
+        this(null);
     }
 
-    public RandomLong(String name) {
-        this(name, null);
-    }
-
-    public RandomLong(String name, Long value) {
-        super(name, value);
+    public RandomLong(Long value) {
+        super(value);
         usingDefaults(0L, Long.MAX_VALUE);
     }
 
-    public RandomLong(String name, Long minimum, Long maximum) {
-        super(name, minimum, maximum);
+    public RandomLong(Long minimum, Long maximum) {
+        super(minimum, maximum);
         usingDefaults(0L, Long.MAX_VALUE);
     }
 

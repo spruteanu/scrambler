@@ -14,23 +14,19 @@ public class IncrementalDate extends Constant<Date> {
     private Long step;
 
     public IncrementalDate() {
-        this(null, new Date(), DEFAULT_STEP);
+        this(new Date(), DEFAULT_STEP);
     }
 
-    public IncrementalDate(String name) {
-        this(name, new Date(), DEFAULT_STEP);
+    public IncrementalDate(Long step) {
+        this(new Date(), step);
     }
 
-    public IncrementalDate(String name, Long step) {
-        this(name, new Date(), step);
+    public IncrementalDate(Date value) {
+        this(value, DEFAULT_STEP);
     }
 
-    public IncrementalDate(String name, Date value) {
-        this(name, value, DEFAULT_STEP);
-    }
-
-    public IncrementalDate(String name, Date value, Long step) {
-        super(name, value);
+    public IncrementalDate(Date value, Long step) {
+        super(value);
         this.step = step != null ? step : DEFAULT_STEP;
     }
 
@@ -46,4 +42,5 @@ public class IncrementalDate extends Constant<Date> {
         setValue(value);
         return value;
     }
+
 }
