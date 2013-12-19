@@ -2,40 +2,22 @@ package org.prismus.scrambler.property;
 
 import org.prismus.scrambler.Property;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 /**
  * @author Serge Pruteanu
  */
-public class PropertyCollection<V, T extends Collection<V>> extends Generic<T> {
+public class ValueCollection<V, T extends Collection<V>> extends Constant<T> {
     private int count;
     private Property<V> property;
     private boolean randomCount;
 
-    public PropertyCollection() {
-        this(null, null, 0);
-    }
-
-    public PropertyCollection(String name) {
-        this(name, null, 0);
-    }
-
-    public PropertyCollection(String name, Property<V> property) {
-        this(name, property, 0);
-    }
-
     @SuppressWarnings({"unchecked"})
-    public PropertyCollection(String name, Property<V> property, int count) {
-        this(name, ((T) new ArrayList<V>()), count, property);
+    public ValueCollection(String name, T collection, Property<V> property) {
+        this(name, collection, 0, property);
     }
 
-    @SuppressWarnings({"unchecked"})
-    public PropertyCollection(String name, T collection, Property<V> property) {
-        this(name, ((T) new ArrayList<V>()), 0, property);
-    }
-
-    public PropertyCollection(String name, T collection, int count, Property<V> property) {
+    public ValueCollection(String name, T collection, int count, Property<V> property) {
         super(name, collection);
         this.count = count;
         this.property = property;

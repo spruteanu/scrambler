@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  *
  * @author Serge Pruteanu
  */
-public class Instance<T> extends Generic<T> {
+public class Instance<T> extends Constant<T> {
     private static final String FAILED_SET_PROPERTIES_MSG = "Failed to set instance: %s with properties: %s";
 
     // todo sergep: merge properties with regular expression properties map
@@ -162,8 +162,8 @@ public class Instance<T> extends Generic<T> {
         Property instance = null;
         if (Property.class.isInstance(value)) {
             instance = (Property) value;
-            if (instance instanceof Generic) {
-                ((Generic) instance).setValue(defaultValue);
+            if (instance instanceof Constant) {
+                ((Constant) instance).setValue(defaultValue);
             }
         } else if (value instanceof Class) {
             final Class valueClass = (Class) value;
@@ -183,15 +183,15 @@ public class Instance<T> extends Generic<T> {
             instance = (Property) Util.createInstance(
                     valueClass, new Object[]{name}, new Class[]{String.class}
             );
-            if (instance instanceof Generic) {
-                ((Generic) instance).setValue(defaultValue);
+            if (instance instanceof Constant) {
+                ((Constant) instance).setValue(defaultValue);
             }
         } else if (Collection.class.isAssignableFrom(valueClass)) {
             if (Collection.class.isInstance(defaultValue)) {
                 instance = Random.of(name, (Collection) defaultValue);
             } else {
                 if (defaultValue != null) {
-                    instance = new PropertyCollection(name,
+                    instance = new ValueCollection(name,
                             (List) Util.createInstance(valueClass, null, null),
                             Random.of(name, defaultValue)
                     );
@@ -218,7 +218,7 @@ public class Instance<T> extends Generic<T> {
     }
 
     public Instance value(String propertyName, Object value) {
-        return addProperty(new Generic<Object>(propertyName, value));
+        return addProperty(new Constant<Object>(propertyName, value));
     }
 
     public Instance random(String propertyName, Class classType) {
@@ -230,7 +230,7 @@ public class Instance<T> extends Generic<T> {
                                Class<V> elementClassType,
                                List<V> collection,
                                int count) {
-        return addProperty(new PropertyCollection(propertyName, collection, count, Random.of(propertyName, elementClassType, null)));
+        return addProperty(new ValueCollection(propertyName, collection, count, Random.of(propertyName, elementClassType, null)));
     }
 
     @SuppressWarnings({"unchecked"})

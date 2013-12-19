@@ -9,31 +9,13 @@ import java.util.*;
 /**
  * @author Serge Pruteanu
  */
-public class Random extends RandomRange {
+public class Random {
     private static final String NOT_SUPPORTED_RANGE_TYPE_MSG = "Not supported range method for provided class type: %s, range of [%s, %s]";
 
     private static Map<Class, Class<? extends Property>> propertyTypeMap = lookupPropertyTypeMap();
 
-    @Override
-    @SuppressWarnings({"unchecked"})
-    public Object value() {
-        Object value = super.value();
-        if (value == null) {
-            throw new IllegalStateException("Value object can't be null");
-        }
-        final Class valueClassType;
-        if (value instanceof Class) {
-            valueClassType = ((Class) value);
-            value = null;
-        } else {
-            valueClassType = value.getClass();
-        }
-        if (minimum != null || maximum != null) {
-            value = of(getName(), valueClassType, minimum, maximum).value();
-        } else {
-            value = of(getName(), valueClassType, value).value();
-        }
-        return value;
+    public static <T> Property<T> of(String propertyName, Class<T> clazzType) {
+        return of(propertyName, clazzType, null);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -46,15 +28,11 @@ public class Random extends RandomRange {
         return of(propertyName, (Class<T>) minimum.getClass(), minimum, maximum);
     }
 
-    public static <T> Property<T> of(String propertyName, Class<T> clazzType) {
-        return of(propertyName, clazzType, null);
-    }
-
     @SuppressWarnings({"unchecked"})
     public static <T> Property<T> of(String propertyName, Class<T> clazzType, T minimum, T maximum) {
         final Property<T> property = of(propertyName, clazzType, null);
-        if (property instanceof RandomRange) {
-            final RandomRange<T> randomRangeValue = (RandomRange<T>) property;
+        if (property instanceof AbstractRandomRange) {
+            final AbstractRandomRange<T> randomRangeValue = (AbstractRandomRange<T>) property;
             randomRangeValue.minimumBound(minimum).maximumBound(maximum);
         } else {
             throw new UnsupportedOperationException(String.format(NOT_SUPPORTED_RANGE_TYPE_MSG, clazzType, minimum, maximum));
@@ -75,12 +53,12 @@ public class Random extends RandomRange {
                 propertyName, clazzType, defaultValue));
     }
 
-    public static <T> Property<T> of(String propertyName, Collection<T> collection) {
-        return new RandomListElement<T>(propertyName, new ArrayList<T>(collection));
+    public static <T> Property<T> of(String propertyName, List<T> values) {
+        return new RandomElement<T>(propertyName, values);
     }
 
-    public static <T> Property<T> of(String propertyName, List<T> values) {
-        return new RandomListElement<T>(propertyName, values);
+    public static <T> Property<T> of(String propertyName, Collection<T> collection) {
+        return new RandomElement<T>(propertyName, new ArrayList<T>(collection));
     }
 
     static Map<Class, Class<? extends Property>> lookupPropertyTypeMap() {

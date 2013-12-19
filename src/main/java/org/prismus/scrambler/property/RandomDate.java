@@ -9,7 +9,7 @@ import java.util.Date;
 /**
  * @author Serge Pruteanu
  */
-public class RandomDate extends RandomRange<Date> {
+public class RandomDate extends AbstractRandomRange<Date> {
 
     public RandomDate() {
         this(null, new Date());

@@ -3,7 +3,7 @@ package org.prismus.scrambler.property;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalByte extends Generic<Byte> {
+public class IncrementalByte extends Constant<Byte> {
     private static final byte DEFAULT_STEP = Integer.valueOf(1).byteValue();
     private byte step;
 

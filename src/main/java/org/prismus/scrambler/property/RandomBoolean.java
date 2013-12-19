@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-public class RandomBoolean extends Generic<Boolean> {
+public class RandomBoolean extends Constant<Boolean> {
     public RandomBoolean() {
         super();
     }

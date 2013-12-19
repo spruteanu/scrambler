@@ -5,7 +5,7 @@ import org.apache.commons.lang.RandomStringUtils;
 /**
  * @author Serge Pruteanu
  */
-public class RandomString extends Generic<String> {
+public class RandomString extends Constant<String> {
     private Integer count;
     private boolean includeLetters;
     private boolean includeNumbers;

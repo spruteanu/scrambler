@@ -5,18 +5,18 @@ import org.prismus.scrambler.Property;
 /**
  * @author Serge Pruteanu
  */
-public class Generic<T> implements Property<T>, Cloneable {
+public class Constant<T> implements Property<T>, Cloneable {
     private String name;
     protected T value;
 
-    public Generic() {
+    public Constant() {
     }
 
-    public Generic(String name) {
+    public Constant(String name) {
         this(name, null);
     }
 
-    public Generic(String name, T value) {
+    public Constant(String name, T value) {
         this.name = name;
         this.value = value;
     }
@@ -29,7 +29,7 @@ public class Generic<T> implements Property<T>, Cloneable {
         this.value = value;
     }
 
-    public Generic<T> usingValue(T value) {
+    public Constant<T> usingValue(T value) {
         this.value = value;
         return this;
     }

@@ -3,7 +3,7 @@ package org.prismus.scrambler.property;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalString extends Generic<String> {
+public class IncrementalString extends Constant<String> {
     private static final String DEFAULT_PATTERN = "%s%010d";
     private static final int DEFAULT_STEP = 1;
 

@@ -6,7 +6,7 @@ import java.util.Date;
 /**
  * @author Serge Pruteanu
  */
-public class CurrentTime extends Generic<Date> {
+public class CurrentTime extends Constant<Date> {
     public CurrentTime() {
         super();
     }

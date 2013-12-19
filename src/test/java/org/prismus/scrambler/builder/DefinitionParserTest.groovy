@@ -8,10 +8,10 @@ import spock.lang.Specification
 class DefinitionParserTest extends Specification {
 
     void test_parse() {
-        final shell = new GroovyShell()
+        final parser = new DefinitionParser()
         expect:
-        shell != null
+        parser != null
+        parser.parse("'test*' random 1L 100L") != null
     }
 
-    def method() { println 'cucu' }
 }

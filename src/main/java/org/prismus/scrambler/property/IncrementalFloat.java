@@ -3,7 +3,7 @@ package org.prismus.scrambler.property;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalFloat extends Generic<Float> {
+public class IncrementalFloat extends Constant<Float> {
     private float step;
     private static final float DEFAULT_STEP = 1.0F;
 

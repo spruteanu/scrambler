@@ -1,13 +1,13 @@
 package org.prismus.scrambler.builder;
 
-import org.prismus.scrambler.property.Generic;
+import org.prismus.scrambler.property.Constant;
 
 /**
  * todo: add description
  *
  * @author Serge Pruteanu
  */
-public class DecoratorInstance<T> extends Generic<T> {
+public class DecoratorInstance<T> extends Constant<T> {
     protected final Instance<T> instance;
 
     public DecoratorInstance() {

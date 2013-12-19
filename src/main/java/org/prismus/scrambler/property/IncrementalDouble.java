@@ -3,7 +3,7 @@ package org.prismus.scrambler.property;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalDouble extends Generic<Double> {
+public class IncrementalDouble extends Constant<Double> {
     private static final double DEFAULT_STEP = 1.0;
     private double step;
 

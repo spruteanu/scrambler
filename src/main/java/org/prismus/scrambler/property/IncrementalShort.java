@@ -3,7 +3,7 @@ package org.prismus.scrambler.property;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalShort extends Generic<Short> {
+public class IncrementalShort extends Constant<Short> {
     private static final short DEFAULT_STEP = Integer.valueOf(1).shortValue();
     private short step;
 

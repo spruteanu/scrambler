@@ -8,7 +8,7 @@ import java.util.Date;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalDate extends Generic<Date> {
+public class IncrementalDate extends Constant<Date> {
     private static final long DEFAULT_STEP = 24 * 60 * 1000L;
 
     private Long step;

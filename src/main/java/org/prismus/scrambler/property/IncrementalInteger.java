@@ -3,7 +3,7 @@ package org.prismus.scrambler.property;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalInteger extends Generic<Integer> {
+public class IncrementalInteger extends Constant<Integer> {
     private static final int DEFAULT_STEP = 1;
     private int step;
 

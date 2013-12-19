@@ -3,31 +3,31 @@ package org.prismus.scrambler.property;
 /**
  * @author Serge Pruteanu
  */
-public abstract class RandomRange<T> extends Generic<T> {
+public abstract class AbstractRandomRange<T> extends Constant<T> {
     protected T defaultMinimum;
     protected T defaultMaximum;
     protected T minimum;
     protected T maximum;
 
-    public RandomRange() {
+    public AbstractRandomRange() {
         super();
     }
 
-    public RandomRange(String name) {
+    public AbstractRandomRange(String name) {
         super(name);
     }
 
-    public RandomRange(String name, T value) {
+    public AbstractRandomRange(String name, T value) {
         super(name, value);
     }
 
-    public RandomRange(String name, T minimum, T maximum) {
+    public AbstractRandomRange(String name, T minimum, T maximum) {
         super(name);
         this.minimum = minimum;
         this.maximum = maximum;
     }
 
-    public RandomRange(String name, T value, T minimum, T maximum) {
+    public AbstractRandomRange(String name, T value, T minimum, T maximum) {
         super(name, value);
         this.minimum = minimum;
         this.maximum = maximum;
@@ -49,34 +49,34 @@ public abstract class RandomRange<T> extends Generic<T> {
         this.maximum = maximum;
     }
 
-    public RandomRange<T> usingDefaults(T minimum, T maximum) {
+    public AbstractRandomRange<T> usingDefaults(T minimum, T maximum) {
         this.defaultMinimum = minimum;
         this.defaultMaximum = maximum;
         return this;
     }
 
-    public RandomRange<T> between(T minimum, T maximum) {
+    public AbstractRandomRange<T> between(T minimum, T maximum) {
         this.minimum = minimum;
         this.maximum = maximum;
         return this;
     }
 
-    public RandomRange<T> withDefaultMinimum(T defaultMinimum) {
+    public AbstractRandomRange<T> withDefaultMinimum(T defaultMinimum) {
         this.defaultMinimum = defaultMinimum;
         return this;
     }
 
-    public RandomRange<T> withDefaultMaximum(T defaultMaximum) {
+    public AbstractRandomRange<T> withDefaultMaximum(T defaultMaximum) {
         this.defaultMaximum = defaultMaximum;
         return this;
     }
 
-    public RandomRange<T> minimumBound(T minimum) {
+    public AbstractRandomRange<T> minimumBound(T minimum) {
         this.minimum = minimum;
         return this;
     }
 
-    public RandomRange<T> maximumBound(T maximum) {
+    public AbstractRandomRange<T> maximumBound(T maximum) {
         this.maximum = maximum;
         return this;
     }

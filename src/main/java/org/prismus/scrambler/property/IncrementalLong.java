@@ -3,7 +3,7 @@ package org.prismus.scrambler.property;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalLong extends Generic<Long> {
+public class IncrementalLong extends Constant<Long> {
     private static final long DEFAULT_STEP = 1L;
     private long step;
 

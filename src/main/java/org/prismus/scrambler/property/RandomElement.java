@@ -6,14 +6,14 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-public class RandomListElement<T> extends Generic<T> {
+public class RandomElement<T> extends Constant<T> {
     private List<T> values;
 
-    public RandomListElement() {
+    public RandomElement() {
         super();
     }
 
-    public RandomListElement(String name, List<T> values) {
+    public RandomElement(String name, List<T> values) {
         super(name);
         this.values = values;
     }

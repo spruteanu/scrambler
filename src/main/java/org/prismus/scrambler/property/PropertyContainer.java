@@ -9,7 +9,7 @@ import java.util.Collection;
 /**
  * @author Serge Pruteanu
  */
-public class PropertyContainer extends Generic<Collection> {
+public class PropertyContainer extends Constant<Collection> {
     private Collection<? extends Property> propertyCollection;
 
     public PropertyContainer() {

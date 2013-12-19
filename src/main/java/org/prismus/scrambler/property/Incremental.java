@@ -11,25 +11,8 @@ import java.util.Map;
 /**
  * @author Serge Pruteanu
  */
-public class Incremental extends Generic {
+public class Incremental {
     private static Map<Class, Class<? extends Property>> propertyTypeMap = lookupPropertyTypeMap();
-
-    @Override
-    @SuppressWarnings({"unchecked"})
-    public Object value() {
-        Object value = super.value();
-        if (value == null) {
-            throw new IllegalStateException("Value object can't be null");
-        }
-        final Class valueClassType;
-        if (value instanceof Class) {
-            valueClassType = ((Class) value);
-            value = null;
-        } else {
-            valueClassType = value.getClass();
-        }
-        return of(getName(), valueClassType, value).value();
-    }
 
     @SuppressWarnings({"unchecked"})
     public static <T> Property<T> of(String propertyName, T value) {
@@ -39,18 +22,6 @@ public class Incremental extends Generic {
     @SuppressWarnings({"unchecked"})
     public static <T> Property<T> of(String propertyName, T value, Number step) {
         return of(propertyName, (Class<T>) value.getClass(), value, step);
-    }
-
-    public static <T> Property<T> of(String propertyName, Class<T> clazzType) {
-        return of(propertyName, clazzType, null, null);
-    }
-
-    public static <T> Property<T> of(String propertyName, Class<T> clazzType, T defaultValue) {
-        return of(propertyName, clazzType, defaultValue, null);
-    }
-
-    public static <T> Property<T> of(String propertyName, Class<T> clazzType, Number step) {
-        return of(propertyName, clazzType, null, step);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -84,4 +55,5 @@ public class Incremental extends Generic {
         typeMap.put(Timestamp.class, IncrementalDate.class);
         return typeMap;
     }
+
 }

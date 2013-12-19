@@ -3,7 +3,7 @@ package org.prismus.scrambler.property;
 /**
  * @author Serge Pruteanu
  */
-public class RandomShort extends RandomRange<Short> {
+public class RandomShort extends AbstractRandomRange<Short> {
     public RandomShort() {
         this(null, null);
     }

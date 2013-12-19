@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-public class RandomDouble extends RandomRange<Double> {
+public class RandomDouble extends AbstractRandomRange<Double> {
     public RandomDouble() {
         this(null, null);
     }
