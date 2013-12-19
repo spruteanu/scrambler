@@ -8,11 +8,11 @@
     </bean>
 
     <!--
-test3=12
-test4=value,13
-test41=java.io.File,/test.xml
-test8=RandomLong.class,1,11
-test9=[RandomLong.class],10
+test3 12
+test4 value,13
+test41 java.io.File,/test.xml
+test8 RandomLong.class,1,11
+test9 [RandomLong.class],10
 test91=[RandomLong.class]
 
 test1=incremental,2
