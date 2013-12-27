@@ -5,9 +5,13 @@ import org.apache.commons.beanutils.ConstructorUtils;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.commons.beanutils.MethodUtils;
 import org.apache.commons.beanutils.converters.DateConverter;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * @author Serge Pruteanu
@@ -42,4 +46,20 @@ public abstract class Util {
         convertUtilsBean.register(dateConverter, Date.class);
         return new BeanUtilsBean(convertUtilsBean);
     }
+
+    public static <V> Map<Pattern, V> getPatternObjectMap(Map<String, V> regExObjectMap) {
+        final Map<Pattern, V> patternObjectMap = new HashMap<Pattern, V>();
+        for (final Map.Entry<String, V> entry : regExObjectMap.entrySet()) {
+            patternObjectMap.put(Pattern.compile(lookupWildcards(entry.getKey()), Pattern.CASE_INSENSITIVE), entry.getValue());
+        }
+        return patternObjectMap;
+    }
+
+    static String lookupWildcards(String regExKey) {
+//        final StringBuilder stringBuilder = new StringBuilder();
+        regExKey = StringUtils.replace(regExKey, "?", "\\w");
+        regExKey = StringUtils.replace(regExKey, "*", "\\w*");
+        return regExKey;
+    }
+
 }

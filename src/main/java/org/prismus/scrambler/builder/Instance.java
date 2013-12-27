@@ -117,7 +117,7 @@ public class Instance<T> extends Constant<T> {
     }
 
     public Instance matchProperties(Map<String, Object> properties, Map<String, Object> regExPropertyMap) {
-        final Map<Pattern, Object> patternObjectMap = getPatternObjectMap(regExPropertyMap);
+        final Map<Pattern, Object> patternObjectMap = Util.getPatternObjectMap(regExPropertyMap);
         for (final Map.Entry<String, Object> entry : properties.entrySet()) {
             final String propertyName = entry.getKey();
             final Object value = entry.getValue();
@@ -147,14 +147,6 @@ public class Instance<T> extends Constant<T> {
             instance = match(name, value, null);
         }
         return instance;
-    }
-
-    Map<Pattern, Object> getPatternObjectMap(Map<String, Object> regExObjectMap) {
-        final Map<Pattern, Object> patternObjectMap = new HashMap<Pattern, Object>();
-        for (final Map.Entry<String, Object> entry : regExObjectMap.entrySet()) {
-            patternObjectMap.put(Pattern.compile(entry.getKey(), Pattern.CASE_INSENSITIVE), entry.getValue());
-        }
-        return patternObjectMap;
     }
 
     @SuppressWarnings({"unchecked"})
