@@ -29,7 +29,7 @@ public class Instance<T> extends Constant<T> {
     // todo externalize messages
     // todo review/get rid of (where possible) external library dependencies
     // todo add tests
-    // todo review usability all time :)
+    // todo review usability all the time :)
     public static final Map<String, Object> PERSISTENCE_PROPERTIES_MATCH_MAP = defaultPersistenceMatchMap();
 
     protected Map<String, Object> properties;
@@ -66,7 +66,7 @@ public class Instance<T> extends Constant<T> {
         for (final Map.Entry<String, Object> entry : properties.entrySet()) {
             Object value = entry.getValue();
             if (value instanceof Value) {
-                value = ((Value) value).value();
+                value = ((Value) value).next();
             }
             resultMap.put(entry.getKey(), value);
         }
@@ -106,7 +106,7 @@ public class Instance<T> extends Constant<T> {
         return resultMap;
     }
 
-    public T value() {
+    public T next() {
         final T instance = checkCreateInstance();
         processPropertyMap(instance);
         return instance;

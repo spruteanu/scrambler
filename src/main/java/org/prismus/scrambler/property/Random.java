@@ -28,6 +28,22 @@ public class Random {
         return of((Class<T>) minimum.getClass(), minimum, maximum);
     }
 
+    public static RandomString of(String value) {
+        return new RandomString(value);
+    }
+
+    public static RandomString of(String value, Integer count) {
+        return new RandomString(value, count);
+    }
+
+    public static RandomString of(String value, Integer count, boolean includeLetters) {
+        return new RandomString(value, count, includeLetters);
+    }
+
+    public static RandomString of(String value, Integer count, boolean includeLetters, boolean includeNumbers) {
+        return new RandomString(value, count, includeLetters, includeNumbers);
+    }
+
     @SuppressWarnings({"unchecked"})
     public static <T> Value<T> of(Class<T> clazzType, T minimum, T maximum) {
         final Value<T> value = of(clazzType, null);

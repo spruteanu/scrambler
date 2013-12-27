@@ -23,10 +23,14 @@ public class RandomDate extends AbstractRandomRange<Date> {
         super(minimum, maximum);
     }
 
-    public Date value() {
-        Date value = super.value();
+    public RandomDate(Date value, Date minimum, Date maximum) {
+        super(value, minimum, maximum);
+    }
+
+    public Date next() {
+        Date value = super.next();
         if (minimum != null && maximum != null) {
-            value = new Date(new RandomLong().between(minimum.getTime(), maximum.getTime()).value());
+            value = new Date(new RandomLong().between(minimum.getTime(), maximum.getTime()).next());
         } else {
             if (value == null) {
                 value = new Timestamp(System.currentTimeMillis());
@@ -36,7 +40,7 @@ public class RandomDate extends AbstractRandomRange<Date> {
                     .between(
                             minDate.getTime(),
                             DateUtils.addDays(minDate, 1).getTime()
-                    ).value()
+                    ).next()
             );
         }
         return value;

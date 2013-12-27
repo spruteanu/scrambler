@@ -21,8 +21,8 @@ public class IncrementalFloat extends Constant<Float> {
     }
 
     @Override
-    public Float value() {
-        Float value = super.value();
+    public Float next() {
+        Float value = super.next();
         value = value != null ? value + step : step;
         setValue(value);
         return value;

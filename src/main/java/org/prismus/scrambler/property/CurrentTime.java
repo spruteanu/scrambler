@@ -11,7 +11,7 @@ public class CurrentTime extends Constant<Date> {
         super();
     }
 
-    public Date value() {
+    public Date next() {
         return new Timestamp(System.currentTimeMillis());
     }
 

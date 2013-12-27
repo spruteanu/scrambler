@@ -15,7 +15,7 @@ public class RandomBoolean extends Constant<Boolean> {
     }
 
     @Override
-    public Boolean value() {
+    public Boolean next() {
         return new Random().nextBoolean();
     }
 }

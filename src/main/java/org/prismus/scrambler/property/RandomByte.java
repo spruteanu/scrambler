@@ -18,14 +18,19 @@ public class RandomByte extends AbstractRandomRange<Byte> {
         usingDefaults(Integer.valueOf(0).byteValue(), Byte.MAX_VALUE);
     }
 
+    public RandomByte(Byte value, Byte minimum, Byte maximum) {
+        super(value, minimum, maximum);
+        usingDefaults(Integer.valueOf(0).byteValue(), Byte.MAX_VALUE);
+    }
+
     @Override
-    public Byte value() {
-        final Byte value = super.value();
+    public Byte next() {
+        final Byte value = super.next();
         return new RandomInteger(value != null ? value.intValue() : null)
                 .usingDefaults(defaultMinimum.intValue(), defaultMaximum.intValue())
                 .between(
                         minimum != null ? minimum.intValue() : null,
                         maximum != null ? maximum.intValue() : null
-                ).value().byteValue();
+                ).next().byteValue();
     }
 }

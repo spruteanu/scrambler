@@ -25,8 +25,8 @@ public class IncrementalLong extends Constant<Long> {
     }
 
     @Override
-    public Long value() {
-        Long value = super.value();
+    public Long next() {
+        Long value = super.next();
         value = value != null ? value + step : step;
         setValue(value);
         return value;

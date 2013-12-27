@@ -37,18 +37,18 @@ public class ValueCollection<V, T extends Collection<V>> extends Constant<T> {
     }
 
     @Override
-    public T value() {
-        final T value = super.value();
+    public T next() {
+        final T value = super.next();
         validateArguments(value, this.value);
         int count = this.count;
         if (randomCount) {
             if (count == 0) {
                 count = 10;
             }
-            count = new RandomInteger(count).between(0, count).value();
+            count = new RandomInteger(count).between(0, count).next();
         }
         for (int i = 0; i < count; i++) {
-            value.add(this.value.value());
+            value.add(this.value.next());
         }
         return value;
     }

@@ -35,7 +35,7 @@ public class DecoratorInstance<T> extends Constant<T> {
     }
 
     @Override
-    public T value() {
-        return instance.value();
+    public T next() {
+        return instance.next();
     }
 }

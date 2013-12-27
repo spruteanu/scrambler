@@ -1,8 +1,7 @@
 package org.prismus.scrambler.builder;
 
-import org.prismus.scrambler.Value;
-
 import java.beans.PropertyDescriptor;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -53,11 +52,11 @@ public class IntrospectionInstance<T> extends DecoratorInstance<T> {
         return propertyDescriptorMap;
     }
 
-    public IntrospectionInstance<T> property(Value value, Value... properties) {
-        throw new UnsupportedOperationException("The property method is not supported for given implementation");
+    public IntrospectionInstance<T> constant(Object value) {
+        throw new UnsupportedOperationException("The matchProperties method is not supported for given implementation");
     }
 
-    public IntrospectionInstance<T> values(String property, Object value) {
+    public IntrospectionInstance<T> constant(String property, Object value) {
         throw new UnsupportedOperationException("The matchProperties method is not supported for given implementation");
     }
 
@@ -65,7 +64,47 @@ public class IntrospectionInstance<T> extends DecoratorInstance<T> {
         throw new UnsupportedOperationException("The incremental method is not supported for given implementation");
     }
 
+    public IntrospectionInstance<T> incremental(Object value) {
+        throw new UnsupportedOperationException("The incremental method is not supported for given implementation");
+    }
+
+    public IntrospectionInstance<T> incremental(String property, Object value, Object step) {
+        throw new UnsupportedOperationException("The incremental method is not supported for given implementation");
+    }
+
+    public IntrospectionInstance<T> incremental(Object value, Object step) {
+        throw new UnsupportedOperationException("The incremental method is not supported for given implementation");
+    }
+
+    public IntrospectionInstance<T> incremental(String property, Date value, int step) {
+        throw new UnsupportedOperationException("The incremental method is not supported for given implementation");
+    }
+
+    public IntrospectionInstance<T> incremental(Date value, int step) {
+        throw new UnsupportedOperationException("The incremental method is not supported for given implementation");
+    }
+
+    public IntrospectionInstance<T> incremental(String property, Date value, int step, int calendarField) {
+        throw new UnsupportedOperationException("The incremental method is not supported for given implementation");
+    }
+
+    public IntrospectionInstance<T> incremental(Date value, int step, int calendarField) {
+        throw new UnsupportedOperationException("The incremental method is not supported for given implementation");
+    }
+
+    public IntrospectionInstance<T> incremental(String value, String pattern, Integer index) {
+        throw new UnsupportedOperationException("The incremental method is not supported for given implementation");
+    }
+
+    public IntrospectionInstance<T> incremental(String property, String value, String pattern, Integer index) {
+        throw new UnsupportedOperationException("The incremental method is not supported for given implementation");
+    }
+
     public IntrospectionInstance<T> random(String property, Object value) {
+        throw new UnsupportedOperationException("The matchProperties method is not supported for given implementation");
+    }
+
+    public IntrospectionInstance<T> random(Object value) {
         throw new UnsupportedOperationException("The matchProperties method is not supported for given implementation");
     }
 
@@ -73,15 +112,47 @@ public class IntrospectionInstance<T> extends DecoratorInstance<T> {
         throw new UnsupportedOperationException("The matchProperties method is not supported for given implementation");
     }
 
-    public IntrospectionInstance<T> values(String property, String value, String... propertyValues) {
+    public IntrospectionInstance<T> random(Object minimum, Object maximum) {
         throw new UnsupportedOperationException("The matchProperties method is not supported for given implementation");
     }
 
-    public IntrospectionInstance<T> incremental(String property, String value, String... propertyValues) {
-        throw new UnsupportedOperationException("The incremental method is not supported for given implementation");
+    public IntrospectionInstance<T> random(String property, Object value, Object minimum, Object maximum) {
+        throw new UnsupportedOperationException("The matchProperties method is not supported for given implementation");
     }
 
-    public IntrospectionInstance<T> random(String property, String value, String... propertyValues) {
+    public IntrospectionInstance<T> random(Object value, Object minimum, Object maximum) {
+        throw new UnsupportedOperationException("The matchProperties method is not supported for given implementation");
+    }
+
+    public IntrospectionInstance<T> random(String property, String value) {
+        throw new UnsupportedOperationException("The matchProperties method is not supported for given implementation");
+    }
+
+    public IntrospectionInstance<T> random(String value) {
+        throw new UnsupportedOperationException("The matchProperties method is not supported for given implementation");
+    }
+
+    public IntrospectionInstance<T> random(String property, String value, Integer count) {
+        throw new UnsupportedOperationException("The matchProperties method is not supported for given implementation");
+    }
+
+    public IntrospectionInstance<T> random(String value, Integer count) {
+        throw new UnsupportedOperationException("The matchProperties method is not supported for given implementation");
+    }
+
+    public IntrospectionInstance<T> random(String property, String value, Integer count, boolean includeLetters) {
+        throw new UnsupportedOperationException("The matchProperties method is not supported for given implementation");
+    }
+
+    public IntrospectionInstance<T> random(String value, Integer count, boolean includeLetters) {
+        throw new UnsupportedOperationException("The matchProperties method is not supported for given implementation");
+    }
+
+    public IntrospectionInstance<T> random(String value, Integer count, boolean includeLetters, boolean includeNumbers) {
+        throw new UnsupportedOperationException("The matchProperties method is not supported for given implementation");
+    }
+
+    public IntrospectionInstance<T> random(String property, String value, Integer count, boolean includeLetters, boolean includeNumbers) {
         throw new UnsupportedOperationException("The matchProperties method is not supported for given implementation");
     }
 
@@ -92,4 +163,5 @@ public class IntrospectionInstance<T> extends DecoratorInstance<T> {
     public IntrospectionInstance<T> incrementalAll() {
         throw new UnsupportedOperationException("The incrementalAll method is not supported for given implementation");
     }
+
 }

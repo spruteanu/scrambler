@@ -8,5 +8,5 @@ import java.io.Serializable;
  * @author Serge Pruteanu
  */
 public interface Value<T> extends Serializable, Cloneable {
-    T value();
+    T next();
 }

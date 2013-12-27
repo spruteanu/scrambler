@@ -16,14 +16,18 @@ public class RandomInteger extends AbstractRandomRange<Integer> {
     }
 
     public RandomInteger(Integer minimum, Integer maximum) {
-        super(minimum, maximum);
+        this(0, minimum, maximum);
+    }
+
+    public RandomInteger(Integer value, Integer minimum, Integer maximum) {
+        super(value, minimum, maximum);
         usingDefaults(0, Integer.MAX_VALUE);
     }
 
     @Override
-    public Integer value() {
+    public Integer next() {
         checkBoundaries();
-        Integer value = super.value();
+        Integer value = super.next();
         final Random random = new Random();
         if (minimum != null && maximum != null) {
             value = random.nextInt(maximum - minimum) + 1;

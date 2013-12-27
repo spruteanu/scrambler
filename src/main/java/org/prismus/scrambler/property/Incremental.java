@@ -24,6 +24,30 @@ public class Incremental {
         return of((Class<T>) value.getClass(), value, step);
     }
 
+    public static IncrementalDate of(Date value, int step) {
+        return new IncrementalDate(value, step);
+    }
+
+    public static IncrementalDate of(Date value, int step, int calendarField) {
+        return new IncrementalDate(value, step, calendarField);
+    }
+
+    public static IncrementalString of(String value) {
+        return new IncrementalString(value);
+    }
+
+    public static IncrementalString of(String value, String pattern) {
+        return new IncrementalString(value, pattern);
+    }
+
+    public static IncrementalString of(String value, Integer index) {
+        return new IncrementalString(value, index);
+    }
+
+    public static IncrementalString of(String value, String pattern, Integer index) {
+        return new IncrementalString(value, pattern, index);
+    }
+
     @SuppressWarnings({"unchecked"})
     public static <T> Value<T> of(Class<T> clazzType, T defaultValue, Number step) {
         if (propertyTypeMap.containsKey(clazzType)) {

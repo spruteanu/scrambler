@@ -20,8 +20,13 @@ public class RandomLong extends AbstractRandomRange<Long> {
         usingDefaults(0L, Long.MAX_VALUE);
     }
 
+    public RandomLong(Long value, Long minimum, Long maximum) {
+        super(value, minimum, maximum);
+        usingDefaults(0L, Long.MAX_VALUE);
+    }
+
     @Override
-    public Long value() {
+    public Long next() {
         checkBoundaries();
         final Long value;
         final Random random = new Random();

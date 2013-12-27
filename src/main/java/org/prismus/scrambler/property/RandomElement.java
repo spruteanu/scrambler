@@ -22,7 +22,7 @@ public class RandomElement<T> extends Constant<T> {
         this.values = values;
     }
 
-    public T value() {
+    public T next() {
         return values.get(Math.abs(new Random().nextInt(values.size())));
     }
 }

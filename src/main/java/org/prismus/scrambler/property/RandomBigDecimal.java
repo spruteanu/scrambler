@@ -20,16 +20,21 @@ public class RandomBigDecimal extends AbstractRandomRange<BigDecimal> {
         usingDefaults(BigDecimal.valueOf(0), BigDecimal.valueOf(Double.MAX_VALUE));
     }
 
+    public RandomBigDecimal(BigDecimal value, BigDecimal minimum, BigDecimal maximum) {
+        super(value,minimum, maximum);
+        usingDefaults(BigDecimal.valueOf(0), BigDecimal.valueOf(Double.MAX_VALUE));
+    }
+
     @Override
-    public BigDecimal value() {
-        final BigDecimal value = super.value();
+    public BigDecimal next() {
+        final BigDecimal value = super.next();
         return BigDecimal.valueOf(
                 new RandomDouble(value != null ? value.doubleValue() : null)
                         .usingDefaults(defaultMinimum.doubleValue(), defaultMaximum.doubleValue())
                         .between(
                                 minimum != null ? minimum.doubleValue() : null,
                                 maximum != null ? maximum.doubleValue() : null
-                        ).value()
+                        ).next()
         );
     }
 }

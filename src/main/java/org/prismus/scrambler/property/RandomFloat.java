@@ -18,14 +18,19 @@ public class RandomFloat extends AbstractRandomRange<Float> {
         usingDefaults(0F, Float.MAX_VALUE);
     }
 
+    public RandomFloat(Float value, Float minimum, Float maximum) {
+        super(value, minimum, maximum);
+        usingDefaults(0F, Float.MAX_VALUE);
+    }
+
     @Override
-    public Float value() {
-        final Float value = super.value();
+    public Float next() {
+        final Float value = super.next();
         return new RandomDouble(value != null ? value.doubleValue() : null)
                 .usingDefaults(defaultMinimum.doubleValue(), defaultMaximum.doubleValue())
                 .between(
                         minimum != null ? minimum.doubleValue() : null,
                         maximum != null ? maximum.doubleValue() : null
-                ).value().floatValue();
+                ).next().floatValue();
     }
 }

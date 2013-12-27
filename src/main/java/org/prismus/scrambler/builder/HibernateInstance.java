@@ -37,9 +37,9 @@ public class HibernateInstance extends DecoratorInstance<Map> {
     }
 
     @SuppressWarnings({"unchecked"})
-    public Map<String, Object> value() {
+    public Map<String, Object> next() {
         randomRequired();
-        return (Map<String, Object>) super.value();
+        return (Map<String, Object>) super.next();
     }
 
     public HibernateInstance random(String... properties) {

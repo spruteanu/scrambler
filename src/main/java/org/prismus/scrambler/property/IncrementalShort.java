@@ -25,8 +25,8 @@ public class IncrementalShort extends Constant<Short> {
     }
 
     @Override
-    public Short value() {
-        Short value = super.value();
+    public Short next() {
+        Short value = super.next();
         value = value != null ? Integer.valueOf(value + step).shortValue() : step;
         setValue(value);
         return value;

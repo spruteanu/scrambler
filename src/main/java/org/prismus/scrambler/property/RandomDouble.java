@@ -20,10 +20,15 @@ public class RandomDouble extends AbstractRandomRange<Double> {
         usingDefaults(0.0, Double.MAX_VALUE);
     }
 
+    public RandomDouble(Double value, Double minimum, Double maximum) {
+        super(value, minimum, maximum);
+        usingDefaults(0.0, Double.MAX_VALUE);
+    }
+
     @Override
-    public Double value() {
+    public Double next() {
         checkBoundaries();
-        Double value = super.value();
+        Double value = super.next();
         final Random random = new Random();
         if (minimum != null && maximum != null) {
             double interval = Math.abs(maximum - minimum);

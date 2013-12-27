@@ -28,7 +28,7 @@ public class Constant<T> implements Value<T>, Cloneable {
         return value;
     }
 
-    public T value() {
+    public T next() {
         return value;
     }
 

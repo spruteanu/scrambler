@@ -18,14 +18,19 @@ public class RandomShort extends AbstractRandomRange<Short> {
         usingDefaults(Integer.valueOf(0).shortValue(), Short.MAX_VALUE);
     }
 
+    public RandomShort(Short value, Short minimum, Short maximum) {
+        super(value, minimum, maximum);
+        usingDefaults(Integer.valueOf(0).shortValue(), Short.MAX_VALUE);
+    }
+
     @Override
-    public Short value() {
-        final Short value = super.value();
+    public Short next() {
+        final Short value = super.next();
         return new RandomInteger(value != null ? value.intValue() : null)
                 .usingDefaults(defaultMinimum.intValue(), defaultMaximum.intValue())
                 .between(
                         minimum != null ? minimum.intValue() : null,
                         maximum != null ? maximum.intValue() : null
-                ).value().shortValue();
+                ).next().shortValue();
     }
 }

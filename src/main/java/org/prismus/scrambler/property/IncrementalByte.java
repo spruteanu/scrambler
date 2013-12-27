@@ -25,8 +25,8 @@ public class IncrementalByte extends Constant<Byte> {
     }
 
     @Override
-    public Byte value() {
-        Byte value = super.value();
+    public Byte next() {
+        Byte value = super.next();
         value = value != null ? Integer.valueOf(value + step).byteValue() : step;
         setValue(value);
         return value;

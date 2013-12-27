@@ -25,8 +25,8 @@ public class IncrementalInteger extends Constant<Integer> {
     }
 
     @Override
-    public Integer value() {
-        Integer value = super.value();
+    public Integer next() {
+        Integer value = super.next();
         value = value != null ? value + step : step;
         setValue(value);
         return value;

@@ -43,10 +43,10 @@ public class ValueContainer extends Constant<Collection> {
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public Collection value() {
-        final Collection value = super.value();
+    public Collection next() {
+        final Collection value = super.next();
         for (final Value property : propertyCollection) {
-            value.add(property.value());
+            value.add(property.next());
         }
         return value;
     }

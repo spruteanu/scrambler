@@ -66,8 +66,8 @@ public class SpringFactory implements Value {
         return this;
     }
 
-    public Object value() {
-        return getValue().value();
+    public Object next() {
+        return getValue().next();
     }
 
     public Value getValue() {

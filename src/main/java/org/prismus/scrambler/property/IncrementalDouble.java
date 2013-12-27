@@ -25,8 +25,8 @@ public class IncrementalDouble extends Constant<Double> {
     }
 
     @Override
-    public Double value() {
-        Double value = super.value();
+    public Double next() {
+        Double value = super.next();
         value = value != null ? value + step : step;
         setValue(value);
         return value;
