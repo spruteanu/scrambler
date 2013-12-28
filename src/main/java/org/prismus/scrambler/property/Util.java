@@ -5,18 +5,17 @@ import org.apache.commons.beanutils.ConstructorUtils;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.commons.beanutils.MethodUtils;
 import org.apache.commons.beanutils.converters.DateConverter;
-import org.apache.commons.lang.StringUtils;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
  * @author Serge Pruteanu
  */
 public abstract class Util {
+
+    private static final Set<Character> PREFIXED_CHAR_SET = new HashSet<Character>(Arrays.asList('+', '(', ')', '^', '$', '.', '{', '}', '[', ']', '|', '\\'));
+
     @SuppressWarnings({"unchecked"})
     public static Object createInstance(Class clazzType,
                                         Object[] arguments,
@@ -50,16 +49,29 @@ public abstract class Util {
     public static <V> Map<Pattern, V> getPatternObjectMap(Map<String, V> regExObjectMap) {
         final Map<Pattern, V> patternObjectMap = new HashMap<Pattern, V>();
         for (final Map.Entry<String, V> entry : regExObjectMap.entrySet()) {
-            patternObjectMap.put(Pattern.compile(lookupWildcards(entry.getKey()), Pattern.CASE_INSENSITIVE), entry.getValue());
+            patternObjectMap.put(Pattern.compile(replaceWildcards(entry.getKey()), Pattern.CASE_INSENSITIVE), entry.getValue());
         }
         return patternObjectMap;
     }
 
-    static String lookupWildcards(String regExKey) {
-//        final StringBuilder stringBuilder = new StringBuilder();
-        regExKey = StringUtils.replace(regExKey, "?", "\\w");
-        regExKey = StringUtils.replace(regExKey, "*", "\\w*");
-        return regExKey;
+    public static String replaceWildcards(String wildcardPattern) {
+        final StringBuilder builder = new StringBuilder();
+        builder.append('^');
+        final int length = wildcardPattern.length();
+        for (int i = 0; i < length; ++i) {
+            final char ch = wildcardPattern.charAt(i);
+            if (ch == '*') {
+                builder.append(".*");
+            } else if (ch == '?') {
+                builder.append(".");
+            } else if (PREFIXED_CHAR_SET.contains(ch)) {
+                builder.append('\\').append(ch);
+            } else {
+                builder.append(ch);
+            }
+        }
+        builder.append('$');
+        return builder.toString();
     }
 
 }

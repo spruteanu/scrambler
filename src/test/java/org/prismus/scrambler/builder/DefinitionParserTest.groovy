@@ -11,7 +11,7 @@ class DefinitionParserTest extends Specification {
         final parser = new DefinitionParser()
         expect:
         parser != null
-//        parser.parse("random 'test*', 1L, 100L") != null
+        parser.parse("random 'test*', 1L, 100L") != null
         parser.parse("random 1, 100") != null
 
         parser.parse("random 1L, 100L") != null
