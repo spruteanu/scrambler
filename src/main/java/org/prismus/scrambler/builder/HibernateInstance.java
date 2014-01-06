@@ -1,6 +1,5 @@
 package org.prismus.scrambler.builder;
 
-import org.prismus.scrambler.property.Incremental;
 import org.hibernate.SessionFactory;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.EntityType;
@@ -46,7 +45,7 @@ public class HibernateInstance extends DecoratorInstance<Map> {
         final ClassMetadata classMetadata = sessionFactory.getClassMetadata(entityName);
         for (final String propertyName : properties) {
             final Type type = classMetadata.getPropertyType(propertyName);
-            instance.random(type.getReturnedClass());
+//            instance.random(type.getReturnedClass()); // todo Serge: fix me
         }
         return this;
     }
@@ -55,7 +54,7 @@ public class HibernateInstance extends DecoratorInstance<Map> {
         final ClassMetadata classMetadata = sessionFactory.getClassMetadata(entityName);
         for (final String propertyName : properties) {
             final Type type = classMetadata.getPropertyType(propertyName);
-            instance.incremental(type.getReturnedClass());
+//            instance.incremental(type.getReturnedClass()); // todo Serge: fix me
         }
         return this;
     }
@@ -88,9 +87,9 @@ public class HibernateInstance extends DecoratorInstance<Map> {
                     randomProperty(((EntityType) type));
                 } else {
                     if (type instanceof PrimitiveType) {
-                        instance.random(type.getReturnedClass(), ((PrimitiveType) type).getDefaultValue());
+//                        instance.random(type.getReturnedClass(), ((PrimitiveType) type).getDefaultValue()); // todo Serge: fix me
                     } else {
-                        instance.random(type.getReturnedClass());
+//                        instance.random(type.getReturnedClass()); // todo Serge: fix me
                     }
                 }
             }
@@ -99,7 +98,7 @@ public class HibernateInstance extends DecoratorInstance<Map> {
 
     void checkIdentifierSet() {
         final ClassMetadata classMetadata = sessionFactory.getClassMetadata(entityName);
-        if (!instance.properties.containsKey(classMetadata.getIdentifierPropertyName())) {
+        if (!instance.propertyValueMap.containsKey(classMetadata.getIdentifierPropertyName())) {
             throw new IllegalStateException(String.format(IDENTIFIER_NOT_DEFINED_MSG, classMetadata.getIdentifierPropertyName()));
         }
     }
@@ -108,8 +107,8 @@ public class HibernateInstance extends DecoratorInstance<Map> {
     void setMissingIdentifier() {
         final ClassMetadata classMetadata = sessionFactory.getClassMetadata(entityName);
         final String identifierPropertyName = classMetadata.getIdentifierPropertyName();
-        if (!instance.properties.containsKey(identifierPropertyName)) {
-            instance.addProperty(Incremental.of(classMetadata.getPropertyType(identifierPropertyName).getReturnedClass()));
+        if (!instance.propertyValueMap.containsKey(identifierPropertyName)) {
+//            instance.addProperty(Incremental.of(classMetadata.getPropertyType(identifierPropertyName).getReturnedClass())); // todo Serge: fix me
         }
     }
 

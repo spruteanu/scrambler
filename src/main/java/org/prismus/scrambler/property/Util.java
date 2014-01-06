@@ -3,7 +3,6 @@ package org.prismus.scrambler.property;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.ConstructorUtils;
 import org.apache.commons.beanutils.ConvertUtilsBean;
-import org.apache.commons.beanutils.MethodUtils;
 import org.apache.commons.beanutils.converters.DateConverter;
 
 import java.util.*;
@@ -14,6 +13,9 @@ import java.util.regex.Pattern;
  */
 public abstract class Util {
 
+    private static final String NOT_DEFINED_MSG = "not defined";
+    private static final String FAILED_CREATE_INSTANCE_MSG = "Failed to create instance of type: %s, arguments: %s, types: %s";
+
     private static final Set<Character> PREFIXED_CHAR_SET = new HashSet<Character>(Arrays.asList('+', '(', ')', '^', '$', '.', '{', '}', '[', ']', '|', '\\'));
 
     @SuppressWarnings({"unchecked"})
@@ -23,19 +25,14 @@ public abstract class Util {
         try {
             return ConstructorUtils.invokeConstructor(clazzType, arguments, classes);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Failed to create instance of type: %s, arguments: %s, types: %s", clazzType, Arrays.asList(arguments), Arrays.asList(classes)), e);
+            throw new RuntimeException(String.format(FAILED_CREATE_INSTANCE_MSG,
+                    clazzType, checkNotDefinedMessage(arguments), checkNotDefinedMessage(classes)
+            ), e);
         }
     }
 
-    public static void invokeMethod(Object targetObject,
-                                    String methodName,
-                                    Object[] objects,
-                                    Class[] classes) {
-        try {
-            MethodUtils.invokeMethod(targetObject, methodName, objects, classes);
-        } catch (Exception e) {
-            throw new RuntimeException(String.format("Failed to invoke %s method, arguments: %s", methodName, Arrays.asList(objects)), e);
-        }
+    private static Object checkNotDefinedMessage(Object[] arguments) {
+        return arguments != null ? Arrays.asList(arguments) : NOT_DEFINED_MSG;
     }
 
     public static BeanUtilsBean createBeanUtilsBean() {
