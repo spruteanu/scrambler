@@ -16,7 +16,7 @@ import java.util.Properties;
  *
  * @author Serge Pruteanu
  */
-public class DefinitionParser {
+public class ValueDefinitionParser {
     private Properties configurationProperties;
     private GroovyShell shell;
 
@@ -29,7 +29,7 @@ public class DefinitionParser {
 
     GroovyShell createGroovyShell() {
         final CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
-        compilerConfiguration.setScriptBaseClass(Definition.class.getName());
+        compilerConfiguration.setScriptBaseClass(ValueDefinition.class.getName());
 
         final ImportCustomizer importCustomizer = new ImportCustomizer();
         importCustomizer.addStarImports(Value.class.getPackage().getName());

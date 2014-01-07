@@ -14,9 +14,22 @@ import java.util.regex.Pattern;
 public abstract class Util {
 
     private static final String NOT_DEFINED_MSG = "not defined";
+    private static final String FAILED_CREATE_INSTANCE0_MSG = "Failed to create instance of type: %s, arguments: %s";
     private static final String FAILED_CREATE_INSTANCE_MSG = "Failed to create instance of type: %s, arguments: %s, types: %s";
 
     private static final Set<Character> PREFIXED_CHAR_SET = new HashSet<Character>(Arrays.asList('+', '(', ')', '^', '$', '.', '{', '}', '[', ']', '|', '\\'));
+
+    @SuppressWarnings({"unchecked"})
+    public static Object createInstance(Class clazzType,
+                                        Object[] arguments) {
+        try {
+            return ConstructorUtils.invokeConstructor(clazzType, arguments);
+        } catch (Exception e) {
+            throw new RuntimeException(String.format(FAILED_CREATE_INSTANCE0_MSG,
+                    clazzType, checkNotDefinedMessage(arguments)
+            ), e);
+        }
+    }
 
     @SuppressWarnings({"unchecked"})
     public static Object createInstance(Class clazzType,

@@ -62,7 +62,7 @@ public class Random {
             return (Value) Util.createInstance(
                     propertyTypeMap.get(clazzType),
                     new Object[]{defaultValue},
-                    new Class[]{String.class, clazzType}
+                    new Class[]{clazzType}
             );
         }
         throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s",

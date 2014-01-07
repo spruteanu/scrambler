@@ -24,6 +24,10 @@ public class Incremental {
         return of((Class<T>) value.getClass(), value, step);
     }
 
+    public static IncrementalDate of(Date value) {
+        return new IncrementalDate(value);
+    }
+
     public static IncrementalDate of(Date value, int step) {
         return new IncrementalDate(value, step);
     }
@@ -54,7 +58,7 @@ public class Incremental {
             return (Value<T>) Util.createInstance(
                     propertyTypeMap.get(clazzType),
                     new Object[]{defaultValue, step},
-                    new Class[]{String.class, clazzType, clazzType}
+                    new Class[]{clazzType, (step != null ? step.getClass() : clazzType)}
             );
         }
         throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s", clazzType, defaultValue));

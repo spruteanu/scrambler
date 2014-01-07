@@ -3,6 +3,7 @@ package org.prismus.scrambler.builder
 import org.prismus.scrambler.Value
 import org.prismus.scrambler.property.Constant
 import org.prismus.scrambler.property.IncrementalInteger
+import org.prismus.scrambler.property.IncrementalString
 import spock.lang.Specification
 
 /**
@@ -47,6 +48,31 @@ class InstanceTest extends Specification {
         expectedStep << [1, 3]
     }
 
-    // todo Serge: add tests for population
+    void 'test lookup property descriptors'() {
+        given:
+        final instance = new Instance<IncrementalString>(new IncrementalString())
 
+        and:
+        final propertyDescriptors = instance.lookupPropertyDescriptors(instance.value)
+
+        expect:
+        null != propertyDescriptors
+        !propertyDescriptors.containsKey('class')
+        propertyDescriptors.containsKey('pattern')
+        propertyDescriptors.containsKey('index')
+    }
+
+    void 'test populate instance with properties'() {
+        given:
+        final instance = new Instance<IncrementalInteger>(new IncrementalInteger())
+
+        and:
+        instance.populate(instance.value, [step: 3, value: 104])
+
+        expect:
+        3 == instance.value.step
+        104 == instance.value.value
+    }
+
+    // todo Serge: add end to end test
 }

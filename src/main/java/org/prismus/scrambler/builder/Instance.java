@@ -5,6 +5,7 @@ import org.prismus.scrambler.Value;
 import org.prismus.scrambler.property.Constant;
 import org.prismus.scrambler.property.Util;
 
+import java.beans.PropertyDescriptor;
 import java.util.*;
 
 /**
@@ -23,7 +24,7 @@ public class Instance<T> extends Constant<T> {
     // todo review/get rid of (where possible) external library dependencies
     // todo add tests
     // todo review usability all the time :)
-    private final Object valueType;
+    private Object valueType;
     protected List<Value> constructorValues;
     protected Map<String, Value> propertyValueMap;
     protected BeanUtilsBean beanUtilsBean;
@@ -32,15 +33,15 @@ public class Instance<T> extends Constant<T> {
         this((T)null);
     }
 
-    public Instance(String instanceType) {
+    public Instance(String valueType) {
         super(null);
-        valueType = instanceType;
+        this.valueType = valueType;
         initialize();
     }
 
-    public Instance(Class instanceType) {
+    public Instance(Class valueType) {
         super(null);
-        valueType = instanceType;
+        this.valueType = valueType;
         initialize();
     }
 
@@ -54,6 +55,11 @@ public class Instance<T> extends Constant<T> {
         constructorValues = new ArrayList<Value>();
         propertyValueMap = new LinkedHashMap<String, Value>();
         beanUtilsBean = Util.createBeanUtilsBean();
+    }
+
+    public Instance<T> usingValueType(Object valueType) {
+        this.valueType = valueType;
+        return this;
     }
 
     public void setPropertyValueMap(Map<String, Value> propertyValueMap) {
@@ -96,6 +102,23 @@ public class Instance<T> extends Constant<T> {
         } catch (Exception e) {
             throw new RuntimeException(String.format(FAILED_SET_PROPERTIES_MSG, instance, properties));
         }
+    }
+
+    Map<String, PropertyDescriptor> lookupPropertyDescriptors(Object instanceType) {
+        final PropertyDescriptor[] propertyDescriptors;
+        if (instanceType instanceof Class) {
+            propertyDescriptors = beanUtilsBean.getPropertyUtils().getPropertyDescriptors(((Class) instanceType));
+        } else {
+            propertyDescriptors = beanUtilsBean.getPropertyUtils().getPropertyDescriptors(instanceType);
+        }
+        final Map<String, PropertyDescriptor> propertyDescriptorMap = new LinkedHashMap<String, PropertyDescriptor>();
+        if (propertyDescriptors != null) {
+            for (final PropertyDescriptor propertyDescriptor : propertyDescriptors) {
+                propertyDescriptorMap.put(propertyDescriptor.getName(), propertyDescriptor);
+            }
+            propertyDescriptorMap.remove("class");
+        }
+        return propertyDescriptorMap;
     }
 
     @SuppressWarnings({"unchecked"})

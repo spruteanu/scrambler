@@ -25,4 +25,20 @@ public class RegexPredicate<V> implements ValuePredicate<String> {
         this.pattern = Pattern.compile(Util.replaceWildcards(wildcardPattern), Pattern.CASE_INSENSITIVE);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        RegexPredicate that = (RegexPredicate) o;
+        return pattern.pattern().equals(that.pattern.pattern());
+    }
+
+    @Override
+    public int hashCode() {
+        return pattern.pattern().hashCode();
+    }
 }
