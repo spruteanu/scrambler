@@ -10,7 +10,7 @@
     <properties>
         <gmaven.version>1.5</gmaven.version>
         <gmaven.provider.selection>2.0</gmaven.provider.selection>
-        <groovy.version>2.1.2</groovy.version>
+        <groovy.version>2.2.1</groovy.version>
     </properties>
 
     <dependencies>

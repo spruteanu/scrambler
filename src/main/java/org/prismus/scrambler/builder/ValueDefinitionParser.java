@@ -3,12 +3,17 @@ package org.prismus.scrambler.builder;
 import groovy.lang.GroovyShell;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
+import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.prismus.scrambler.Value;
 import org.prismus.scrambler.builder.meta.EntityMeta;
 import org.prismus.scrambler.property.Constant;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.net.URL;
 import java.util.Properties;
 
 /**
@@ -20,11 +25,38 @@ public class ValueDefinitionParser {
     private Properties configurationProperties;
     private GroovyShell shell;
 
-    public Object parse(String definitionText) {
+    public ValueDefinition parseText(String definitionText) {
         if (shell == null) {
             shell = createGroovyShell();
         }
-        return shell.evaluate(definitionText);
+        return (ValueDefinition) shell.evaluate(definitionText + "\n    return this");
+    }
+
+    public ValueDefinition parse(String resource) throws IOException {
+        final URL url = this.getClass().getResource(resource);
+        if (url == null) {
+            throw new IllegalArgumentException(String.format("Not found resource for: %s", resource));
+        }
+        return parseText(ResourceGroovyMethods.getText(url));
+    }
+
+    public ValueDefinition parse(URL resource) throws IOException {
+        if (resource == null) {
+            throw new IllegalArgumentException("Null resource provided");
+        }
+        return parseText(ResourceGroovyMethods.getText(resource));
+    }
+
+    public ValueDefinition parse(File file) throws IOException {
+        return parseText(ResourceGroovyMethods.getText(file));
+    }
+
+    public ValueDefinition parse(InputStream inputStream) throws IOException {
+        return parseText(IOGroovyMethods.getText(inputStream));
+    }
+
+    public ValueDefinition parse(Reader reader) throws IOException {
+        return parseText(IOGroovyMethods.getText(reader));
     }
 
     GroovyShell createGroovyShell() {

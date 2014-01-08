@@ -7,49 +7,61 @@ import spock.lang.Specification
  */
 class ValueDefinitionParserTest extends Specification {
 
-    void test_parse() {
+    void test_parseText() {
         given:
         final parser = new ValueDefinitionParser()
 
         expect:
-        parser != null
+        parser.parseText("random 1, 100").typeValueMap.size() > 0
+        parser.parseText("random 1L, 100L").typeValueMap.size() > 0
+        parser.parseText("random new Date()").typeValueMap.size() > 0
+        parser.parseText("random('some template string', 100, true, false)").typeValueMap.size() > 0
 
-        parser.parse("random 1, 100") != null
-        parser.parse("random 1L, 100L") != null
-        parser.parse("random new Date()") != null
-        parser.parse("random('some template string', 100, true, false)") != null
+        parser.parseText("random([1, 2, 3])").typeValueMap.size() > 0
 
-        parser.parse("random([1, 2, 3])") != null
+//        parser.parseText("RandomInteger 1, 100").typeValueMap.size() > 0 // todo Serge: ??? should I support this syntax???
+//        parser.parseText("RandomLong 1, 100").typeValueMap.size() > 0
+//        parser.parseText("RandomString('some template string', 100, true, false)").typeValueMap.size() > 0
 
-        parser.parse("RandomInteger 1, 100") != null // todo Serge: ??? should I support this syntax???
-        parser.parse("RandomLong 1, 100") != null
-        parser.parse("RandomString('some template string', 100, true, false)") != null
+        parser.parseText("of(new RegexPredicate(pattern: ~/\\w+Sid/), new RandomInteger(1, 100))").typeValueMap.size() > 0
+        parser.parseText("of(new RegexPredicate('*Sid'), new RandomInteger(1, 100))").typeValueMap.size() > 0
 
-        parser.parse("new RandomInteger(1, 100)") != null
-        parser.parse("new RandomLong(1, 100)") != null
-        parser.parse("new RandomString('some template string', 100, true, false)") != null
+        parser.parseText("incremental 1.0").typeValueMap.size() > 0
+        parser.parseText("incremental 1, 100").typeValueMap.size() > 0
+        parser.parseText("incremental 1L, 100L").typeValueMap.size() > 0
 
-        parser.parse("incremental 1.0") != null
-        parser.parse("incremental 1, 100") != null
-        parser.parse("incremental 1L, 100L") != null
+        parser.parseText("incremental new Date()").typeValueMap.size() > 0
+        parser.parseText("incremental new Date(), 2").typeValueMap.size() > 0
+        parser.parseText("incremental new Date(), 1, Calendar.HOUR").typeValueMap.size() > 0
 
-        parser.parse("incremental new Date()") != null
-        parser.parse("incremental new Date(), 2") != null
-        parser.parse("incremental new Date(), 1, Calendar.HOUR") != null
+        parser.parseText("incremental('some template string', 4)").typeValueMap.size() > 0
+        parser.parseText("incremental('some template string', 'some%d')").typeValueMap.size() > 0
+        parser.parseText("incremental('some template string', 'some%d', 12)").typeValueMap.size() > 0
 
-        parser.parse("incremental('some template string', 4)") != null
-        parser.parse("incremental('some template string', 'some%d')") != null
-        parser.parse("incremental('some template string', 'some%d', 12)") != null
+        parser.parseText("constant 1.0").typeValueMap.size() > 0
+        parser.parseText("constant 1").typeValueMap.size() > 0
+        parser.parseText("constant 1L").typeValueMap.size() > 0
+        parser.parseText("constant new Date()").typeValueMap.size() > 0
+        parser.parseText("constant 'some template string'").typeValueMap.size() > 0
+        parser.parseText("constant new Object()").typeValueMap.size() > 0
 
-        parser.parse("constant 1.0") != null
-        parser.parse("constant 1") != null
-        parser.parse("constant 1L") != null
-        parser.parse("constant new Date()") != null
-        parser.parse("constant 'some template string'") != null
-        parser.parse("constant new Object()") != null
+        parser.parseText("collection(new RandomInteger(1, 100), new ArrayList(1024))").typeValueMap.size() > 0
+        parser.parseText("collection(new RandomString('some message', 45), new ArrayList(1024), 1024)").typeValueMap.size() > 0
 
-        parser.parse("collection(new RandomInteger(1, 100), new ArrayList(1024))") != null
-        parser.parse("collection(new RandomString('some message', 45), new ArrayList(1024), 1024)") != null
+        parser.parseText("""
+random 1, 100
+random([1, 2, 3])
+incremental new Date(), 1, Calendar.HOUR
+constant 'some template string'
+""").typeValueMap.size() > 0
+    }
+
+    void 'test parse'() {
+        given:
+        def parser = new ValueDefinitionParser()
+
+        expect:
+        parser.parse('/test-vd.groovy').typeValueMap.size() > 0
     }
 
 }

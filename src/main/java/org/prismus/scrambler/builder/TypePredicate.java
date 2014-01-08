@@ -5,8 +5,15 @@ package org.prismus.scrambler.builder;
  *
  * @author Serge Pruteanu
  */
-public class TypePredicate<V> implements ValuePredicate<Class> {
+public class TypePredicate implements ValuePredicate<Class> {
     private Class type;
+
+    public TypePredicate() {
+    }
+
+    public TypePredicate(Class type) {
+        this.type = type;
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -16,6 +23,11 @@ public class TypePredicate<V> implements ValuePredicate<Class> {
 
     public void setType(Class type) {
         this.type = type;
+    }
+
+    public TypePredicate withType(Class type) {
+        this.type = type;
+        return this;
     }
 
     public Class getType() {
@@ -37,6 +49,10 @@ public class TypePredicate<V> implements ValuePredicate<Class> {
     @Override
     public int hashCode() {
         return type.hashCode();
+    }
+
+    public static TypePredicate of(Class type) {
+        return new TypePredicate(type);
     }
 
 }

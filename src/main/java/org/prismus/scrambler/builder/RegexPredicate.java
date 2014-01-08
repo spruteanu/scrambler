@@ -12,6 +12,13 @@ import java.util.regex.Pattern;
 public class RegexPredicate<V> implements ValuePredicate<String> {
     private Pattern pattern;
 
+    public RegexPredicate() {
+    }
+
+    public RegexPredicate(String wildcardPattern) {
+        setPattern(wildcardPattern);
+    }
+
     @Override
     public boolean apply(String value) {
         return pattern.matcher(value).matches();
@@ -19,6 +26,11 @@ public class RegexPredicate<V> implements ValuePredicate<String> {
 
     public void setPattern(Pattern pattern) {
         this.pattern = pattern;
+    }
+
+    public RegexPredicate<V> withPattern(Pattern pattern) {
+        this.pattern = pattern;
+        return this;
     }
 
     public void setPattern(String wildcardPattern) {
@@ -41,4 +53,9 @@ public class RegexPredicate<V> implements ValuePredicate<String> {
     public int hashCode() {
         return pattern.pattern().hashCode();
     }
+
+    public static <V> RegexPredicate<V> of(String wildcardPattern) {
+        return new RegexPredicate<V>(wildcardPattern);
+    }
+
 }
