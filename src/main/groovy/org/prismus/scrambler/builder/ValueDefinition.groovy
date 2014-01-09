@@ -19,15 +19,15 @@ class ValueDefinition extends Script {
         return this
     }
 
-//    def methodMissing(String name, def args) {
-////        Util.createInstance(Class.forName(name), args as Object[])
-////        definitionMap.put(name, args)
-//        return this
-//    }
-
-    protected static void checkNullValue(value) {
+    protected static void checkNullValue(Object value) {
         if (value == null) {
             throw new IllegalArgumentException("Value can't be null")
+        }
+    }
+
+    protected static void checkEmpty(String value) {
+        if (!value) {
+            throw new IllegalArgumentException("Value can't be null or empty")
         }
     }
 
@@ -43,126 +43,224 @@ class ValueDefinition extends Script {
         }
     }
 
+    protected static RegexPredicate createPropertyPredicate(String propertyName) {
+        return new RegexPredicate(propertyName)
+    }
+
+    protected static RegexPredicate createTypePredicate(String typeName) {
+        return new TypePredicate(Class.forName(typeName))
+    }
+
+    protected static Number getNotNullValue(Number minimum, Number maximum) {
+        Object value = minimum
+        if (value == null) {
+            value = maximum
+        }
+        return value
+    }
+
     ValueDefinition constant(Object value) {
         checkNullValue(value)
-        final val = new Constant(value)
-        typeValueMap.put(new TypePredicate(type: value.class), val)
+        typeValueMap.put(new TypePredicate(type: value.class), new Constant(value))
+        return this
+    }
+
+    ValueDefinition constant(ValuePredicate propertyPredicate, Object value) {
+        checkNullValue(value)
+        propertyValueMap.put(propertyPredicate, new Constant(value))
         return this
     }
 
     ValueDefinition incremental(Number value) {
         checkNullValue(value)
-        final val = Incremental.of(value)
-        typeValueMap.put(new TypePredicate(type: value.class), val)
+        typeValueMap.put(new TypePredicate(type: value.class), Incremental.of(value))
+        return this
+    }
+
+    ValueDefinition incremental(ValuePredicate propertyPredicate, Number value) {
+        checkNullValue(value)
+        propertyValueMap.put(propertyPredicate, Incremental.of(value))
         return this
     }
 
     ValueDefinition incremental(String value) {
         checkNullValue(value)
-        final val = Incremental.of(value)
-        typeValueMap.put(new TypePredicate(type: value.class), val)
+        typeValueMap.put(new TypePredicate(type: value.class), Incremental.of(value))
+        return this
+    }
+
+    ValueDefinition incremental(ValuePredicate propertyPredicate, String value) {
+        checkNullValue(value)
+        propertyValueMap.put(propertyPredicate, Incremental.of(value))
         return this
     }
 
     ValueDefinition incremental(Date value) {
         checkNullValue(value)
-        final val = Incremental.of(value)
-        typeValueMap.put(new TypePredicate(type: value.class), val)
+        typeValueMap.put(new TypePredicate(type: value.class), Incremental.of(value))
+        return this
+    }
+
+    ValueDefinition incremental(ValuePredicate propertyPredicate, Date value) {
+        checkNullValue(value)
+        propertyValueMap.put(propertyPredicate, Incremental.of(value))
         return this
     }
 
     ValueDefinition incremental(Number value, Number step) {
         checkNullValue(value)
-        final val = Incremental.of(value, step)
-        typeValueMap.put(new TypePredicate(type: value.class), val)
+        typeValueMap.put(new TypePredicate(type: value.class), Incremental.of(value, step))
+        return this
+    }
+
+    ValueDefinition incremental(ValuePredicate propertyPredicate, Number value, Number step) {
+        checkNullValue(value)
+        propertyValueMap.put(propertyPredicate, Incremental.of(value, step))
         return this
     }
 
     ValueDefinition incremental(String value, int index) {
         checkNullValue(value)
-        final val = Incremental.of(value, index)
-        typeValueMap.put(new TypePredicate(type: value.class), val)
+        typeValueMap.put(new TypePredicate(type: value.class), Incremental.of(value, index))
+        return this
+    }
+
+    ValueDefinition incremental(ValuePredicate propertyPredicate, String value, int index) {
+        checkNullValue(value)
+        propertyValueMap.put(propertyPredicate, Incremental.of(value, index))
         return this
     }
 
     ValueDefinition incremental(String value, String pattern) {
         checkNullValue(value)
-        final val = Incremental.of(value, pattern)
-        typeValueMap.put(new TypePredicate(type: value.class), val)
+        typeValueMap.put(new TypePredicate(type: value.class), Incremental.of(value, pattern))
+        return this
+    }
+
+    ValueDefinition incremental(ValuePredicate propertyPredicate, String value, String pattern) {
+        checkNullValue(value)
+        propertyValueMap.put(propertyPredicate, Incremental.of(value, pattern))
         return this
     }
 
     ValueDefinition incremental(Date value, int step) {
         checkNullValue(value)
-        final val = Incremental.of(value, step)
-        typeValueMap.put(new TypePredicate(type: value.class), val)
+        typeValueMap.put(new TypePredicate(type: value.class), Incremental.of(value, step))
+        return this
+    }
+
+    ValueDefinition incremental(ValuePredicate propertyPredicate, Date value, int step) {
+        checkNullValue(value)
+        propertyValueMap.put(propertyPredicate, Incremental.of(value, step))
         return this
     }
 
     ValueDefinition incremental(Date value, int step, int calendarField) {
         checkNullValue(value)
-        final val = Incremental.of(value, step, calendarField)
-        typeValueMap.put(new TypePredicate(type: value.class), val)
+        typeValueMap.put(new TypePredicate(type: value.class), Incremental.of(value, step, calendarField))
+        return this
+    }
+
+    ValueDefinition incremental(ValuePredicate propertyPredicate, Date value, int step, int calendarField) {
+        checkNullValue(value)
+        propertyValueMap.put(propertyPredicate, Incremental.of(value, step, calendarField))
         return this
     }
 
     ValueDefinition incremental(String value, String pattern, Integer index) {
         checkNullValue(value)
-        final val = Incremental.of(value, pattern, index)
-        typeValueMap.put(new TypePredicate(type: String), val)
+        typeValueMap.put(new TypePredicate(type: String), Incremental.of(value, pattern, index))
+        return this
+    }
+
+    ValueDefinition incremental(ValuePredicate propertyPredicate, String value, String pattern, Integer index) {
+        checkNullValue(value)
+        propertyValueMap.put(propertyPredicate, Incremental.of(value, pattern, index))
         return this
     }
 
     ValueDefinition random(Number value) {
         checkNullValue(value)
-        final val = org.prismus.scrambler.property.Random.of(value)
-        typeValueMap.put(new TypePredicate(type: value.class), val)
+        typeValueMap.put(new TypePredicate(type: value.class), org.prismus.scrambler.property.Random.of(value))
+        return this
+    }
+
+    ValueDefinition random(ValuePredicate propertyPredicate, Number value) {
+        checkNullValue(value)
+        propertyValueMap.put(propertyPredicate, org.prismus.scrambler.property.Random.of(value))
         return this
     }
 
     ValueDefinition random(Date value) {
         checkNullValue(value)
-        final val = org.prismus.scrambler.property.Random.of(value)
-        typeValueMap.put(new TypePredicate(type: value.class), val)
+        typeValueMap.put(new TypePredicate(type: value.class), org.prismus.scrambler.property.Random.of(value))
+        return this
+    }
+
+    ValueDefinition random(ValuePredicate propertyPredicate, Date value) {
+        checkNullValue(value)
+        propertyValueMap.put(propertyPredicate, org.prismus.scrambler.property.Random.of(value))
         return this
     }
 
     ValueDefinition random(String value) {
         checkNullValue(value)
-        final val = org.prismus.scrambler.property.Random.of(value)
-        typeValueMap.put(new TypePredicate(type: String), val)
+        typeValueMap.put(new TypePredicate(type: String), org.prismus.scrambler.property.Random.of(value))
+        return this
+    }
+
+    ValueDefinition random(ValuePredicate propertyPredicate, String value) {
+        checkNullValue(value)
+        propertyValueMap.put(propertyPredicate, org.prismus.scrambler.property.Random.of(value))
         return this
     }
 
     ValueDefinition random(Number minimum, Number maximum) {
         checkNullValue(minimum, maximum)
-        Object value = minimum
-        if (value == null) {
-            value = maximum
-        }
-        final val = org.prismus.scrambler.property.Random.of(minimum, maximum)
-        typeValueMap.put(new TypePredicate(type: value.class), val)
+        final value = getNotNullValue(minimum, maximum)
+        typeValueMap.put(new TypePredicate(type: value.class), org.prismus.scrambler.property.Random.of(minimum, maximum))
+        return this
+    }
+
+    ValueDefinition random(ValuePredicate propertyPredicate, Number minimum, Number maximum) {
+        checkNullValue(minimum, maximum)
+        propertyValueMap.put(propertyPredicate, org.prismus.scrambler.property.Random.of(minimum, maximum))
         return this
     }
 
     ValueDefinition random(Date minimum, Date maximum) {
         checkNullValue(minimum, maximum)
-        final val = org.prismus.scrambler.property.Random.of(minimum, maximum)
-        typeValueMap.put(new TypePredicate(type: Date), val)
+        typeValueMap.put(new TypePredicate(type: Date), org.prismus.scrambler.property.Random.of(minimum, maximum))
+        return this
+    }
+
+    ValueDefinition random(ValuePredicate propertyPredicate, Date minimum, Date maximum) {
+        checkNullValue(minimum, maximum)
+        propertyValueMap.put(propertyPredicate, org.prismus.scrambler.property.Random.of(minimum, maximum))
         return this
     }
 
     ValueDefinition random(Number value, Number minimum, Number maximum) {
         checkNullValue(value)
-        final val = org.prismus.scrambler.property.Random.of(value, minimum, maximum)
-        typeValueMap.put(new TypePredicate(type: value.class), val)
+        typeValueMap.put(new TypePredicate(type: value.class), org.prismus.scrambler.property.Random.of(value, minimum, maximum))
+        return this
+    }
+
+    ValueDefinition random(ValuePredicate propertyPredicate, Number value, Number minimum, Number maximum) {
+        checkNullValue(value)
+        propertyValueMap.put(propertyPredicate, org.prismus.scrambler.property.Random.of(value, minimum, maximum))
         return this
     }
 
     ValueDefinition random(Date value, Date minimum, Date maximum) {
         checkNullValue(value)
-        final val = org.prismus.scrambler.property.Random.of(value, minimum, maximum)
-        typeValueMap.put(new TypePredicate(type: value.class), val)
+        typeValueMap.put(new TypePredicate(type: value.class), org.prismus.scrambler.property.Random.of(value, minimum, maximum))
+        return this
+    }
+
+    ValueDefinition random(ValuePredicate propertyPredicate, Date value, Date minimum, Date maximum) {
+        checkNullValue(value)
+        propertyValueMap.put(propertyPredicate, org.prismus.scrambler.property.Random.of(value, minimum, maximum))
         return this
     }
 
@@ -171,36 +269,63 @@ class ValueDefinition extends Script {
         checkEmptyCollection(values)
 
         final value = values.iterator().next()
-        final val = org.prismus.scrambler.property.Random.randomOf(values)
-        typeValueMap.put(new TypePredicate(type: value.class), val)
+        typeValueMap.put(new TypePredicate(type: value.class), org.prismus.scrambler.property.Random.randomOf(values))
+        return this
+    }
+
+    ValueDefinition randomOf(ValuePredicate propertyPredicate, Collection values) {
+        checkNullValue(values)
+        checkEmptyCollection(values)
+
+        propertyValueMap.put(propertyPredicate, org.prismus.scrambler.property.Random.randomOf(values))
         return this
     }
 
     ValueDefinition random(String value, Integer count) {
-        final val = org.prismus.scrambler.property.Random.of(value, count)
-        typeValueMap.put(new TypePredicate(type: String), val)
+        typeValueMap.put(new TypePredicate(type: String), org.prismus.scrambler.property.Random.of(value, count))
+        return this
+    }
+
+    ValueDefinition random(ValuePredicate propertyPredicate, String value, Integer count) {
+        propertyValueMap.put(propertyPredicate, org.prismus.scrambler.property.Random.of(value, count))
         return this
     }
 
     ValueDefinition random(String value, Integer count, boolean includeLetters) {
         checkNullValue(value)
-        final val = org.prismus.scrambler.property.Random.of(value, count, includeLetters)
-        typeValueMap.put(new TypePredicate(type: String), val)
+        typeValueMap.put(new TypePredicate(type: String), org.prismus.scrambler.property.Random.of(value, count, includeLetters))
+        return this
+    }
+
+    ValueDefinition random(ValuePredicate propertyPredicate, String value, Integer count, boolean includeLetters) {
+        checkNullValue(value)
+        propertyValueMap.put(propertyPredicate, org.prismus.scrambler.property.Random.of(value, count, includeLetters))
         return this
     }
 
     ValueDefinition random(String value, Integer count, boolean includeLetters, boolean includeNumbers) {
         checkNullValue(value)
-        final val = org.prismus.scrambler.property.Random.of(value, count, includeLetters, includeNumbers)
-        typeValueMap.put(new TypePredicate(type: String), val)
+        typeValueMap.put(new TypePredicate(type: String), org.prismus.scrambler.property.Random.of(value, count, includeLetters, includeNumbers))
+        return this
+    }
+
+    ValueDefinition random(ValuePredicate propertyPredicate, String value, Integer count, boolean includeLetters, boolean includeNumbers) {
+        checkNullValue(value)
+        propertyValueMap.put(propertyPredicate, org.prismus.scrambler.property.Random.of(value, count, includeLetters, includeNumbers))
         return this
     }
 
     ValueDefinition random(Value value, Collection collection, int count = 0) {
         checkNullValue(value)
         checkNullValue(collection)
-        final val = new ValueCollection(collection, count, value)
-        typeValueMap.put(new TypePredicate(type: Collection), val)
+        typeValueMap.put(new TypePredicate(type: Collection), new ValueCollection(collection, count, value))
+        return this
+    }
+
+    ValueDefinition random(ValuePredicate propertyPredicate, Value value, Collection collection, int count = 0) {
+        checkNullValue(value)
+        checkNullValue(collection)
+        propertyValueMap.put(propertyPredicate, new ValueCollection(collection, count, value))
         return this
     }
 
@@ -211,12 +336,37 @@ class ValueDefinition extends Script {
         return this
     }
 
-    ValueDefinition of(ValueDefinitionEntry entry) {
-        checkNullValue(entry)
-        checkNullValue(entry.predicate)
-        checkNullValue(entry.value)
-        typeValueMap.put(entry.predicate, entry.value)
+    ValueDefinition of(TypePredicate valuePredicate, Value value) {
+        checkNullValue(valuePredicate)
+        checkNullValue(value)
+        typeValueMap.put(valuePredicate, value)
         return this
+    }
+
+    ValueDefinition of(RegexPredicate valuePredicate, Value value) {
+        checkNullValue(valuePredicate)
+        checkNullValue(value)
+        propertyValueMap.put(valuePredicate, value)
+        return this
+    }
+
+    ValueDefinition of(Class type, Value value) {
+        checkNullValue(type)
+        checkNullValue(value)
+        typeValueMap.put(new TypePredicate(type: type), value)
+        return this
+    }
+
+    ValueDefinition of(String propertyWildcard, Value value) {
+        checkEmpty(propertyWildcard)
+        checkNullValue(value)
+        propertyValueMap.put(createPropertyPredicate(propertyWildcard), value)
+        return this
+    }
+
+    ValueDefinition of(Value value) {
+        checkNullValue(value)
+        return of(new TypePredicate(value.value.class), value)
     }
 
     ValueDefinition randomAll() {
@@ -228,121 +378,108 @@ class ValueDefinition extends Script {
     }
 
     static {
-        Object.metaClass.constant { ->
-            return new ValueDefinitionEntry(predicate: new TypePredicate(type: delegate.class), value: new Constant(delegate))
+
+        Object.metaClass {
+            constant { ->
+                return new Constant(delegate)
+            }
         }
 
         Number.metaClass {
             incremental { ->
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: delegate.class), value: Incremental.of(delegate))
+                return Incremental.of((Number) delegate)
             }
 
             incremental { Number step ->
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: delegate.class), value: Incremental.of(delegate, step))
+                return Incremental.of((Number) delegate, step)
             }
 
             random { ->
-                final val = org.prismus.scrambler.property.Random.of((Number)delegate)
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: delegate.class), value: val)
+                return org.prismus.scrambler.property.Random.of((Number) delegate)
             }
 
             random { Number minimum, Number maximum ->
-                final val = org.prismus.scrambler.property.Random.of((Number)delegate, minimum, maximum)
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: delegate.class), value: val)
+                return org.prismus.scrambler.property.Random.of((Number) delegate, minimum, maximum)
             }
         }
 
         Date.metaClass {
             incremental { ->
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: delegate.class), value: Incremental.of((Date) delegate))
+                return Incremental.of((Date) delegate)
             }
 
             incremental { Integer step ->
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: delegate.class), value: Incremental.of((Date) delegate, step))
+                return Incremental.of((Date) delegate, step)
             }
 
             incremental { int step, int calendarField ->
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: delegate.class), value: Incremental.of((Date) delegate, step, calendarField))
+                return Incremental.of((Date) delegate, step, calendarField)
             }
 
             random { ->
-                final val = org.prismus.scrambler.property.Random.of((Date)delegate)
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: delegate.class), value: val)
+                return org.prismus.scrambler.property.Random.of((Date) delegate)
             }
 
             random { Date minimum, Date maximum ->
-                final val = org.prismus.scrambler.property.Random.of((Date)delegate, minimum, maximum)
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: delegate.class), value: val)
+                return org.prismus.scrambler.property.Random.of((Date) delegate, minimum, maximum)
             }
         }
 
         String.metaClass {
             incremental { ->
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: String), value: Incremental.of((Date) delegate))
+                return Incremental.of((Date) delegate)
             }
 
             incremental { Integer index ->
-                final val = Incremental.of((String) delegate, index)
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: String), value: val)
+                return Incremental.of((String) delegate, index)
             }
 
             incremental { String pattern ->
-                final val = Incremental.of((String) delegate, pattern)
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: String), value: val)
+                return Incremental.of((String) delegate, pattern)
             }
 
             incremental { String pattern, Integer index ->
-                final val = Incremental.of((String) delegate, pattern, index)
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: String), value: val)
+                return Incremental.of((String) delegate, pattern, index)
             }
 
             random { ->
-                final val = org.prismus.scrambler.property.Random.of((String)delegate)
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: String), value: val)
+                return org.prismus.scrambler.property.Random.of((String) delegate)
             }
 
             random { Integer count ->
-                final val = org.prismus.scrambler.property.Random.of((String) delegate, count)
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: String), value: val)
+                return org.prismus.scrambler.property.Random.of((String) delegate, count)
             }
 
             random { ->
-                final val = org.prismus.scrambler.property.Random.of((String)delegate)
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: String), value: val)
+                return org.prismus.scrambler.property.Random.of((String) delegate)
             }
 
             random { Integer count, boolean includeLetters ->
-                final val = org.prismus.scrambler.property.Random.of((String)delegate, count, includeLetters)
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: String), value: val)
+                return org.prismus.scrambler.property.Random.of((String) delegate, count, includeLetters)
             }
 
             random { Integer count, boolean includeLetters, boolean includeNumbers ->
-                final val = org.prismus.scrambler.property.Random.of((String)delegate, count, includeLetters, includeNumbers)
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: String), value: val)
+                return org.prismus.scrambler.property.Random.of((String) delegate, count, includeLetters, includeNumbers)
             }
         }
 
         Collection.metaClass {
-
             random { Value val ->
-                final collection = (Collection) delegate
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: Collection), value: new ValueCollection(collection, val))
+                checkNullValue(val)
+                return new ValueCollection((Collection) delegate, val)
             }
 
             random { Value val, int count ->
-                final collection = (Collection) delegate
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: Collection), value: new ValueCollection(collection, count, val))
+                checkNullValue(val)
+                return new ValueCollection((Collection) delegate, count, val)
             }
 
             randomOf { ->
                 final collection = (Collection) delegate
                 checkEmptyCollection(collection)
-
-                final val = org.prismus.scrambler.property.Random.randomOf(collection)
-                return new ValueDefinitionEntry(predicate: new TypePredicate(type: Collection), value: new ValueCollection((Collection)delegate, val))
+                return org.prismus.scrambler.property.Random.randomOf(collection)
             }
         }
-
     }
 
 }

@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
  *
  * @author Serge Pruteanu
  */
-public class RegexPredicate<V> implements ValuePredicate<String> {
+public class RegexPredicate implements ValuePredicate<String> {
     private Pattern pattern;
 
     public RegexPredicate() {
@@ -28,7 +28,7 @@ public class RegexPredicate<V> implements ValuePredicate<String> {
         this.pattern = pattern;
     }
 
-    public RegexPredicate<V> withPattern(Pattern pattern) {
+    public RegexPredicate withPattern(Pattern pattern) {
         this.pattern = pattern;
         return this;
     }
@@ -54,8 +54,8 @@ public class RegexPredicate<V> implements ValuePredicate<String> {
         return pattern.pattern().hashCode();
     }
 
-    public static <V> RegexPredicate<V> of(String wildcardPattern) {
-        return new RegexPredicate<V>(wildcardPattern);
+    public static RegexPredicate of(String wildcardPattern) {
+        return new RegexPredicate(wildcardPattern);
     }
 
 }

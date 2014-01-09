@@ -19,8 +19,8 @@ class ValueDefinitionParserTest extends Specification {
 
         parser.parseText("randomOf([1, 2, 3])").typeValueMap.size() > 0
 
-        parser.parseText("of(new RegexPredicate(pattern: ~/\\w+Sid/), new RandomInteger(1, 100))").typeValueMap.size() > 0
-        parser.parseText("of(new RegexPredicate('*Sid'), new RandomInteger(1, 100))").typeValueMap.size() > 0
+        parser.parseText("of(new RegexPredicate(pattern: ~/\\w+Sid/), new RandomInteger(1, 100))").propertyValueMap.size() > 0
+        parser.parseText("of(new RegexPredicate('*Sid'), new RandomInteger(1, 100))").propertyValueMap.size() > 0
 
         parser.parseText("incremental 1.0").typeValueMap.size() > 0
         parser.parseText("incremental 1, 100").typeValueMap.size() > 0
@@ -50,14 +50,6 @@ randomOf([1, 2, 3])
 incremental new Date(), 1, Calendar.HOUR
 constant 'some template string'
 """).typeValueMap.size() > 0
-    }
-
-    void 'test parse from resource'() {
-        given:
-        def parser = new ValueDefinitionParser()
-
-        expect:
-        parser.parse('/test-vd.groovy').typeValueMap.size() > 0
     }
 
     void 'test parse value type definitions'() {
@@ -98,4 +90,21 @@ of new Date().incremental(1, Calendar.HOUR)
 of 'some template string'.constant()
 """).typeValueMap.size() > 0
     }
+
+    void 'test parse from resource'() {
+        given:
+        def parser = new ValueDefinitionParser()
+
+        expect:
+        parser.parse('/test-vd.groovy').typeValueMap.size() > 0
+    }
+
+    void 'test property value definition'() {
+        given:
+        final parser = new ValueDefinitionParser()
+
+        expect:
+        parser.parseText("of '*Sid', 1.0.constant()").propertyValueMap.size() > 0
+    }
+
 }

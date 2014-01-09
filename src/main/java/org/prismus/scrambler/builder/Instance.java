@@ -19,7 +19,6 @@ public class Instance<T> extends Constant<T> {
     // todo add introspection property generation on class/instance/method
     // todo add new instance creation property value, with propertyValueMap introspection/matching on constructor arguments
     // todo add DB table introspection
-    // todo create a facade class which will integrate all builder/org.prismus.scrambler.Property functionalities
     // todo externalize messages
     // todo review/get rid of (where possible) external library dependencies
     // todo add tests

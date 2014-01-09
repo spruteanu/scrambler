@@ -9,13 +9,10 @@ import java.util.Random;
 public class RandomElement<T> extends Constant<T> {
     private List<T> values;
 
-    public RandomElement() {
-        super();
-    }
-
     public RandomElement(List<T> values) {
         super();
         this.values = values;
+        setValue(values.get(0));
     }
 
     public void setValues(List<T> values) {
@@ -23,6 +20,8 @@ public class RandomElement<T> extends Constant<T> {
     }
 
     public T next() {
-        return values.get(Math.abs(new Random().nextInt(values.size())));
+        final T value = values.get(Math.abs(new Random().nextInt(values.size())));
+        setValue(value);
+        return value;
     }
 }

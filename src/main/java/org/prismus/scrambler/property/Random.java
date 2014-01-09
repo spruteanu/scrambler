@@ -66,7 +66,7 @@ public class Random {
 
     @SuppressWarnings({"unchecked"})
     public static Value<Number> of(Number val, Number minimum, Number maximum) {
-        final Value<Number> value = of((Class<Number>)val.getClass(), null);
+        final Value<Number> value = of((Class<Number>)val.getClass(), val);
         if (value instanceof AbstractRandomRange) {
             final AbstractRandomRange<Number> randomRangeValue = (AbstractRandomRange<Number>) value;
             randomRangeValue.minimumBound(minimum).maximumBound(maximum);
