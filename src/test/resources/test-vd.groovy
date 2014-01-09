@@ -5,7 +5,8 @@
  */
 //org.prismus.scrambler.builder.ValueDefinition.with {
     random 1, 100
-    random([1, 2, 3])
+    randomOf([1, 2, 3])
     incremental new Date(), 1, Calendar.HOUR
     constant 'some template string'
+    random(4.incremental(10).value, new HashSet(), 100)
 //}

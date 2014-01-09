@@ -19,13 +19,21 @@ public class Random {
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Value<T> of(T value) {
-        return of((Class<T>) value.getClass(), value);
+    public static Value<Number> of(Number value) {
+        return of((Class) value.getClass(), value);
+    }
+
+    public static RandomDate of(Date value) {
+        return new RandomDate(value);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Value<T> of(T minimum, T maximum) {
-        return of((Class<T>) minimum.getClass(), minimum, maximum);
+    public static Value<Number> of(Number minimum, Number maximum) {
+        return of((Class) minimum.getClass(), minimum, maximum);
+    }
+
+    public static RandomDate of(Date minimum, Date maximum) {
+        return new RandomDate(minimum, maximum);
     }
 
     public static RandomString of(String value) {
@@ -57,6 +65,23 @@ public class Random {
     }
 
     @SuppressWarnings({"unchecked"})
+    public static Value<Number> of(Number val, Number minimum, Number maximum) {
+        final Value<Number> value = of((Class<Number>)val.getClass(), null);
+        if (value instanceof AbstractRandomRange) {
+            final AbstractRandomRange<Number> randomRangeValue = (AbstractRandomRange<Number>) value;
+            randomRangeValue.minimumBound(minimum).maximumBound(maximum);
+        } else {
+            throw new UnsupportedOperationException(String.format(NOT_SUPPORTED_RANGE_TYPE_MSG, val.getClass(), minimum, maximum));
+        }
+        return value;
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static Value<Date> of(Date val, Date minimum, Date maximum) {
+        return new RandomDate(val, minimum, maximum);
+    }
+
+    @SuppressWarnings({"unchecked"})
     public static <T> Value<T> of(Class<T> clazzType, T defaultValue) {
         if (propertyTypeMap.containsKey(clazzType)) {
             return (Value) Util.createInstance(
@@ -69,11 +94,11 @@ public class Random {
                 clazzType, defaultValue));
     }
 
-    public static <T> Value<T> of(List<T> values) {
+    public static <T> Value<T> randomOf(List<T> values) {
         return new RandomElement<T>(values);
     }
 
-    public static <T> Value<T> of(Collection<T> collection) {
+    public static <T> Value<T> randomOf(Collection<T> collection) {
         return new RandomElement<T>(new ArrayList<T>(collection));
     }
 

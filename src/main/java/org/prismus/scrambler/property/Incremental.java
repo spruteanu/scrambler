@@ -15,13 +15,13 @@ public class Incremental {
     private static Map<Class, Class<? extends Value>> propertyTypeMap = lookupPropertyTypeMap();
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Value<T> of(T value) {
-        return of((Class<T>) value.getClass(), value, null);
+    public static Value<Number> of(Number value) {
+        return of((Class) value.getClass(), value, null);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Value<T> of(T value, Number step) {
-        return of((Class<T>) value.getClass(), value, step);
+    public static Value<Number> of(Number value, Number step) {
+        return of((Class) value.getClass(), value, step);
     }
 
     public static IncrementalDate of(Date value) {
