@@ -350,6 +350,13 @@ class ValueDefinition extends Script {
         return this
     }
 
+    ValueDefinition of(EqualsPredicate valuePredicate, Value value) {
+        checkNullValue(valuePredicate)
+        checkNullValue(value)
+        propertyValueMap.put(valuePredicate, value)
+        return this
+    }
+
     ValueDefinition of(Class type, Value value) {
         checkNullValue(type)
         checkNullValue(value)
