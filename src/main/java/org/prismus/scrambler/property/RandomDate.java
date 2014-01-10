@@ -43,6 +43,7 @@ public class RandomDate extends AbstractRandomRange<Date> {
                     ).next()
             );
         }
+        setValue(value);
         return value;
     }
 }

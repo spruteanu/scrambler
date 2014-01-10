@@ -34,6 +34,7 @@ public class RandomInteger extends AbstractRandomRange<Integer> {
         } else {
             value = value != null ? random.nextInt(Math.abs(value) + 1) : random.nextInt();
         }
+        setValue(value);
         return value;
     }
 }

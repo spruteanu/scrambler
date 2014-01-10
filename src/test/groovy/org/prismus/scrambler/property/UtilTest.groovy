@@ -13,15 +13,7 @@ class UtilTest extends Specification {
 
         where:
         property << ['test*', 'account*Party*sid', 'va?ue', '*Sid', 'myProperty', 'org.prismus.scrambler.*']
-        expected << ['^test.*$', '^account.*Party.*sid$', '^va.ue$', '^.*Sid$', '^myProperty$', '^org\\.prismus\\.scrambler\\..*$']
+        expected << ['^test.*$', '^account.*Party.*sid$', '^va.ue$', '^.*Sid$', 'myProperty', '^org\\.prismus\\.scrambler\\..*$']
     }
-
-//    void 'lookup generic type'() {
-////        IncrementalInteger.genericSuperclass
-//        ParameterizedType superClass = (ParameterizedType) IncrementalInteger.class.getGenericSuperclass();
-//        System.out.println(superClass.getActualTypeArguments()[0]);
-//        expect:
-//        1 == 1
-//    }
 
 }

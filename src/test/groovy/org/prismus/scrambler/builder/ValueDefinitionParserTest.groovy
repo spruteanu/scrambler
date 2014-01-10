@@ -7,7 +7,7 @@ import spock.lang.Specification
  */
 class ValueDefinitionParserTest extends Specification {
 
-    void test_parseText() {
+    void 'test parse type text definitions'() {
         given:
         final parser = new ValueDefinitionParser()
 
@@ -19,8 +19,8 @@ class ValueDefinitionParserTest extends Specification {
 
         parser.parseText("randomOf([1, 2, 3])").typeValueMap.size() > 0
 
-        parser.parseText("of(new RegexPredicate(pattern: ~/\\w+Sid/), new RandomInteger(1, 100))").propertyValueMap.size() > 0
-        parser.parseText("of(new RegexPredicate('*Sid'), new RandomInteger(1, 100))").propertyValueMap.size() > 0
+        parser.parseText("of(new PropertyPredicate(pattern: ~/\\w+Sid/), new RandomInteger(1, 100))").propertyValueMap.size() > 0
+        parser.parseText("of(new PropertyPredicate('*Sid'), new RandomInteger(1, 100))").propertyValueMap.size() > 0
 
         parser.parseText("incremental 1.0").typeValueMap.size() > 0
         parser.parseText("incremental 1, 100").typeValueMap.size() > 0
@@ -52,6 +52,14 @@ constant 'some template string'
 """).typeValueMap.size() > 0
     }
 
+    void 'test parse from resource'() {
+        given:
+        def parser = new ValueDefinitionParser()
+
+        expect:
+        parser.parse('/test-vd.groovy').typeValueMap.size() > 0
+    }
+
     void 'test parse value type definitions'() {
         given:
         final parser = new ValueDefinitionParser()
@@ -64,7 +72,7 @@ constant 'some template string'
 
         parser.parseText("of([1, 2, 3].randomOf())").typeValueMap.size() > 0
 
-        parser.parseText("of 1.0.incremental()").typeValueMap.size() > 0
+        parser.parseText("of 1.0").typeValueMap.size() > 0
         parser.parseText("of 1.incremental(100)").typeValueMap.size() > 0
         parser.parseText("of 1L.incremental(100L)").typeValueMap.size() > 0
 
@@ -80,7 +88,7 @@ constant 'some template string'
         parser.parseText("of 1.constant()").typeValueMap.size() > 0
         parser.parseText("of 1L.constant()").typeValueMap.size() > 0
         parser.parseText("of new Date().constant()").typeValueMap.size() > 0
-        parser.parseText("of 'some string'.constant()").typeValueMap.size() > 0
+        parser.parseText("of 'some string'").typeValueMap.size() > 0
         parser.parseText("of new Object().constant()").typeValueMap.size() > 0
 
         parser.parseText("""
@@ -91,20 +99,95 @@ of 'some template string'.constant()
 """).typeValueMap.size() > 0
     }
 
-    void 'test parse from resource'() {
-        given:
-        def parser = new ValueDefinitionParser()
-
-        expect:
-        parser.parse('/test-vd.groovy').typeValueMap.size() > 0
-    }
-
     void 'test property value definition'() {
         given:
         final parser = new ValueDefinitionParser()
 
         expect:
-        parser.parseText("of '*Sid', 1.0.constant()").propertyValueMap.size() > 0
+        parser.parseText("of '*Sid', 1.0").propertyValueMap.size() > 0
+        parser.parseText("of '*prop1', 2.random(1, 100)").propertyValueMap.size() > 0
+        parser.parseText("of '*prop2', 3L.random(1L, 100L)").propertyValueMap.size() > 0
+        parser.parseText("of '*prop3', new Date().random()").propertyValueMap.size() > 0
+        parser.parseText("of '*prop4', 'some template string'.random(100, true, false)").propertyValueMap.size() > 0
+
+        parser.parseText("of('*prop5', [1, 2, 3].randomOf())").propertyValueMap.size() > 0
+
+        parser.parseText("of '*prop6', 1.0.incremental()").propertyValueMap.size() > 0
+        parser.parseText("of '*prop7', 1.incremental(100)").propertyValueMap.size() > 0
+        parser.parseText("of '*prop8', 1L.incremental(100L)").propertyValueMap.size() > 0
+
+        parser.parseText("of '*prop9', new Date()").propertyValueMap.size() > 0
+        parser.parseText("of '*prop10', new Date().incremental(2)").propertyValueMap.size() > 0
+        parser.parseText("of '*prop11', new Date().incremental(1, Calendar.HOUR)").propertyValueMap.size() > 0
+
+        parser.parseText("of '*prop12', 'some template string'.incremental(4)").propertyValueMap.size() > 0
+        parser.parseText("of '*prop13', 'some template string'.incremental('some%d')").propertyValueMap.size() > 0
+        parser.parseText("of '*prop14', 'some template string'.incremental('some%d', 12)").propertyValueMap.size() > 0
+
+        parser.parseText("of '*prop15', 1.0.constant()").propertyValueMap.size() > 0
+        parser.parseText("of '*prop16', 1.constant()").propertyValueMap.size() > 0
+        parser.parseText("of '*prop17', 1L.constant()").propertyValueMap.size() > 0
+        parser.parseText("of '*prop18', new Date().constant()").propertyValueMap.size() > 0
+        parser.parseText("of '*prop19', 'some string'.constant()").propertyValueMap.size() > 0
+        parser.parseText("of '*prop20', new Object().constant()").propertyValueMap.size() > 0
+    }
+
+    void 'test parse text class definitions'() {
+        given:
+        final parser = new ValueDefinitionParser()
+
+        and:
+        final valueDefinition = parser.parseText("""
+of org.prismus.scrambler.builder.Instance.of {
+        of '*Sid', 1
+}
+""")
+        expect:
+        valueDefinition.typeValueMap.size() > 0
+        valueDefinition.instanceValues.size() > 0
+        valueDefinition.instanceValues[0].definition != null
+        valueDefinition.instanceValues[0].definition.propertyValueMap.size() > 0
+
+        and:
+        parser.parseText("""
+of '*Instance|*Object', org.prismus.scrambler.builder.Instance.of {
+        of '*Sid', 3L.incremental()
+}
+""").propertyValueMap.size() > 0
+        and:
+        parser.parseText("""
+of org.prismus.scrambler.builder.Instance.of([2.0.random(), 3], {
+        of '*Sid', 1.random()
+})
+""").typeValueMap.size() > 0
+    }
+
+    void 'test parse text with parent reference definition'() {
+        given:
+        final parser = new ValueDefinitionParser()
+
+        and:
+        def rootDefinition = parser.parseText("""
+of 'id', 1.incremental(300)
+of org.prismus.scrambler.builder.Instance.of {
+        parent '*Instance', 'id'
+}
+""")
+
+        expect: 'verify root definition'
+        0 < rootDefinition.typeValueMap.size()
+        null != rootDefinition.instanceValues[0].definition
+        null == rootDefinition.parent // root definition
+
+        and: 'verify that parent of inner definition is root one'
+        rootDefinition == rootDefinition.instanceValues[0].definition.parent
+
+        and: 'verify ParentValue variables'
+        rootDefinition == rootDefinition.instanceValues[0].definition.propertyValueMap.values()[0].parent
+        null != rootDefinition.instanceValues[0].definition.propertyValueMap.values()[0].predicate
+
+        and:
+        parser.parseText("parent '*Parent'").propertyValueMap.size() > 0
     }
 
 }

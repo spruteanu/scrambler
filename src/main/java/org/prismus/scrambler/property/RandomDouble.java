@@ -36,6 +36,7 @@ public class RandomDouble extends AbstractRandomRange<Double> {
         } else {
             value = value != null ? random.nextDouble() * value : random.nextDouble();
         }
+        setValue(value);
         return value;
     }
 }

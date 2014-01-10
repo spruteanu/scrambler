@@ -29,7 +29,11 @@ public class ValueDefinitionParser {
         if (shell == null) {
             shell = createGroovyShell();
         }
-        return (ValueDefinition) shell.evaluate(definitionText + "\n    return this");
+        return (ValueDefinition) shell.evaluate(
+                definitionText
+                + "\n    process()"
+                + "\n    return this"
+        );
     }
 
     public ValueDefinition parse(String resource) throws IOException {

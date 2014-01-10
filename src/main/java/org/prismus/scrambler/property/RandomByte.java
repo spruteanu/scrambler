@@ -26,11 +26,13 @@ public class RandomByte extends AbstractRandomRange<Byte> {
     @Override
     public Byte next() {
         final Byte value = super.next();
-        return new RandomInteger(value != null ? value.intValue() : null)
+        final byte newValue = new RandomInteger(value != null ? value.intValue() : null)
                 .usingDefaults(defaultMinimum.intValue(), defaultMaximum.intValue())
                 .between(
                         minimum != null ? minimum.intValue() : null,
                         maximum != null ? maximum.intValue() : null
                 ).next().byteValue();
+        setValue(newValue);
+        return newValue;
     }
 }

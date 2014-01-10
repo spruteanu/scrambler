@@ -50,6 +50,8 @@ public class ValueCollection<V, T extends Collection<V>> extends Constant<T> {
         for (int i = 0; i < count; i++) {
             value.add(this.value.next());
         }
+        // todo Serge: bug: each time a new collection should be created?
+        setValue(value);
         return value;
     }
 

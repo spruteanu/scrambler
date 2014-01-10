@@ -67,13 +67,16 @@ public abstract class Util {
     public static String replaceWildcards(String wildcardPattern) {
         final StringBuilder builder = new StringBuilder();
         builder.append('^');
+        boolean replaced = false;
         final int length = wildcardPattern.length();
         for (int i = 0; i < length; ++i) {
             final char ch = wildcardPattern.charAt(i);
             if (ch == '*') {
                 builder.append(".*");
+                replaced = true;
             } else if (ch == '?') {
                 builder.append(".");
+                replaced = true;
             } else if (PREFIXED_CHAR_SET.contains(ch)) {
                 builder.append('\\').append(ch);
             } else {
@@ -81,7 +84,7 @@ public abstract class Util {
             }
         }
         builder.append('$');
-        return builder.toString();
+        return replaced ? builder.toString() : wildcardPattern;
     }
 
 }

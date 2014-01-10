@@ -152,6 +152,7 @@ public class Instance<T> extends Constant<T> {
     public T next() {
         final T instance = checkCreateInstance();
         processPropertyMap(instance);
+        setValue(instance);
         return instance;
     }
 

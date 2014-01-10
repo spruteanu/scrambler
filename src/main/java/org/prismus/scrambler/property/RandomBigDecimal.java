@@ -28,7 +28,7 @@ public class RandomBigDecimal extends AbstractRandomRange<BigDecimal> {
     @Override
     public BigDecimal next() {
         final BigDecimal value = super.next();
-        return BigDecimal.valueOf(
+        final BigDecimal newValue = BigDecimal.valueOf(
                 new RandomDouble(value != null ? value.doubleValue() : null)
                         .usingDefaults(defaultMinimum.doubleValue(), defaultMaximum.doubleValue())
                         .between(
@@ -36,5 +36,7 @@ public class RandomBigDecimal extends AbstractRandomRange<BigDecimal> {
                                 maximum != null ? maximum.doubleValue() : null
                         ).next()
         );
+        setValue(newValue);
+        return newValue;
     }
 }

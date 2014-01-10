@@ -36,6 +36,7 @@ public class RandomLong extends AbstractRandomRange<Long> {
         } else {
             value = random.nextLong();
         }
+        setValue(value);
         return value;
     }
 }

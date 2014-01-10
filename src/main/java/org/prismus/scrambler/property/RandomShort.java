@@ -26,11 +26,13 @@ public class RandomShort extends AbstractRandomRange<Short> {
     @Override
     public Short next() {
         final Short value = super.next();
-        return new RandomInteger(value != null ? value.intValue() : null)
+        final short newValue = new RandomInteger(value != null ? value.intValue() : null)
                 .usingDefaults(defaultMinimum.intValue(), defaultMaximum.intValue())
                 .between(
                         minimum != null ? minimum.intValue() : null,
                         maximum != null ? maximum.intValue() : null
                 ).next().shortValue();
+        setValue(newValue);
+        return newValue;
     }
 }

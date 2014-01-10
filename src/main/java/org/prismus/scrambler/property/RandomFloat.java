@@ -26,11 +26,13 @@ public class RandomFloat extends AbstractRandomRange<Float> {
     @Override
     public Float next() {
         final Float value = super.next();
-        return new RandomDouble(value != null ? value.doubleValue() : null)
+        final float newValue = new RandomDouble(value != null ? value.doubleValue() : null)
                 .usingDefaults(defaultMinimum.doubleValue(), defaultMaximum.doubleValue())
                 .between(
                         minimum != null ? minimum.doubleValue() : null,
                         maximum != null ? maximum.doubleValue() : null
                 ).next().floatValue();
+        setValue(newValue);
+        return newValue;
     }
 }
