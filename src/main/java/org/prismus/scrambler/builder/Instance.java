@@ -19,10 +19,8 @@ public class Instance<T> extends Constant<T> {
     // todo add introspection property generation on class/instance/method
     // todo add new instance creation property value, with propertyValueMap introspection/matching on constructor arguments
     // todo add DB table introspection
-    // todo externalize messages
     // todo review/get rid of (where possible) external library dependencies
     // todo add tests
-    // todo review usability all the time :)
     private Object valueType;
     protected List<Value> constructorValues;
     protected Map<String, Value> propertyValueMap;

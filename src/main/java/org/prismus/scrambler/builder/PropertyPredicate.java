@@ -27,13 +27,13 @@ public class PropertyPredicate implements ValuePredicate<String> {
 
     public void setPattern(Pattern pattern) {
         this.pattern = pattern;
-    }
-
-    public PropertyPredicate withPattern(Pattern pattern) {
-        this.pattern = pattern;
         if (pattern != null) {
             wildcardPattern = pattern.pattern();
         }
+    }
+
+    public PropertyPredicate withPattern(Pattern pattern) {
+        setPattern(pattern);
         return this;
     }
 
@@ -59,7 +59,7 @@ public class PropertyPredicate implements ValuePredicate<String> {
 
     @Override
     public int hashCode() {
-        return wildcardPattern.hashCode();
+        return wildcardPattern.toLowerCase().hashCode();
     }
 
     public static PropertyPredicate of(String wildcardPattern) {

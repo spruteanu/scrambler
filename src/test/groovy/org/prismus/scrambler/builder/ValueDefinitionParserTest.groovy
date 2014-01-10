@@ -190,4 +190,19 @@ of org.prismus.scrambler.builder.Instance.of {
         parser.parseText("parent '*Parent'").propertyValueMap.size() > 0
     }
 
+    void 'test parse container with value'() {
+        given:
+        final parser = new ValueDefinitionParser()
+
+        and:
+        def valueDefinition = parser.parseText("of'mumu', [:].of('param'.incremental(1), 1.incremental(1))")
+
+        expect:
+        valueDefinition.propertyValueMap.size() > 0
+
+        and:
+        0 < parser.parseText("of 'cucu*', [:].of('param'.random(10), 1.incremental(1))").propertyValueMap.size()
+        0 < parser.parseText("of 'cucu*', [].of('param'.random(10))").propertyValueMap.size()
+    }
+
 }

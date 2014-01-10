@@ -4,14 +4,14 @@ import org.prismus.scrambler.Value
 import org.prismus.scrambler.property.Constant
 import org.prismus.scrambler.property.Incremental
 import org.prismus.scrambler.property.ValueCollection
+import org.prismus.scrambler.property.ValueMap
 
 /**
  * todo: add description
  *
  * @author Serge Pruteanu
  */
-// todo add ValueMap
-// todo add randomOf for array type (object array and primitive one)
+// todo add randomOf for array type (object array and primitive one) ???
 // todo add ValueArray for array type (object array and primitive one)
 class ValueDefinition extends Script {
     InstanceValue instanceValue
@@ -60,7 +60,6 @@ class ValueDefinition extends Script {
 
     protected static ValuePredicate createPropertyPredicate(String propertyWildcard) {
         checkEmpty(propertyWildcard)
-//        propertyWildcard.matches()
         return new PropertyPredicate(propertyWildcard)
     }
 
@@ -563,12 +562,12 @@ class ValueDefinition extends Script {
         }
 
         Collection.metaClass {
-            random { Value val ->
+            of { Value val ->
                 checkNullValue(val)
                 return new ValueCollection((Collection) delegate, val)
             }
 
-            random { Value val, int count ->
+            of { Value val, int count ->
                 checkNullValue(val)
                 return new ValueCollection((Collection) delegate, count, val)
             }
@@ -577,6 +576,21 @@ class ValueDefinition extends Script {
                 final collection = (Collection) delegate
                 checkEmptyCollection(collection)
                 return org.prismus.scrambler.property.Random.randomOf(collection)
+            }
+        }
+
+        Map.metaClass {
+
+            of { Value entryKey, Value entryValue ->
+                checkNullValue(entryKey)
+                checkNullValue(entryValue)
+                return new ValueMap((Map) delegate, entryKey, entryValue)
+            }
+
+            of { Value entryKey, Value entryValue, int count ->
+                checkNullValue(entryKey)
+                checkNullValue(entryValue)
+                return new ValueMap((Map) delegate, count, entryKey, entryValue)
             }
         }
 
@@ -615,7 +629,7 @@ class ValueDefinition extends Script {
                 )
             }
 
-            constant { Map props ->
+            constant { Map props -> // todo: implement me
                 throw new UnsupportedOperationException("The constant method is not supported for given implementation")
             }
 
