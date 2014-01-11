@@ -205,4 +205,25 @@ of org.prismus.scrambler.builder.Instance.of {
         0 < parser.parseText("of 'cucu*', [].of('param'.random(10))").propertyValueMap.size()
     }
 
+    void 'test value definitions DSL from code'() {
+        given:
+        ValueCategory.registerValueMetaClasses()
+
+        expect:
+        null != 'text'.incremental()
+        null != 1.random(1, 100)
+        null != [1, 2, 3].randomOf()
+        null != new Date().incremental(1, Calendar.HOUR)
+        null != 'some template string'.constant()
+
+        null != 2.random(1, 100)
+        null != 3L.random(1L, 100L)
+        null != new Date().random()
+        null != 'some template string'.random(100, true, false)
+
+        null != Instance.of {
+            of 'aa', 3L.incremental()
+        }.build().propertyValueMap
+    }
+
 }

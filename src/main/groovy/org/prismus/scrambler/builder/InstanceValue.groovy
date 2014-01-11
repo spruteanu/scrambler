@@ -24,6 +24,10 @@ class InstanceValue implements Value<Object> {
 
     @Override
     Object next() {
+        if (definition == null) {
+            build()
+        }
+        // todo Serge: implement me
         throw new UnsupportedOperationException('Not implemented yet')
     }
 
@@ -44,10 +48,11 @@ class InstanceValue implements Value<Object> {
         return valuePredicate.apply(entry.key.toString(), entry.value)
     }
 
-    void process() {
+    ValueDefinition build() {
         definition = new ValueDefinition(parent: parent, instanceValue: this)
         definitionClosure.rehydrate(definition, definition, definition).call(definition)
-        definition.process()
+        definition.build()
+        return definition
     }
 
     void setConstructorArguments(Collection constructorArguments) {

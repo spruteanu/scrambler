@@ -50,7 +50,7 @@ class ValueCategory {
         return value
     }
 
-    static void decorateMetaClasses() {
+    static void registerValueMetaClasses() {
         Object.metaClass {
             constant { ->
                 return new Constant(delegate)
@@ -99,7 +99,7 @@ class ValueCategory {
 
         String.metaClass {
             incremental { ->
-                return Incremental.of((Date) delegate)
+                return Incremental.of((String) delegate)
             }
 
             incremental { Integer index ->
@@ -154,7 +154,6 @@ class ValueCategory {
         }
 
         Map.metaClass {
-
             of { Value entryKey, Value entryValue ->
                 checkNullValue(entryKey)
                 checkNullValue(entryValue)
@@ -214,7 +213,6 @@ class ValueCategory {
             random { Map props ->
                 throw new UnsupportedOperationException("The random method is not supported for given implementation")
             }
-
         }
     }
 

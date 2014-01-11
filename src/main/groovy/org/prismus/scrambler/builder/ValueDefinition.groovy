@@ -26,10 +26,11 @@ class ValueDefinition extends Script {
         return this
     }
 
-    void process() {
+    ValueDefinition build() {
         for (final value : instanceValues) {
-            value.process()
+            value.build()
         }
+        return this
     }
 
     Map<ValuePredicate, Value> getPredicateValueMap() {
@@ -384,7 +385,7 @@ class ValueDefinition extends Script {
 
 
     static {
-        ValueCategory.decorateMetaClasses()
+        ValueCategory.registerValueMetaClasses()
     }
 
 }

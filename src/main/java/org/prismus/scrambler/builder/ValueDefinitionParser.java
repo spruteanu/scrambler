@@ -30,7 +30,7 @@ public class ValueDefinitionParser {
         }
         return (ValueDefinition) shell.evaluate(
                 definitionText
-                + "\n    process()"
+                + "\n    build()"
                 + "\n    return this"
         );
     }
