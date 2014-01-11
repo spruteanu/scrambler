@@ -4,9 +4,7 @@ import org.prismus.scrambler.Value;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Serge Pruteanu
@@ -62,6 +60,14 @@ public class Incremental {
             );
         }
         throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s", clazzType, defaultValue));
+    }
+
+    public static boolean isSupportedType(Class type) {
+        return propertyTypeMap.containsKey(type);
+    }
+
+    public static Set<Class> getSupportedTypes() {
+        return Collections.unmodifiableSet(propertyTypeMap.keySet());
     }
 
     static Map<Class, Class<? extends Value>> lookupPropertyTypeMap() {

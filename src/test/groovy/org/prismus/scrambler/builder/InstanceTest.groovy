@@ -3,13 +3,13 @@ package org.prismus.scrambler.builder
 import org.prismus.scrambler.Value
 import org.prismus.scrambler.property.Constant
 import org.prismus.scrambler.property.IncrementalInteger
-import org.prismus.scrambler.property.IncrementalString
 import spock.lang.Specification
 
 /**
  * @author Serge Pruteanu
  */
 class InstanceTest extends Specification {
+    // todo Serge: add end to end test
 
     void 'instance creation'(Object value, Class instanceType) {
         given:
@@ -48,18 +48,20 @@ class InstanceTest extends Specification {
         expectedStep << [1, 3]
     }
 
-    void 'test lookup property descriptors'() {
+    void 'test lookup property definitions'() {
         given:
-        final instance = new Instance<IncrementalString>(new IncrementalString())
+        final instance = new Instance<Order>(new Order())
 
         and:
-        final propertyDescriptors = instance.lookupPropertyDescriptors(instance.value)
+        final propertyDescriptors = instance.lookupPropertyDefinitions(instance.value)
 
         expect:
         null != propertyDescriptors
-        !propertyDescriptors.containsKey('class')
-        propertyDescriptors.containsKey('pattern')
-        propertyDescriptors.containsKey('index')
+        3 == propertyDescriptors.size()
+        propertyDescriptors.containsKey('total')
+        propertyDescriptors.containsKey('person')
+        propertyDescriptors.containsKey('items')
+        ArrayList == propertyDescriptors.get('items')?.value?.class
     }
 
     void 'test populate instance with properties'() {
@@ -74,5 +76,54 @@ class InstanceTest extends Specification {
         104 == instance.value.value
     }
 
-    // todo Serge: add end to end test
+    private static class Order {
+        BigDecimal total
+        List<OrderItem> items = new ArrayList<OrderItem>()
+        Person person
+    }
+
+    private static class Product {
+        String name
+        BigDecimal price
+    }
+
+    private static class OrderItem {
+        int quantity
+        String details = "no name"
+        Product product
+    }
+
+    private static class Person {
+        String firstName
+        String lastName
+        int age
+        char sex
+        String phone
+
+        Address address
+    }
+
+    private static class Address {
+        String number
+        String street
+        String postalCode
+        String city
+        String room
+    }
+
+    private static class Book {
+        String author
+        String title
+        Integer isbn
+        Integer numberOfPages
+        String publisher
+    }
+
+    private static class Employee {
+        String name
+        int age
+        String designation
+        double salary
+    }
+
 }

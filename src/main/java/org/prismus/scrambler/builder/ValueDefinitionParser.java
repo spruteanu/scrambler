@@ -6,7 +6,6 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.prismus.scrambler.Value;
-import org.prismus.scrambler.builder.meta.EntityMeta;
 import org.prismus.scrambler.property.Constant;
 
 import java.io.File;
@@ -71,7 +70,6 @@ public class ValueDefinitionParser {
         importCustomizer.addStarImports(Value.class.getPackage().getName());
         importCustomizer.addStarImports(Constant.class.getPackage().getName());
         importCustomizer.addStarImports(getClass().getPackage().getName());
-        importCustomizer.addStarImports(EntityMeta.class.getPackage().getName());
         compilerConfiguration.addCompilationCustomizers(importCustomizer);
 
         return new GroovyShell(compilerConfiguration);

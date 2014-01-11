@@ -1,11 +1,13 @@
 package org.prismus.scrambler.builder;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
+import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.prismus.scrambler.Value;
 import org.prismus.scrambler.property.Constant;
 import org.prismus.scrambler.property.Util;
 
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -23,6 +25,7 @@ public class Instance<T> extends Constant<T> {
     // todo add tests
     private Object valueType;
     protected List<Value> constructorValues;
+    protected Map<String, Property> propertyMap;
     protected Map<String, Value> propertyValueMap;
     protected BeanUtilsBean beanUtilsBean;
 
@@ -32,7 +35,10 @@ public class Instance<T> extends Constant<T> {
 
     public Instance(String valueType) {
         super(null);
-        this.valueType = valueType;
+        this.valueType = lookupType(valueType, false);
+        if (this.valueType == null) {
+            this.valueType = valueType;
+        }
         initialize();
     }
 
@@ -44,7 +50,6 @@ public class Instance<T> extends Constant<T> {
 
     public Instance(T instance) {
         super(instance);
-        valueType = null;
         initialize();
     }
 
@@ -52,11 +57,36 @@ public class Instance<T> extends Constant<T> {
         constructorValues = new ArrayList<Value>();
         propertyValueMap = new LinkedHashMap<String, Value>();
         beanUtilsBean = Util.createBeanUtilsBean();
+        propertyMap = lookupPropertyDefinitions(value != null ? value : valueType);
     }
 
     public Instance<T> usingValueType(Object valueType) {
         this.valueType = valueType;
         return this;
+    }
+
+    public Instance<T> usingValueDefinition(ValueDefinition valueDefinition) {
+        for (final Map.Entry<ValuePredicate, Value> entry : valueDefinition.getPredicateValueMap().entrySet()) {
+            final ValuePredicate predicate = entry.getKey();
+            for (final Property property : propertyMap.values()) {
+                final String name = property.getName();
+                if (!propertyValueMap.containsKey(name)) {
+                    if (predicate.apply(name, property.getValueType())) {
+                        addPropertyValue(name, entry.getValue());
+                        break;
+                    }
+                }
+            }
+        }
+        return this;
+    }
+
+    public Map<String, Property> getPropertyMap() {
+        return propertyMap;
+    }
+
+    public void setPropertyMap(Map<String, Property> propertyMap) {
+        this.propertyMap = propertyMap;
     }
 
     public void setPropertyValueMap(Map<String, Value> propertyValueMap) {
@@ -101,21 +131,55 @@ public class Instance<T> extends Constant<T> {
         }
     }
 
-    Map<String, PropertyDescriptor> lookupPropertyDescriptors(Object instanceType) {
+    Map<String, Property> lookupPropertyDefinitions(Object instanceType) {
         final PropertyDescriptor[] propertyDescriptors;
-        if (instanceType instanceof Class) {
-            propertyDescriptors = beanUtilsBean.getPropertyUtils().getPropertyDescriptors(((Class) instanceType));
+        final PropertyUtilsBean propertyUtils = beanUtilsBean.getPropertyUtils();
+        final boolean isInstance = !(instanceType instanceof Class);
+        if (isInstance) {
+            propertyDescriptors = propertyUtils.getPropertyDescriptors(instanceType);
         } else {
-            propertyDescriptors = beanUtilsBean.getPropertyUtils().getPropertyDescriptors(instanceType);
+            propertyDescriptors = propertyUtils.getPropertyDescriptors(((Class) instanceType));
         }
-        final Map<String, PropertyDescriptor> propertyDescriptorMap = new LinkedHashMap<String, PropertyDescriptor>();
+        final Map<String, Property> propertyDefinitionMap = new LinkedHashMap<String, Property>();
         if (propertyDescriptors != null) {
             for (final PropertyDescriptor propertyDescriptor : propertyDescriptors) {
-                propertyDescriptorMap.put(propertyDescriptor.getName(), propertyDescriptor);
+                final String name = propertyDescriptor.getName();
+                final Object value = isInstance ? getPropertyValue(propertyDescriptor, instanceType) : null;
+                propertyDefinitionMap.put(name, new Property(propertyDescriptor, value));
             }
-            propertyDescriptorMap.remove("class");
+            propertyDefinitionMap.remove("class");
+            propertyDefinitionMap.remove("metaClass");
         }
-        return propertyDescriptorMap;
+        return propertyDefinitionMap;
+    }
+
+    public Object getPropertyValue(Object instance, String propertyName) {
+        final Property property = propertyMap.get(propertyName);
+        final Object value;
+        if (property != null) {
+            value = getPropertyValue(property.propertyDescriptor, instance);
+        } else {
+            value = getPropertyValue(beanUtilsBean.getPropertyUtils(), instance, propertyName);
+        }
+        return value;
+    }
+
+    Object getPropertyValue(PropertyDescriptor propertyDescriptor, Object instance) {
+        Object value = null;
+        try {
+            value = propertyDescriptor.getReadMethod().invoke(instance);
+        } catch (Exception ignore) {
+        }
+        return value;
+    }
+
+    Object getPropertyValue(PropertyUtilsBean propertyUtils, Object instance, String propertyName) {
+        Object value = null;
+        try {
+            value = propertyUtils.getProperty(instance, propertyName);
+        } catch (Exception ignore) {
+        }
+        return value;
     }
 
     @SuppressWarnings({"unchecked"})
@@ -123,11 +187,7 @@ public class Instance<T> extends Constant<T> {
         T result = this.value;
         Object valueType = this.valueType;
         if (valueType instanceof String) {
-            try {
-                valueType = Class.forName(((String) valueType));
-            } catch (ClassNotFoundException e) {
-                throw new IllegalStateException(String.format("Not found class for specified value: %s", result), e);
-            }
+            valueType = lookupType((String) valueType, true);
         }
         if (valueType instanceof Class) {
             Object[] arguments = null;
@@ -147,6 +207,18 @@ public class Instance<T> extends Constant<T> {
         return result;
     }
 
+    Object lookupType(String classType, boolean throwError) {
+        Class result = null;
+        try {
+            result = Class.forName(((String) classType));
+        } catch (ClassNotFoundException e) {
+            if (throwError) {
+                throw new IllegalStateException(String.format("Not found class for specified value: %s", classType), e);
+            }
+        }
+        return result;
+    }
+
     public T next() {
         final T instance = checkCreateInstance();
         processPropertyMap(instance);
@@ -160,6 +232,36 @@ public class Instance<T> extends Constant<T> {
 
     Map<String, Value> getPropertyValueMap() {
         return propertyValueMap;
+    }
+
+    static class Property {
+        final PropertyDescriptor propertyDescriptor;
+        final Object value;
+
+        public Property(PropertyDescriptor propertyDescriptor, Object value) {
+            this.propertyDescriptor = propertyDescriptor;
+            this.value = value;
+        }
+
+        public Object getValueType() {
+            return value != null ? value : getType();
+        }
+
+        public String getName() {
+            return propertyDescriptor.getName();
+        }
+
+        public Class getType() {
+            return propertyDescriptor.getPropertyType();
+        }
+
+        public Method getter() {
+            return propertyDescriptor.getReadMethod();
+        }
+
+        public Method setter() {
+            return propertyDescriptor.getWriteMethod();
+        }
     }
 
 }

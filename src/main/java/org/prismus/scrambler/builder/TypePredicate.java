@@ -5,7 +5,7 @@ package org.prismus.scrambler.builder;
  *
  * @author Serge Pruteanu
  */
-public class TypePredicate implements ValuePredicate<Class> {
+public class TypePredicate implements ValuePredicate {
     private Class type;
 
     public TypePredicate() {
@@ -17,8 +17,8 @@ public class TypePredicate implements ValuePredicate<Class> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public boolean apply(Class value) {
-        return type.isAssignableFrom(value);
+    public boolean apply(String property, Object value) {
+        return value instanceof Class ? type.isAssignableFrom((Class<?>) value) : type.isInstance(value);
     }
 
     public void setType(Class type) {

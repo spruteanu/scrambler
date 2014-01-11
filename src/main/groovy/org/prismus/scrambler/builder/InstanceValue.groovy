@@ -41,11 +41,7 @@ class InstanceValue implements Value<Object> {
     }
 
     protected boolean checkApply(Map.Entry entry, ValuePredicate valuePredicate) {
-        return valuePredicate.apply(entry.value?.class)
-    }
-
-    protected boolean checkApply(Map.Entry entry, PropertyPredicate valuePredicate) {
-        return valuePredicate.apply(entry.key.toString())
+        return valuePredicate.apply(entry.key.toString(), entry.value)
     }
 
     void process() {

@@ -5,8 +5,8 @@ package org.prismus.scrambler.builder;
  *
  * @author Serge Pruteanu
  */
-public interface ValuePredicate<V> {
+public interface ValuePredicate {
 
-    boolean apply(V value);
+    boolean apply(String property, Object value);
 
 }

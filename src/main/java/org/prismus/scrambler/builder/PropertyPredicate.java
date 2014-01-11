@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
  *
  * @author Serge Pruteanu
  */
-public class PropertyPredicate implements ValuePredicate<String> {
+public class PropertyPredicate implements ValuePredicate {
     private String wildcardPattern;
     private Pattern pattern;
 
@@ -21,8 +21,8 @@ public class PropertyPredicate implements ValuePredicate<String> {
     }
 
     @Override
-    public boolean apply(String value) {
-        return (pattern != null && pattern.matcher(value).matches()) || wildcardPattern.equalsIgnoreCase(value);
+    public boolean apply(String property, Object value) {
+        return (pattern != null && pattern.matcher(property).matches()) || wildcardPattern.equalsIgnoreCase(property);
     }
 
     public void setPattern(Pattern pattern) {

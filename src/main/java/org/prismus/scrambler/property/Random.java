@@ -102,6 +102,14 @@ public class Random {
         return new RandomElement<T>(new ArrayList<T>(collection));
     }
 
+    public static boolean isSupportedType(Class type) {
+        return propertyTypeMap.containsKey(type);
+    }
+
+    public static Set<Class> getSupportedTypes() {
+        return Collections.unmodifiableSet(propertyTypeMap.keySet());
+    }
+
     static Map<Class, Class<? extends Value>> lookupPropertyTypeMap() {
         final Map<Class, Class<? extends Value>> typeMap = new LinkedHashMap<Class, Class<? extends Value>>();
         typeMap.put(Byte.class, RandomByte.class);
