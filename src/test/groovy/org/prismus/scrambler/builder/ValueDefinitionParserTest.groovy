@@ -41,8 +41,8 @@ class ValueDefinitionParserTest extends Specification {
         parser.parseText("constant 'some template string'").typeValueMap.size() > 0
         parser.parseText("constant new Object()").typeValueMap.size() > 0
 
-        parser.parseText("random(new RandomInteger(1, 100), new ArrayList(1024))").typeValueMap.size() > 0
-        parser.parseText("random(new RandomString('some message', 45), new ArrayList(1024), 1024)").typeValueMap.size() > 0
+        parser.parseText("random(new ArrayList(1024), new RandomInteger(1, 100))").typeValueMap.size() > 0
+        parser.parseText("random(new ArrayList(1024), new RandomString('some message', 45), 1024)").typeValueMap.size() > 0
 
         parser.parseText("""
 random 1, 100
