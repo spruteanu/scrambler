@@ -1,4 +1,4 @@
-package org.prismus.scrambler.property;
+package org.prismus.scrambler.value;
 
 import java.util.List;
 import java.util.Random;

@@ -2,7 +2,7 @@ package org.prismus.scrambler.builder
 
 import groovy.transform.CompileStatic
 import org.prismus.scrambler.Value
-import org.prismus.scrambler.property.Constant
+import org.prismus.scrambler.value.Constant
 
 /**
  * todo: add description

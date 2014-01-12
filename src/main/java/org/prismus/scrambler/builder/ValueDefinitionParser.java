@@ -6,7 +6,7 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.prismus.scrambler.Value;
-import org.prismus.scrambler.property.Constant;
+import org.prismus.scrambler.value.Constant;
 
 import java.io.File;
 import java.io.IOException;

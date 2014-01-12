@@ -1,10 +1,10 @@
 package org.prismus.scrambler.builder
 
 import org.prismus.scrambler.Value
-import org.prismus.scrambler.property.Constant
-import org.prismus.scrambler.property.Incremental
-import org.prismus.scrambler.property.ValueCollection
-import org.prismus.scrambler.property.ValueMap
+import org.prismus.scrambler.value.Constant
+import org.prismus.scrambler.value.Incremental
+import org.prismus.scrambler.value.ValueCollection
+import org.prismus.scrambler.value.ValueMap
 
 /**
  * todo: add description
@@ -63,7 +63,7 @@ class ValueCategory {
             }
 
             random { Number minimum = null, Number maximum = null ->
-                return org.prismus.scrambler.property.Random.of((Number) delegate, minimum, maximum)
+                return org.prismus.scrambler.value.Random.of((Number) delegate, minimum, maximum)
             }
         }
 
@@ -73,7 +73,7 @@ class ValueCategory {
             }
 
             random { Date minimum = null, Date maximum = null ->
-                return org.prismus.scrambler.property.Random.of((Date) delegate, minimum, maximum)
+                return org.prismus.scrambler.value.Random.of((Date) delegate, minimum, maximum)
             }
         }
 
@@ -83,7 +83,7 @@ class ValueCategory {
             }
 
             random { Integer count = null, Boolean includeLetters = null, Boolean includeNumbers = null ->
-                return org.prismus.scrambler.property.Random.of((String) delegate, count, includeLetters, includeNumbers)
+                return org.prismus.scrambler.value.Random.of((String) delegate, count, includeLetters, includeNumbers)
             }
         }
 
@@ -96,7 +96,7 @@ class ValueCategory {
             randomOf { ->
                 final collection = (Collection) delegate
                 checkEmptyCollection(collection)
-                return org.prismus.scrambler.property.Random.randomOf(collection)
+                return org.prismus.scrambler.value.Random.randomOf(collection)
             }
         }
 

@@ -1,4 +1,4 @@
-package org.prismus.scrambler.property;
+package org.prismus.scrambler.value;
 
 import org.prismus.scrambler.Value;
 

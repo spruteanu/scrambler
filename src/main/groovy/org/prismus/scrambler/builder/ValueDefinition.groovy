@@ -1,9 +1,9 @@
 package org.prismus.scrambler.builder
 
 import org.prismus.scrambler.Value
-import org.prismus.scrambler.property.Constant
-import org.prismus.scrambler.property.Incremental
-import org.prismus.scrambler.property.ValueCollection
+import org.prismus.scrambler.value.Constant
+import org.prismus.scrambler.value.Incremental
+import org.prismus.scrambler.value.ValueCollection
 
 /**
  * todo: add description
@@ -105,20 +105,20 @@ class ValueDefinition extends Script {
 
     ValueDefinition random(Number value) {
         ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: value.class), org.prismus.scrambler.property.Random.of(value))
+        registerPredicateValue(new TypePredicate(type: value.class), org.prismus.scrambler.value.Random.of(value))
         return this
     }
 
     ValueDefinition random(Number value, Number minimum, Number maximum) {
         ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: value.class), org.prismus.scrambler.property.Random.of(value, minimum, maximum))
+        registerPredicateValue(new TypePredicate(type: value.class), org.prismus.scrambler.value.Random.of(value, minimum, maximum))
         return this
     }
 
     ValueDefinition random(Number minimum, Number maximum) {
         ValueCategory.checkNullValue(minimum, maximum)
         final value = ValueCategory.getNotNullValue(minimum, maximum)
-        registerPredicateValue(new TypePredicate(type: value.class), org.prismus.scrambler.property.Random.of(minimum, maximum))
+        registerPredicateValue(new TypePredicate(type: value.class), org.prismus.scrambler.value.Random.of(minimum, maximum))
         return this
     }
 
@@ -146,19 +146,19 @@ class ValueDefinition extends Script {
 
     ValueDefinition random(Date value) {
         ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: value.class), org.prismus.scrambler.property.Random.of(value))
+        registerPredicateValue(new TypePredicate(type: value.class), org.prismus.scrambler.value.Random.of(value))
         return this
     }
 
     ValueDefinition random(Date minimum, Date maximum) {
         ValueCategory.checkNullValue(minimum, maximum)
-        registerPredicateValue(new TypePredicate(type: Date), org.prismus.scrambler.property.Random.of(minimum, maximum))
+        registerPredicateValue(new TypePredicate(type: Date), org.prismus.scrambler.value.Random.of(minimum, maximum))
         return this
     }
 
     ValueDefinition random(Date value, Date minimum, Date maximum) {
         ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: value.class), org.prismus.scrambler.property.Random.of(value, minimum, maximum))
+        registerPredicateValue(new TypePredicate(type: value.class), org.prismus.scrambler.value.Random.of(value, minimum, maximum))
         return this
     }
 
@@ -192,24 +192,24 @@ class ValueDefinition extends Script {
 
     ValueDefinition random(String value) {
         ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: String), org.prismus.scrambler.property.Random.of(value))
+        registerPredicateValue(new TypePredicate(type: String), org.prismus.scrambler.value.Random.of(value))
         return this
     }
 
     ValueDefinition random(String value, Integer count) {
-        registerPredicateValue(new TypePredicate(type: String), org.prismus.scrambler.property.Random.of(value, count))
+        registerPredicateValue(new TypePredicate(type: String), org.prismus.scrambler.value.Random.of(value, count))
         return this
     }
 
     ValueDefinition random(String value, Integer count, boolean includeLetters) {
         ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: String), org.prismus.scrambler.property.Random.of(value, count, includeLetters))
+        registerPredicateValue(new TypePredicate(type: String), org.prismus.scrambler.value.Random.of(value, count, includeLetters))
         return this
     }
 
     ValueDefinition random(String value, Integer count, boolean includeLetters, boolean includeNumbers) {
         ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: String), org.prismus.scrambler.property.Random.of(value, count, includeLetters, includeNumbers))
+        registerPredicateValue(new TypePredicate(type: String), org.prismus.scrambler.value.Random.of(value, count, includeLetters, includeNumbers))
         return this
     }
 
@@ -255,7 +255,7 @@ class ValueDefinition extends Script {
         ValueCategory.checkEmptyCollection(values)
 
         final value = values.iterator().next()
-        registerPredicateValue(new TypePredicate(type: value.class), org.prismus.scrambler.property.Random.randomOf(values))
+        registerPredicateValue(new TypePredicate(type: value.class), org.prismus.scrambler.value.Random.randomOf(values))
         return this
     }
 

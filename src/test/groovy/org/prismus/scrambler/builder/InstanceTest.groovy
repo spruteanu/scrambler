@@ -1,8 +1,8 @@
 package org.prismus.scrambler.builder
 
 import org.prismus.scrambler.Value
-import org.prismus.scrambler.property.Constant
-import org.prismus.scrambler.property.IncrementalInteger
+import org.prismus.scrambler.value.Constant
+import org.prismus.scrambler.value.IncrementalInteger
 import spock.lang.Specification
 
 /**

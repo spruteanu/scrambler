@@ -3,8 +3,8 @@ package org.prismus.scrambler.builder;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.prismus.scrambler.Value;
-import org.prismus.scrambler.property.Constant;
-import org.prismus.scrambler.property.Util;
+import org.prismus.scrambler.value.Constant;
+import org.prismus.scrambler.value.Util;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
