@@ -226,4 +226,15 @@ of org.prismus.scrambler.builder.Instance.of {
         }.build().propertyValueMap
     }
 
+    void 'test parse text for map'() {
+        given:
+        final parser = new ValueDefinitionParser()
+
+        and:
+        def valueDefinition = parser.parseText("of('a*':1.constant(), b:2.random(), c:'cucu')")
+
+        expect:
+        valueDefinition.propertyValueMap.size() > 0
+    }
+
 }

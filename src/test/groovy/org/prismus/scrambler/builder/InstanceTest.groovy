@@ -9,7 +9,6 @@ import spock.lang.Specification
  * @author Serge Pruteanu
  */
 class InstanceTest extends Specification {
-    // todo Serge: add end to end test
 
     void 'instance creation'(Object value, Class instanceType) {
         given:
@@ -76,6 +75,51 @@ class InstanceTest extends Specification {
         104 == instance.value.value
     }
 
+    void 'check validation definitions (tree definition) for instance'() {
+        // todo Serge: add support for BigInteger
+        given:
+        ValueCategory.registerValueMetaClasses()
+        final instance = new Instance<Order>(Order)
+        final definition = new ValueDefinition(
+                (BigDecimal): BigDecimal.ONE.random(0.0, 100.0),
+                person: Person.of(
+                        'firstName': ['Andy', 'Nicole', 'Nicolas', 'Jasmine'].randomOf(),
+                        'lastName': ['Smith', 'Ferrara', 'Maldini', "Shaffer"].randomOf(),
+                        'age': 11.random(10, 60),
+                        'sex': ['M' as char, 'F' as char].randomOf(),
+                        'phone': ['425-452-0001', '425-452-0002', '425-452-0003', "425-452-0004"].randomOf()
+                ),
+                'item*': [].of(OrderItem.of(
+                        quantity: 1.random(1, 5),
+                        details: "detail field".random(200),
+                        '*Time': new Date().random(),
+                        (Product): Product.of(
+                                name: ['Candies', 'Star Wars Lego Factory', 'Star War Ninja GO'].randomOf(),
+                                price: 2.0.random(10.0, 50.0),
+                        )
+                ), 10),
+        )
+        instance.usingValueDefinition(definition)
+        final order = instance.next()
+
+        expect:
+        order.total > 1
+        order.person != null
+        order.person.firstName != null
+        order.person.lastName != null
+        order.person.phone != null
+        // todo Serge: test random between it is buggy, it is not providing correct range
+        order.person.age > 1
+        ['M' as char, 'F' as char].contains(order.person.sex)
+        order.items.size() > 0
+        order.items[0].quantity > 0
+        order.items[0].details.length() > 0
+        order.items[0].orderTime != null
+        order.items[0].product != null
+        order.items[0].product.name.length() > 0
+        order.items[0].product.price > 1
+    }
+
     private static class Order {
         BigDecimal total
         List<OrderItem> items = new ArrayList<OrderItem>()
@@ -90,6 +134,7 @@ class InstanceTest extends Specification {
     private static class OrderItem {
         int quantity
         String details = "no name"
+        Date orderTime
         Product product
     }
 

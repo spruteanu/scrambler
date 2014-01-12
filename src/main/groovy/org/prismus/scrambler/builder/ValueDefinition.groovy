@@ -21,6 +21,13 @@ class ValueDefinition extends Script {
     protected Map<ValuePredicate, Value> typeValueMap = [:]
     protected List<InstanceValue> instanceValues = []
 
+    ValueDefinition() {
+    }
+
+    ValueDefinition(Map<String, Value> propertyValueMap) {
+        of(propertyValueMap)
+    }
+
     @Override
     Object run() {
         return this
@@ -284,6 +291,12 @@ class ValueDefinition extends Script {
         return this
     }
 
+    ValueDefinition of(ValuePredicate valuePredicate, Object value) {
+        ValueCategory.checkNullValue(valuePredicate)
+        registerPredicateValue(valuePredicate, new Constant(value))
+        return this
+    }
+
     ValueDefinition parent(ValuePredicate valuePredicate, ValuePredicate parentPredicate) {
         ValueCategory.checkNullValue(valuePredicate)
         registerPredicateValue(valuePredicate, new ParentValue(predicate: parentPredicate))
@@ -303,7 +316,7 @@ class ValueDefinition extends Script {
     ValueDefinition of(Class type, Value value) {
         ValueCategory.checkNullValue(type)
         ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: type), value)
+        registerPredicateValue(((ValuePredicate) new TypePredicate(type: type)), value)
         return this
     }
 
@@ -336,17 +349,13 @@ class ValueDefinition extends Script {
     //------------------------------------------------------------------------------------------------------------------
     // Map Methods
     //------------------------------------------------------------------------------------------------------------------
-    ValueDefinition of(Map<Object, Value> props) {
+    ValueDefinition of(Map<Object, Object> props) {
         ValueCategory.checkNullValue(props)
         for (final Map.Entry entry : props.entrySet()) {
             final key = entry.key
             ValueCategory.checkNullValue(key)
 
-            final Value value = (Value)entry.value
-            if (!Value.isInstance(value)) {
-                throw new IllegalArgumentException("Object should be of Value type; passed map: $props")
-            }
-            ValueCategory.checkNullValue(value)
+            final value = entry.value
             if (String.isInstance(key)) {
                 of((String)key, value)
             } else if(Class.isInstance(key)) {

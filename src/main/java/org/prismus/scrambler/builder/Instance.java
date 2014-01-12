@@ -106,6 +106,11 @@ public class Instance<T> extends Constant<T> {
         this.constructorValues = constructorValues;
     }
 
+    public Instance<T> usingConstructorArguments(List<Value> constructorValues) {
+        this.constructorValues = constructorValues;
+        return this;
+    }
+
     public Instance<T> addConstructorValue(Value value) {
         constructorValues.add(value);
         return this;
@@ -125,7 +130,9 @@ public class Instance<T> extends Constant<T> {
 
     void populate(Object instance, Map<String, Object> properties) {
         try {
-            beanUtilsBean.populate(instance, properties);
+            for (final Map.Entry<String, Object> entry : properties.entrySet()) {
+                setPropertyValue(instance, entry.getKey(), entry.getValue());
+            }
         } catch (Exception e) {
             throw new RuntimeException(String.format(FAILED_SET_PROPERTIES_MSG, instance, properties));
         }
@@ -151,6 +158,29 @@ public class Instance<T> extends Constant<T> {
             propertyDefinitionMap.remove("metaClass");
         }
         return propertyDefinitionMap;
+    }
+
+    void setPropertyValue(PropertyDescriptor propertyDescriptor, Object instance, Object value) {
+        try {
+            propertyDescriptor.getWriteMethod().invoke(instance, value);
+        } catch (Exception ignore) {
+        }
+    }
+
+    void setPropertyValue(PropertyUtilsBean propertyUtils, Object instance, String propertyName, Object value) {
+        try {
+            propertyUtils.setSimpleProperty(instance, propertyName, value);
+        } catch (Exception ignore) {
+        }
+    }
+
+    public void setPropertyValue(Object instance, String propertyName, Object value) {
+        final Property property = propertyMap.get(propertyName);
+        if (property != null) {
+            setPropertyValue(property.propertyDescriptor, instance, value);
+        } else {
+            setPropertyValue(beanUtilsBean.getPropertyUtils(), instance, propertyName, value);
+        }
     }
 
     public Object getPropertyValue(Object instance, String propertyName) {

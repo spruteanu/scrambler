@@ -11,14 +11,16 @@ import org.prismus.scrambler.property.Constant
  */
 @CompileStatic
 class InstanceValue implements Value<Object> {
-    ValueDefinition parent
-    Closure definitionClosure
-    ValuePredicate predicate
+    protected ValueDefinition parent
+    protected Closure definitionClosure
+    protected ValuePredicate predicate
 
-    Class instanceType
-    Collection<Value> constructorArguments
+    protected Class instanceType
+    protected Collection<Value> constructorArguments
+    protected Map<Object, Value> propertyValueMap
 
     protected ValueDefinition definition
+    protected Instance instance
 
     Object value
 
@@ -27,8 +29,8 @@ class InstanceValue implements Value<Object> {
         if (definition == null) {
             build()
         }
-        // todo Serge: implement me
-        throw new UnsupportedOperationException('Not implemented yet')
+        value = instance.next()
+        return value
     }
 
     Object getParentValue(ValuePredicate valuePredicate) {
@@ -50,8 +52,20 @@ class InstanceValue implements Value<Object> {
 
     ValueDefinition build() {
         definition = new ValueDefinition(parent: parent, instanceValue: this)
-        definitionClosure.rehydrate(definition, definition, definition).call(definition)
-        definition.build()
+        if (definitionClosure != null) {
+            definitionClosure.rehydrate(definition, definition, definition).call(definition)
+        }
+        if (propertyValueMap) {
+            definition.of((Map)propertyValueMap)
+        }
+        if (definitionClosure != null || propertyValueMap) {
+            definition.build()
+        } else {
+            definition = parent
+        }
+        instance = new Instance(instanceType)
+                .usingValueDefinition(definition)
+                .usingConstructorArguments(constructorArguments?.toList())
         return definition
     }
 

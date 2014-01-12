@@ -58,19 +58,11 @@ class ValueCategory {
         }
 
         Number.metaClass {
-            incremental { ->
-                return Incremental.of((Number) delegate)
-            }
-
-            incremental { Number step ->
+            incremental { Number step = null ->
                 return Incremental.of((Number) delegate, step)
             }
 
-            random { ->
-                return org.prismus.scrambler.property.Random.of((Number) delegate)
-            }
-
-            random { Number minimum, Number maximum ->
+            random { Number minimum = null, Number maximum = null ->
                 return org.prismus.scrambler.property.Random.of((Number) delegate, minimum, maximum)
             }
         }
@@ -136,12 +128,7 @@ class ValueCategory {
         }
 
         Collection.metaClass {
-            of { Value val ->
-                checkNullValue(val)
-                return new ValueCollection((Collection) delegate, val)
-            }
-
-            of { Value val, int count ->
+            of { Value val, Integer count = null ->
                 checkNullValue(val)
                 return new ValueCollection((Collection) delegate, count, val)
             }
@@ -154,13 +141,7 @@ class ValueCategory {
         }
 
         Map.metaClass {
-            of { Value entryKey, Value entryValue ->
-                checkNullValue(entryKey)
-                checkNullValue(entryValue)
-                return new ValueMap((Map) delegate, entryKey, entryValue)
-            }
-
-            of { Value entryKey, Value entryValue, int count ->
+            of { Value entryKey, Value entryValue, Integer count = null ->
                 checkNullValue(entryKey)
                 checkNullValue(entryValue)
                 return new ValueMap((Map) delegate, count, entryKey, entryValue)
@@ -176,6 +157,15 @@ class ValueCategory {
                 )
             }
 
+            of { Map<Object, Value> propertyValueMap, Closure defCl = null ->
+                return new InstanceValue(
+                        instanceType: (Class)delegate,
+                        propertyValueMap: propertyValueMap,
+                        predicate: new TypePredicate(type: (Class)delegate),
+                        definitionClosure: defCl
+                )
+            }
+
             of { String propertyName, Closure defCl ->
                 return new InstanceValue(
                         instanceType: (Class)delegate,
@@ -184,7 +174,7 @@ class ValueCategory {
                 )
             }
 
-            of { def constructorArgs, Closure defCl ->
+            of { Collection constructorArgs, Closure defCl ->
                 return new InstanceValue(
                         instanceType: (Class)delegate,
                         constructorArguments: constructorArgs,
