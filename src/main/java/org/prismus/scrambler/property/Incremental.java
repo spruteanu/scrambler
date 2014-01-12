@@ -26,11 +26,11 @@ public class Incremental {
         return new IncrementalDate(value);
     }
 
-    public static IncrementalDate of(Date value, int step) {
+    public static IncrementalDate of(Date value, Integer step) {
         return new IncrementalDate(value, step);
     }
 
-    public static IncrementalDate of(Date value, int step, int calendarField) {
+    public static IncrementalDate of(Date value, Integer step, Integer calendarField) {
         return new IncrementalDate(value, step, calendarField);
     }
 

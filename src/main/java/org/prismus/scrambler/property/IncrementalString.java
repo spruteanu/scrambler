@@ -7,7 +7,7 @@ public class IncrementalString extends Constant<String> {
     private static final String DEFAULT_PATTERN = "%s%010d";
     private static final int DEFAULT_STEP = 1;
 
-    private int index;
+    private Integer index;
     private String pattern;
 
     public IncrementalString() {
@@ -32,7 +32,7 @@ public class IncrementalString extends Constant<String> {
         this.index = index != null ? index : DEFAULT_STEP;
     }
 
-    public void setIndex(int index) {
+    public void setIndex(Integer index) {
         this.index = index;
     }
 
@@ -53,7 +53,7 @@ public class IncrementalString extends Constant<String> {
         return index;
     }
 
-    protected int nextIndex() {
+    protected Integer nextIndex() {
         return index++;
     }
 

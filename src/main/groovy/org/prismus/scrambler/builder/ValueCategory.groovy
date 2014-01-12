@@ -68,69 +68,29 @@ class ValueCategory {
         }
 
         Date.metaClass {
-            incremental { ->
-                return Incremental.of((Date) delegate)
-            }
-
-            incremental { Integer step ->
-                return Incremental.of((Date) delegate, step)
-            }
-
-            incremental { int step, int calendarField ->
+            incremental { Integer step = null, Integer calendarField = null ->
                 return Incremental.of((Date) delegate, step, calendarField)
             }
 
-            random { ->
-                return org.prismus.scrambler.property.Random.of((Date) delegate)
-            }
-
-            random { Date minimum, Date maximum ->
+            random { Date minimum = null, Date maximum = null ->
                 return org.prismus.scrambler.property.Random.of((Date) delegate, minimum, maximum)
             }
         }
 
         String.metaClass {
-            incremental { ->
-                return Incremental.of((String) delegate)
-            }
-
-            incremental { Integer index ->
-                return Incremental.of((String) delegate, index)
-            }
-
-            incremental { String pattern ->
-                return Incremental.of((String) delegate, pattern)
-            }
-
-            incremental { String pattern, Integer index ->
+            incremental { String pattern = null, Integer index = null ->
                 return Incremental.of((String) delegate, pattern, index)
             }
 
-            random { ->
-                return org.prismus.scrambler.property.Random.of((String) delegate)
-            }
-
-            random { Integer count ->
-                return org.prismus.scrambler.property.Random.of((String) delegate, count)
-            }
-
-            random { ->
-                return org.prismus.scrambler.property.Random.of((String) delegate)
-            }
-
-            random { Integer count, boolean includeLetters ->
-                return org.prismus.scrambler.property.Random.of((String) delegate, count, includeLetters)
-            }
-
-            random { Integer count, boolean includeLetters, boolean includeNumbers ->
+            random { Integer count = null, Boolean includeLetters = null, Boolean includeNumbers = null ->
                 return org.prismus.scrambler.property.Random.of((String) delegate, count, includeLetters, includeNumbers)
             }
         }
 
         Collection.metaClass {
-            of { Value val, Integer count = null ->
+            of { Value val, Integer count = null, Boolean randomCount = null ->
                 checkNullValue(val)
-                return new ValueCollection((Collection) delegate, count, val)
+                return new ValueCollection((Collection) delegate, count, val, randomCount)
             }
 
             randomOf { ->
@@ -141,34 +101,34 @@ class ValueCategory {
         }
 
         Map.metaClass {
-            of { Value entryKey, Value entryValue, Integer count = null ->
+            of { Value entryKey, Value entryValue, Integer count = null, Boolean randomCount = null ->
                 checkNullValue(entryKey)
                 checkNullValue(entryValue)
-                return new ValueMap((Map) delegate, count, entryKey, entryValue)
+                return new ValueMap((Map) delegate, entryKey, entryValue, count, randomCount)
             }
         }
 
         Class.metaClass {
             of { Closure defCl ->
                 return new InstanceValue(
-                        instanceType: (Class)delegate,
-                        predicate: new TypePredicate(type: (Class)delegate),
+                        instanceType: (Class) delegate,
+                        predicate: new TypePredicate(type: (Class) delegate),
                         definitionClosure: defCl
                 )
             }
 
             of { Map<Object, Value> propertyValueMap, Closure defCl = null ->
                 return new InstanceValue(
-                        instanceType: (Class)delegate,
+                        instanceType: (Class) delegate,
                         propertyValueMap: propertyValueMap,
-                        predicate: new TypePredicate(type: (Class)delegate),
+                        predicate: new TypePredicate(type: (Class) delegate),
                         definitionClosure: defCl
                 )
             }
 
             of { String propertyName, Closure defCl ->
                 return new InstanceValue(
-                        instanceType: (Class)delegate,
+                        instanceType: (Class) delegate,
                         predicate: createPropertyPredicate(propertyName),
                         definitionClosure: defCl
                 )
@@ -176,16 +136,16 @@ class ValueCategory {
 
             of { Collection constructorArgs, Closure defCl ->
                 return new InstanceValue(
-                        instanceType: (Class)delegate,
+                        instanceType: (Class) delegate,
                         constructorArguments: constructorArgs,
-                        predicate: new TypePredicate(type: (Class)delegate),
+                        predicate: new TypePredicate(type: (Class) delegate),
                         definitionClosure: defCl
                 )
             }
 
-            of { String propertyName, def constructorArgs, Closure defCl ->
+            of { String propertyName, Collection constructorArgs, Closure defCl ->
                 return new InstanceValue(
-                        instanceType: (Class)delegate,
+                        instanceType: (Class) delegate,
                         constructorArguments: constructorArgs,
                         predicate: createPropertyPredicate(propertyName),
                         definitionClosure: defCl

@@ -7,8 +7,8 @@ import org.apache.commons.lang.RandomStringUtils;
  */
 public class RandomString extends Constant<String> {
     private Integer count;
-    private boolean includeLetters;
-    private boolean includeNumbers;
+    private Boolean includeLetters;
+    private Boolean includeNumbers;
 
     public RandomString() {
         this(null);
@@ -22,24 +22,26 @@ public class RandomString extends Constant<String> {
         this(value, count, false, false);
     }
 
-    public RandomString(String value, Integer count, boolean includeLetters) {
+    public RandomString(String value, Integer count, Boolean includeLetters) {
         this(value, count, includeLetters, false);
     }
 
-    public RandomString(String value, Integer count, boolean includeLetters, boolean includeNumbers) {
+    public RandomString(String value, Integer count, Boolean includeLetters, Boolean includeNumbers) {
         super(value);
         this.count = count;
+        this.includeLetters = includeLetters;
+        this.includeNumbers = includeNumbers;
     }
 
     public void setCount(Integer count) {
         this.count = count;
     }
 
-    public void setIncludeLetters(boolean includeLetters) {
+    public void setIncludeLetters(Boolean includeLetters) {
         this.includeLetters = includeLetters;
     }
 
-    public void setIncludeNumbers(boolean includeNumbers) {
+    public void setIncludeNumbers(Boolean includeNumbers) {
         this.includeNumbers = includeNumbers;
     }
 
@@ -50,7 +52,9 @@ public class RandomString extends Constant<String> {
             value = "RandomString";
         }
         final int count = checkCount(value);
-        value = RandomStringUtils.random(count, 0, value.length(), includeLetters, includeNumbers, value.toCharArray());
+        final boolean letters = includeLetters == null ? false : includeLetters;
+        final boolean numbers = includeNumbers == null ? false : includeNumbers;
+        value = RandomStringUtils.random(count, 0, value.length(), letters, numbers, value.toCharArray());
         return value;
     }
 

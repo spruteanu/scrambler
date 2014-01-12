@@ -120,6 +120,8 @@ class InstanceTest extends Specification {
         order.items[0].product.price > 1
     }
 
+    // todo Serge: add test cases for parent reference
+
     private static class Order {
         BigDecimal total
         List<OrderItem> items = new ArrayList<OrderItem>()

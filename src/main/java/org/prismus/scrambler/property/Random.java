@@ -44,11 +44,11 @@ public class Random {
         return new RandomString(value, count);
     }
 
-    public static RandomString of(String value, Integer count, boolean includeLetters) {
+    public static RandomString of(String value, Integer count, Boolean includeLetters) {
         return new RandomString(value, count, includeLetters);
     }
 
-    public static RandomString of(String value, Integer count, boolean includeLetters, boolean includeNumbers) {
+    public static RandomString of(String value, Integer count, Boolean includeLetters, Boolean includeNumbers) {
         return new RandomString(value, count, includeLetters, includeNumbers);
     }
 

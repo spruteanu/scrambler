@@ -27,7 +27,7 @@ public class IncrementalDate extends Constant<Date> {
         this(value, DEFAULT_STEP);
     }
 
-    public IncrementalDate(Date value, int step) {
+    public IncrementalDate(Date value, Integer step) {
         this(value, step, null);
     }
 

@@ -80,7 +80,6 @@ constant 'some template string'
         parser.parseText("of new Date().incremental(2)").typeValueMap.size() > 0
         parser.parseText("of new Date().incremental(1, Calendar.HOUR)").typeValueMap.size() > 0
 
-        parser.parseText("of 'some template string'.incremental(4)").typeValueMap.size() > 0
         parser.parseText("of 'some template string'.incremental('some%d')").typeValueMap.size() > 0
         parser.parseText("of 'some template string'.incremental('some%d', 12)").typeValueMap.size() > 0
 
@@ -120,7 +119,6 @@ of 'some template string'.constant()
         parser.parseText("of '*prop10', new Date().incremental(2)").propertyValueMap.size() > 0
         parser.parseText("of '*prop11', new Date().incremental(1, Calendar.HOUR)").propertyValueMap.size() > 0
 
-        parser.parseText("of '*prop12', 'some template string'.incremental(4)").propertyValueMap.size() > 0
         parser.parseText("of '*prop13', 'some template string'.incremental('some%d')").propertyValueMap.size() > 0
         parser.parseText("of '*prop14', 'some template string'.incremental('some%d', 12)").propertyValueMap.size() > 0
 
@@ -195,7 +193,7 @@ of org.prismus.scrambler.builder.Instance.of {
         final parser = new ValueDefinitionParser()
 
         and:
-        def valueDefinition = parser.parseText("of'mumu', [:].of('param'.incremental(1), 1.incremental(1))")
+        def valueDefinition = parser.parseText("of'mumu', [:].of('param'.incremental(null, 1), 1.incremental(1))")
 
         expect:
         valueDefinition.propertyValueMap.size() > 0

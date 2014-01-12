@@ -10,7 +10,7 @@ import java.util.Collection;
 public class ValueCollection<V, T extends Collection<V>> extends Constant<T> {
     private Integer count;
     private Value<V> value;
-    private boolean randomCount;
+    private Boolean randomCount;
 
     @SuppressWarnings({"unchecked"})
     public ValueCollection(T collection, Value<V> value) {
@@ -18,9 +18,14 @@ public class ValueCollection<V, T extends Collection<V>> extends Constant<T> {
     }
 
     public ValueCollection(T collection, Integer count, Value<V> value) {
-        super(collection);
+        this(collection, count, value, null);
+    }
+
+    public ValueCollection(T value, Integer count, Value<V> value1, Boolean randomCount) {
+        super(value);
         this.count = count;
-        this.value = value;
+        this.value = value1;
+        this.randomCount = randomCount;
     }
 
     public void setCount(Integer count) {
@@ -31,24 +36,25 @@ public class ValueCollection<V, T extends Collection<V>> extends Constant<T> {
         this.value = value;
     }
 
-    public void setRandomCount(boolean randomCount) {
+    public void setRandomCount(Boolean randomCount) {
         this.randomCount = randomCount;
     }
 
     @Override
     public T next() {
         final T value = super.next();
-        validateArguments(value, this.value);
+        final Value<V> valueInstance = this.value;
+        validateArguments(value, valueInstance);
         int count = this.count != null ? this.count : 0;
         if (count == 0) {
             count = 20;
         }
-        if (randomCount) {
-            count = new RandomInteger(count).between(5, count).next();
+        if (randomCount != null && randomCount) {
+            count = new RandomInteger(count).between(0, count).next();
         }
         checkCreate(count);
         for (int i = 0; i < count; i++) {
-            value.add(this.value.next());
+            value.add(valueInstance.next());
         }
         setValue(value);
         return value;
