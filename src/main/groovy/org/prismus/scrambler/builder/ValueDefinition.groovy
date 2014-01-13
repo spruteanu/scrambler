@@ -14,11 +14,11 @@ import org.prismus.scrambler.value.ValueCollection
 // todo add ValueArray for array type (object array and primitive one)
 class ValueDefinition extends Script {
     InstanceValue instanceValue
-
     ValueDefinition parent
+    Boolean introspect
 
-    protected Map<ValuePredicate, Value> propertyValueMap = [:]
-    protected Map<ValuePredicate, Value> typeValueMap = [:]
+    Map<ValuePredicate, Value> propertyValueMap = [:]
+    Map<ValuePredicate, Value> typeValueMap = [:]
     protected List<InstanceValue> instanceValues = []
 
     ValueDefinition() {
@@ -31,16 +31,48 @@ class ValueDefinition extends Script {
     @Override
     Object run() {
         return this
+
     }
 
-    ValueDefinition build() {
+    boolean shouldIntrospect() {
+        return introspect != null && introspect
+    }
+
+    protected ValueDefinition build() {
         for (final value : instanceValues) {
             value.build()
         }
         return this
     }
 
-    Map<ValuePredicate, Value> getPredicateValueMap() {
+    protected List<ValueDefinition> getParents() {
+        final parents = new LinkedList<ValueDefinition>()
+        ValueDefinition parent = this.parent
+        while (parent) {
+            parents.add(parent)
+            parent = this.parent?.parent
+        }
+        parents.add(this)
+        return parents
+    }
+
+    protected Map<ValuePredicate, Value> getPredicateValueMapDeep() {
+        final resultMap = new LinkedHashMap<ValuePredicate, Value>()
+        final valueMap = new LinkedHashMap<ValuePredicate, Value>()
+        final typeMap = new LinkedHashMap<ValuePredicate, Value>()
+        for (final parent : parents) {
+            valueMap.putAll(parent.propertyValueMap)
+            typeMap.putAll(parent.typeValueMap)
+        }
+        resultMap.putAll(valueMap)
+        resultMap.putAll(typeMap)
+        return resultMap
+    }
+
+    protected Map<ValuePredicate, Value> getPredicateValueMap() {
+        if (introspect) {
+            return getPredicateValueMapDeep()
+        }
         final resultMap = new LinkedHashMap<ValuePredicate, Value>()
         resultMap.putAll(propertyValueMap)
         resultMap.putAll(typeValueMap)
@@ -57,20 +89,47 @@ class ValueDefinition extends Script {
 
     protected void registerPredicateValue(ValuePredicate valuePredicate, ParentValue value) {
         value.parent = parent
-        registerPredicateValue(valuePredicate, (Value)value)
+        registerPredicateValue(valuePredicate, (Value) value)
     }
 
     protected void registerPredicateValue(ValuePredicate valuePredicate, InstanceValue value) {
         value.parent = this
         instanceValues.add(value)
         if (valuePredicate != null) {
-            registerPredicateValue(valuePredicate, (Value)value)
+            registerPredicateValue(valuePredicate, (Value) value)
         } else {
             ValueCategory.checkNullValue(value.predicate)
-            registerPredicateValue(value.predicate, (Value)value)
+            registerPredicateValue(value.predicate, (Value) value)
         }
     }
 
+    ValueDefinition forType(Class type, Boolean introspect = null, Collection constructorArgs = null, Closure defCl = null) {
+        ValueCategory.checkNullValue(type)
+        this.introspect = introspect
+        instanceValue = new InstanceValue(
+                definition: this,
+                type: type,
+                constructorArguments: constructorArgs,
+                predicate: new TypePredicate(type),
+                definitionClosure: defCl,
+        )
+        instanceValue.build()
+        return this
+    }
+
+    ValueDefinition forValue(Value value, Boolean introspect = null, Collection constructorArgs = null, Closure defCl = null) {
+        ValueCategory.checkNullValue(value)
+        this.introspect = introspect
+        instanceValue = new InstanceValue(
+                definition: this,
+                type: value.class,
+                constructorArguments: constructorArgs,
+                predicate: new TypePredicate(value.class),
+                definitionClosure: defCl,
+        )
+        instanceValue.build()
+        return this
+    }
 
     //------------------------------------------------------------------------------------------------------------------
     // Object Methods
@@ -87,127 +146,53 @@ class ValueDefinition extends Script {
         return this
     }
 
-
     //------------------------------------------------------------------------------------------------------------------
     // Number Methods
     //------------------------------------------------------------------------------------------------------------------
-    ValueDefinition incremental(Number value) {
-        ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: value.class), Incremental.of(value))
-        return this
-    }
-
-    ValueDefinition incremental(Number value, Number step) {
+    ValueDefinition incremental(Number value, Number step = null) {
         ValueCategory.checkNullValue(value)
         registerPredicateValue(new TypePredicate(type: value.class), Incremental.of(value, step))
         return this
     }
 
-    ValueDefinition random(Number value) {
-        ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: value.class), org.prismus.scrambler.value.Random.of(value))
-        return this
-    }
-
-    ValueDefinition random(Number value, Number minimum, Number maximum) {
-        ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: value.class), org.prismus.scrambler.value.Random.of(value, minimum, maximum))
-        return this
-    }
-
-    ValueDefinition random(Number minimum, Number maximum) {
+    ValueDefinition random(Number minimum = null, Number maximum = null) {
         ValueCategory.checkNullValue(minimum, maximum)
         final value = ValueCategory.getNotNullValue(minimum, maximum)
         registerPredicateValue(new TypePredicate(type: value.class), org.prismus.scrambler.value.Random.of(minimum, maximum))
         return this
     }
 
-
     //------------------------------------------------------------------------------------------------------------------
     // Date Methods
     //------------------------------------------------------------------------------------------------------------------
-    ValueDefinition incremental(Date value) {
-        ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: value.class), Incremental.of(value))
-        return this
-    }
-
-    ValueDefinition incremental(Date value, int step) {
-        ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: value.class), Incremental.of(value, step))
-        return this
-    }
-
-    ValueDefinition incremental(Date value, int step, int calendarField) {
+    ValueDefinition incremental(Date value, Integer step = null, Integer calendarField = null) {
         ValueCategory.checkNullValue(value)
         registerPredicateValue(new TypePredicate(type: value.class), Incremental.of(value, step, calendarField))
         return this
     }
 
-    ValueDefinition random(Date value) {
+    ValueDefinition random(Date value, Date minimum = null, Date maximum = null) {
         ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: value.class), org.prismus.scrambler.value.Random.of(value))
+        registerPredicateValue(new TypePredicate(type: Date), org.prismus.scrambler.value.Random.of(value, minimum, maximum))
         return this
     }
-
-    ValueDefinition random(Date minimum, Date maximum) {
-        ValueCategory.checkNullValue(minimum, maximum)
-        registerPredicateValue(new TypePredicate(type: Date), org.prismus.scrambler.value.Random.of(minimum, maximum))
-        return this
-    }
-
-    ValueDefinition random(Date value, Date minimum, Date maximum) {
-        ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: value.class), org.prismus.scrambler.value.Random.of(value, minimum, maximum))
-        return this
-    }
-
 
     //------------------------------------------------------------------------------------------------------------------
     // String Methods
     //------------------------------------------------------------------------------------------------------------------
-    ValueDefinition incremental(String value) {
-        ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: value.class), Incremental.of(value))
-        return this
-    }
-
-    ValueDefinition incremental(String value, int index) {
+    ValueDefinition incremental(String value, Integer index) {
         ValueCategory.checkNullValue(value)
         registerPredicateValue(new TypePredicate(type: value.class), Incremental.of(value, index))
         return this
     }
 
-    ValueDefinition incremental(String value, String pattern) {
-        ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: value.class), Incremental.of(value, pattern))
-        return this
-    }
-
-    ValueDefinition incremental(String value, String pattern, Integer index) {
+    ValueDefinition incremental(String value, String pattern = null, Integer index = null) {
         ValueCategory.checkNullValue(value)
         registerPredicateValue(new TypePredicate(type: String), Incremental.of(value, pattern, index))
         return this
     }
 
-    ValueDefinition random(String value) {
-        ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: String), org.prismus.scrambler.value.Random.of(value))
-        return this
-    }
-
-    ValueDefinition random(String value, Integer count) {
-        registerPredicateValue(new TypePredicate(type: String), org.prismus.scrambler.value.Random.of(value, count))
-        return this
-    }
-
-    ValueDefinition random(String value, Integer count, boolean includeLetters) {
-        ValueCategory.checkNullValue(value)
-        registerPredicateValue(new TypePredicate(type: String), org.prismus.scrambler.value.Random.of(value, count, includeLetters))
-        return this
-    }
-
-    ValueDefinition random(String value, Integer count, boolean includeLetters, boolean includeNumbers) {
+    ValueDefinition random(String value, Integer count = null, Boolean includeLetters = null, Boolean includeNumbers = null) {
         ValueCategory.checkNullValue(value)
         registerPredicateValue(new TypePredicate(type: String), org.prismus.scrambler.value.Random.of(value, count, includeLetters, includeNumbers))
         return this
@@ -224,13 +209,12 @@ class ValueDefinition extends Script {
         return this
     }
 
-    ValueDefinition parent(String propertyName) {
-        registerPredicateValue(ValueCategory.createPropertyPredicate(propertyName), new ParentValue())
-        return this
-    }
-
-    ValueDefinition parent(String propertyName, String parentPredicate) {
-        parent(ValueCategory.createPropertyPredicate(propertyName), ValueCategory.createPropertyPredicate(parentPredicate))
+    ValueDefinition parent(String propertyName, String parentPredicate = null) {
+        ValuePredicate parentPredicateInst = null
+        if (parentPredicate) {
+            parentPredicateInst = ValueCategory.createPropertyPredicate(parentPredicate)
+        }
+        parent(ValueCategory.createPropertyPredicate(propertyName), parentPredicateInst)
         return this
     }
 
@@ -245,7 +229,6 @@ class ValueDefinition extends Script {
         registerPredicateValue(ValueCategory.createPropertyPredicate(propertyName), new ParentValue(predicate: parentPredicate))
         return this
     }
-
 
     //------------------------------------------------------------------------------------------------------------------
     // Collection Methods
@@ -266,7 +249,6 @@ class ValueDefinition extends Script {
         return this
     }
 
-
     //------------------------------------------------------------------------------------------------------------------
     // Value Methods
     //------------------------------------------------------------------------------------------------------------------
@@ -280,7 +262,7 @@ class ValueDefinition extends Script {
 
     ValueDefinition of(InstanceValue value) {
         ValueCategory.checkNullValue(value)
-        registerPredicateValue((ValuePredicate)null, value)
+        registerPredicateValue((ValuePredicate) null, value)
         return this
     }
 
@@ -303,7 +285,6 @@ class ValueDefinition extends Script {
         return this
     }
 
-
     //------------------------------------------------------------------------------------------------------------------
     // Class Methods
     //------------------------------------------------------------------------------------------------------------------
@@ -323,7 +304,7 @@ class ValueDefinition extends Script {
     ValueDefinition parent(Class type) {
         ValueCategory.checkNullValue(type)
         final ValuePredicate predicate = new TypePredicate(type: type)
-        registerPredicateValue((ValuePredicate)predicate, new ParentValue())
+        registerPredicateValue((ValuePredicate) predicate, new ParentValue())
         return this
     }
 
@@ -341,10 +322,9 @@ class ValueDefinition extends Script {
     ValueDefinition parent(Class type, ValuePredicate parentPredicate) {
         ValueCategory.checkNullValue(type)
         final ValuePredicate predicate = new TypePredicate(type: type)
-        registerPredicateValue((ValuePredicate)predicate, new ParentValue(predicate: parentPredicate))
+        registerPredicateValue((ValuePredicate) predicate, new ParentValue(predicate: parentPredicate))
         return this
     }
-
 
     //------------------------------------------------------------------------------------------------------------------
     // Map Methods
@@ -357,11 +337,11 @@ class ValueDefinition extends Script {
 
             final value = entry.value
             if (String.isInstance(key)) {
-                of((String)key, value)
-            } else if(Class.isInstance(key)) {
-                of((Class)key, value)
-            } else if(ValuePredicate.isInstance(key)) {
-                of((ValuePredicate)key, value)
+                of((String) key, value)
+            } else if (Class.isInstance(key)) {
+                of((Class) key, value)
+            } else if (ValuePredicate.isInstance(key)) {
+                of((ValuePredicate) key, value)
             } else {
                 throw new IllegalArgumentException("Key should be of following types: ${[String, Class, ValuePredicate]}; passed map: $props")
             }
@@ -380,11 +360,11 @@ class ValueDefinition extends Script {
                 throw new IllegalArgumentException("Constant values can't be of Value type; passed map: $props")
             }
             if (String.isInstance(key)) {
-                of((String)key, new Constant(value))
-            } else if(Class.isInstance(key)) {
-                of((Class)key, new Constant(value))
-            } else if(ValuePredicate.isInstance(key)) {
-                of((ValuePredicate)key, new Constant(value))
+                of((String) key, new Constant(value))
+            } else if (Class.isInstance(key)) {
+                of((Class) key, new Constant(value))
+            } else if (ValuePredicate.isInstance(key)) {
+                of((ValuePredicate) key, new Constant(value))
             } else {
                 throw new IllegalArgumentException("Key should be of following types: ${[String, Class, ValuePredicate]}; passed map: $props")
             }

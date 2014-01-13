@@ -3,6 +3,7 @@ package org.prismus.scrambler.value;
 import org.prismus.scrambler.Value;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -116,6 +117,7 @@ public class Random {
         typeMap.put(Short.class, RandomShort.class);
         typeMap.put(Boolean.class, RandomBoolean.class);
         typeMap.put(Double.class, RandomDouble.class);
+        typeMap.put(BigInteger.class, RandomBigInteger.class);
         typeMap.put(BigDecimal.class, RandomBigDecimal.class);
         typeMap.put(Float.class, RandomFloat.class);
         typeMap.put(Integer.class, RandomInteger.class);

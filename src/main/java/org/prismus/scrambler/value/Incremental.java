@@ -3,6 +3,7 @@ package org.prismus.scrambler.value;
 import org.prismus.scrambler.Value;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -75,6 +76,7 @@ public class Incremental {
         typeMap.put(Byte.class, IncrementalByte.class);
         typeMap.put(Short.class, IncrementalShort.class);
         typeMap.put(Double.class, IncrementalDouble.class);
+        typeMap.put(BigInteger.class, IncrementalBigInteger.class);
         typeMap.put(BigDecimal.class, IncrementalBigDecimal.class);
         typeMap.put(Float.class, IncrementalFloat.class);
         typeMap.put(Integer.class, IncrementalInteger.class);

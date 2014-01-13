@@ -111,15 +111,15 @@ class ValueCategory {
         Class.metaClass {
             of { Closure defCl ->
                 return new InstanceValue(
-                        instanceType: (Class) delegate,
+                        type: (Class) delegate,
                         predicate: new TypePredicate(type: (Class) delegate),
                         definitionClosure: defCl
                 )
             }
 
-            of { Map<Object, Value> propertyValueMap, Closure defCl = null ->
+            of { Map<Object, Object> propertyValueMap, Closure defCl = null ->
                 return new InstanceValue(
-                        instanceType: (Class) delegate,
+                        type: (Class) delegate,
                         propertyValueMap: propertyValueMap,
                         predicate: new TypePredicate(type: (Class) delegate),
                         definitionClosure: defCl
@@ -128,7 +128,7 @@ class ValueCategory {
 
             of { String propertyName, Closure defCl ->
                 return new InstanceValue(
-                        instanceType: (Class) delegate,
+                        type: (Class) delegate,
                         predicate: createPropertyPredicate(propertyName),
                         definitionClosure: defCl
                 )
@@ -136,7 +136,7 @@ class ValueCategory {
 
             of { Collection constructorArgs, Closure defCl ->
                 return new InstanceValue(
-                        instanceType: (Class) delegate,
+                        type: (Class) delegate,
                         constructorArguments: constructorArgs,
                         predicate: new TypePredicate(type: (Class) delegate),
                         definitionClosure: defCl
@@ -145,23 +145,11 @@ class ValueCategory {
 
             of { String propertyName, Collection constructorArgs, Closure defCl ->
                 return new InstanceValue(
-                        instanceType: (Class) delegate,
+                        type: (Class) delegate,
                         constructorArguments: constructorArgs,
                         predicate: createPropertyPredicate(propertyName),
                         definitionClosure: defCl
                 )
-            }
-
-            constant { Map props -> // todo: implement me
-                throw new UnsupportedOperationException("The constant method is not supported for given implementation")
-            }
-
-            incremental { Map props ->
-                throw new UnsupportedOperationException("The incremental method is not supported for given implementation")
-            }
-
-            random { Map props ->
-                throw new UnsupportedOperationException("The random method is not supported for given implementation")
             }
         }
     }

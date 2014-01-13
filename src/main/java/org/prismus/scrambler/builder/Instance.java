@@ -4,9 +4,12 @@ import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.prismus.scrambler.Value;
 import org.prismus.scrambler.value.Constant;
+import org.prismus.scrambler.value.Incremental;
+import org.prismus.scrambler.value.Random;
 import org.prismus.scrambler.value.Util;
 
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -18,33 +21,32 @@ import java.util.*;
 public class Instance<T> extends Constant<T> {
     private static final String FAILED_SET_PROPERTIES_MSG = "Failed to set instance: %s with properties: %s";
 
-    // todo add introspection property generation on class/instance/method
-    // todo add new instance creation property value, with propertyValueMap introspection/matching on constructor arguments
     // todo add DB table introspection
     // todo review/get rid of (where possible) external library dependencies
     // todo add tests
-    private Object valueType;
+    private Object type;
+
+    private Map<String, Property> propertyMap;
+    private BeanUtilsBean beanUtilsBean;
+    private Map<String, Value> propertyValueMap;
     protected List<Value> constructorValues;
-    protected Map<String, Property> propertyMap;
-    protected Map<String, Value> propertyValueMap;
-    protected BeanUtilsBean beanUtilsBean;
 
     public Instance() {
-        this((T)null);
+        this((T) null);
     }
 
-    public Instance(String valueType) {
+    public Instance(String type) {
         super(null);
-        this.valueType = lookupType(valueType, false);
-        if (this.valueType == null) {
-            this.valueType = valueType;
+        this.type = lookupType(type, false);
+        if (this.type == null) {
+            this.type = type;
         }
         initialize();
     }
 
-    public Instance(Class valueType) {
+    public Instance(Class type) {
         super(null);
-        this.valueType = valueType;
+        this.type = type;
         initialize();
     }
 
@@ -53,40 +55,109 @@ public class Instance<T> extends Constant<T> {
         initialize();
     }
 
-    void initialize() {
+    protected void initialize() {
         constructorValues = new ArrayList<Value>();
         propertyValueMap = new LinkedHashMap<String, Value>();
         beanUtilsBean = Util.createBeanUtilsBean();
-        propertyMap = lookupPropertyDefinitions(value != null ? value : valueType);
+        propertyMap = lookupPropertyDefinitions(value != null ? value : type);
     }
 
-    public Instance<T> usingValueType(Object valueType) {
-        this.valueType = valueType;
+    public Instance<T> usingType(Class valueType) {
+        this.type = valueType;
         return this;
     }
 
-    public Instance<T> usingValueDefinition(ValueDefinition valueDefinition) {
+    public Instance<T> usingType(String valueType) {
+        this.type = valueType;
+        return this;
+    }
+
+    public Instance<T> using(ValueDefinition valueDefinition) {
+        registerPropertyValues(valueDefinition);
+        return this;
+    }
+
+    void registerPropertyValues(ValueDefinition valueDefinition) {
+        final Map<String, Property> unresolvedProps = new HashMap<String, Property>(propertyMap);
         for (final Map.Entry<ValuePredicate, Value> entry : valueDefinition.getPredicateValueMap().entrySet()) {
             final ValuePredicate predicate = entry.getKey();
             for (final Property property : propertyMap.values()) {
-                final String name = property.getName();
-                if (!propertyValueMap.containsKey(name)) {
-                    if (predicate.apply(name, property.getValueType())) {
-                        addPropertyValue(name, entry.getValue());
+                final String propertyName = property.getName();
+                if (!propertyValueMap.containsKey(propertyName)) {
+                    if (predicate.apply(propertyName, property.getValueType())) {
+                        addPropertyValue(propertyName, entry.getValue());
                         break;
                     }
                 }
             }
         }
-        return this;
+        if (valueDefinition.shouldIntrospect()) {
+            unresolvedProps.keySet().removeAll(propertyValueMap.keySet());
+            propertyValueMap.putAll(introspectTypes(valueDefinition, unresolvedProps));
+        }
     }
 
-    public Map<String, Property> getPropertyMap() {
-        return propertyMap;
+    Map<String, Value> introspectTypes(ValueDefinition valueDefinition, Map<String, Property> unresolvedProps) {
+        final Set<Class> supportedTypes = getSupportedTypes();
+        final Map<String, Value> propertyValueMap = new LinkedHashMap<String, Value>();
+        for (final Map.Entry<String, Property> entry : unresolvedProps.entrySet()) {
+            final String propertyName = entry.getKey();
+            final Property property = entry.getValue();
+            final Class propertyType = property.getType();
+            Value val = null;
+            if (supportedTypes.contains(propertyType)) {
+                val = Random.of(propertyType);
+            } else {
+                if (Iterable.class.isAssignableFrom(propertyType) || Map.class.isAssignableFrom(propertyType)) {
+                    continue;
+                }
+                final List<Value> ctorArgs = lookupConstructorArguments(valueDefinition, propertyType, supportedTypes);
+                if (ctorArgs != null) {
+                    val = new InstanceValue(propertyType, ctorArgs, valueDefinition);
+                }
+            }
+            if (val != null) {
+                propertyValueMap.put(propertyName, val);
+            }
+        }
+        return propertyValueMap;
     }
 
-    public void setPropertyMap(Map<String, Property> propertyMap) {
-        this.propertyMap = propertyMap;
+    protected Set<Class> getSupportedTypes() {
+        final Set<Class> knownTypes = new HashSet<Class>();
+        knownTypes.addAll(Incremental.getSupportedTypes());
+        knownTypes.addAll(org.prismus.scrambler.value.Random.getSupportedTypes());
+        return knownTypes;
+    }
+
+    List<Value> lookupConstructorArguments(ValueDefinition valueDefinition, Class type, Set<Class> supportedTypes) {
+        List<Value> result = null;
+        try {
+            final Map<ValuePredicate, Value> typeValueMap = valueDefinition.getTypeValueMap();
+            for (final Constructor ctor : type.getConstructors()) {
+                final Class[] types = ctor.getParameterTypes();
+                if (types == null) {
+                    return new ArrayList<Value>();
+                }
+                final List<Value> values = new ArrayList<Value>();
+                for (final Class argType : types) {
+                    // todo Serge: fishy, instead, a full iteration should be done across type map on predicate verification
+                    Value val = typeValueMap.get(new TypePredicate(argType));
+                    if (val == null && supportedTypes.contains(argType)) {
+                        val = Random.of(argType);
+                    }
+                    if (val != null) {
+                        values.add(val);
+                    }
+                }
+                if (values.size() == types.length) {
+                    result = values;
+                    break;
+                }
+            }
+        } catch (Exception ignore) {
+        }
+        return result;
     }
 
     public void setPropertyValueMap(Map<String, Value> propertyValueMap) {
@@ -98,15 +169,11 @@ public class Instance<T> extends Constant<T> {
         return this;
     }
 
-    public List<Value> getConstructorValues() {
-        return constructorValues;
-    }
-
     public void setConstructorValues(List<Value> constructorValues) {
         this.constructorValues = constructorValues;
     }
 
-    public Instance<T> usingConstructorArguments(List<Value> constructorValues) {
+    public Instance<T> using(List<Value> constructorValues) {
         this.constructorValues = constructorValues;
         return this;
     }
@@ -114,10 +181,6 @@ public class Instance<T> extends Constant<T> {
     public Instance<T> addConstructorValue(Value value) {
         constructorValues.add(value);
         return this;
-    }
-
-    public void setBeanUtilsBean(BeanUtilsBean beanUtilsBean) {
-        this.beanUtilsBean = beanUtilsBean;
     }
 
     void processPropertyMap(Object instance) {
@@ -139,15 +202,16 @@ public class Instance<T> extends Constant<T> {
     }
 
     Map<String, Property> lookupPropertyDefinitions(Object instanceType) {
-        final PropertyDescriptor[] propertyDescriptors;
         final PropertyUtilsBean propertyUtils = beanUtilsBean.getPropertyUtils();
         final boolean isInstance = !(instanceType instanceof Class);
+        final Map<String, Property> propertyDefinitionMap = new LinkedHashMap<String, Property>();
+
+        final PropertyDescriptor[] propertyDescriptors;
         if (isInstance) {
             propertyDescriptors = propertyUtils.getPropertyDescriptors(instanceType);
         } else {
             propertyDescriptors = propertyUtils.getPropertyDescriptors(((Class) instanceType));
         }
-        final Map<String, Property> propertyDefinitionMap = new LinkedHashMap<String, Property>();
         if (propertyDescriptors != null) {
             for (final PropertyDescriptor propertyDescriptor : propertyDescriptors) {
                 final String name = propertyDescriptor.getName();
@@ -215,7 +279,7 @@ public class Instance<T> extends Constant<T> {
     @SuppressWarnings({"unchecked"})
     T checkCreateInstance() {
         T result = this.value;
-        Object valueType = this.valueType;
+        Object valueType = this.type;
         if (valueType instanceof String) {
             valueType = lookupType((String) valueType, true);
         }
@@ -254,10 +318,6 @@ public class Instance<T> extends Constant<T> {
         processPropertyMap(instance);
         setValue(instance);
         return instance;
-    }
-
-    BeanUtilsBean getBeanUtilsBean() {
-        return beanUtilsBean;
     }
 
     Map<String, Value> getPropertyValueMap() {

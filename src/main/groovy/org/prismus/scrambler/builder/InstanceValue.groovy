@@ -15,14 +15,23 @@ class InstanceValue implements Value<Object> {
     protected Closure definitionClosure
     protected ValuePredicate predicate
 
-    protected Class instanceType
+    protected Class type
     protected Collection<Value> constructorArguments
-    protected Map<Object, Value> propertyValueMap
+    protected Map<Object, Object> propertyValueMap
 
     protected ValueDefinition definition
     protected Instance instance
 
     Object value
+
+    InstanceValue() {
+    }
+
+    InstanceValue(Class type, Collection<Value> constructorArguments, ValueDefinition parent) {
+        this.type = type
+        this.constructorArguments = constructorArguments
+        this.parent = parent
+    }
 
     @Override
     Object next() {
@@ -36,7 +45,8 @@ class InstanceValue implements Value<Object> {
     Object getParentValue(ValuePredicate valuePredicate) {
         Object resultValue = value
         if (valuePredicate != null) {
-            for (final entry : resultValue?.properties?.entrySet()) { // todo Serge: method is not performant. change it with cached setter method, thus only first time it will be slow
+            for (final entry : resultValue?.properties?.entrySet()) {
+                // todo Serge: method is not performant. change it with cached setter method, thus only first time it will be slow
                 if (checkApply(entry, predicate)) {
                     resultValue = entry.value
                     break
@@ -50,22 +60,33 @@ class InstanceValue implements Value<Object> {
         return valuePredicate.apply(entry.key.toString(), entry.value)
     }
 
-    ValueDefinition build() {
-        definition = new ValueDefinition(parent: parent, instanceValue: this)
+    protected ValueDefinition build() {
+        if (!definition) {
+            definition = new ValueDefinition(parent: parent, instanceValue: this)
+        }
+
         if (definitionClosure != null) {
             definitionClosure.rehydrate(definition, definition, definition).call(definition)
         }
+
         if (propertyValueMap) {
-            definition.of((Map)propertyValueMap)
+            definition.of((Map) propertyValueMap)
         }
+
         if (definitionClosure != null || propertyValueMap) {
             definition.build()
+            if (parent?.shouldIntrospect()) {
+                definition.introspect = Boolean.TRUE
+            }
         } else {
-            definition = parent
+            if (parent != null) {
+                definition = parent
+            }
         }
-        instance = new Instance(instanceType)
-                .usingValueDefinition(definition)
-                .usingConstructorArguments(constructorArguments?.toList())
+
+        instance = new Instance(type)
+                .using(definition)
+                .using(constructorArguments?.toList())
         return definition
     }
 
