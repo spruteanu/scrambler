@@ -1,5 +1,8 @@
 package org.prismus.scrambler.builder
 
+import org.codehaus.groovy.control.CompilerConfiguration
+import org.codehaus.groovy.control.customizers.ImportCustomizer
+import org.codehaus.groovy.runtime.ResourceGroovyMethods
 import org.prismus.scrambler.Value
 import org.prismus.scrambler.value.Constant
 import org.prismus.scrambler.value.Incremental
@@ -13,6 +16,9 @@ import org.prismus.scrambler.value.ValueCollection
 // todo add randomOf for array type (object array and primitive one) ???
 // todo add ValueArray for array type (object array and primitive one)
 class ValueDefinition extends Script {
+    private Properties configurationProperties
+    private GroovyShell shell
+
     InstanceValue instanceValue
     ValueDefinition parent
     Boolean introspect
@@ -31,11 +37,18 @@ class ValueDefinition extends Script {
     @Override
     Object run() {
         return this
-
     }
 
     boolean shouldIntrospect() {
         return introspect != null && introspect
+    }
+
+    void setConfigurationProperties(Properties configurationProperties) {
+        this.configurationProperties = configurationProperties
+    }
+
+    protected Properties getConfigurationProperties() {
+        return configurationProperties
     }
 
     protected ValueDefinition build() {
@@ -100,6 +113,70 @@ class ValueDefinition extends Script {
         } else {
             ValueCategory.checkNullValue(value.predicate)
             registerPredicateValue(value.predicate, (Value) value)
+        }
+    }
+
+    ValueDefinition parseText(String definitionText) {
+        if (shell == null) {
+            shell = createGroovyShell()
+        }
+        final definition = (ValueDefinition) shell.evaluate(
+                definitionText
+                        + "\n    build()"
+                        + "\n    return this"
+        )
+
+        definition.parent = this
+        propertyValueMap.putAll(definition.propertyValueMap)
+        typeValueMap.putAll(definition.typeValueMap)
+        if (definition.instanceValue != null) {
+            definition.instanceValue.parent = this
+            instanceValues.add(definition.instanceValue)
+        }
+        return definition
+    }
+
+    ValueDefinition parse(String resource) throws IOException {
+        final URL url = this.getClass().getResource(resource)
+        if (url == null) {
+            throw new IllegalArgumentException(String.format("Not found resource for: %s", resource))
+        }
+        return parseText(ResourceGroovyMethods.getText(url))
+    }
+
+    ValueDefinition parse(def resource) throws IOException {
+        return parseText(resource.text)
+    }
+
+    protected GroovyShell createGroovyShell() {
+        final compilerConfiguration = new CompilerConfiguration()
+        compilerConfiguration.setScriptBaseClass(ValueDefinition.name)
+
+        final importCustomizer = new ImportCustomizer()
+        importCustomizer.addStarImports(Value.package.name)
+        importCustomizer.addStarImports(Constant.package.name)
+        importCustomizer.addStarImports(getClass().package.name)
+        compilerConfiguration.addCompilationCustomizers(importCustomizer)
+
+        return new GroovyShell(compilerConfiguration)
+    }
+
+    void setConfigurationProperties(String configurationResource) throws IOException {
+        setConfigurationProperties(getClass().getResourceAsStream(configurationResource))
+    }
+
+    protected void setConfigurationProperties(InputStream inputStream) throws IOException {
+        if (inputStream != null) {
+            final Properties properties = new Properties()
+            try {
+                properties.load(inputStream)
+                this.configurationProperties = properties
+            } finally {
+                try {
+                    inputStream.close()
+                } catch (IOException ignore) {
+                }
+            }
         }
     }
 

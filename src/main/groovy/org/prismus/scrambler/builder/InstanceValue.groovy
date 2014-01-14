@@ -75,8 +75,8 @@ class InstanceValue implements Value<Object> {
 
         if (definitionClosure != null || propertyValueMap) {
             definition.build()
-            if (parent?.shouldIntrospect()) {
-                definition.introspect = Boolean.TRUE
+            if (definition.introspect == null) {
+                definition.introspect = parent?.introspect
             }
         } else {
             if (parent != null) {
