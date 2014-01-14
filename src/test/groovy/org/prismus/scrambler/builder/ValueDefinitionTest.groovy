@@ -165,7 +165,7 @@ of org.prismus.scrambler.builder.Instance.of([2.0.random(), 3], {
         final parser = new ValueDefinition()
 
         and:
-        def rootDefinition = parser.parseText("""
+        def definition = parser.parseText("""
 of 'id', 1.incremental(300)
 of org.prismus.scrambler.builder.Instance.of {
         parent '*Instance', 'id'
@@ -173,16 +173,16 @@ of org.prismus.scrambler.builder.Instance.of {
 """)
 
         expect: 'verify root definition'
-        0 < rootDefinition.typeValueMap.size()
-        null != rootDefinition.instanceValues[0].definition
-        parser == rootDefinition.parent // root definition
+        0 < definition.typeValueMap.size()
+        null != definition.instanceValues[0].definition
+        parser == definition.parent // root definition
 
         and: 'verify that parent of inner definition is root one'
-//        rootDefinition == rootDefinition.instanceValues[0].definition.parent
+        definition == definition.instanceValues[0].definition.parent
 
         and: 'verify ParentValue variables'
-        rootDefinition == rootDefinition.instanceValues[0].definition.propertyValueMap.values()[0].parent
-        null != rootDefinition.instanceValues[0].definition.propertyValueMap.values()[0].predicate
+        definition == definition.instanceValues[0].definition.propertyValueMap.values()[0].parent
+        null != definition.instanceValues[0].definition.propertyValueMap.values()[0].predicate
 
         and:
         parser.parseText("parent '*Parent'").propertyValueMap.size() > 0

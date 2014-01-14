@@ -13,7 +13,6 @@ import org.prismus.scrambler.value.ValueCollection
  *
  * @author Serge Pruteanu
  */
-// todo add randomOf for array type (object array and primitive one) ???
 // todo add ValueArray for array type (object array and primitive one)
 class ValueDefinition extends Script {
     private Properties configurationProperties
