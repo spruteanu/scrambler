@@ -78,7 +78,7 @@ class InstanceTest extends Specification {
         ValueCategory.registerValueMetaClasses()
         final instance = new Instance<Order>(Order)
         final definition = new ValueDefinition(
-                (BigDecimal): BigDecimal.ONE.random(0.0, 100.0),
+                (BigDecimal): BigDecimal.ONE.random(1.0, 100.0),
                 person: Person.of(
                         'firstName': ['Andy', 'Nicole', 'Nicolas', 'Jasmine'].randomOf(),
                         'lastName': ['Smith', 'Ferrara', 'Maldini', "Shaffer"].randomOf(),
@@ -105,8 +105,7 @@ class InstanceTest extends Specification {
         order.person.firstName != null
         order.person.lastName != null
         order.person.phone != null
-        // todo Serge: test random between it is buggy, it is not providing correct range
-        order.person.age > 1
+        order.person.age > 10
         ['M' as char, 'F' as char].contains(order.person.sex)
         order.items.size() > 0
         order.items[0].quantity > 0

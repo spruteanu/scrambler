@@ -36,7 +36,7 @@ class InstanceValue implements Value<Object> {
     @Override
     Object next() {
         if (definition == null) {
-            build()
+            build()ª
         }
         value = instance.next()
         return value

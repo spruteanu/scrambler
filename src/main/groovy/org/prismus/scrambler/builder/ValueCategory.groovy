@@ -3,6 +3,7 @@ package org.prismus.scrambler.builder
 import org.prismus.scrambler.Value
 import org.prismus.scrambler.value.Constant
 import org.prismus.scrambler.value.Incremental
+import org.prismus.scrambler.value.ValueArray
 import org.prismus.scrambler.value.ValueCollection
 import org.prismus.scrambler.value.ValueMap
 
@@ -149,6 +150,15 @@ class ValueCategory {
                         constructorArguments: constructorArgs,
                         predicate: createPropertyPredicate(propertyName),
                         definitionClosure: defCl
+                )
+            }
+
+            array { Value val, Integer count = null, Boolean randomCount = null, Boolean primitiveArray = null ->
+                return new ValueArray(
+                        valueType: (Class)delegate,
+                        count: count,
+                        randomCount: randomCount,
+                        primitiveArray: primitiveArray,
                 )
             }
         }

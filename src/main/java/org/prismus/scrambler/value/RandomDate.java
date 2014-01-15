@@ -3,7 +3,6 @@ package org.prismus.scrambler.value;
 import org.apache.commons.lang.time.DateUtils;
 
 import java.sql.Timestamp;
-import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -33,15 +32,18 @@ public class RandomDate extends AbstractRandomRange<Date> {
             value = new Date(new RandomLong().between(minimum.getTime(), maximum.getTime()).next());
         } else {
             if (value == null) {
+                value = minimum;
+            }
+            if (value == null) {
+                value = maximum;
+            }
+            if (value == null) {
                 value = new Timestamp(System.currentTimeMillis());
             }
-            final Date minDate = DateUtils.round(value, Calendar.DATE);
-            value = new Date(new RandomLong()
-                    .between(
-                            minDate.getTime(),
-                            DateUtils.addDays(minDate, 1).getTime()
-                    ).next()
-            );
+            value = new Date(new RandomLong().between(
+                    value.getTime(),
+                    DateUtils.addDays(value, 1).getTime()
+            ).next());
         }
         setValue(value);
         return value;

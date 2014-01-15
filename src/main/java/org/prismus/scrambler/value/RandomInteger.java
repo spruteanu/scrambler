@@ -30,7 +30,7 @@ public class RandomInteger extends AbstractRandomRange<Integer> {
         Integer value = super.next();
         final Random random = new Random();
         if (minimum != null && maximum != null) {
-            value = random.nextInt(maximum - minimum) + 1;
+            value = minimum + random.nextInt(Math.abs(maximum - minimum));
         } else {
             value = value != null ? random.nextInt(Math.abs(value) + 1) : random.nextInt();
         }
