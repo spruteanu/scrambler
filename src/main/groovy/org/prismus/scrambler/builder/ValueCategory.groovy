@@ -155,6 +155,7 @@ class ValueCategory {
 
             array { Value val, Integer count = null, Boolean randomCount = null, Boolean primitiveArray = null ->
                 return new ValueArray(
+                        instance: val,
                         valueType: (Class)delegate,
                         count: count,
                         randomCount: randomCount,

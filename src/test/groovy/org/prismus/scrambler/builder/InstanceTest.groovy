@@ -56,8 +56,8 @@ class InstanceTest extends Specification {
 
         expect:
         null != propertyDescriptors
-        3 == propertyDescriptors.size()
-        propertyDescriptors.keySet().equals(['total', 'person', 'items'] as Set)
+        4 == propertyDescriptors.size()
+        propertyDescriptors.keySet().equals(['arrayField', 'total', 'person', 'items'] as Set)
         ArrayList == propertyDescriptors.get('items')?.value?.class
     }
 
@@ -79,6 +79,7 @@ class InstanceTest extends Specification {
         final instance = new Instance<Order>(Order)
         final definition = new ValueDefinition(
                 (BigDecimal): BigDecimal.ONE.random(1.0, 100.0),
+                (int[]): int.array(10.incremental(10)),
                 person: Person.of(
                         'firstName': ['Andy', 'Nicole', 'Nicolas', 'Jasmine'].randomOf(),
                         'lastName': ['Smith', 'Ferrara', 'Maldini', "Shaffer"].randomOf(),
@@ -101,6 +102,8 @@ class InstanceTest extends Specification {
 
         expect:
         order.total > 1
+        order.arrayField != null
+        order.arrayField.length  > 0
         order.person != null
         order.person.firstName != null
         order.person.lastName != null
@@ -137,6 +140,8 @@ class InstanceTest extends Specification {
         order.person.lastName != null
         order.person.phone != null
         order.person.age > 1
+        order.arrayField != null
+        order.arrayField.length  > 0
     }
 
     // todo Serge: add test cases for parent reference
@@ -145,6 +150,8 @@ class InstanceTest extends Specification {
         BigDecimal total
         List<OrderItem> items = new ArrayList<OrderItem>()
         Person person
+
+        int[] arrayField
     }
 
     private static class Product {

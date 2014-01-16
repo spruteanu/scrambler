@@ -78,10 +78,12 @@ public abstract class AbstractRandomRange<T> extends Constant<T> {
     }
 
     protected void checkBoundaries() {
-        if (minimum != null && maximum == null) {
+        if (minimum == null && maximum == null) {
+            minimum = defaultMinimum;
             maximum = defaultMaximum;
-        }
-        if (minimum == null && maximum != null) {
+        } else if (minimum != null && maximum == null) {
+            maximum = defaultMaximum;
+        } else if (minimum == null) {
             minimum = defaultMinimum;
         }
     }

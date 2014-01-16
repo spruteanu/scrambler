@@ -10,9 +10,9 @@ import java.lang.reflect.Array
  */
 class ValueArray extends Constant {
     Integer count
-    Value value
+    Value instance
     Boolean randomCount
-    boolean primitiveArray
+    Boolean primitiveArray
     Class valueType
 
     ValueArray() {
@@ -22,23 +22,37 @@ class ValueArray extends Constant {
         this(array, null, value)
     }
 
+    ValueArray(Class valueType, Value value) {
+        this(valueType, null, value)
+    }
+
     ValueArray(def array, Integer count, Value value) {
         this(array, count, value, null)
+    }
+
+    ValueArray(Class valueType, Integer count, Value value) {
+        this(valueType, count, value, null)
     }
 
     ValueArray(def array, Integer count, Value value1, Boolean randomCount) {
         super(array)
         this.count = count
-        this.value = value1
+        this.instance = value1
+        this.randomCount = randomCount
+    }
+
+    ValueArray(Class valueType, Integer count, Value value1, Boolean randomCount) {
+        super(null)
+        this.valueType = valueType
+        this.count = count
+        this.instance = value1
         this.randomCount = randomCount
     }
 
     ValueArray asType(Class valueType) {
-        this.valueType = valueType
-        if (valueType != null) {
-            if (!primitiveArray) {
-                primitiveArray = valueType.isPrimitive()
-            }
+        this.valueType = valueType.isArray() ? valueType.componentType : valueType
+        if (!primitiveArray) {
+            primitiveArray = valueType.isPrimitive()
         }
         return this
     }
@@ -53,15 +67,10 @@ class ValueArray extends Constant {
         return this
     }
 
-    void setValue(Value value) {
-        this.value = value
-    }
-
     @Override
     Object next() {
         def value = super.next()
-        final Value valueInstance = this.value
-        validateArguments(value, valueInstance)
+        validateArguments(value, instance)
         int count = this.count != null ? this.count : 0
         if (count == 0) {
             count = 20
@@ -69,12 +78,13 @@ class ValueArray extends Constant {
         if (randomCount != null && randomCount) {
             count = new RandomInteger(count).between(0, count).next()
         }
-        checkCreate(value, count)
+        value = checkCreate(value, count)
         for (int i = 0; i < count; i++) {
-            value[i] = valueInstance.next()
+            value[i] = instance.next()
         }
 
-        if (primitiveArray) {
+        if (primitiveArray && !value.class.componentType.primitive) {
+            // todo Serge: it is not optimal, faster would be to have separate value set directly into array for all coerced types
             value = ArrayUtils.toPrimitive(value)
         }
         setValue(value)
@@ -86,10 +96,13 @@ class ValueArray extends Constant {
         Class type = valueType
         if (type == null) {
             if (array.length != count || (array.length > 0 && array[0] != null)) {
-                type = array.getClass()
+                type = array.class
             } else {
                 return array
             }
+        }
+        if (type.isArray()) {
+            type = type.componentType
         }
         array = Array.newInstance(type, count)
         return array
@@ -102,7 +115,7 @@ class ValueArray extends Constant {
             }
         }
         if (property == null) {
-            throw new IllegalArgumentException("Collection/property instances should not be null")
+            throw new IllegalArgumentException("Value instance should not be null")
         }
     }
 

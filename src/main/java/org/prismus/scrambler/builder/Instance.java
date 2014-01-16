@@ -3,10 +3,8 @@ package org.prismus.scrambler.builder;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.prismus.scrambler.Value;
-import org.prismus.scrambler.value.Constant;
-import org.prismus.scrambler.value.Incremental;
+import org.prismus.scrambler.value.*;
 import org.prismus.scrambler.value.Random;
-import org.prismus.scrambler.value.Util;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
@@ -21,9 +19,6 @@ import java.util.*;
 public class Instance<T> extends Constant<T> {
     private static final String FAILED_SET_PROPERTIES_MSG = "Failed to set instance: %s with properties: %s";
 
-    // todo add DB table introspection
-    // todo review/get rid of (where possible) external library dependencies
-    // todo add tests
     private Object type;
 
     private Map<String, Property> propertyMap;
@@ -107,6 +102,8 @@ public class Instance<T> extends Constant<T> {
             Value val = null;
             if (supportedTypes.contains(propertyType)) {
                 val = Random.of(propertyType);
+            } else if(propertyType.isArray() && supportedTypes.contains(propertyType.getComponentType())) {
+                val = new ValueArray(propertyType, Random.of(propertyType.getComponentType()));
             } else {
                 if (Iterable.class.isAssignableFrom(propertyType) || Map.class.isAssignableFrom(propertyType)) {
                     continue;

@@ -85,11 +85,17 @@ public class Random {
     @SuppressWarnings({"unchecked"})
     public static <T> Value<T> of(Class<T> clazzType, T defaultValue) {
         if (propertyTypeMap.containsKey(clazzType)) {
-            return (Value) Util.createInstance(
-                    propertyTypeMap.get(clazzType),
-                    new Object[]{defaultValue},
-                    new Class[]{clazzType}
-            );
+            if (clazzType.isPrimitive()) {
+                return (Value) Util.createInstance(
+                        propertyTypeMap.get(clazzType), null, null
+                );
+            } else {
+                return (Value) Util.createInstance(
+                        propertyTypeMap.get(clazzType),
+                        new Object[]{defaultValue},
+                        new Class[]{clazzType}
+                );
+            }
         }
         throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s",
                 clazzType, defaultValue));
@@ -114,14 +120,29 @@ public class Random {
     static Map<Class, Class<? extends Value>> lookupPropertyTypeMap() {
         final Map<Class, Class<? extends Value>> typeMap = new LinkedHashMap<Class, Class<? extends Value>>();
         typeMap.put(Byte.class, RandomByte.class);
+        typeMap.put(Byte.TYPE, RandomByte.class);
+
         typeMap.put(Short.class, RandomShort.class);
+        typeMap.put(Short.TYPE, RandomShort.class);
+
         typeMap.put(Boolean.class, RandomBoolean.class);
+        typeMap.put(Boolean.TYPE, RandomBoolean.class);
+
         typeMap.put(Double.class, RandomDouble.class);
+        typeMap.put(Double.TYPE, RandomDouble.class);
+
+        typeMap.put(Float.class, RandomFloat.class);
+        typeMap.put(Float.TYPE, RandomFloat.class);
+
+        typeMap.put(Integer.class, RandomInteger.class);
+        typeMap.put(Integer.TYPE, RandomInteger.class);
+
+        typeMap.put(Long.class, RandomLong.class);
+        typeMap.put(Long.TYPE, RandomLong.class);
+
         typeMap.put(BigInteger.class, RandomBigInteger.class);
         typeMap.put(BigDecimal.class, RandomBigDecimal.class);
-        typeMap.put(Float.class, RandomFloat.class);
-        typeMap.put(Integer.class, RandomInteger.class);
-        typeMap.put(Long.class, RandomLong.class);
+
         typeMap.put(String.class, RandomString.class);
         typeMap.put(Date.class, RandomDate.class);
         typeMap.put(java.sql.Date.class, RandomDate.class);

@@ -73,14 +73,27 @@ public class Incremental {
 
     static Map<Class, Class<? extends Value>> lookupPropertyTypeMap() {
         final Map<Class, Class<? extends Value>> typeMap = new LinkedHashMap<Class, Class<? extends Value>>();
+        typeMap.put(Byte.TYPE, IncrementalByte.class);
         typeMap.put(Byte.class, IncrementalByte.class);
+
+        typeMap.put(Short.TYPE, IncrementalShort.class);
         typeMap.put(Short.class, IncrementalShort.class);
+
+        typeMap.put(Double.TYPE, IncrementalDouble.class);
         typeMap.put(Double.class, IncrementalDouble.class);
+
+        typeMap.put(Float.class, IncrementalFloat.class);
+        typeMap.put(Integer.TYPE, IncrementalInteger.class);
+
+        typeMap.put(Integer.class, IncrementalInteger.class);
+        typeMap.put(Integer.TYPE, IncrementalInteger.class);
+
+        typeMap.put(Long.class, IncrementalLong.class);
+        typeMap.put(Long.TYPE, IncrementalLong.class);
+
         typeMap.put(BigInteger.class, IncrementalBigInteger.class);
         typeMap.put(BigDecimal.class, IncrementalBigDecimal.class);
-        typeMap.put(Float.class, IncrementalFloat.class);
-        typeMap.put(Integer.class, IncrementalInteger.class);
-        typeMap.put(Long.class, IncrementalLong.class);
+
         typeMap.put(String.class, IncrementalString.class);
         typeMap.put(Date.class, IncrementalDate.class);
         typeMap.put(java.sql.Date.class, IncrementalDate.class);

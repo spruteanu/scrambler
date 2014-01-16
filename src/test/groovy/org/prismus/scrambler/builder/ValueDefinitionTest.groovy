@@ -91,6 +91,7 @@ constant 'some template string'
         parser.parseText("of new Object().constant()").typeValueMap.size() > 0
 
         parser.parseText("""
+of '*array', int.array(1.random())
 of 1.random(1, 100)
 of([1, 2, 3].randomOf())
 of new Date().incremental(1, Calendar.HOUR)
@@ -217,6 +218,7 @@ of org.prismus.scrambler.builder.Instance.of {
         null != 2.random(1, 100)
         null != 3L.random(1L, 100L)
         null != new Date().random()
+        null != int.array(1.random())
         null != 'some template string'.random(100, true, false)
 
         null != Instance.of {
