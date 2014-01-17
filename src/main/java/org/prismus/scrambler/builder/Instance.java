@@ -69,6 +69,11 @@ public class Instance<T> extends Constant<T> {
 
     public Instance<T> using(ValueDefinition valueDefinition) {
         registerPropertyValues(valueDefinition);
+        final InstanceValue instanceValue = new InstanceValue();
+        instanceValue.instance = this;
+        instanceValue.definition = valueDefinition;
+        instanceValue.setParent(valueDefinition.getParent());
+        valueDefinition.setInstanceValue(instanceValue);
         return this;
     }
 
@@ -312,8 +317,8 @@ public class Instance<T> extends Constant<T> {
 
     public T next() {
         final T instance = checkCreateInstance();
-        processPropertyMap(instance);
         setValue(instance);
+        processPropertyMap(instance);
         return instance;
     }
 

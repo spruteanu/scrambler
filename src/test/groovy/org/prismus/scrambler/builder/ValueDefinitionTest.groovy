@@ -181,8 +181,8 @@ of org.prismus.scrambler.builder.Instance.of {
         and: 'verify that parent of inner definition is root one'
         definition == definition.instanceValues[0].definition.parent
 
-        and: 'verify ParentValue variables'
-        definition == definition.instanceValues[0].definition.propertyValueMap.values()[0].parent
+        and: 'verify ReferenceValue variables'
+        definition == definition.instanceValues[0].definition.propertyValueMap.values()[0].definition
         null != definition.instanceValues[0].definition.propertyValueMap.values()[0].predicate
 
         and:

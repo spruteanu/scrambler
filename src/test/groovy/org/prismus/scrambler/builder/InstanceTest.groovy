@@ -145,6 +145,42 @@ class InstanceTest extends Specification {
     }
 
     // todo Serge: add test cases for parent reference
+    void 'test if parent is set properly'() {
+        given:
+        ValueCategory.registerValueMetaClasses()
+
+        final instance = new Instance<School>(School)
+        final definition = new ValueDefinition(
+                '*Id': 1.incremental(1),
+                'name': ['Enatai', 'Medina', 'Value Crest', 'Newport'].randomOf(),
+                (List): [].of(ClassRoom.of(
+                        parent: new ParentValue(), //todo Serge: parent value property reference is not supported
+                        roomNumber: "101A".random(4),
+                ), 10),
+        )
+        instance.using(definition)
+        final school = instance.next()
+
+        expect:
+        school != null
+        school.rooms != null
+        school.rooms.size() > 0
+        school.rooms[0].roomNumber.length() > 0
+        school.rooms[0].parent == school
+//        school.rooms[0].schoolId == school.schoolId
+    }
+
+    private static class School {
+        int schoolId
+        String name
+        List<ClassRoom> rooms
+    }
+
+    private static class ClassRoom {
+        School parent
+        int schoolId
+        String roomNumber
+    }
 
     private static class Order {
         BigDecimal total

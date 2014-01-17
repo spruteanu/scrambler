@@ -1,7 +1,6 @@
 package org.prismus.scrambler.builder
 
 import groovy.transform.CompileStatic
-import org.prismus.scrambler.Value
 
 /**
  * todo: add description
@@ -9,17 +8,15 @@ import org.prismus.scrambler.Value
  * @author Serge Pruteanu
  */
 @CompileStatic
-class ParentValue implements Value {
-    ValueDefinition parent
-    ValuePredicate predicate
+class ParentValue extends ReferenceValue {
 
     @Override
-    Object next() {
-        return getValue()
+    ValueDefinition getDefinition() {
+        return super.definition.parent
     }
 
     public Object getValue() {
-        return parent.instanceValue?.getParentValue(predicate)
+        return this.getDefinition().instanceValue?.getParentValue(predicate)
     }
 
 }

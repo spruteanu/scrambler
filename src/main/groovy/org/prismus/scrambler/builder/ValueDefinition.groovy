@@ -6,6 +6,7 @@ import org.codehaus.groovy.runtime.ResourceGroovyMethods
 import org.prismus.scrambler.Value
 import org.prismus.scrambler.value.Constant
 import org.prismus.scrambler.value.Incremental
+import org.prismus.scrambler.value.ValueArray
 import org.prismus.scrambler.value.ValueCollection
 
 /**
@@ -99,8 +100,30 @@ class ValueDefinition extends Script {
         propertyValueMap.put(valuePredicate, value)
     }
 
+    protected void registerPredicateValue(ValuePredicate valuePredicate, ReferenceValue value) {
+        value.definition = this
+        registerPredicateValue(valuePredicate, (Value) value)
+    }
+
     protected void registerPredicateValue(ValuePredicate valuePredicate, ParentValue value) {
-        value.parent = parent
+        value.definition = this
+        registerPredicateValue(valuePredicate, (Value) value)
+    }
+
+    protected ValueDefinition lookupRegisterParent(Value value) {
+        if (value instanceof DefinitionRegistrable) {
+            ((DefinitionRegistrable) value).registerDefinition(this)
+        }
+        return this
+    }
+
+    protected void registerPredicateValue(ValuePredicate valuePredicate, ValueCollection value) {
+        lookupRegisterParent(value.instance)
+        registerPredicateValue(valuePredicate, (Value) value)
+    }
+
+    protected void registerPredicateValue(ValuePredicate valuePredicate, ValueArray value) {
+        lookupRegisterParent(value.instance)
         registerPredicateValue(valuePredicate, (Value) value)
     }
 
@@ -357,7 +380,7 @@ class ValueDefinition extends Script {
 
     ValueDefinition parent(ValuePredicate valuePredicate, ValuePredicate parentPredicate) {
         ValueCategory.checkNullValue(valuePredicate)
-        registerPredicateValue(valuePredicate, new ParentValue(predicate: parentPredicate))
+        registerPredicateValue(valuePredicate, new ParentValue(definition: this, predicate: parentPredicate))
         return this
     }
 

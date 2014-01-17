@@ -10,8 +10,8 @@ import org.prismus.scrambler.value.Constant
  * @author Serge Pruteanu
  */
 @CompileStatic
-class InstanceValue implements Value<Object> {
-    protected ValueDefinition parent
+class InstanceValue implements Value<Object>, DefinitionRegistrable {
+    ValueDefinition parent
     protected Closure definitionClosure
     protected ValuePredicate predicate
 
@@ -21,8 +21,6 @@ class InstanceValue implements Value<Object> {
 
     protected ValueDefinition definition
     protected Instance instance
-
-    Object value
 
     InstanceValue() {
     }
@@ -34,16 +32,20 @@ class InstanceValue implements Value<Object> {
     }
 
     @Override
+    void registerDefinition(ValueDefinition definition) {
+        parent = definition
+    }
+
+    @Override
     Object next() {
         if (definition == null) {
             build()
         }
-        value = instance.next()
-        return value
+        return instance.next()
     }
 
     Object getParentValue(ValuePredicate valuePredicate) {
-        Object resultValue = value
+        Object resultValue = instance.value
         if (valuePredicate != null) {
             for (final entry : resultValue?.properties?.entrySet()) {
                 // todo Serge: method is not performant. change it with cached setter method, thus only first time it will be slow

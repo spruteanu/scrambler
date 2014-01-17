@@ -9,7 +9,7 @@ import java.util.Collection;
  */
 public class ValueCollection<V, T extends Collection<V>> extends Constant<T> {
     private Integer count;
-    private Value<V> value;
+    private Value<V> instance;
     private Boolean randomCount;
 
     @SuppressWarnings({"unchecked"})
@@ -24,7 +24,7 @@ public class ValueCollection<V, T extends Collection<V>> extends Constant<T> {
     public ValueCollection(T value, Integer count, Value<V> value1, Boolean randomCount) {
         super(value);
         this.count = count;
-        this.value = value1;
+        this.instance = value1;
         this.randomCount = randomCount;
     }
 
@@ -32,18 +32,22 @@ public class ValueCollection<V, T extends Collection<V>> extends Constant<T> {
         this.count = count;
     }
 
-    public void setValue(Value<V> value) {
-        this.value = value;
-    }
-
     public void setRandomCount(Boolean randomCount) {
         this.randomCount = randomCount;
+    }
+
+    public Value<V> getInstance() {
+        return instance;
+    }
+
+    public void setInstance(Value<V> instance) {
+        this.instance = instance;
     }
 
     @Override
     public T next() {
         final T value = super.next();
-        final Value<V> valueInstance = this.value;
+        final Value<V> valueInstance = instance;
         validateArguments(value, valueInstance);
         int count = this.count != null ? this.count : 0;
         if (count == 0) {
