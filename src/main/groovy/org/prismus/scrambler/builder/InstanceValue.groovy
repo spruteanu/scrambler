@@ -44,22 +44,8 @@ class InstanceValue implements Value<Object>, DefinitionRegistrable {
         return instance.next()
     }
 
-    Object getParentValue(ValuePredicate valuePredicate) {
-        Object resultValue = instance.value
-        if (valuePredicate != null) {
-            for (final entry : resultValue?.properties?.entrySet()) {
-                // todo Serge: method is not performant. change it with cached setter method, thus only first time it will be slow
-                if (checkApply(entry, predicate)) {
-                    resultValue = entry.value
-                    break
-                }
-            }
-        }
-        return resultValue
-    }
-
-    protected boolean checkApply(Map.Entry entry, ValuePredicate valuePredicate) {
-        return valuePredicate.apply(entry.key.toString(), entry.value)
+    Object getValue() {
+        return instance.value
     }
 
     protected ValueDefinition build() {

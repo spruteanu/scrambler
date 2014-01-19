@@ -14,7 +14,6 @@ import org.prismus.scrambler.value.ValueCollection
  *
  * @author Serge Pruteanu
  */
-// todo add ValueArray for array type (object array and primitive one)
 class ValueDefinition extends Script {
     private Properties configurationProperties
     private GroovyShell shell
@@ -98,11 +97,6 @@ class ValueDefinition extends Script {
 
     protected void registerPredicateValue(ValuePredicate valuePredicate, Value value) {
         propertyValueMap.put(valuePredicate, value)
-    }
-
-    protected void registerPredicateValue(ValuePredicate valuePredicate, ReferenceValue value) {
-        value.definition = this
-        registerPredicateValue(valuePredicate, (Value) value)
     }
 
     protected void registerPredicateValue(ValuePredicate valuePredicate, ParentValue value) {
@@ -308,24 +302,8 @@ class ValueDefinition extends Script {
         return this
     }
 
-    ValueDefinition parent(String propertyName, String parentPredicate = null) {
-        ValuePredicate parentPredicateInst = null
-        if (parentPredicate) {
-            parentPredicateInst = ValueCategory.createPropertyPredicate(parentPredicate)
-        }
-        parent(ValueCategory.createPropertyPredicate(propertyName), parentPredicateInst)
-        return this
-    }
-
-    ValueDefinition parent(String propertyName, Class parentPredicate) {
-        ValueCategory.checkNullValue(parentPredicate)
-        parent(ValueCategory.createPropertyPredicate(propertyName), new TypePredicate(type: parentPredicate))
-        return this
-    }
-
-    ValueDefinition parent(String propertyName, ValuePredicate parentPredicate) {
-        ValueCategory.checkNullValue(parentPredicate)
-        registerPredicateValue(ValueCategory.createPropertyPredicate(propertyName), new ParentValue(predicate: parentPredicate))
+    ValueDefinition parent(String propertyName) {
+        registerPredicateValue(ValueCategory.createPropertyPredicate(propertyName), new ParentValue())
         return this
     }
 
@@ -378,9 +356,9 @@ class ValueDefinition extends Script {
         return this
     }
 
-    ValueDefinition parent(ValuePredicate valuePredicate, ValuePredicate parentPredicate) {
+    ValueDefinition parent(ValuePredicate valuePredicate) {
         ValueCategory.checkNullValue(valuePredicate)
-        registerPredicateValue(valuePredicate, new ParentValue(definition: this, predicate: parentPredicate))
+        registerPredicateValue(valuePredicate, new ParentValue(definition: this))
         return this
     }
 
@@ -404,24 +382,6 @@ class ValueDefinition extends Script {
         ValueCategory.checkNullValue(type)
         final ValuePredicate predicate = new TypePredicate(type: type)
         registerPredicateValue((ValuePredicate) predicate, new ParentValue())
-        return this
-    }
-
-    ValueDefinition parent(Class type, String parentPredicate) {
-        parent(type, ValueCategory.createPropertyPredicate(parentPredicate))
-        return this
-    }
-
-    ValueDefinition parent(Class type, Class parentPredicate) {
-        ValueCategory.checkNullValue(parentPredicate)
-        parent(type, new TypePredicate(type: parentPredicate))
-        return this
-    }
-
-    ValueDefinition parent(Class type, ValuePredicate parentPredicate) {
-        ValueCategory.checkNullValue(type)
-        final ValuePredicate predicate = new TypePredicate(type: type)
-        registerPredicateValue((ValuePredicate) predicate, new ParentValue(predicate: parentPredicate))
         return this
     }
 
