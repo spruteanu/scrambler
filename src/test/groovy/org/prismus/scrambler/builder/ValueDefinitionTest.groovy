@@ -169,7 +169,7 @@ of org.prismus.scrambler.builder.Instance.of([2.0.random(), 3], {
         def definition = parser.parseText("""
 of 'id', 1.incremental(300)
 of org.prismus.scrambler.builder.Instance.of {
-        parent '*Instance', 'id'
+        parent '*Instance'
 }
 """)
 
@@ -180,10 +180,6 @@ of org.prismus.scrambler.builder.Instance.of {
 
         and: 'verify that parent of inner definition is root one'
         definition == definition.instanceValues[0].definition.parent
-
-        and: 'verify ReferenceValue variables'
-        definition == definition.instanceValues[0].definition.propertyValueMap.values()[0].definition
-        null != definition.instanceValues[0].definition.propertyValueMap.values()[0].predicate
 
         and:
         parser.parseText("parent '*Parent'").propertyValueMap.size() > 0

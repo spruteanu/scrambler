@@ -23,7 +23,7 @@ class ReferenceValue implements Value, DefinitionRegistrable {
     }
 
     @Override
-    void register(ValueDefinition definition) {
+    void registerDefinition(ValueDefinition definition) {
         this.definition = definition
     }
 

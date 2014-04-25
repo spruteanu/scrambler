@@ -144,7 +144,6 @@ class InstanceTest extends Specification {
         order.arrayField.length  > 0
     }
 
-    // todo Serge: add test cases for parent reference
     void 'test if parent is set properly'() {
         given:
         ValueDefinition.register()
@@ -154,7 +153,7 @@ class InstanceTest extends Specification {
                 '*Id': 1.incremental(1),
                 'name': ['Enatai', 'Medina', 'Value Crest', 'Newport'].randomOf(),
                 (List): [].of(ClassRoom.of(
-                        parent: new ParentValue(), //todo Serge: parent value property reference is not supported
+                        parent: new ParentValue(),
                         roomNumber: "101A".random(4),
                 ), 10),
         )
@@ -167,7 +166,6 @@ class InstanceTest extends Specification {
         school.rooms.size() > 0
         school.rooms[0].roomNumber.length() > 0
         school.rooms[0].parent == school
-//        school.rooms[0].schoolId == school.schoolId
     }
 
     private static class School {
@@ -178,7 +176,6 @@ class InstanceTest extends Specification {
 
     private static class ClassRoom {
         School parent
-        int schoolId
         String roomNumber
     }
 
