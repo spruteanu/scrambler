@@ -75,7 +75,7 @@ class InstanceTest extends Specification {
 
     void 'check value definitions (tree definition) for instance'() {
         given:
-        ValueCategory.registerValueMetaClasses()
+        ValueDefinition.register()
         final instance = new Instance<Order>(Order)
         final definition = new ValueDefinition(
                 (BigDecimal): BigDecimal.ONE.random(1.0, 100.0),
@@ -121,7 +121,7 @@ class InstanceTest extends Specification {
 
     void 'check value definition introspection'() {
         given:
-        ValueCategory.registerValueMetaClasses()
+        ValueDefinition.register()
         final definition = new ValueDefinition(
                 'firstName': ['Andy', 'Nicole', 'Nicolas', 'Jasmine'].randomOf(),
                 'lastName': ['Smith', 'Ferrara', 'Maldini', "Shaffer"].randomOf(),
@@ -130,7 +130,7 @@ class InstanceTest extends Specification {
                 'phone': ['425-452-0001', '425-452-0002', '425-452-0003', "425-452-0004"].randomOf(),
                 name: ['Candies', 'Star Wars Lego Factory', 'Star War Ninja GO'].randomOf(),
                 price: 2.0.random(10.0, 50.0),
-        ).forType(Order, true)
+        ).of(Order, true)
         final Order order = (Order) definition.instanceValue.next()
 
         expect:
@@ -147,7 +147,7 @@ class InstanceTest extends Specification {
     // todo Serge: add test cases for parent reference
     void 'test if parent is set properly'() {
         given:
-        ValueCategory.registerValueMetaClasses()
+        ValueDefinition.register()
 
         final instance = new Instance<School>(School)
         final definition = new ValueDefinition(

@@ -206,7 +206,7 @@ of org.prismus.scrambler.builder.Instance.of {
 
     void 'test value definitions DSL from code'() {
         given:
-        ValueCategory.registerValueMetaClasses()
+        ValueDefinition.register()
 
         expect:
         null != 'text'.incremental()

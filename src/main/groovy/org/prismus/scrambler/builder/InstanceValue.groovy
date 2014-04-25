@@ -32,7 +32,7 @@ class InstanceValue implements Value<Object>, DefinitionRegistrable {
     }
 
     @Override
-    void registerDefinition(ValueDefinition definition) {
+    void register(ValueDefinition definition) {
         parent = definition
     }
 

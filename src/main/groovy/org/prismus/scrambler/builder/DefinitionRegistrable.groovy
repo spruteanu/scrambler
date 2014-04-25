@@ -5,8 +5,8 @@ package org.prismus.scrambler.builder
  *
  * @author Serge Pruteanu
  */
-public interface DefinitionRegistrable {
+interface DefinitionRegistrable {
 
-    void registerDefinition(ValueDefinition definition)
+    void register(ValueDefinition definition)
 
 }

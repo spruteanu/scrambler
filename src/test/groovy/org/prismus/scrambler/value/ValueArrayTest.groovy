@@ -1,6 +1,6 @@
 package org.prismus.scrambler.value
 
-import org.prismus.scrambler.builder.ValueCategory
+import org.prismus.scrambler.builder.ValueDefinition
 import spock.lang.Specification
 
 /**
@@ -9,7 +9,7 @@ import spock.lang.Specification
 class ValueArrayTest extends Specification {
 
     void 'test array creation'() {
-        ValueCategory.registerValueMetaClasses()
+        ValueDefinition.register()
         given:
         def value = new ValueArray([] as int[], 10.random()).asPrimitive()
         def array = value.next()
