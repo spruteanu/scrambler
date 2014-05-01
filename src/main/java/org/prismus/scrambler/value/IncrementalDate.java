@@ -1,7 +1,5 @@
 package org.prismus.scrambler.value;
 
-import org.apache.commons.lang.time.DateUtils;
-
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
@@ -38,6 +36,7 @@ public class IncrementalDate extends Constant<Date> {
         } else {
             if (calendarField == null) {
                 this.step = DEFAULT_STEP;
+                this.calendarField = Calendar.MILLISECOND;
             } else {
                 this.step = 1;
             }
@@ -58,36 +57,10 @@ public class IncrementalDate extends Constant<Date> {
         if (value == null) {
             value = new Timestamp(System.currentTimeMillis());
         } else {
-            if (calendarField != null) {
-                switch (calendarField) {
-                    case Calendar.YEAR:
-                        DateUtils.addYears(value, calendarField);
-                        break;
-                    case Calendar.MONTH:
-                        DateUtils.addMonths(value, calendarField);
-                        break;
-                    case Calendar.WEEK_OF_YEAR:
-                        DateUtils.addWeeks(value, calendarField);
-                        break;
-                    case Calendar.DAY_OF_MONTH:
-                        DateUtils.addDays(value, calendarField);
-                        break;
-                    case Calendar.HOUR_OF_DAY:
-                        DateUtils.addHours(value, calendarField);
-                        break;
-                    case Calendar.MINUTE:
-                        DateUtils.addMinutes(value, calendarField);
-                        break;
-                    case Calendar.SECOND:
-                        DateUtils.addSeconds(value, calendarField);
-                        break;
-                    default:
-                        value = DateUtils.addMilliseconds(value, step);
-                        break;
-                }
-            } else {
-                value = DateUtils.addMilliseconds(value, step);
-            }
+            final Calendar calendar = Calendar.getInstance();
+            calendar.setTime(value);
+            calendar.add(calendarField, step);
+            value = calendar.getTime();
         }
         setValue(value);
         return value;

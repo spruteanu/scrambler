@@ -1,6 +1,5 @@
 package org.prismus.scrambler.value
 
-import org.apache.commons.lang.time.DateUtils
 import spock.lang.Specification
 
 /**
@@ -39,10 +38,14 @@ class AbstractRandomRangeTest extends Specification {
     void 'test date ranges generation'() {
         final min = new Date()
         Date max = new Date()
-        max = DateUtils.addDays(max, 10)
-        max = DateUtils.addHours(max, 10)
-        max = DateUtils.addMinutes(max, 10)
-        max = DateUtils.addSeconds(max, 10)
+
+        final calendar = Calendar.getInstance()
+        calendar.setTime(max)
+        calendar.add(Calendar.DATE, 10)
+        calendar.add(Calendar.HOUR, 10)
+        calendar.add(Calendar.MINUTE, 10)
+        calendar.add(Calendar.SECOND, 10)
+        max = calendar.getTime()
 
         final valueInstance = Random.of(min, max)
 

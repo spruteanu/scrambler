@@ -1,8 +1,7 @@
 package org.prismus.scrambler.value;
 
-import org.apache.commons.lang.time.DateUtils;
-
 import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -40,9 +39,12 @@ public class RandomDate extends AbstractRandomRange<Date> {
             if (value == null) {
                 value = new Timestamp(System.currentTimeMillis());
             }
+            final Calendar calendar = Calendar.getInstance();
+            calendar.setTime(value);
+            calendar.add(Calendar.DATE, 1);
             value = new Date(new RandomLong().between(
                     value.getTime(),
-                    DateUtils.addDays(value, 1).getTime()
+                    calendar.getTimeInMillis()
             ).next());
         }
         setValue(value);

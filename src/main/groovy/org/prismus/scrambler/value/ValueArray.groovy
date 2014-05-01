@@ -1,6 +1,5 @@
 package org.prismus.scrambler.value
 
-import org.apache.commons.lang.ArrayUtils
 import org.prismus.scrambler.Value
 
 import java.lang.reflect.Array
@@ -85,7 +84,7 @@ class ValueArray extends Constant {
 
         if (primitiveArray && !value.class.componentType.primitive) {
             // todo Serge: it is not optimal, faster would be to have separate value set directly into array for all coerced types
-            value = ArrayUtils.toPrimitive(value)
+//            value = ArrayUtils.toPrimitive(value)
         }
         setValue(value)
         return value

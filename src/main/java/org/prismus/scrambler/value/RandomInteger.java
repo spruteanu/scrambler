@@ -6,6 +6,9 @@ import java.util.Random;
  * @author Serge Pruteanu
  */
 public class RandomInteger extends AbstractRandomRange<Integer> {
+
+    private final Random random;
+
     public RandomInteger() {
         this(null);
     }
@@ -13,6 +16,7 @@ public class RandomInteger extends AbstractRandomRange<Integer> {
     public RandomInteger(Integer value) {
         super(value);
         usingDefaults(0, Integer.MAX_VALUE);
+        random = new Random();
     }
 
     public RandomInteger(Integer minimum, Integer maximum) {
@@ -22,13 +26,13 @@ public class RandomInteger extends AbstractRandomRange<Integer> {
     public RandomInteger(Integer value, Integer minimum, Integer maximum) {
         super(value, minimum, maximum);
         usingDefaults(0, Integer.MAX_VALUE);
+        random = new Random();
     }
 
     @Override
     public Integer next() {
         checkBoundaries();
         Integer value = super.next();
-        final Random random = new Random();
         if (minimum != null && maximum != null) {
             value = minimum + random.nextInt(Math.abs(maximum - minimum));
         } else {
