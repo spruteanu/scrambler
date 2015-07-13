@@ -7,6 +7,8 @@ import org.codehaus.groovy.runtime.ResourceGroovyMethods
 import org.prismus.scrambler.Value
 import org.prismus.scrambler.value.Constant
 import org.prismus.scrambler.value.Incremental
+import org.prismus.scrambler.value.InstanceValue
+import org.prismus.scrambler.value.ParentValue
 import org.prismus.scrambler.value.ValueArray
 import org.prismus.scrambler.value.ValueCollection
 import org.prismus.scrambler.value.ValueMap
@@ -16,7 +18,6 @@ import org.prismus.scrambler.value.ValueMap
  *
  * @author Serge Pruteanu
  */
-// todo add ValueArray for array type (object array and primitive one)
 class ValueDefinition extends Script {
     private Properties configurationProperties
     private GroovyShell shell
@@ -95,12 +96,12 @@ class ValueDefinition extends Script {
     }
 
     @CompileStatic
-    protected Properties getConfigurationProperties() {
+    Properties getConfigurationProperties() {
         return configurationProperties
     }
 
     @CompileStatic
-    protected ValueDefinition build() {
+    ValueDefinition build() {
         for (final value : instanceValues) {
             value.build()
         }
@@ -175,7 +176,7 @@ class ValueDefinition extends Script {
     }
 
     protected void registerPredicateValue(ValuePredicate valuePredicate, InstanceValue value) {
-        value.parent = this
+        value.parentDefinition = this
         instanceValues.add(value)
         if (valuePredicate != null) {
             registerPredicateValue(valuePredicate, (Value) value)
@@ -199,7 +200,7 @@ class ValueDefinition extends Script {
         propertyValueMap.putAll(definition.propertyValueMap)
         typeValueMap.putAll(definition.typeValueMap)
         if (definition.instanceValue != null) {
-            definition.instanceValue.parent = this
+            definition.instanceValue.parentDefinition = this
             instanceValues.add(definition.instanceValue)
         }
         return definition
@@ -243,8 +244,7 @@ class ValueDefinition extends Script {
             } finally {
                 try {
                     inputStream.close()
-                } catch (IOException ignore) {
-                }
+                } catch (IOException ignore) { }
             }
         }
     }
@@ -276,6 +276,10 @@ class ValueDefinition extends Script {
         checkNullValue(value)
         registerPredicateValue(new TypePredicate(type: value.class), new Constant(value))
         return this
+    }
+
+    def propertyMissing(String name, value) {
+        println "Property '$name' with value '$value' is missing"
     }
 
     //------------------------------------------------------------------------------------------------------------------

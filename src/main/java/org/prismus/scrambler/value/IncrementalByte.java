@@ -24,11 +24,32 @@ public class IncrementalByte extends Constant<Byte> {
         this.step = step;
     }
 
+    byte next(byte value) {
+        return Integer.valueOf(value + step).byteValue();
+    }
+
     @Override
     public Byte next() {
         Byte value = super.next();
-        value = value != null ? Integer.valueOf(value + step).byteValue() : step;
+        value = value != null ? next(value) : step;
         setValue(value);
         return value;
     }
+
+    public byte[] next(int count) {
+        final byte[] values = new byte[count];
+        byte start = value == null ? 0 : value;
+        for (int i = 0; i < values.length; i++) {
+            final byte next = next(start);
+            values[i] = next;
+            start = next;
+        }
+        setValue(start);
+        return values;
+    }
+
+    public byte getStep() {
+        return step;
+    }
+
 }

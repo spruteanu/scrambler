@@ -70,9 +70,9 @@ public class Instance<T> extends Constant<T> {
     public Instance<T> using(ValueDefinition valueDefinition) {
         registerPropertyValues(valueDefinition);
         final InstanceValue instanceValue = new InstanceValue();
-        instanceValue.instance = this;
-        instanceValue.definition = valueDefinition;
-        instanceValue.setParent(valueDefinition.getParent());
+        instanceValue.setInstance(this);
+        instanceValue.setDefinition(valueDefinition);
+        instanceValue.setParentDefinition(valueDefinition.getParent());
         valueDefinition.setInstanceValue(instanceValue);
         return this;
     }
@@ -97,6 +97,7 @@ public class Instance<T> extends Constant<T> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     Map<String, Value> introspectTypes(ValueDefinition valueDefinition, Map<String, Property> unresolvedProps) {
         final Set<Class> supportedTypes = getSupportedTypes();
         final Map<String, Value> propertyValueMap = new LinkedHashMap<String, Value>();
@@ -108,7 +109,9 @@ public class Instance<T> extends Constant<T> {
             if (supportedTypes.contains(propertyType)) {
                 val = Random.of(propertyType);
             } else if(propertyType.isArray() && supportedTypes.contains(propertyType.getComponentType())) {
-                val = new ValueArray(propertyType, Random.of(propertyType.getComponentType()));
+                if (!propertyType.getComponentType().isPrimitive()) { // todo Serge: fix primitives
+                    val = new ValueArray(propertyType, Random.of(propertyType.getComponentType()));
+                }
             } else {
                 if (Iterable.class.isAssignableFrom(propertyType) || Map.class.isAssignableFrom(propertyType)) {
                     continue;
@@ -157,8 +160,7 @@ public class Instance<T> extends Constant<T> {
                     break;
                 }
             }
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) { }
         return result;
     }
 
@@ -229,15 +231,13 @@ public class Instance<T> extends Constant<T> {
     void setPropertyValue(PropertyDescriptor propertyDescriptor, Object instance, Object value) {
         try {
             propertyDescriptor.getWriteMethod().invoke(instance, value);
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) { }
     }
 
     void setPropertyValue(PropertyUtilsBean propertyUtils, Object instance, String propertyName, Object value) {
         try {
             propertyUtils.setSimpleProperty(instance, propertyName, value);
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) { }
     }
 
     public void setPropertyValue(Object instance, String propertyName, Object value) {
@@ -264,8 +264,7 @@ public class Instance<T> extends Constant<T> {
         Object value = null;
         try {
             value = propertyDescriptor.getReadMethod().invoke(instance);
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) { }
         return value;
     }
 
@@ -273,8 +272,7 @@ public class Instance<T> extends Constant<T> {
         Object value = null;
         try {
             value = propertyUtils.getProperty(instance, propertyName);
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) { }
         return value;
     }
 

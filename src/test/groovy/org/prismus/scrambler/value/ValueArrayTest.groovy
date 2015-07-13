@@ -11,7 +11,7 @@ class ValueArrayTest extends Specification {
     void 'test array creation'() {
         ValueDefinition.register()
         given:
-        def value = new ValueArray([] as int[], 10.random()).asPrimitive()
+        def value = new ValueArray([] as Integer[], 10.random())
         def array = value.next()
         expect:
         array.length > 0

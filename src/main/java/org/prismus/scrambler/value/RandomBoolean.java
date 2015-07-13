@@ -19,11 +19,23 @@ public class RandomBoolean extends Constant<Boolean> {
         random = new Random();
     }
 
+    boolean nextValue() {
+        return random.nextBoolean();
+    }
+
     @Override
     public Boolean next() {
-        final boolean newValue = random.nextBoolean();
+        final boolean newValue = nextValue();
         setValue(newValue);
         return newValue;
+    }
+
+    public boolean[] next(int count) {
+        final boolean[] values = new boolean[count];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = nextValue();
+        }
+        return values;
     }
 
 }

@@ -55,9 +55,9 @@ constant 'some template string'
     void 'test parse from resource'() {
         given:
         def parser = new ValueDefinition()
-
+        final valueDefinition = parser.parse('/test-vd.groovy')
         expect:
-        parser.parse('/test-vd.groovy').typeValueMap.size() > 0
+        valueDefinition.typeValueMap.size() > 0
     }
 
     void 'test parse value type definitions'() {

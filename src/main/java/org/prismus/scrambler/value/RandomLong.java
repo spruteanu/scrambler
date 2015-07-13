@@ -31,17 +31,34 @@ public class RandomLong extends AbstractRandomRange<Long> {
         random = new Random();
     }
 
-    @Override
-    public Long next() {
-        checkBoundaries();
-        final Long value;
+    long nextValue() {
         if (minimum != null && maximum != null) {
             final long interval = Math.abs(maximum - minimum);
             value = minimum + Math.abs(random.nextLong()) % interval;
         } else {
             value = random.nextLong();
         }
-        setValue(value);
         return value;
     }
+
+    @Override
+    public Long next() {
+        checkBoundaries();
+        final long result = nextValue();
+        setValue(result);
+        return result;
+    }
+
+    public long[] next(int count) {
+        checkBoundaries();
+        final long[] values = new long[count];
+        long next = 0;
+        for (int i = 0; i < values.length; i++) {
+            next = nextValue();
+            values[i] = next;
+        }
+        setValue(next);
+        return values;
+    }
+
 }

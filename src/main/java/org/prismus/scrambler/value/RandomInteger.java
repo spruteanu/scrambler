@@ -29,16 +29,39 @@ public class RandomInteger extends AbstractRandomRange<Integer> {
         random = new Random();
     }
 
+    int nextValue(int value) {
+        final int result;
+        if (minimum != null && maximum != null) {
+            result = minimum + random.nextInt(Math.abs(maximum - minimum));
+        } else {
+            result = random.nextInt(Math.abs(value) + 1);
+        }
+        return result;
+    }
+
+    int nextValue() {
+        return nextValue(value == null ? random.nextInt() : value);
+    }
+
     @Override
     public Integer next() {
         checkBoundaries();
-        Integer value = super.next();
-        if (minimum != null && maximum != null) {
-            value = minimum + random.nextInt(Math.abs(maximum - minimum));
-        } else {
-            value = value != null ? random.nextInt(Math.abs(value) + 1) : random.nextInt();
-        }
-        setValue(value);
-        return value;
+        final Integer result = nextValue();
+        setValue(result);
+        return result;
     }
+
+    public int[] next(int count) {
+        checkBoundaries();
+        final int[] values = new int[count];
+        int start = nextValue();
+        for (int i = 0; i < values.length; i++) {
+            final int next = nextValue(start);
+            values[i] = next;
+            start = next;
+        }
+        setValue(start);
+        return values;
+    }
+
 }

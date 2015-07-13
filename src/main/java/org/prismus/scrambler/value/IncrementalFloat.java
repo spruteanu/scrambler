@@ -27,4 +27,21 @@ public class IncrementalFloat extends Constant<Float> {
         setValue(value);
         return value;
     }
+
+    public float[] next(int count) {
+        final float[] values = new float[count];
+        float start = 0.0f;
+        for (int i = 0; i < values.length; i++) {
+            float next = start + step;
+            values[i] = next;
+            start = next;
+        }
+        setValue(start);
+        return values;
+    }
+
+    public float getStep() {
+        return step;
+    }
+
 }

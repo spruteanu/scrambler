@@ -24,12 +24,32 @@ public class IncrementalShort extends Constant<Short> {
         this.step = step;
     }
 
+    short next(short value) {
+        return Integer.valueOf(value + step).shortValue();
+    }
+
     @Override
     public Short next() {
         Short value = super.next();
-        value = value != null ? Integer.valueOf(value + step).shortValue() : step;
+        value = value != null ? next(value) : 0;
         setValue(value);
         return value;
+    }
+
+    public short[] next(int count) {
+        final short[] values = new short[count];
+        short start = value == null ? 0 : value;
+        for (int i = 0; i < values.length; i++) {
+            final short next = next(start);
+            values[i] = next;
+            start = next;
+        }
+        setValue(start);
+        return values;
+    }
+
+    public short getStep() {
+        return step;
     }
 
 }

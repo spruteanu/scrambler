@@ -31,4 +31,21 @@ public class IncrementalDouble extends Constant<Double> {
         setValue(value);
         return value;
     }
+
+    public double[] next(int count) {
+        final double[] values = new double[count];
+        double start = 0.0f;
+        for (int i = 0; i < values.length; i++) {
+            double next = start + step;
+            values[i] = next;
+            start = next;
+        }
+        setValue(start);
+        return values;
+    }
+
+    public double getStep() {
+        return step;
+    }
+
 }

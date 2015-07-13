@@ -31,4 +31,21 @@ public class IncrementalLong extends Constant<Long> {
         setValue(value);
         return value;
     }
+
+    public long[] next(int count) {
+        final long[] values = new long[count];
+        long start = value == null ? 0 : value;
+        for (int i = 0; i < values.length; i++) {
+            final long next = start + step;
+            values[i] = next;
+            start = next;
+        }
+        setValue(start);
+        return values;
+    }
+
+    public long getStep() {
+        return step;
+    }
+
 }
