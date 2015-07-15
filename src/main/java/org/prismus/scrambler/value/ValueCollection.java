@@ -48,7 +48,7 @@ public class ValueCollection<V, T extends Collection<V>> extends Constant<T> {
     public T next() {
         final T value = super.next();
         final Value<V> valueInstance = instance;
-        validateArguments(value, valueInstance);
+        Util.validateArguments(value, valueInstance);
         int count = this.count != null ? this.count : 0;
         if (count == 0) {
             count = 20;
@@ -71,12 +71,6 @@ public class ValueCollection<V, T extends Collection<V>> extends Constant<T> {
             collection = (Collection<V>) Util.createInstance(collection.getClass(), new Object[]{count});
         }
         return collection;
-    }
-
-    static <V> void validateArguments(Collection<V> value, Value<V> property) {
-        if (value == null || property == null) {
-            throw new IllegalArgumentException("Collection/property instances should not be null");
-        }
     }
 
 }

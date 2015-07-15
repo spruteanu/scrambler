@@ -3,7 +3,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalShort extends Constant<Short> {
+class IncrementalShort extends Constant<Short> implements ShortArray {
     private static final short DEFAULT_STEP = Integer.valueOf(1).shortValue();
     private short step;
 
@@ -36,8 +36,7 @@ public class IncrementalShort extends Constant<Short> {
         return value;
     }
 
-    public short[] next(int count) {
-        final short[] values = new short[count];
+    public void next(short[] values) {
         short start = value == null ? 0 : value;
         for (int i = 0; i < values.length; i++) {
             final short next = next(start);
@@ -45,11 +44,6 @@ public class IncrementalShort extends Constant<Short> {
             start = next;
         }
         setValue(start);
-        return values;
-    }
-
-    public short getStep() {
-        return step;
     }
 
 }

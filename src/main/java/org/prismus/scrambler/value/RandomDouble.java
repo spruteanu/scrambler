@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-public class RandomDouble extends AbstractRandomRange<Double> {
+class RandomDouble extends AbstractRandomRange<Double> implements DoubleArray {
 
     private final Random random;
 
@@ -50,16 +50,14 @@ public class RandomDouble extends AbstractRandomRange<Double> {
         return result;
     }
 
-    public double[] next(int count) {
+    public void next(double[] values) {
         checkBoundaries();
         double next = nextValue();
-        final double[] values = new double[count];
         for (int i = 0; i < values.length; i++) {
             next = nextValue();
             values[i] = next;
         }
         setValue(next);
-        return values;
     }
 
 }

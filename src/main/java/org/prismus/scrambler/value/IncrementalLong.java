@@ -3,7 +3,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalLong extends Constant<Long> {
+public class IncrementalLong extends Constant<Long> implements LongArray {
     private static final long DEFAULT_STEP = 1L;
     private long step;
 
@@ -32,8 +32,7 @@ public class IncrementalLong extends Constant<Long> {
         return value;
     }
 
-    public long[] next(int count) {
-        final long[] values = new long[count];
+    public void next(long[] values) {
         long start = value == null ? 0 : value;
         for (int i = 0; i < values.length; i++) {
             final long next = start + step;
@@ -41,11 +40,6 @@ public class IncrementalLong extends Constant<Long> {
             start = next;
         }
         setValue(start);
-        return values;
-    }
-
-    public long getStep() {
-        return step;
     }
 
 }

@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-public class RandomByte extends AbstractRandomRange<Byte> {
+class RandomByte extends AbstractRandomRange<Byte> implements ByteArray {
     private final java.util.Random random;
 
     public RandomByte() {
@@ -47,15 +47,13 @@ public class RandomByte extends AbstractRandomRange<Byte> {
         return newValue;
     }
 
-    public byte[] next(int count) {
-        final byte[] values = new byte[count];
+    public void next(byte[] values) {
         byte next = nextValue();
         for (int i = 0; i < values.length; i++) {
             next = nextValue();
             values[i] = next;
         }
         setValue(next);
-        return values;
     }
 
 }

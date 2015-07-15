@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-public class RandomShort extends AbstractRandomRange<Short> {
+class RandomShort extends AbstractRandomRange<Short> implements ShortArray {
 
     private final java.util.Random random;
 
@@ -48,15 +48,13 @@ public class RandomShort extends AbstractRandomRange<Short> {
         return newValue;
     }
 
-    public short[] next(int count) {
-        final short[] values = new short[count];
+    public void next(short[] values) {
         short next = nextValue();
         for (int i = 0; i < values.length; i++) {
             next = nextValue();
             values[i] = next;
         }
         setValue(next);
-        return values;
     }
 
 }

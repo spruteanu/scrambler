@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalBigDecimal extends Constant<BigDecimal> {
+class IncrementalBigDecimal extends Constant<BigDecimal> {
     private BigDecimal step;
     private static final BigDecimal DEFAULT_STEP = BigDecimal.valueOf(1L);
 

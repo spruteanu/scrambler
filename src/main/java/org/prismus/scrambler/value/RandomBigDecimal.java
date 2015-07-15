@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 /**
  * @author Serge Pruteanu
  */
-public class RandomBigDecimal extends AbstractRandomRange<BigDecimal> {
+class RandomBigDecimal extends AbstractRandomRange<BigDecimal> {
     public RandomBigDecimal() {
         this(null);
     }

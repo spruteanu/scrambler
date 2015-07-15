@@ -3,7 +3,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalByte extends Constant<Byte> {
+class IncrementalByte extends Constant<Byte> implements ByteArray {
     private static final byte DEFAULT_STEP = Integer.valueOf(1).byteValue();
     private byte step;
 
@@ -36,8 +36,7 @@ public class IncrementalByte extends Constant<Byte> {
         return value;
     }
 
-    public byte[] next(int count) {
-        final byte[] values = new byte[count];
+    public void next(byte[] values) {
         byte start = value == null ? 0 : value;
         for (int i = 0; i < values.length; i++) {
             final byte next = next(start);
@@ -45,11 +44,6 @@ public class IncrementalByte extends Constant<Byte> {
             start = next;
         }
         setValue(start);
-        return values;
-    }
-
-    public byte getStep() {
-        return step;
     }
 
 }

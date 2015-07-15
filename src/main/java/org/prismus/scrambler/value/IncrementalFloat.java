@@ -3,7 +3,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalFloat extends Constant<Float> {
+class IncrementalFloat extends Constant<Float> {
     private float step;
     private static final float DEFAULT_STEP = 1.0F;
 
@@ -38,10 +38,6 @@ public class IncrementalFloat extends Constant<Float> {
         }
         setValue(start);
         return values;
-    }
-
-    public float getStep() {
-        return step;
     }
 
 }

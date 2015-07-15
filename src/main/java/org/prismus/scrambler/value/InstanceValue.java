@@ -102,60 +102,28 @@ public class InstanceValue implements Value<Object>, DefinitionRegistrable {
         }
     }
 
-    public ValueDefinition getParentDefinition() {
-        return parentDefinition;
-    }
-
     public void setParentDefinition(ValueDefinition parentDefinition) {
         this.parentDefinition = parentDefinition;
-    }
-
-    public Closure getDefinitionClosure() {
-        return definitionClosure;
     }
 
     public void setDefinitionClosure(Closure definitionClosure) {
         this.definitionClosure = definitionClosure;
     }
 
-    public ValuePredicate getPredicate() {
-        return predicate;
-    }
-
     public void setPredicate(ValuePredicate predicate) {
         this.predicate = predicate;
-    }
-
-    public Class getType() {
-        return type;
     }
 
     public void setType(Class type) {
         this.type = type;
     }
 
-    public Collection<Value> getConstructorArguments() {
-        return constructorArguments;
-    }
-
-    public Map<Object, Object> getPropertyValueMap() {
-        return propertyValueMap;
-    }
-
     public void setPropertyValueMap(Map<Object, Object> propertyValueMap) {
         this.propertyValueMap = propertyValueMap;
     }
 
-    public ValueDefinition getDefinition() {
-        return definition;
-    }
-
     public void setDefinition(ValueDefinition definition) {
         this.definition = definition;
-    }
-
-    public Instance getInstance() {
-        return instance;
     }
 
     public void setInstance(Instance instance) {

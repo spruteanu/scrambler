@@ -13,7 +13,6 @@ public class ValueArray<T> extends Constant<T[]> {
     private Integer count;
     private Value<T> instance;
     private Boolean randomCount;
-    private Boolean primitiveArray;
     private Class<T> valueType;
 
     public ValueArray() {
@@ -53,26 +52,13 @@ public class ValueArray<T> extends Constant<T[]> {
     @SuppressWarnings("unchecked")
     public ValueArray asType(Class<T> valueType) {
         this.valueType = valueType.isArray() ? (Class<T>) valueType.getComponentType() : valueType;
-        if (!primitiveArray) {
-            primitiveArray = valueType.isPrimitive();
-        }
-        return this;
-    }
-
-    public ValueArray asPrimitive() {
-        primitiveArray = true;
-        return this;
-    }
-
-    public ValueArray asPrimitive(Boolean primitiveArray) {
-        this.primitiveArray = primitiveArray != null && primitiveArray;
         return this;
     }
 
     @Override
     public T[] next() {
         T[] value = super.next();
-        validateArguments(value, instance);
+        Util.validateArguments(valueType, value, instance);
         int count = this.count != null ? this.count : 0;
         if (count == 0) {
             count = 20;
@@ -106,17 +92,6 @@ public class ValueArray<T> extends Constant<T[]> {
         return array;
     }
 
-    void validateArguments(Object array, Value property) {
-        if (array == null) {
-            if (valueType == null) {
-                throw new IllegalArgumentException("Array instance or array type should not be null");
-            }
-        }
-        if (property == null) {
-            throw new IllegalArgumentException("Value instance should not be null");
-        }
-    }
-
     public Integer getCount() {
         return count;
     }
@@ -141,14 +116,6 @@ public class ValueArray<T> extends Constant<T[]> {
         this.randomCount = randomCount;
     }
 
-    public Boolean getPrimitiveArray() {
-        return primitiveArray;
-    }
-
-    public void setPrimitiveArray(Boolean primitiveArray) {
-        this.primitiveArray = primitiveArray;
-    }
-
     public Class getValueType() {
         return valueType;
     }
@@ -156,4 +123,5 @@ public class ValueArray<T> extends Constant<T[]> {
     public void setValueType(Class<T> valueType) {
         this.valueType = valueType;
     }
+
 }

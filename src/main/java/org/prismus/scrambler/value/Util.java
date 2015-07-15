@@ -4,6 +4,7 @@ import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.ConstructorUtils;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.commons.beanutils.converters.DateConverter;
+import org.prismus.scrambler.Value;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -85,6 +86,29 @@ public abstract class Util {
         }
         builder.append('$');
         return replaced ? builder.toString() : wildcardPattern;
+    }
+
+    static <V> void validateArguments(Collection<V> value, Value<V> property) {
+        if (value == null || property == null) {
+            throw new IllegalArgumentException("Collection/property instances should not be null");
+        }
+    }
+
+    static void validateArguments(Class valueType, Object array, Value property) {
+        if (array == null) {
+            if (valueType == null) {
+                throw new IllegalArgumentException("Array instance or array type should not be null");
+            }
+        }
+        if (property == null) {
+            throw new IllegalArgumentException("Value instance should not be null");
+        }
+    }
+
+    static void validateArguments(Object value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Instance should not be null");
+        }
     }
 
 }

@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalDate extends Constant<Date> {
+class IncrementalDate extends Constant<Date> {
     private static final int DEFAULT_STEP = 24 * 60 * 1000;
 
     private Integer calendarField;

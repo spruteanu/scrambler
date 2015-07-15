@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-public class RandomInteger extends AbstractRandomRange<Integer> {
+class RandomInteger extends AbstractRandomRange<Integer> implements IntArray {
 
     private final Random random;
 
@@ -29,39 +29,33 @@ public class RandomInteger extends AbstractRandomRange<Integer> {
         random = new Random();
     }
 
-    int nextValue(int value) {
+    int nextValue(int previousValue) {
         final int result;
         if (minimum != null && maximum != null) {
             result = minimum + random.nextInt(Math.abs(maximum - minimum));
         } else {
-            result = random.nextInt(Math.abs(value) + 1);
+            result = random.nextInt(Math.abs(previousValue) + 1);
         }
         return result;
-    }
-
-    int nextValue() {
-        return nextValue(value == null ? random.nextInt() : value);
     }
 
     @Override
     public Integer next() {
         checkBoundaries();
-        final Integer result = nextValue();
+        final Integer result = nextValue(value == null ? random.nextInt() : value);
         setValue(result);
         return result;
     }
 
-    public int[] next(int count) {
+    public void next(int[] values) {
         checkBoundaries();
-        final int[] values = new int[count];
-        int start = nextValue();
+        int start = nextValue(value == null ? random.nextInt() : value);
         for (int i = 0; i < values.length; i++) {
             final int next = nextValue(start);
             values[i] = next;
             start = next;
         }
         setValue(start);
-        return values;
     }
 
 }

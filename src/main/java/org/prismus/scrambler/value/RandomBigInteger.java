@@ -5,7 +5,7 @@ import java.math.BigInteger;
 /**
  * @author Serge Pruteanu
  */
-public class RandomBigInteger extends AbstractRandomRange<BigInteger> {
+class RandomBigInteger extends AbstractRandomRange<BigInteger> {
     public RandomBigInteger() {
         this(null);
     }

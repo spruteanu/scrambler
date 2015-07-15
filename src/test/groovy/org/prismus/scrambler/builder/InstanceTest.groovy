@@ -64,14 +64,14 @@ class InstanceTest extends Specification {
 
     void 'test populate instance with properties'() {
         given:
-        final instance = new Instance<IncrementalInteger>(new IncrementalInteger())
+        final instance = new Instance<School>(new School())
 
         and:
-        instance.populate(instance.value, [step: 3, value: 104])
+        instance.populate(instance.value, [schoolId: 3, name: 'Enatai'])
 
         expect:
-        3 == instance.value.step
-        104 == instance.value.value
+        3 == instance.value.schoolId
+        'Enatai' == instance.value.name
     }
 
     void 'check value definitions (tree definition) for instance'() {

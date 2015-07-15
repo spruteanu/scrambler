@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-public class RandomFloat extends AbstractRandomRange<Float> {
+class RandomFloat extends AbstractRandomRange<Float> implements FloatArray {
     private final Random random;
 
     public RandomFloat() {
@@ -48,15 +48,13 @@ public class RandomFloat extends AbstractRandomRange<Float> {
         return result;
     }
 
-    public float[] next(int count) {
-        final float[] values = new float[count];
+    public void next(float[] values) {
         float next = nextValue();
         for (int i = 0; i < values.length; i++) {
             next = nextValue();
             values[i] = next;
         }
         setValue(next);
-        return values;
     }
 
 }

@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-public class RandomBoolean extends Constant<Boolean> {
+class RandomBoolean extends Constant<Boolean> {
 
     private final Random random;
 
@@ -30,12 +30,10 @@ public class RandomBoolean extends Constant<Boolean> {
         return newValue;
     }
 
-    public boolean[] next(int count) {
-        final boolean[] values = new boolean[count];
+    public void next(boolean[] values) {
         for (int i = 0; i < values.length; i++) {
             values[i] = nextValue();
         }
-        return values;
     }
 
 }

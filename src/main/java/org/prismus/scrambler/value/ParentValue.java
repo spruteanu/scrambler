@@ -27,10 +27,6 @@ public class ParentValue implements Value, DefinitionRegistrable {
         return instanceValue != null ? instanceValue.getValue() : null;
     }
 
-    public ValueDefinition getDefinition() {
-        return definition;
-    }
-
     public void setDefinition(ValueDefinition definition) {
         this.definition = definition;
     }

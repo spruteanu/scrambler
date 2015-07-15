@@ -602,13 +602,12 @@ class ValueDefinition extends Script {
                 )
             }
 
-            array { Value val, Integer count = null, Boolean randomCount = null, Boolean primitiveArray = null ->
+            array { Value val, Integer count = null, Boolean randomCount = null ->
                 return new ValueArray(
                         instance: val,
                         valueType: (Class)delegate,
                         count: count,
-                        randomCount: randomCount,
-                        primitiveArray: primitiveArray,
+                        randomCount: randomCount
                 )
             }
         }

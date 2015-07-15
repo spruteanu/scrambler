@@ -3,7 +3,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalDouble extends Constant<Double> {
+class IncrementalDouble extends Constant<Double> implements DoubleArray {
     private static final double DEFAULT_STEP = 1.0;
     private double step;
 
@@ -32,8 +32,7 @@ public class IncrementalDouble extends Constant<Double> {
         return value;
     }
 
-    public double[] next(int count) {
-        final double[] values = new double[count];
+    public void next(double[] values) {
         double start = 0.0f;
         for (int i = 0; i < values.length; i++) {
             double next = start + step;
@@ -41,11 +40,6 @@ public class IncrementalDouble extends Constant<Double> {
             start = next;
         }
         setValue(start);
-        return values;
-    }
-
-    public double getStep() {
-        return step;
     }
 
 }
