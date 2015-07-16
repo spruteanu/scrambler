@@ -9,6 +9,7 @@ import org.prismus.scrambler.value.*
  *
  * @author Serge Pruteanu
  */
+@SuppressWarnings("UnnecessaryQualifiedReference")
 class ValueDefinition {
     InstanceValue instanceValue
     ValueDefinition parent
@@ -91,7 +92,7 @@ class ValueDefinition {
 
     protected ValueDefinition lookupRegisterParent(Value value) {
         if (value instanceof DefinitionRegistrable) {
-            ((DefinitionRegistrable) value).register(this)
+            value.register(this)
         }
         return this
     }
