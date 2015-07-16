@@ -603,12 +603,7 @@ class ValueDefinition extends Script {
             }
 
             array { Value val, Integer count = null, Boolean randomCount = null ->
-                return new ValueArray(
-                        instance: val,
-                        valueType: (Class)delegate,
-                        count: count,
-                        randomCount: randomCount
-                )
+                return ValueArray.of(val, (Class)delegate, count, randomCount)
             }
         }
     }

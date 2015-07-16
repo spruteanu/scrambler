@@ -15,20 +15,15 @@ class LongValueArray extends Constant<long[]> {
     }
 
     public LongValueArray(long[] array, LongArray value) {
-        this(array, null, value);
-    }
-
-    public LongValueArray(Class<Integer> valueType, LongArray value) {
-        this(valueType, null, value);
+        this(array, null, value, null);
     }
 
     public LongValueArray(long[] array, Integer count, LongArray value) {
         this(array, count, value, null);
-        useInitialArray = array != null;
     }
 
-    public LongValueArray(Class<Integer> valueType, Integer count, LongArray value) {
-        this(valueType, count, value, null);
+    public LongValueArray(long[] array, Integer count, Object value) {
+        this(array, count, (LongArray)value, null);
     }
 
     public LongValueArray(long[] array, Integer count, LongArray value1, Boolean randomCount) {
@@ -36,13 +31,10 @@ class LongValueArray extends Constant<long[]> {
         this.count = count;
         this.instance = value1;
         this.randomCount = randomCount;
-    }
-
-    public LongValueArray(Class<Integer> valueType, Integer count, LongArray value1, Boolean randomCount) {
-        super(null);
-        this.count = count;
-        this.instance = value1;
-        this.randomCount = randomCount;
+        if (array == null && count == null) {
+            this.randomCount = Boolean.TRUE;
+        }
+        useInitialArray = array != null;
     }
 
     @Override

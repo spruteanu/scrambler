@@ -10,19 +10,15 @@ class RandomShort extends AbstractRandomRange<Short> implements ShortArray {
     private final java.util.Random random;
 
     public RandomShort() {
-        this(null);
+        this(null, null, null);
     }
 
     public RandomShort(Short value) {
-        super(value);
-        usingDefaults(Integer.valueOf(0).shortValue(), Short.MAX_VALUE);
-        random = new Random();
+        this(value, null, null);
     }
 
     public RandomShort(Short minimum, Short maximum) {
-        super(minimum, maximum);
-        usingDefaults(Integer.valueOf(0).shortValue(), Short.MAX_VALUE);
-        random = new Random();
+        this(null, minimum, maximum);
     }
 
     public RandomShort(Short value, Short minimum, Short maximum) {

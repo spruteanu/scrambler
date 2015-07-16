@@ -10,19 +10,15 @@ class RandomLong extends AbstractRandomRange<Long> implements LongArray {
     private final Random random;
 
     public RandomLong() {
-        this(null);
+        this(null, null, null);
     }
 
     public RandomLong(Long value) {
-        super(value);
-        usingDefaults(0L, Long.MAX_VALUE);
-        random = new Random();
+        this(value, null, null);
     }
 
     public RandomLong(Long minimum, Long maximum) {
-        super(minimum, maximum);
-        usingDefaults(0L, Long.MAX_VALUE);
-        random = new Random();
+        this(null, minimum, maximum);
     }
 
     public RandomLong(Long value, Long minimum, Long maximum) {

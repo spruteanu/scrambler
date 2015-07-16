@@ -10,15 +10,15 @@ import java.util.Date;
 public class RandomDate extends AbstractRandomRange<Date> {
 
     public RandomDate() {
-        this(new Date());
+        this(null, null, null);
     }
 
     public RandomDate(Date value) {
-        super(value);
+        this(value, null, null);
     }
 
     public RandomDate(Date minimum, Date maximum) {
-        super(minimum, maximum);
+        this(null, minimum, maximum);
     }
 
     public RandomDate(Date value, Date minimum, Date maximum) {

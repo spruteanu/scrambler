@@ -3,6 +3,8 @@ package org.prismus.scrambler.value;
 import org.prismus.scrambler.Value;
 
 import java.lang.reflect.Array;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * todo: add description
@@ -122,6 +124,43 @@ public class ValueArray<T> extends Constant<T[]> {
 
     public void setValueType(Class<T> valueType) {
         this.valueType = valueType;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Value<T> of(Value val, Class clazzType, Integer count, Boolean randomCount) {
+        if (clazzType.isPrimitive()) {
+            final Class<? extends Value> arrayValueType = propertyTypeMap.get(clazzType);
+            return (Value) Util.createInstance(
+                    arrayValueType,
+                    new Object[]{null, count, val}
+                    , new Class[]{arrayTypeMap.get(clazzType), Integer.class, Object.class}
+            );
+        } else {
+            return new ValueArray(clazzType, count, val, randomCount);
+        }
+    }
+
+    private static Map<Class, Class> arrayTypeMap = new LinkedHashMap<Class, Class>() {{
+        put(byte.class, byte[].class);
+        put(short.class, short[].class);
+        put(boolean.class, boolean[].class);
+        put(double.class, double[].class);
+        put(float.class, float[].class);
+        put(int.class, int[].class);
+        put(long.class, long[].class);
+    }};
+
+    private static Map<Class, Class<? extends Value>> propertyTypeMap = lookupPropertyTypeMap();
+    static Map<Class, Class<? extends Value>> lookupPropertyTypeMap() {
+        final Map<Class, Class<? extends Value>> typeMap = new LinkedHashMap<Class, Class<? extends Value>>();
+        typeMap.put(byte.class, ByteValueArray.class);
+        typeMap.put(short.class, ShortValueArray.class);
+        typeMap.put(boolean.class, BooleanValueArray.class);
+        typeMap.put(double.class, DoubleValueArray.class);
+        typeMap.put(float.class, FloatValueArray.class);
+        typeMap.put(int.class, IntValueArray.class);
+        typeMap.put(long.class, LongValueArray.class);
+        return typeMap;
     }
 
 }

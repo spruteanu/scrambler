@@ -18,17 +18,12 @@ class DoubleValueArray extends Constant<double[]> {
         this(array, null, value);
     }
 
-    public DoubleValueArray(Class<Integer> valueType, DoubleArray value) {
-        this(valueType, null, value);
-    }
-
     public DoubleValueArray(double[] array, Integer count, DoubleArray value) {
         this(array, count, value, null);
-        useInitialArray = array != null;
     }
 
-    public DoubleValueArray(Class<Integer> valueType, Integer count, DoubleArray value) {
-        this(valueType, count, value, null);
+    public DoubleValueArray(double[] array, Integer count, Object value) {
+        this(array, count, (DoubleArray)value, null);
     }
 
     public DoubleValueArray(double[] array, Integer count, DoubleArray value1, Boolean randomCount) {
@@ -36,13 +31,10 @@ class DoubleValueArray extends Constant<double[]> {
         this.count = count;
         this.instance = value1;
         this.randomCount = randomCount;
-    }
-
-    public DoubleValueArray(Class<Integer> valueType, Integer count, DoubleArray value1, Boolean randomCount) {
-        super(null);
-        this.count = count;
-        this.instance = value1;
-        this.randomCount = randomCount;
+        if (array == null && count == null) {
+            this.randomCount = Boolean.TRUE;
+        }
+        useInitialArray = array != null;
     }
 
     @Override

@@ -10,17 +10,15 @@ class RandomInteger extends AbstractRandomRange<Integer> implements IntArray {
     private final Random random;
 
     public RandomInteger() {
-        this(null);
+        this(null, null, null);
     }
 
     public RandomInteger(Integer value) {
-        super(value);
-        usingDefaults(0, Integer.MAX_VALUE);
-        random = new Random();
+        this(value, null, null);
     }
 
     public RandomInteger(Integer minimum, Integer maximum) {
-        this(0, minimum, maximum);
+        this(null, minimum, maximum);
     }
 
     public RandomInteger(Integer value, Integer minimum, Integer maximum) {

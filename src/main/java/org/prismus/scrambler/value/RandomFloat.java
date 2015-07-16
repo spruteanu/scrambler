@@ -9,19 +9,15 @@ class RandomFloat extends AbstractRandomRange<Float> implements FloatArray {
     private final Random random;
 
     public RandomFloat() {
-        this(null);
+        this(null, null, null);
     }
 
     public RandomFloat(Float value) {
-        super(value);
-        usingDefaults(0F, Float.MAX_VALUE);
-        random = new java.util.Random();
+        this(value, null, null);
     }
 
     public RandomFloat(Float minimum, Float maximum) {
-        super(minimum, maximum);
-        usingDefaults(0F, Float.MAX_VALUE);
-        random = new Random();
+        this(null, minimum, maximum);
     }
 
     public RandomFloat(Float value, Float minimum, Float maximum) {

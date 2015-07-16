@@ -12,20 +12,15 @@ class IntValueArray extends Constant<int[]> {
     private boolean useInitialArray;
 
     public IntValueArray(int[] array, IntArray value) {
-        this(array, null, value);
-    }
-
-    public IntValueArray(Class<Integer> valueType, IntArray value) {
-        this(valueType, null, value);
+        this(array, null, value, null);
     }
 
     public IntValueArray(int[] array, Integer count, IntArray value) {
         this(array, count, value, null);
-        useInitialArray = array != null;
     }
 
-    public IntValueArray(Class<Integer> valueType, Integer count, IntArray value) {
-        this(valueType, count, value, null);
+    public IntValueArray(int[] array, Integer count, Object value1) {
+        this(array, count, (IntArray)value1, null);
     }
 
     public IntValueArray(int[] array, Integer count, IntArray value1, Boolean randomCount) {
@@ -33,13 +28,10 @@ class IntValueArray extends Constant<int[]> {
         this.count = count;
         this.instance = value1;
         this.randomCount = randomCount;
-    }
-
-    public IntValueArray(Class<Integer> valueType, Integer count, IntArray value1, Boolean randomCount) {
-        super(null);
-        this.count = count;
-        this.instance = value1;
-        this.randomCount = randomCount;
+        if (array == null && count == null) {
+            this.randomCount = Boolean.TRUE;
+        }
+        useInitialArray = array != null;
     }
 
     @Override

@@ -10,19 +10,15 @@ class RandomDouble extends AbstractRandomRange<Double> implements DoubleArray {
     private final Random random;
 
     public RandomDouble() {
-        this(null);
+        this(null, null, null);
     }
 
     public RandomDouble(Double value) {
-        super(value);
-        usingDefaults(0.0, Double.MAX_VALUE);
-        random = new Random();
+        this(value, null, null);
     }
 
     public RandomDouble(Double minimum, Double maximum) {
-        super(minimum, maximum);
-        usingDefaults(0.0, Double.MAX_VALUE);
-        random = new Random();
+        this(null, minimum, maximum);
     }
 
     public RandomDouble(Double value, Double minimum, Double maximum) {

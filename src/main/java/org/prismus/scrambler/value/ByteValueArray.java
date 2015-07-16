@@ -18,17 +18,12 @@ class ByteValueArray extends Constant<byte[]> {
         this(array, null, value);
     }
 
-    public ByteValueArray(Class<Integer> valueType, ByteArray value) {
-        this(valueType, null, value);
-    }
-
     public ByteValueArray(byte[] array, Integer count, ByteArray value) {
         this(array, count, value, null);
-        useInitialArray = array != null;
     }
 
-    public ByteValueArray(Class<Integer> valueType, Integer count, ByteArray value) {
-        this(valueType, count, value, null);
+    public ByteValueArray(byte[] array, Integer count, Object value) {
+        this(array, count, (ByteArray)value, null);
     }
 
     public ByteValueArray(byte[] array, Integer count, ByteArray value1, Boolean randomCount) {
@@ -36,13 +31,10 @@ class ByteValueArray extends Constant<byte[]> {
         this.count = count;
         this.instance = value1;
         this.randomCount = randomCount;
-    }
-
-    public ByteValueArray(Class<Integer> valueType, Integer count, ByteArray value1, Boolean randomCount) {
-        super(null);
-        this.count = count;
-        this.instance = value1;
-        this.randomCount = randomCount;
+        if (array == null && count == null) {
+            this.randomCount = Boolean.TRUE;
+        }
+        useInitialArray = array != null;
     }
 
     @Override

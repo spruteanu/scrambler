@@ -1,41 +1,41 @@
 package org.prismus.scrambler.value;
 
+import org.prismus.scrambler.Value;
+
 import java.math.BigDecimal;
 
 /**
  * @author Serge Pruteanu
  */
 class RandomBigDecimal extends AbstractRandomRange<BigDecimal> {
+    private final Value<Double> instance;
+
     public RandomBigDecimal() {
-        this(null);
+        this(null, null, null);
     }
 
     public RandomBigDecimal(BigDecimal value) {
-        super(value);
-        usingDefaults(BigDecimal.valueOf(0), BigDecimal.valueOf(Double.MAX_VALUE));
+        this(value, null, null);
     }
 
     public RandomBigDecimal(BigDecimal minimum, BigDecimal maximum) {
-        super(minimum, maximum);
-        usingDefaults(BigDecimal.valueOf(0), BigDecimal.valueOf(Double.MAX_VALUE));
+        this(null, minimum, maximum);
     }
 
     public RandomBigDecimal(BigDecimal value, BigDecimal minimum, BigDecimal maximum) {
-        super(value,minimum, maximum);
+        super(value, minimum, maximum);
         usingDefaults(BigDecimal.valueOf(0), BigDecimal.valueOf(Double.MAX_VALUE));
+        instance = new RandomDouble(value != null ? value.doubleValue() : null)
+                .usingDefaults(defaultMinimum.doubleValue(), defaultMaximum.doubleValue())
+                .between(
+                        minimum != null ? minimum.doubleValue() : null,
+                        maximum != null ? maximum.doubleValue() : null
+                );
     }
 
     @Override
     public BigDecimal next() {
-        final BigDecimal value = super.next();
-        final BigDecimal newValue = BigDecimal.valueOf(
-                new RandomDouble(value != null ? value.doubleValue() : null)
-                        .usingDefaults(defaultMinimum.doubleValue(), defaultMaximum.doubleValue())
-                        .between(
-                                minimum != null ? minimum.doubleValue() : null,
-                                maximum != null ? maximum.doubleValue() : null
-                        ).next()
-        );
+        final BigDecimal newValue = BigDecimal.valueOf(instance.next());
         setValue(newValue);
         return newValue;
     }

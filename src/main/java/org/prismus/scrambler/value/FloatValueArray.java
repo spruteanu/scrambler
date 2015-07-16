@@ -18,17 +18,12 @@ class FloatValueArray extends Constant<float[]> {
         this(array, null, value);
     }
 
-    public FloatValueArray(Class<Integer> valueType, FloatArray value) {
-        this(valueType, null, value);
-    }
-
     public FloatValueArray(float[] array, Integer count, FloatArray value) {
         this(array, count, value, null);
-        useInitialArray = array != null;
     }
 
-    public FloatValueArray(Class<Integer> valueType, Integer count, FloatArray value) {
-        this(valueType, count, value, null);
+    public FloatValueArray(float[] array, Integer count, Object value) {
+        this(array, count, (FloatArray)value, null);
     }
 
     public FloatValueArray(float[] array, Integer count, FloatArray value1, Boolean randomCount) {
@@ -36,13 +31,10 @@ class FloatValueArray extends Constant<float[]> {
         this.count = count;
         this.instance = value1;
         this.randomCount = randomCount;
-    }
-
-    public FloatValueArray(Class<Integer> valueType, Integer count, FloatArray value1, Boolean randomCount) {
-        super(null);
-        this.count = count;
-        this.instance = value1;
-        this.randomCount = randomCount;
+        if (array == null && count == null) {
+            this.randomCount = Boolean.TRUE;
+        }
+        useInitialArray = array != null;
     }
 
     @Override

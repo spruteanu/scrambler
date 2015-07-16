@@ -11,14 +11,12 @@ class ValueArrayTest extends Specification {
     void 'test array creation'() {
         ValueDefinition.register()
         given:
-        def value = new ValueArray([] as Integer[], 10.random())
+        def value = ValueArray.of(10.random(), int, null, null)
         def array = value.next()
         expect:
         array.length > 0
-        // todo Serge: it is not optimal, faster would be to have separate value set directly into array for all coerced types
-//        int[] == array.class
-//        int[] == value.asType(Integer[]).next().class
-//        Integer[] == Integer[].array(1.incremental(100)).next().class
+        int[] == array.class
+        Integer[] == Integer[].array(1.incremental(100)).next().class
     }
 
 }

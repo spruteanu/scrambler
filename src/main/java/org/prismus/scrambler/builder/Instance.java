@@ -109,8 +109,8 @@ public class Instance<T> extends Constant<T> {
             if (supportedTypes.contains(propertyType)) {
                 val = Random.of(propertyType);
             } else if(propertyType.isArray() && supportedTypes.contains(propertyType.getComponentType())) {
-                if (!propertyType.getComponentType().isPrimitive()) { // todo Serge: fix primitives
-                    val = new ValueArray(propertyType, Random.of(propertyType.getComponentType()));
+                if (!propertyType.getComponentType().isPrimitive()) {
+                    val = Random.of(propertyType, null);
                 }
             } else {
                 if (Iterable.class.isAssignableFrom(propertyType) || Map.class.isAssignableFrom(propertyType)) {

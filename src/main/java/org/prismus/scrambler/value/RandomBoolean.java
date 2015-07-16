@@ -5,13 +5,12 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-class RandomBoolean extends Constant<Boolean> {
+class RandomBoolean extends Constant<Boolean> implements BooleanArray {
 
     private final Random random;
 
     public RandomBoolean() {
-        super();
-        random = new Random();
+        this(null);
     }
 
     public RandomBoolean(Boolean value) {

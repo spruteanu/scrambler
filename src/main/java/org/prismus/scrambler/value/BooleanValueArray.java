@@ -5,28 +5,28 @@ package org.prismus.scrambler.value;
  *
  * @author Serge Pruteanu
  */
-class ShortValueArray extends Constant<short[]> {
+class BooleanValueArray extends Constant<boolean[]> {
     private Integer count;
-    private ShortArray instance;
+    private BooleanArray instance;
     private Boolean randomCount;
     private boolean useInitialArray;
 
-    public ShortValueArray() {
+    public BooleanValueArray() {
     }
 
-    public ShortValueArray(short[] array, ShortArray value) {
-        this(array, null, value, null);
+    public BooleanValueArray(boolean[] array, BooleanArray value) {
+        this(array, null, value);
     }
 
-    public ShortValueArray(short[] array, Integer count, ShortArray value) {
+    public BooleanValueArray(boolean[] array, Integer count, BooleanArray value) {
         this(array, count, value, null);
     }
 
-    public ShortValueArray(short[] array, Integer count, Object value) {
-        this(array, count, (ShortArray)value, null);
+    public BooleanValueArray(boolean[] array, Integer count, Object value) {
+        this(array, count, (BooleanArray)value, null);
     }
 
-    public ShortValueArray(short[] array, Integer count, ShortArray value1, Boolean randomCount) {
+    public BooleanValueArray(boolean[] array, Integer count, BooleanArray value1, Boolean randomCount) {
         super(array);
         this.count = count;
         this.instance = value1;
@@ -38,7 +38,7 @@ class ShortValueArray extends Constant<short[]> {
     }
 
     @Override
-    public short[] next() {
+    public boolean[] next() {
         Util.validateArguments(instance);
         int count = this.count != null ? this.count : 0;
         if (count == 0) {
@@ -48,7 +48,7 @@ class ShortValueArray extends Constant<short[]> {
             count = new RandomInteger(count).between(0, count).next();
         }
 
-        short[] value = useInitialArray ? this.value : new short[count];
+        boolean[] value = useInitialArray ? this.value : new boolean[count];
         instance.next(value);
 
         setValue(value);

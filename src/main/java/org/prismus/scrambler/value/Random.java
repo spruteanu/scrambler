@@ -67,7 +67,7 @@ public class Random {
 
     @SuppressWarnings({"unchecked"})
     public static Value<Number> of(Number val, Number minimum, Number maximum) {
-        final Value<Number> value = of((Class<Number>)val.getClass(), val);
+        final Value<Number> value = of((Class<Number>) val.getClass(), val);
         if (value instanceof AbstractRandomRange) {
             final AbstractRandomRange<Number> randomRangeValue = (AbstractRandomRange<Number>) value;
             randomRangeValue.minimumBound(minimum).maximumBound(maximum);
@@ -85,20 +85,54 @@ public class Random {
     @SuppressWarnings({"unchecked"})
     public static <T> Value<T> of(Class<T> clazzType, T defaultValue) {
         if (propertyTypeMap.containsKey(clazzType)) {
-            if (clazzType.isPrimitive()) {
-                return (Value) Util.createInstance(
-                        propertyTypeMap.get(clazzType), null, null
-                );
+            if (clazzType.isArray()) {
+                return of(clazzType, defaultValue, (Integer) null);
             } else {
-                return (Value) Util.createInstance(
-                        propertyTypeMap.get(clazzType),
-                        new Object[]{defaultValue},
-                        new Class[]{clazzType}
-                );
+                if (clazzType.isPrimitive()) {
+                    return (Value) Util.createInstance(
+                            propertyTypeMap.get(clazzType), null, null
+                    );
+                } else {
+                    return (Value) Util.createInstance(
+                            propertyTypeMap.get(clazzType),
+                            new Object[]{defaultValue},
+                            new Class[]{clazzType}
+                    );
+                }
             }
         }
         throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s",
                 clazzType, defaultValue));
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static <T> Value<T> of(Class<T> clazzType, T defaultValue, Integer count) {
+        final Class<?> componentType = clazzType.getComponentType();
+        Value valueType;
+        if (defaultValue != null) {
+            valueType = (Value) Util.createInstance(
+                    propertyTypeMap.get(componentType),
+                    new Object[]{defaultValue,},
+                    new Class[]{componentType,}
+            );
+        } else {
+            valueType = (Value) Util.createInstance(
+                    propertyTypeMap.get(componentType),
+                    new Object[]{},
+                    new Class[]{}
+            );
+        }
+        final Value<T> value;
+        if (componentType.isPrimitive()) {
+            value = (Value) Util.createInstance(
+                    propertyTypeMap.get(clazzType),
+                    new Object[]{defaultValue, count, valueType}
+                    , new Class[]{clazzType, Integer.class, Object.class}
+            );
+        } else {
+            value = new ValueArray(clazzType, valueType);
+        }
+        return value;
     }
 
     public static <T> Value<T> randomOf(List<T> values) {
@@ -119,26 +153,33 @@ public class Random {
 
     static Map<Class, Class<? extends Value>> lookupPropertyTypeMap() {
         final Map<Class, Class<? extends Value>> typeMap = new LinkedHashMap<Class, Class<? extends Value>>();
-        typeMap.put(Byte.class, RandomByte.class);
         typeMap.put(Byte.TYPE, RandomByte.class);
+        typeMap.put(Byte.class, RandomByte.class);
+        typeMap.put(byte[].class, ByteValueArray.class);
 
-        typeMap.put(Short.class, RandomShort.class);
         typeMap.put(Short.TYPE, RandomShort.class);
+        typeMap.put(Short.class, RandomShort.class);
+        typeMap.put(short[].class, ShortValueArray.class);
 
-        typeMap.put(Boolean.class, RandomBoolean.class);
         typeMap.put(Boolean.TYPE, RandomBoolean.class);
+        typeMap.put(Boolean.class, RandomBoolean.class);
+        typeMap.put(boolean[].class, BooleanValueArray.class);
 
-        typeMap.put(Double.class, RandomDouble.class);
         typeMap.put(Double.TYPE, RandomDouble.class);
+        typeMap.put(Double.class, RandomDouble.class);
+        typeMap.put(double[].class, DoubleValueArray.class);
 
-        typeMap.put(Float.class, RandomFloat.class);
         typeMap.put(Float.TYPE, RandomFloat.class);
+        typeMap.put(Float.class, RandomFloat.class);
+        typeMap.put(float[].class, FloatValueArray.class);
 
-        typeMap.put(Integer.class, RandomInteger.class);
         typeMap.put(Integer.TYPE, RandomInteger.class);
+        typeMap.put(Integer.class, RandomInteger.class);
+        typeMap.put(int[].class, IntValueArray.class);
 
-        typeMap.put(Long.class, RandomLong.class);
         typeMap.put(Long.TYPE, RandomLong.class);
+        typeMap.put(Long.class, RandomLong.class);
+        typeMap.put(long[].class, LongValueArray.class);
 
         typeMap.put(BigInteger.class, RandomBigInteger.class);
         typeMap.put(BigDecimal.class, RandomBigDecimal.class);

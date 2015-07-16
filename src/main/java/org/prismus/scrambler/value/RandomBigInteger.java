@@ -1,42 +1,43 @@
 package org.prismus.scrambler.value;
 
+import org.prismus.scrambler.Value;
+
 import java.math.BigInteger;
 
 /**
  * @author Serge Pruteanu
  */
 class RandomBigInteger extends AbstractRandomRange<BigInteger> {
+    private final Value<Long> instance;
+
     public RandomBigInteger() {
-        this(null);
+        this(null, null, null);
     }
 
     public RandomBigInteger(BigInteger value) {
-        super(value);
-        usingDefaults(BigInteger.valueOf(0), BigInteger.valueOf(Long.MAX_VALUE));
+        this(value, null, null);
     }
 
     public RandomBigInteger(BigInteger minimum, BigInteger maximum) {
-        super(minimum, maximum);
-        usingDefaults(BigInteger.valueOf(0), BigInteger.valueOf(Long.MAX_VALUE));
+        this(null, minimum, maximum);
     }
 
     public RandomBigInteger(BigInteger value, BigInteger minimum, BigInteger maximum) {
         super(value, minimum, maximum);
         usingDefaults(BigInteger.valueOf(0), BigInteger.valueOf(Long.MAX_VALUE));
+        instance = new RandomLong(value != null ? value.longValue() : null)
+                .usingDefaults(defaultMinimum.longValue(), defaultMaximum.longValue())
+                .between(
+                        minimum != null ? minimum.longValue() : null,
+                        maximum != null ? maximum.longValue() : null
+                );
     }
 
     @Override
     public BigInteger next() {
-        final BigInteger value = super.next();
-        final BigInteger newValue = BigInteger.valueOf(
-                new RandomLong(value != null ? value.longValue() : null)
-                        .usingDefaults(defaultMinimum.longValue(), defaultMaximum.longValue())
-                        .between(
-                                minimum != null ? minimum.longValue() : null,
-                                maximum != null ? maximum.longValue() : null
-                        ).next()
-        );
+        final BigInteger newValue = BigInteger.valueOf(instance.next());
         setValue(newValue);
         return newValue;
     }
+
 }
