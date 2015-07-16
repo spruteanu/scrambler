@@ -5,6 +5,8 @@ import org.apache.commons.beanutils.ConstructorUtils;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.commons.beanutils.converters.DateConverter;
 import org.prismus.scrambler.Value;
+import org.prismus.scrambler.builder.PropertyPredicate;
+import org.prismus.scrambler.builder.ValuePredicate;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -47,6 +49,43 @@ public abstract class Util {
 
     private static Object checkNotDefinedMessage(Object[] arguments) {
         return arguments != null ? Arrays.asList(arguments) : NOT_DEFINED_MSG;
+    }
+
+    public static void checkNullValue(Object value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Value can't be null");
+        }
+    }
+
+    public static void checkEmpty(String value) {
+        if (value == null || value.length() == 0) {
+            throw new IllegalArgumentException("Value can't be null or empty");
+        }
+    }
+
+    public static void checkEmptyCollection(Collection values) {
+        if (values.size() == 0) {
+            throw new IllegalArgumentException("Values collection can't be empty");
+        }
+    }
+
+    public static void checkNullValue(Object minimum, Object maximum) {
+        if (minimum == null && maximum == null) {
+            throw new IllegalArgumentException("Either minimum or maximum should be not null");
+        }
+    }
+
+    public static ValuePredicate createPropertyPredicate(String propertyWildcard) {
+        checkEmpty(propertyWildcard);
+        return new PropertyPredicate(propertyWildcard);
+    }
+
+    public static Number getNotNullValue(Number minimum, Number maximum) {
+        Number value = minimum;
+        if (value == null) {
+            value = maximum;
+        }
+        return value;
     }
 
     public static BeanUtilsBean createBeanUtilsBean() {
