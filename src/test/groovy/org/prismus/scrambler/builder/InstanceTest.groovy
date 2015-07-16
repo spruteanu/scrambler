@@ -53,7 +53,7 @@ class InstanceTest extends Specification {
         final instance = new Instance<Order>(new Order())
 
         and:
-        final propertyDescriptors = instance.lookupPropertyDefinitions(instance.value)
+        final propertyDescriptors = instance.lookupPropertyDefinitions(instance.get())
 
         expect:
         null != propertyDescriptors
@@ -67,11 +67,11 @@ class InstanceTest extends Specification {
         final instance = new Instance<School>(new School())
 
         and:
-        instance.populate(instance.value, [schoolId: 3, name: 'Enatai'])
+        instance.populate(instance.get(), [schoolId: 3, name: 'Enatai'])
 
         expect:
-        3 == instance.value.schoolId
-        'Enatai' == instance.value.name
+        3 == instance.get().schoolId
+        'Enatai' == instance.get().name
     }
 
     void 'check value definitions (tree definition) for instance'() {

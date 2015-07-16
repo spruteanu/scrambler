@@ -66,7 +66,7 @@ public class ValueCollection<V, T extends Collection<V>> extends Constant<T> {
 
     @SuppressWarnings("unchecked")
     Collection<V> checkCreate(int count) {
-        Collection<V> collection = getValue();
+        Collection<V> collection = get();
         if (collection.size() > 0) {
             collection = (Collection<V>) Util.createInstance(collection.getClass(), new Object[]{count});
         }

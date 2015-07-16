@@ -58,7 +58,7 @@ public class ValueMap<K, V> extends Constant<Map<K, V>> {
 
     @SuppressWarnings("unchecked")
     Map<K, V> checkCreate(int count) {
-        Map<K, V> valueMap = getValue();
+        Map<K, V> valueMap = get();
         if (valueMap.size() > 0) {
             valueMap = (Map<K, V>) Util.createInstance(valueMap.getClass(), new Object[]{count});
         }

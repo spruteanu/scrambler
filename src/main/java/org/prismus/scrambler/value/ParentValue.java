@@ -11,12 +11,24 @@ import org.prismus.scrambler.builder.ValuePredicate;
  * @author Serge Pruteanu
  */
 public class ParentValue implements Value, DefinitionRegistrable {
-    private ValuePredicate predicate;
     private ValueDefinition definition;
+    private ValuePredicate predicate;
+
+    public ParentValue() {
+    }
+
+    public ParentValue(ValueDefinition definition) {
+        this.definition = definition;
+    }
+
+    public ParentValue(ValueDefinition definition, ValuePredicate predicate) {
+        this.definition = definition;
+        this.predicate = predicate;
+    }
 
     @Override
     public Object next() {
-        return getValue();
+        return get();
     }
 
     @Override
@@ -24,9 +36,9 @@ public class ParentValue implements Value, DefinitionRegistrable {
         this.definition = definition;
     }
 
-    public Object getValue() {
+    public Object get() {
         final InstanceValue instanceValue = definition.getParent().getInstanceValue();
-        return instanceValue != null ? instanceValue.getValue() : null;
+        return instanceValue != null ? instanceValue.get() : null;
     }
 
     public void setDefinition(ValueDefinition definition) {

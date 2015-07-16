@@ -9,4 +9,5 @@ import java.io.Serializable;
  */
 public interface Value<T> extends Serializable, Cloneable {
     T next();
+    T get();
 }

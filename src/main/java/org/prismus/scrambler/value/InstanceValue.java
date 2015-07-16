@@ -50,8 +50,8 @@ public class InstanceValue implements Value<Object>, DefinitionRegistrable {
         return instance.next();
     }
 
-    public Object getValue() {
-        return instance.getValue();
+    public Object get() {
+        return instance.get();
     }
 
     @SuppressWarnings("unchecked")
