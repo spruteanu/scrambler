@@ -2,13 +2,13 @@ package org.prismus.scrambler.builder
 
 import org.prismus.scrambler.Value
 import org.prismus.scrambler.value.Constant
-import org.prismus.scrambler.value.IncrementalInteger
 import org.prismus.scrambler.value.ParentValue
 import spock.lang.Specification
 
 /**
  * @author Serge Pruteanu
  */
+@SuppressWarnings("GroovyConstructorNamedArguments")
 class InstanceTest extends Specification {
 
     void 'instance creation'(Object value, Class instanceType) {
@@ -22,15 +22,15 @@ class InstanceTest extends Specification {
         instanceType == instanceValue.class
 
         where:
-        value << [IncrementalInteger.class.name, IncrementalInteger, new IncrementalInteger(), IncrementalInteger]
-        instanceType << [IncrementalInteger, IncrementalInteger, IncrementalInteger, IncrementalInteger]
+        value << [School.class.name, School, new School(), School]
+        instanceType << [School, School, School, School]
     }
 
     @SuppressWarnings("GroovyAssignabilityCheck")
     void 'instance creation with arguments'(Object value, Class instanceType,
-                                            List<Value> constructorValues, Integer expectedStep) {
+                                            List<Value> constructorValues, Integer expectedValue) {
         given:
-        final instance = new Instance<IncrementalInteger>(value)
+        final instance = new Instance<School>(value)
         instance.constructorValues = constructorValues
 
         and:
@@ -38,14 +38,14 @@ class InstanceTest extends Specification {
 
         expect:
         instanceType == instanceValue.class
-        constructorValues.get(0).next() == instanceValue.value
-        expectedStep == instanceValue.step
+        constructorValues.get(0).next() == instanceValue.schoolId
+        expectedValue == instanceValue.schoolId
 
         where:
-        value << [IncrementalInteger.class.name, IncrementalInteger]
-        instanceType << [IncrementalInteger, IncrementalInteger]
-        constructorValues << [[new Constant(5)], [new Constant(100), new Constant(3)]]
-        expectedStep << [1, 3]
+        value << [School.class.name, School]
+        instanceType << [School, School]
+        constructorValues << [[new Constant(5)], [new Constant(100), new Constant("test")]]
+        expectedValue << [5, 100]
     }
 
     void 'test lookup property definitions'() {
@@ -104,7 +104,7 @@ class InstanceTest extends Specification {
         expect:
         order.total > 1
         order.arrayField != null
-        order.arrayField.length  > 0
+        order.arrayField.length > 0
         order.person != null
         order.person.firstName != null
         order.person.lastName != null
@@ -142,7 +142,7 @@ class InstanceTest extends Specification {
         order.person.phone != null
         order.person.age > 1
         order.arrayField != null
-        order.arrayField.length  > 0
+        order.arrayField.length > 0
     }
 
     void 'test if parent is set properly'() {
@@ -169,18 +169,30 @@ class InstanceTest extends Specification {
         school.rooms[0].parent == school
     }
 
-    private static class School {
+    static class School {
         int schoolId
         String name
         List<ClassRoom> rooms
+
+        School() {
+        }
+
+        School(int schoolId) {
+            this.schoolId = schoolId
+        }
+
+        School(int schoolId, String name) {
+            this.schoolId = schoolId
+            this.name = name
+        }
     }
 
-    private static class ClassRoom {
+    static class ClassRoom {
         School parent
         String roomNumber
     }
 
-    private static class Order {
+    static class Order {
         BigDecimal total
         List<OrderItem> items = new ArrayList<OrderItem>()
         Person person
@@ -188,19 +200,19 @@ class InstanceTest extends Specification {
         int[] arrayField
     }
 
-    private static class Product {
+    static class Product {
         String name
         BigDecimal price
     }
 
-    private static class OrderItem {
+    static class OrderItem {
         int quantity
         String details = "no name"
         Date orderTime
         Product product
     }
 
-    private static class Person {
+    static class Person {
         String firstName
         String lastName
         int age
@@ -210,7 +222,7 @@ class InstanceTest extends Specification {
         Address address
     }
 
-    private static class Address {
+    static class Address {
         String number
         String street
         String postalCode
@@ -218,7 +230,7 @@ class InstanceTest extends Specification {
         String room
     }
 
-    private static class Book {
+    static class Book {
         String author
         String title
         Integer isbn
@@ -226,7 +238,7 @@ class InstanceTest extends Specification {
         String publisher
     }
 
-    private static class Employee {
+    static class Employee {
         String name
         int age
         String designation
