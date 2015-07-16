@@ -35,6 +35,11 @@ public class TypePredicate implements ValuePredicate {
     }
 
     @Override
+    public String toString() {
+        return type.toString();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;

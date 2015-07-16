@@ -42,7 +42,7 @@ class IntValueArray extends Constant<int[]> {
             count = 20;
         }
         if (randomCount != null && randomCount) {
-            count = new RandomInteger(count).between(0, count).next();
+            count = new RandomInteger(count).between(1, count).next();
         }
 
         int[] value = useInitialArray ? this.value : new int[count];

@@ -110,6 +110,11 @@ public class InstanceValue implements Value<Object>, DefinitionRegistrable {
         this.definitionClosure = definitionClosure;
     }
 
+    // todo Serge: fix predicates
+    public ValuePredicate getPredicate() {
+        return predicate;
+    }
+
     public void setPredicate(ValuePredicate predicate) {
         this.predicate = predicate;
     }

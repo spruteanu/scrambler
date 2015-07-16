@@ -46,6 +46,11 @@ public class PropertyPredicate implements ValuePredicate {
     }
 
     @Override
+    public String toString() {
+        return wildcardPattern;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;

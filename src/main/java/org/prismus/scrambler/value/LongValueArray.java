@@ -45,7 +45,7 @@ class LongValueArray extends Constant<long[]> {
             count = 20;
         }
         if (randomCount != null && randomCount) {
-            count = new RandomInteger(count).between(0, count).next();
+            count = new RandomInteger(count).between(1, count).next();
         }
 
         long[] value = useInitialArray ? this.value : new long[count];

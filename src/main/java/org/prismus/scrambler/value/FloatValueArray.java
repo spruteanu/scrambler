@@ -45,7 +45,7 @@ class FloatValueArray extends Constant<float[]> {
             count = 20;
         }
         if (randomCount != null && randomCount) {
-            count = new RandomInteger(count).between(0, count).next();
+            count = new RandomInteger(count).between(1, count).next();
         }
 
         float[] value = useInitialArray ? this.value : new float[count];

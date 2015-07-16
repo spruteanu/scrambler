@@ -1,6 +1,6 @@
 package org.prismus.scrambler.value
 
-import org.prismus.scrambler.builder.ValueDefinition
+import org.prismus.scrambler.builder.GroovyValueDefinition
 import spock.lang.Specification
 
 /**
@@ -9,7 +9,7 @@ import spock.lang.Specification
 class ValueArrayTest extends Specification {
 
     void 'test array creation'() {
-        ValueDefinition.register()
+        GroovyValueDefinition.register()
         given:
         def value = ValueArray.of(10.random(), int, null, null)
         def array = value.next()

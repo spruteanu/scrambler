@@ -76,7 +76,7 @@ class InstanceTest extends Specification {
 
     void 'check value definitions (tree definition) for instance'() {
         given:
-        ValueDefinition.register()
+        GroovyValueDefinition.register()
         final instance = new Instance<Order>(Order)
         final definition = new ValueDefinition(
                 (BigDecimal): BigDecimal.ONE.random(1.0, 100.0),
@@ -109,7 +109,7 @@ class InstanceTest extends Specification {
         order.person.firstName != null
         order.person.lastName != null
         order.person.phone != null
-        order.person.age > 10
+        order.person.age >= 10
         ['M' as char, 'F' as char].contains(order.person.sex)
         order.items.size() > 0
         order.items[0].quantity > 0
@@ -122,7 +122,7 @@ class InstanceTest extends Specification {
 
     void 'check value definition introspection'() {
         given:
-        ValueDefinition.register()
+        GroovyValueDefinition.register()
         final definition = new ValueDefinition(
                 'firstName': ['Andy', 'Nicole', 'Nicolas', 'Jasmine'].randomOf(),
                 'lastName': ['Smith', 'Ferrara', 'Maldini', "Shaffer"].randomOf(),
@@ -147,7 +147,7 @@ class InstanceTest extends Specification {
 
     void 'test if parent is set properly'() {
         given:
-        ValueDefinition.register()
+        GroovyValueDefinition.register()
 
         final instance = new Instance<School>(School)
         final definition = new ValueDefinition(

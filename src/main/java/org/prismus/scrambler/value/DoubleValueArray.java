@@ -45,7 +45,7 @@ class DoubleValueArray extends Constant<double[]> {
             count = 20;
         }
         if (randomCount != null && randomCount) {
-            count = new RandomInteger(count).between(0, count).next();
+            count = new RandomInteger(count).between(1, count).next();
         }
 
         double[] value = useInitialArray ? this.value : new double[count];

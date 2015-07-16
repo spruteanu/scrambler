@@ -54,7 +54,7 @@ public class ValueCollection<V, T extends Collection<V>> extends Constant<T> {
             count = 20;
         }
         if (randomCount != null && randomCount) {
-            count = new RandomInteger(count).between(0, count).next();
+            count = new RandomInteger(count).between(1, count).next();
         }
         checkCreate(count);
         for (int i = 0; i < count; i++) {

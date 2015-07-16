@@ -1,28 +1,15 @@
 package org.prismus.scrambler.builder
 
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.control.CompilerConfiguration
-import org.codehaus.groovy.control.customizers.ImportCustomizer
-import org.codehaus.groovy.runtime.ResourceGroovyMethods
 import org.prismus.scrambler.Value
-import org.prismus.scrambler.value.Constant
-import org.prismus.scrambler.value.Incremental
-import org.prismus.scrambler.value.InstanceValue
-import org.prismus.scrambler.value.ParentValue
-import org.prismus.scrambler.value.Util
-import org.prismus.scrambler.value.ValueArray
-import org.prismus.scrambler.value.ValueCollection
-import org.prismus.scrambler.value.ValueMap
+import org.prismus.scrambler.value.*
 
 /**
  * todo: add description
  *
  * @author Serge Pruteanu
  */
-class ValueDefinition extends Script {
-    private Properties configurationProperties
-    private GroovyShell shell
-
+class ValueDefinition {
     InstanceValue instanceValue
     ValueDefinition parent
     Boolean introspect
@@ -38,24 +25,9 @@ class ValueDefinition extends Script {
         of(propertyValueMap)
     }
 
-    @Override
-    Object run() {
-        return this
-    }
-
     @CompileStatic
     boolean shouldIntrospect() {
         return introspect != null && introspect
-    }
-
-    @CompileStatic
-    void setConfigurationProperties(Properties configurationProperties) {
-        this.configurationProperties = configurationProperties
-    }
-
-    @CompileStatic
-    Properties getConfigurationProperties() {
-        return configurationProperties
     }
 
     @CompileStatic
@@ -103,6 +75,7 @@ class ValueDefinition extends Script {
         return resultMap
     }
 
+//    @CompileStatic // todo Serge: resolve predicate methods invocation
     protected void registerPredicateValue(TypePredicate valuePredicate, Value value) {
         typeValueMap.put(valuePredicate, value)
     }
@@ -144,69 +117,6 @@ class ValueDefinition extends Script {
         }
     }
 
-    ValueDefinition parseText(String definitionText) {
-        if (shell == null) {
-            shell = createGroovyShell()
-        }
-        final definition = (ValueDefinition) shell.evaluate(
-                definitionText
-                        + "\n    build()"
-                        + "\n    return this"
-        )
-
-        definition.parent = this
-        propertyValueMap.putAll(definition.propertyValueMap)
-        typeValueMap.putAll(definition.typeValueMap)
-        if (definition.instanceValue != null) {
-            definition.instanceValue.parentDefinition = this
-            instanceValues.add(definition.instanceValue)
-        }
-        return definition
-    }
-
-    ValueDefinition parse(String resource) throws IOException {
-        final URL url = this.getClass().getResource(resource)
-        if (url == null) {
-            throw new IllegalArgumentException(String.format("Not found resource for: %s", resource))
-        }
-        return parseText(ResourceGroovyMethods.getText(url))
-    }
-
-    ValueDefinition parse(def resource) throws IOException {
-        return parseText(resource.text)
-    }
-
-    protected GroovyShell createGroovyShell() {
-        final compilerConfiguration = new CompilerConfiguration()
-        compilerConfiguration.setScriptBaseClass(ValueDefinition.name)
-
-        final importCustomizer = new ImportCustomizer()
-        importCustomizer.addStarImports(Value.package.name)
-        importCustomizer.addStarImports(Constant.package.name)
-        importCustomizer.addStarImports(getClass().package.name)
-        compilerConfiguration.addCompilationCustomizers(importCustomizer)
-
-        return new GroovyShell(compilerConfiguration)
-    }
-
-    void setConfigurationProperties(String configurationResource) throws IOException {
-        setConfigurationProperties(getClass().getResourceAsStream(configurationResource))
-    }
-
-    protected void setConfigurationProperties(InputStream inputStream) throws IOException {
-        if (inputStream != null) {
-            final Properties properties = new Properties()
-            try {
-                properties.load(inputStream)
-                this.configurationProperties = properties
-            } finally {
-                try {
-                    inputStream.close()
-                } catch (IOException ignore) { }
-            }
-        }
-    }
-
     ValueDefinition of(Class type, Boolean introspect = null, Collection constructorArgs = null, Closure defCl = null) {
         Util.checkNullValue(type)
         this.introspect = introspect
@@ -224,6 +134,7 @@ class ValueDefinition extends Script {
     //------------------------------------------------------------------------------------------------------------------
     // Object Methods
     //------------------------------------------------------------------------------------------------------------------
+//    @CompileStatic
     ValueDefinition of(Object value) {
         Util.checkNullValue(value)
         registerPredicateValue(new TypePredicate(value.class), new Constant(value))
@@ -234,10 +145,6 @@ class ValueDefinition extends Script {
         Util.checkNullValue(value)
         registerPredicateValue(new TypePredicate(type: value.class), new Constant(value))
         return this
-    }
-
-    def propertyMissing(String name, value) {
-        println "Property '$name' with value '$value' is missing"
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -337,6 +244,7 @@ class ValueDefinition extends Script {
     //------------------------------------------------------------------------------------------------------------------
     // Value Methods
     //------------------------------------------------------------------------------------------------------------------
+//    @CompileStatic
     ValueDefinition of(Value value) {
         Util.checkNullValue(value)
         final value1 = value.value
@@ -455,119 +363,6 @@ class ValueDefinition extends Script {
             }
         }
         return this
-    }
-
-    @SuppressWarnings("GroovyAssignabilityCheck")
-    static void register() {
-        Object.metaClass {
-            constant { ->
-                return new Constant(delegate)
-            }
-        }
-
-        Number.metaClass {
-            incremental { Number step = null ->
-                return Incremental.of((Number) delegate, step)
-            }
-
-            random { Number minimum = null, Number maximum = null ->
-                return org.prismus.scrambler.value.Random.of((Number) delegate, minimum, maximum)
-            }
-        }
-
-        Date.metaClass {
-            incremental { Integer step = null, Integer calendarField = null ->
-                return Incremental.of((Date) delegate, step, calendarField)
-            }
-
-            random { Date minimum = null, Date maximum = null ->
-                return org.prismus.scrambler.value.Random.of((Date) delegate, minimum, maximum)
-            }
-        }
-
-        String.metaClass {
-            incremental { String pattern = null, Integer index = null ->
-                return Incremental.of((String) delegate, pattern, index)
-            }
-
-            random { Integer count = null, Boolean includeLetters = null, Boolean includeNumbers = null ->
-                return org.prismus.scrambler.value.Random.of((String) delegate, count, includeLetters, includeNumbers)
-            }
-        }
-
-        Collection.metaClass {
-            of { Value val, Integer count = null, Boolean randomCount = null ->
-                Util.checkNullValue(val)
-                return new ValueCollection((Collection) delegate, count, val, randomCount)
-            }
-
-            randomOf { ->
-                final collection = (Collection) delegate
-                Util.checkEmptyCollection(collection)
-                return org.prismus.scrambler.value.Random.randomOf(collection)
-            }
-        }
-
-        Map.metaClass {
-            of { Value entryKey, Value entryValue, Integer count = null, Boolean randomCount = null ->
-                Util.checkNullValue(entryKey)
-                Util.checkNullValue(entryValue)
-                return new ValueMap((Map) delegate, entryKey, entryValue, count, randomCount)
-            }
-        }
-
-        Class.metaClass {
-            of { Closure defCl ->
-                return new InstanceValue(
-                        type: (Class) delegate,
-                        predicate: new TypePredicate(type: (Class) delegate),
-                        definitionClosure: defCl
-                )
-            }
-
-            of { Map<Object, Object> propertyValueMap, Closure defCl = null ->
-                return new InstanceValue(
-                        type: (Class) delegate,
-                        propertyValueMap: propertyValueMap,
-                        predicate: new TypePredicate(type: (Class) delegate),
-                        definitionClosure: defCl
-                )
-            }
-
-            of { String propertyName, Closure defCl ->
-                return new InstanceValue(
-                        type: (Class) delegate,
-                        predicate: Util.createPropertyPredicate(propertyName),
-                        definitionClosure: defCl
-                )
-            }
-
-            of { Collection constructorArgs, Closure defCl ->
-                return new InstanceValue(
-                        type: (Class) delegate,
-                        constructorArguments: constructorArgs,
-                        predicate: new TypePredicate(type: (Class) delegate),
-                        definitionClosure: defCl
-                )
-            }
-
-            of { String propertyName, Collection constructorArgs, Closure defCl ->
-                return new InstanceValue(
-                        type: (Class) delegate,
-                        constructorArguments: constructorArgs,
-                        predicate: Util.createPropertyPredicate(propertyName),
-                        definitionClosure: defCl
-                )
-            }
-
-            array { Value val, Integer count = null, Boolean randomCount = null ->
-                return ValueArray.of(val, (Class)delegate, count, randomCount)
-            }
-        }
-    }
-
-    static {
-        register()
     }
 
 }

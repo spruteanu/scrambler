@@ -45,7 +45,7 @@ class BooleanValueArray extends Constant<boolean[]> {
             count = 20;
         }
         if (randomCount != null && randomCount) {
-            count = new RandomInteger(count).between(0, count).next();
+            count = new RandomInteger(count).between(1, count).next();
         }
 
         boolean[] value = useInitialArray ? this.value : new boolean[count];
