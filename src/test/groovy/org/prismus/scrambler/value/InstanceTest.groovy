@@ -152,7 +152,7 @@ class InstanceTest extends Specification {
                 '*Id': 1.incremental(1),
                 'name': ['Enatai', 'Medina', 'Value Crest', 'Newport'].randomOf(),
                 (List): [].of(ClassRoom.of(
-                        parent: new ParentValue(),
+                        parent: School.reference(),
                         roomNumber: "101A".random(4),
                 ), 10),
         )

@@ -11,7 +11,7 @@ import org.prismus.scrambler.value.*
  */
 @SuppressWarnings("UnnecessaryQualifiedReference")
 class ValueDefinition {
-    InstanceValue instanceValue
+    ValueDefinition parent;
 
     Map<ValuePredicate, Value> propertyValueMap = [:]
     Map<ValuePredicate, Value> typeValueMap = [:]
@@ -27,7 +27,7 @@ class ValueDefinition {
     @CompileStatic
     ValueDefinition build() {
         for (final value : instanceValueMap.values()) {
-            value.build()
+            value.build(this)
         }
         return this
     }
@@ -41,18 +41,31 @@ class ValueDefinition {
     }
 
     @CompileStatic
+    protected void lookupInstanceValue(ValuePredicate valuePredicate, Value value) {
+        if (InstanceValue.isInstance(value)) {
+            instanceValueMap.put(valuePredicate, (InstanceValue)value)
+        } else if (ValueCollection.isInstance(value)) {
+            lookupInstanceValue(valuePredicate, ((ValueCollection)value).getInstance())
+        } else if (ValueArray.isInstance(value)) {
+            lookupInstanceValue(valuePredicate, ((ValueArray)value).getInstance())
+        }
+    }
+
+    @CompileStatic
     protected void registerTypePredicateValue(TypePredicate valuePredicate, Value value) {
+        lookupInstanceValue(valuePredicate, value)
         typeValueMap.put(valuePredicate, value)
     }
 
     @CompileStatic
     protected void registerPredicateValue(ValuePredicate valuePredicate, Value value) {
+        lookupInstanceValue(valuePredicate, value)
         propertyValueMap.put(valuePredicate, value)
     }
 
     @CompileStatic
-    protected void registerPredicateValue(ValuePredicate valuePredicate, ParentValue value) {
-        value.setInstanceValue(instanceValue)
+    protected void registerPredicateValue(ValuePredicate valuePredicate, ReferenceValue value) {
+        value.setDefinition(this)
         registerPredicateValue(valuePredicate, (Value) value)
     }
 
@@ -69,7 +82,6 @@ class ValueDefinition {
     @CompileStatic
     protected void registerPredicateValue(ValuePredicate valuePredicate, InstanceValue value) {
         if (valuePredicate != null) {
-            instanceValueMap.put(valuePredicate, value)
             if (valuePredicate instanceof TypePredicate) {
                 registerTypePredicateValue(valuePredicate, (Value) value)
             } else {
@@ -78,10 +90,13 @@ class ValueDefinition {
         }
     }
 
-    Value lookupValue(ValuePredicate predicate) {
+    Value lookupValue(ValuePredicate predicate) { // might be lookup should be performed by matching
         Value result = propertyValueMap.get(predicate);
         if (result == null) {
             result = typeValueMap.get(predicate);
+        }
+        if (result == null && parent != null) {
+            result = parent.lookupValue(predicate);
         }
         return result;
     }
@@ -184,7 +199,8 @@ class ValueDefinition {
 
     @CompileStatic
     ValueDefinition parent(String propertyName) {
-        registerPredicateValue(Util.createPropertyPredicate(propertyName), new ParentValue(instanceValue))
+        final ValuePredicate predicate = Util.createPropertyPredicate(propertyName)
+        registerPredicateValue(predicate, new ReferenceValue(this, predicate))
         return this
     }
 
@@ -247,7 +263,7 @@ class ValueDefinition {
     @CompileStatic
     ValueDefinition parent(ValuePredicate valuePredicate, ValuePredicate parentPredicate) {
         Util.checkNullValue(valuePredicate)
-        registerPredicateValue(valuePredicate, new ParentValue(instanceValue, parentPredicate))
+        registerPredicateValue(valuePredicate, new ReferenceValue(this, parentPredicate))
         return this
     }
 
@@ -273,7 +289,6 @@ class ValueDefinition {
     ValueDefinition of(Class type, Collection constructorArgs = null, Closure defCl = null) {
         Util.checkNullValue(type)
         registerPredicateValue(new TypePredicate(type), new InstanceValue(
-                parentDefinition: this,
                 type: type,
                 constructorArguments: constructorArgs,
                 definitionClosure: defCl,
@@ -285,7 +300,7 @@ class ValueDefinition {
     ValueDefinition parent(Class type) {
         Util.checkNullValue(type)
         final ValuePredicate predicate = new TypePredicate(type)
-        registerPredicateValue((ValuePredicate) predicate, new ParentValue(instanceValue))
+        registerPredicateValue((ValuePredicate) predicate, new ReferenceValue(this, predicate))
         return this
     }
 
@@ -306,7 +321,7 @@ class ValueDefinition {
     ValueDefinition parent(Class type, ValuePredicate parentPredicate) {
         Util.checkNullValue(type)
         final ValuePredicate predicate = new TypePredicate(type)
-        registerPredicateValue((ValuePredicate) predicate, new ParentValue(instanceValue, parentPredicate))
+        registerPredicateValue((ValuePredicate) predicate, new ReferenceValue(this, parentPredicate))
         return this
     }
 

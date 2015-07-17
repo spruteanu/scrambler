@@ -375,6 +375,10 @@ class GroovyValueDefinition extends Script {
             array { Value val, Integer count = null, Boolean randomCount = null ->
                 return ValueArray.of(val, (Class) delegate, count, randomCount)
             }
+
+            reference { ->
+                return new ReferenceValue(new TypePredicate((Class) delegate))
+            }
         }
     }
 

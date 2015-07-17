@@ -1,6 +1,5 @@
 package org.prismus.scrambler.builder
 
-import org.prismus.scrambler.value.InstanceValue
 import spock.lang.Specification
 
 /**
@@ -144,9 +143,6 @@ of org.prismus.scrambler.beans.School.of {
 """)
         expect:
         valueDefinition.typeValueMap.size() > 0
-        valueDefinition.instanceValueMap.size() > 0
-        valueDefinition.instanceValueMap[0].definition != null
-        valueDefinition.instanceValueMap[0].definition.propertyValueMap.size() > 0
 
         and:
         parser.parseText("""
@@ -217,10 +213,6 @@ of org.prismus.scrambler.beans.School.of {
         null != new Date().random()
         null != int.array(1.random())
         null != 'some template string'.random(100, true, false)
-
-        null != InstanceValue.of {
-            of 'aa', 3L.incremental()
-        }.build()
     }
 
     void 'test parse text for map'() {

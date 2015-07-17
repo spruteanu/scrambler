@@ -21,7 +21,6 @@ import java.util.*;
 public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     private ValueDefinition definition;
-    private ValueDefinition parentDefinition;
     private Closure definitionClosure;
     private ValuePredicate predicate;
 
@@ -32,7 +31,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     private Map<String, Field> fieldMap;
     private BeanUtilsBean beanUtilsBean;
     protected List<Value> constructorValues;
-
 
     public InstanceValue() {
         this(null, null, null);
@@ -58,10 +56,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return definition;
     }
 
-    public void setParentDefinition(ValueDefinition parentDefinition) {
-        this.parentDefinition = parentDefinition;
-    }
-
     public void setDefinitionClosure(Closure definitionClosure) {
         this.definitionClosure = definitionClosure;
     }
@@ -82,33 +76,10 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         this.constructorValues = constructorValues;
     }
 
-    LinkedList<ValueDefinition> getParents() {
-        final LinkedList<ValueDefinition> parents = new LinkedList<ValueDefinition>();
-        ValueDefinition parent = parentDefinition;
-        while (parent != null) {
-            parents.add(parent);
-//            parent = parent.
-        }
-        return parents;
-    }
-
-    Map<ValuePredicate, Value> getPredicateValueMapDeep() {
-        final Map<ValuePredicate, Value> resultMap = new LinkedHashMap<ValuePredicate, Value>();
-        final Map<ValuePredicate, Value> valueMap = new LinkedHashMap<ValuePredicate, Value>();
-        final Map<ValuePredicate, Value> typeMap = new LinkedHashMap<ValuePredicate, Value>();
-        for (final ValueDefinition parent : getParents()) {
-            valueMap.putAll(parent.getPredicateValueMap());
-            typeMap.putAll(parent.getTypeValueMap());
-        }
-        resultMap.putAll(valueMap);
-        resultMap.putAll(typeMap);
-        return resultMap;
-    }
-
     @Override
     public T next() {
         if (definition == null) {
-            build();
+            build(null);
         }
         final T instance = checkCreateInstance();
         populate(instance);
@@ -119,21 +90,20 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     void checkDefinitionCreated() {
         if (definition == null) {
             definition = new ValueDefinition();
-            definition.setInstanceValue(this);
             registerFieldValues(definition);
         }
     }
 
     @SuppressWarnings("unchecked")
-    public InstanceValue<T> build() {
+    public InstanceValue<T> build(ValueDefinition parent) {
         checkDefinitionCreated();
         checkFieldMapCreated();
+        definition.setParent(parent);
         if (fieldValueMap != null) {
             definition.of((Map) fieldValueMap);
         }
-
         if (definitionClosure != null) {
-            definitionClosure.rehydrate(definition, definition, definition).call(definition);
+            definitionClosure.rehydrate(definition, definition, definition).call();
         }
         if (definitionClosure != null || (fieldValueMap != null && fieldValueMap.size() > 0)) {
             definition.build();
@@ -182,7 +152,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     public InstanceValue<T> usingDefinitions(ValueDefinition valueDefinition) {
         registerFieldValues(valueDefinition);
-        valueDefinition.setInstanceValue(this);
         definition = valueDefinition;
         return this;
     }
@@ -336,15 +305,13 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     void setPropertyValue(PropertyDescriptor propertyDescriptor, Object instance, Object value) {
         try {
             propertyDescriptor.getWriteMethod().invoke(instance, value);
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) { }
     }
 
     void setPropertyValue(PropertyUtilsBean propertyUtils, Object instance, String propertyName, Object value) {
         try {
             propertyUtils.setSimpleProperty(instance, propertyName, value);
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) { }
     }
 
     void setPropertyValue(Object instance, String propertyName, Object value) {
