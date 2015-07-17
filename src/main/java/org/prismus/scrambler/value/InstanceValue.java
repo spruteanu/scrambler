@@ -1,40 +1,57 @@
 package org.prismus.scrambler.value;
 
 import groovy.lang.Closure;
+import org.apache.commons.beanutils.BeanUtilsBean;
+import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.prismus.scrambler.Value;
-import org.prismus.scrambler.builder.DefinitionRegistrable;
-import org.prismus.scrambler.builder.Instance;
-import org.prismus.scrambler.builder.ValueDefinition;
-import org.prismus.scrambler.builder.ValuePredicate;
+import org.prismus.scrambler.builder.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.*;
 
 /**
  * todo: add description
  *
  * @author Serge Pruteanu
  */
-public class InstanceValue implements Value<Object>, DefinitionRegistrable {
+public class InstanceValue<T> extends Constant<T> implements Value<T>, DefinitionRegistrable {
+
     private ValueDefinition parentDefinition;
     private Closure definitionClosure;
     private ValuePredicate predicate;
 
-    private Class type;
+    private Object type;
     private Collection<Value> constructorArguments;
-    private Map<Object, Object> propertyValueMap;
+    private Map<String, Value> valueDefinitionMap;
 
     private ValueDefinition definition;
-    private Instance instance;
+
+    private Map<String, Field> fieldMap;
+    private BeanUtilsBean beanUtilsBean;
+    protected List<Value> constructorValues;
+
 
     public InstanceValue() {
+        this(null, null, null);
+    }
+
+    public InstanceValue(String type) {
+        this(lookupType(type, false), null, null);
+    }
+
+    public InstanceValue(Class type) {
+        this(type, null, null);
     }
 
     public InstanceValue(Class type, Collection<Value> constructorArguments, ValueDefinition parentDefinition) {
         this.type = type;
-        this.constructorArguments = constructorArguments;
         this.parentDefinition = parentDefinition;
+        this.constructorArguments = constructorArguments;
+        this.constructorValues = new ArrayList<Value>();
+        valueDefinitionMap = new LinkedHashMap<String, Value>();
+        beanUtilsBean = Util.createBeanUtilsBean();
     }
 
     @Override
@@ -43,34 +60,37 @@ public class InstanceValue implements Value<Object>, DefinitionRegistrable {
     }
 
     @Override
-    public Object next() {
+    public T next() {
         if (definition == null) {
             build();
         }
-        return instance.next();
+        final T instance = checkCreateInstance();
+        populate(instance);
+        setValue(instance);
+        return instance;
     }
 
-    public Object get() {
-        return instance.get();
-    }
-
-    @SuppressWarnings("unchecked")
-    public ValueDefinition build() {
+    void checkDefinitionCreated() {
         if (definition == null) {
             definition = new ValueDefinition();
             definition.setParent(parentDefinition);
             definition.setInstanceValue(this);
+            registerPropertyValues(definition);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public InstanceValue<T> build() {
+        checkDefinitionCreated();
+        checkFieldMapCreated();
+        if (valueDefinitionMap != null) {
+            definition.of((Map) valueDefinitionMap);
         }
 
         if (definitionClosure != null) {
             definitionClosure.rehydrate(definition, definition, definition).call(definition);
         }
-
-        if (propertyValueMap != null) {
-            definition.of((Map) propertyValueMap);
-        }
-
-        if (definitionClosure != null || (propertyValueMap != null && propertyValueMap.size() > 0)) {
+        if (definitionClosure != null || (valueDefinitionMap != null && valueDefinitionMap.size() > 0)) {
             definition.build();
             if (definition.getIntrospect() == null && parentDefinition != null) {
                 definition.setIntrospect(parentDefinition.getIntrospect());
@@ -80,12 +100,7 @@ public class InstanceValue implements Value<Object>, DefinitionRegistrable {
                 definition = parentDefinition;
             }
         }
-
-        instance = new Instance(type).using(definition);
-        if (constructorArguments != null) {
-            instance.using(new ArrayList<Value>(constructorArguments));
-        }
-        return definition;
+        return this;
     }
 
     @SuppressWarnings("unchecked")
@@ -123,15 +138,306 @@ public class InstanceValue implements Value<Object>, DefinitionRegistrable {
         this.type = type;
     }
 
-    public void setPropertyValueMap(Map<Object, Object> propertyValueMap) {
-        this.propertyValueMap = propertyValueMap;
+    public void setConstructorValues(List<Value> constructorValues) {
+        this.constructorValues = constructorValues;
     }
 
-    public void setDefinition(ValueDefinition definition) {
-        this.definition = definition;
+    public InstanceValue<T> addPropertyValue(String property, Value value) {
+        valueDefinitionMap.put(property, value);
+        return this;
     }
 
-    public void setInstance(Instance instance) {
-        this.instance = instance;
+    void registerPropertyValues(ValueDefinition valueDefinition) {
+        checkFieldMapCreated();
+
+        final Map<String, Field> unresolvedProps = new HashMap<String, Field>(fieldMap);
+        for (final Map.Entry<ValuePredicate, Value> entry : valueDefinition.getPredicateValueMap().entrySet()) {
+            final ValuePredicate predicate = entry.getKey();
+            for (final Field field : fieldMap.values()) {
+                final String propertyName = field.getName();
+                if (!valueDefinitionMap.containsKey(propertyName)) {
+                    if (predicate.apply(propertyName, field.getValueType())) {
+                        addPropertyValue(propertyName, entry.getValue());
+                        break;
+                    }
+                }
+            }
+        }
+        if (valueDefinition.shouldIntrospect()) {
+            unresolvedProps.keySet().removeAll(valueDefinitionMap.keySet());
+            valueDefinitionMap.putAll(introspectTypes(valueDefinition, unresolvedProps));
+        }
     }
+
+    public InstanceValue<T> usingDefinitions(ValueDefinition valueDefinition) {
+        registerPropertyValues(valueDefinition);
+        valueDefinition.setInstanceValue(this);
+        definition = valueDefinition;
+        return this;
+    }
+
+    public InstanceValue<T> usingDefinitions(Map<Object, Object> valueDefinitions) {
+        registerPropertyValues(new ValueDefinition().of(valueDefinitions));
+        return this;
+    }
+
+    public InstanceValue<T> using(List<Value> constructorValues) {
+        this.constructorValues = constructorValues;
+        return this;
+    }
+
+    public InstanceValue<T> addConstructorValue(Value value) {
+        constructorValues.add(value);
+        return this;
+    }
+
+    public InstanceValue<T> usingValue(T value) {
+        this.value = value;
+        return this;
+    }
+
+    public InstanceValue<T> usingType(Class valueType) {
+        this.type = valueType;
+        return this;
+    }
+
+    public InstanceValue<T> usingType(String valueType) {
+        this.type = valueType;
+        return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    Map<String, Value> introspectTypes(ValueDefinition valueDefinition, Map<String, Field> unresolvedProps) {
+        final Set<Class> supportedTypes = getSupportedTypes();
+        final Map<String, Value> propertyValueMap = new LinkedHashMap<String, Value>();
+        for (final Map.Entry<String, Field> entry : unresolvedProps.entrySet()) {
+            final String propertyName = entry.getKey();
+            final Field field = entry.getValue();
+            final Class propertyType = field.getType();
+            Value val = null;
+            if (supportedTypes.contains(propertyType)) {
+                val = Random.of(propertyType);
+            } else if(propertyType.isArray() && supportedTypes.contains(propertyType.getComponentType())) {
+                val = Random.of(propertyType, null);
+            } else {
+                if (Iterable.class.isAssignableFrom(propertyType) || Map.class.isAssignableFrom(propertyType)) {
+                    continue;
+                }
+                final List<Value> ctorArgs = lookupConstructorArguments(valueDefinition, propertyType, supportedTypes);
+                if (ctorArgs != null) {
+                    val = new InstanceValue(propertyType, ctorArgs, valueDefinition);
+                }
+            }
+            if (val != null) {
+                propertyValueMap.put(propertyName, val);
+            }
+        }
+        return propertyValueMap;
+    }
+
+    protected Set<Class> getSupportedTypes() {
+        final Set<Class> knownTypes = new HashSet<Class>();
+        knownTypes.addAll(Incremental.getSupportedTypes());
+        knownTypes.addAll(org.prismus.scrambler.value.Random.getSupportedTypes());
+        return knownTypes;
+    }
+
+    List<Value> lookupConstructorArguments(ValueDefinition valueDefinition, Class type, Set<Class> supportedTypes) {
+        List<Value> result = null;
+        try {
+            final Map<ValuePredicate, Value> typeValueMap = valueDefinition.getTypeValueMap();
+            for (final Constructor ctor : type.getConstructors()) {
+                final Class[] types = ctor.getParameterTypes();
+                if (types == null) {
+                    return new ArrayList<Value>();
+                }
+                final List<Value> values = new ArrayList<Value>();
+                for (final Class argType : types) {
+                    // todo Serge: fishy, instead, a full iteration should be done across type map on predicate verification
+                    Value val = typeValueMap.get(new TypePredicate(argType));
+                    if (val == null && supportedTypes.contains(argType)) {
+                        val = Random.of(argType);
+                    }
+                    if (val != null) {
+                        values.add(val);
+                    }
+                }
+                if (values.size() == types.length) {
+                    result = values;
+                    break;
+                }
+            }
+        } catch (Exception ignore) { }
+        return result;
+    }
+
+    void populate(Object instance) {
+        final Map<String, Object> propertyObjectMap = new LinkedHashMap<String, Object>(valueDefinitionMap.size());
+        for (Map.Entry<String, Value> entry : valueDefinitionMap.entrySet()) {
+            propertyObjectMap.put(entry.getKey(), entry.getValue().next());
+        }
+        populate(instance, propertyObjectMap);
+    }
+
+    void populate(Object instance, Map<String, Object> properties) {
+        for (final Map.Entry<String, Object> entry : properties.entrySet()) {
+            final String key = entry.getKey();
+            final Object value = entry.getValue();
+            try {
+                setPropertyValue(instance, key, value);
+            } catch (Exception e) {
+                throw new RuntimeException(String.format("Failed to set instance: %s with property: %s; value: %s", instance, key, value), e);
+            }
+        }
+    }
+
+    Map<String, Field> checkFieldMapCreated() {
+        if (fieldMap != null) {
+            return fieldMap;
+        }
+        fieldMap = lookupFields(value != null ? value : type);
+        return fieldMap;
+    }
+
+    Map<String, Field> lookupFields(Object instanceType) {
+        final PropertyUtilsBean propertyUtils = beanUtilsBean.getPropertyUtils();
+        final boolean isInstance = !(instanceType instanceof Class);
+        final Map<String, Field> propertyDefinitionMap = new LinkedHashMap<String, Field>();
+
+        final PropertyDescriptor[] propertyDescriptors;
+        if (isInstance) {
+            propertyDescriptors = propertyUtils.getPropertyDescriptors(instanceType);
+        } else {
+            propertyDescriptors = propertyUtils.getPropertyDescriptors(((Class) instanceType));
+        }
+        if (propertyDescriptors != null) {
+            for (final PropertyDescriptor propertyDescriptor : propertyDescriptors) {
+                final String name = propertyDescriptor.getName();
+                final Object value = isInstance ? getPropertyValue(propertyDescriptor, instanceType) : null;
+                propertyDefinitionMap.put(name, new Field(propertyDescriptor, value));
+            }
+            propertyDefinitionMap.remove("class");
+            propertyDefinitionMap.remove("metaClass");
+        }
+        return propertyDefinitionMap;
+    }
+
+    void setPropertyValue(PropertyDescriptor propertyDescriptor, Object instance, Object value) {
+        try {
+            propertyDescriptor.getWriteMethod().invoke(instance, value);
+        } catch (Exception ignore) { }
+    }
+
+    void setPropertyValue(PropertyUtilsBean propertyUtils, Object instance, String propertyName, Object value) {
+        try {
+            propertyUtils.setSimpleProperty(instance, propertyName, value);
+        } catch (Exception ignore) { }
+    }
+
+    void setPropertyValue(Object instance, String propertyName, Object value) {
+        final Field field = fieldMap.get(propertyName);
+        if (field != null) {
+            setPropertyValue(field.propertyDescriptor, instance, value);
+        } else {
+            setPropertyValue(beanUtilsBean.getPropertyUtils(), instance, propertyName, value);
+        }
+    }
+
+    Object getPropertyValue(Object instance, String propertyName) {
+        final Field field = fieldMap.get(propertyName);
+        final Object value;
+        if (field != null) {
+            value = getPropertyValue(field.propertyDescriptor, instance);
+        } else {
+            value = getPropertyValue(beanUtilsBean.getPropertyUtils(), instance, propertyName);
+        }
+        return value;
+    }
+
+    Object getPropertyValue(PropertyDescriptor propertyDescriptor, Object instance) {
+        Object value = null;
+        try {
+            value = propertyDescriptor.getReadMethod().invoke(instance);
+        } catch (Exception ignore) { }
+        return value;
+    }
+
+    Object getPropertyValue(PropertyUtilsBean propertyUtils, Object instance, String propertyName) {
+        Object value = null;
+        try {
+            value = propertyUtils.getProperty(instance, propertyName);
+        } catch (Exception ignore) { }
+        return value;
+    }
+
+    @SuppressWarnings({"unchecked"})
+    T checkCreateInstance() {
+        T result = this.value;
+        Object valueType = this.type;
+        if (valueType == null) {
+            valueType = result;
+        }
+        if (valueType instanceof String) {
+            valueType = lookupType((String) valueType, true);
+        }
+        if (valueType instanceof Class) {
+            Object[] arguments = null;
+            Class[] types = null;
+            if (constructorValues != null && constructorValues.size() > 0) {
+                arguments = new Object[constructorValues.size()];
+                types = new Class[constructorValues.size()];
+                for (int i = 0; i < constructorValues.size(); i++) {
+                    final Value value = constructorValues.get(i);
+                    final Object valueObject = value.next();
+                    arguments[i] = valueObject;
+                    types[i] = valueObject.getClass();
+                }
+            }
+            result = (T) Util.createInstance((Class) valueType, arguments, types);
+        }
+        return result;
+    }
+
+    static Class lookupType(String classType, boolean throwError) {
+        Class result = null;
+        try {
+            result = Class.forName(((String) classType));
+        } catch (ClassNotFoundException e) {
+            if (throwError) {
+                throw new IllegalStateException(String.format("Not found class for specified value: %s", classType), e);
+            }
+        }
+        return result;
+    }
+
+    static class Field {
+        final PropertyDescriptor propertyDescriptor;
+        final Object value;
+
+        public Field(PropertyDescriptor propertyDescriptor, Object value) {
+            this.propertyDescriptor = propertyDescriptor;
+            this.value = value;
+        }
+
+        public Object getValueType() {
+            return value != null ? value : getType();
+        }
+
+        public String getName() {
+            return propertyDescriptor.getName();
+        }
+
+        public Class getType() {
+            return propertyDescriptor.getPropertyType();
+        }
+
+        public Method getter() {
+            return propertyDescriptor.getReadMethod();
+        }
+
+        public Method setter() {
+            return propertyDescriptor.getWriteMethod();
+        }
+    }
+
 }

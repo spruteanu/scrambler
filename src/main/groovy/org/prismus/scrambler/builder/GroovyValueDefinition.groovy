@@ -104,13 +104,7 @@ class GroovyValueDefinition extends Script {
         }
     }
 
-    def propertyMissing(String name, value) {
-        println "Property '$name' with value '$value' is missing"
-    }
-
     //------------------------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------------------------
-
     //------------------------------------------------------------------------------------------------------------------
     // Object Methods
     //------------------------------------------------------------------------------------------------------------------
@@ -347,10 +341,9 @@ class GroovyValueDefinition extends Script {
             of { Map<Object, Object> propertyValueMap, Closure defCl = null ->
                 return new InstanceValue(
                         type: (Class) delegate,
-                        propertyValueMap: propertyValueMap,
                         predicate: new TypePredicate(type: (Class) delegate),
                         definitionClosure: defCl
-                )
+                ).usingDefinitions(propertyValueMap)
             }
 
             of { String propertyName, Closure defCl ->

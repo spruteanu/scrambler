@@ -1,5 +1,6 @@
 package org.prismus.scrambler.builder
 
+import org.prismus.scrambler.value.InstanceValue
 import spock.lang.Specification
 
 /**
@@ -137,8 +138,8 @@ of 'some template string'.constant()
 
         and:
         final valueDefinition = parser.parseText("""
-of org.prismus.scrambler.builder.Instance.of {
-        of '*Sid', 1
+of org.prismus.scrambler.beans.School.of {
+        of '*Id', 1
 }
 """)
         expect:
@@ -149,14 +150,14 @@ of org.prismus.scrambler.builder.Instance.of {
 
         and:
         parser.parseText("""
-of '*Instance|*Object', org.prismus.scrambler.builder.Instance.of {
-        of '*Sid', 3L.incremental()
+of '*Instance|*Object', org.prismus.scrambler.beans.School.of {
+        of '*Id', 3L.incremental()
 }
 """).propertyValueMap.size() > 0
         and:
         parser.parseText("""
-of org.prismus.scrambler.builder.Instance.of([2.0.random(), 3], {
-        of '*Sid', 1.random()
+of org.prismus.scrambler.beans.School.of([2.0.random(), 3], {
+        of '*Id', 1.random()
 })
 """).typeValueMap.size() > 0
     }
@@ -168,7 +169,7 @@ of org.prismus.scrambler.builder.Instance.of([2.0.random(), 3], {
         and:
         def definition = parser.parseText("""
 of 'id', 1.incremental(300)
-of org.prismus.scrambler.builder.Instance.of {
+of org.prismus.scrambler.beans.School.of {
         parent '*Instance'
 }
 """)
@@ -217,9 +218,9 @@ of org.prismus.scrambler.builder.Instance.of {
         null != int.array(1.random())
         null != 'some template string'.random(100, true, false)
 
-        null != Instance.of {
+        null != InstanceValue.of {
             of 'aa', 3L.incremental()
-        }.build().propertyValueMap
+        }.build()
     }
 
     void 'test parse text for map'() {

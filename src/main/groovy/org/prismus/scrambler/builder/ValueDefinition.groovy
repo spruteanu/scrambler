@@ -22,7 +22,7 @@ class ValueDefinition {
     ValueDefinition() {
     }
 
-    ValueDefinition(Map<String, Value> propertyValueMap) {
+    ValueDefinition(Map<Object, Value> propertyValueMap) {
         of(propertyValueMap)
     }
 
@@ -52,7 +52,7 @@ class ValueDefinition {
     }
 
     @CompileStatic
-    protected Map<ValuePredicate, Value> getPredicateValueMapDeep() {
+    Map<ValuePredicate, Value> getPredicateValueMapDeep() {
         final resultMap = new LinkedHashMap<ValuePredicate, Value>()
         final valueMap = new LinkedHashMap<ValuePredicate, Value>()
         final typeMap = new LinkedHashMap<ValuePredicate, Value>()
@@ -66,7 +66,7 @@ class ValueDefinition {
     }
 
     @CompileStatic
-    protected Map<ValuePredicate, Value> getPredicateValueMap() {
+    Map<ValuePredicate, Value> getPredicateValueMap() {
         if (introspect) {
             return getPredicateValueMapDeep()
         }
@@ -317,13 +317,11 @@ class ValueDefinition {
         Util.checkNullValue(type)
         this.introspect = introspect
         instanceValue = new InstanceValue(
-                definition: this,
                 type: type,
                 constructorArguments: constructorArgs,
                 predicate: new TypePredicate(type),
                 definitionClosure: defCl,
-        )
-        instanceValue.build()
+        ).usingDefinitions(this).build()
         return this
     }
 
