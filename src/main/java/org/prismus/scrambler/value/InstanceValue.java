@@ -4,7 +4,9 @@ import groovy.lang.Closure;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.prismus.scrambler.Value;
-import org.prismus.scrambler.builder.*;
+import org.prismus.scrambler.builder.TypePredicate;
+import org.prismus.scrambler.builder.ValueDefinition;
+import org.prismus.scrambler.builder.ValuePredicate;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
@@ -16,17 +18,16 @@ import java.util.*;
  *
  * @author Serge Pruteanu
  */
-public class InstanceValue<T> extends Constant<T> implements Value<T>, DefinitionRegistrable {
+public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
+    private ValueDefinition definition;
     private ValueDefinition parentDefinition;
     private Closure definitionClosure;
     private ValuePredicate predicate;
 
     private Object type;
     private Collection<Value> constructorArguments;
-    private Map<String, Value> valueDefinitionMap;
-
-    private ValueDefinition definition;
+    private Map<String, Value> fieldValueMap;
 
     private Map<String, Field> fieldMap;
     private BeanUtilsBean beanUtilsBean;
@@ -47,16 +48,61 @@ public class InstanceValue<T> extends Constant<T> implements Value<T>, Definitio
 
     public InstanceValue(Class type, Collection<Value> constructorArguments, ValueDefinition parentDefinition) {
         this.type = type;
-        this.parentDefinition = parentDefinition;
         this.constructorArguments = constructorArguments;
         this.constructorValues = new ArrayList<Value>();
-        valueDefinitionMap = new LinkedHashMap<String, Value>();
+        fieldValueMap = new LinkedHashMap<String, Value>();
         beanUtilsBean = Util.createBeanUtilsBean();
     }
 
-    @Override
-    public void register(ValueDefinition parentDefinition) {
+    public ValueDefinition getDefinition() {
+        return definition;
+    }
+
+    public void setParentDefinition(ValueDefinition parentDefinition) {
         this.parentDefinition = parentDefinition;
+    }
+
+    public void setDefinitionClosure(Closure definitionClosure) {
+        this.definitionClosure = definitionClosure;
+    }
+
+    public void setPredicate(ValuePredicate predicate) {
+        this.predicate = predicate;
+    }
+
+    public ValuePredicate getPredicate() {
+        return predicate;
+    }
+
+    public void setType(Class type) {
+        this.type = type;
+    }
+
+    public void setConstructorValues(List<Value> constructorValues) {
+        this.constructorValues = constructorValues;
+    }
+
+    LinkedList<ValueDefinition> getParents() {
+        final LinkedList<ValueDefinition> parents = new LinkedList<ValueDefinition>();
+        ValueDefinition parent = parentDefinition;
+        while (parent != null) {
+            parents.add(parent);
+//            parent = parent.
+        }
+        return parents;
+    }
+
+    Map<ValuePredicate, Value> getPredicateValueMapDeep() {
+        final Map<ValuePredicate, Value> resultMap = new LinkedHashMap<ValuePredicate, Value>();
+        final Map<ValuePredicate, Value> valueMap = new LinkedHashMap<ValuePredicate, Value>();
+        final Map<ValuePredicate, Value> typeMap = new LinkedHashMap<ValuePredicate, Value>();
+        for (final ValueDefinition parent : getParents()) {
+            valueMap.putAll(parent.getPredicateValueMap());
+            typeMap.putAll(parent.getTypeValueMap());
+        }
+        resultMap.putAll(valueMap);
+        resultMap.putAll(typeMap);
+        return resultMap;
     }
 
     @Override
@@ -73,9 +119,8 @@ public class InstanceValue<T> extends Constant<T> implements Value<T>, Definitio
     void checkDefinitionCreated() {
         if (definition == null) {
             definition = new ValueDefinition();
-            definition.setParent(parentDefinition);
             definition.setInstanceValue(this);
-            registerPropertyValues(definition);
+            registerFieldValues(definition);
         }
     }
 
@@ -83,22 +128,15 @@ public class InstanceValue<T> extends Constant<T> implements Value<T>, Definitio
     public InstanceValue<T> build() {
         checkDefinitionCreated();
         checkFieldMapCreated();
-        if (valueDefinitionMap != null) {
-            definition.of((Map) valueDefinitionMap);
+        if (fieldValueMap != null) {
+            definition.of((Map) fieldValueMap);
         }
 
         if (definitionClosure != null) {
             definitionClosure.rehydrate(definition, definition, definition).call(definition);
         }
-        if (definitionClosure != null || (valueDefinitionMap != null && valueDefinitionMap.size() > 0)) {
+        if (definitionClosure != null || (fieldValueMap != null && fieldValueMap.size() > 0)) {
             definition.build();
-            if (definition.getIntrospect() == null && parentDefinition != null) {
-                definition.setIntrospect(parentDefinition.getIntrospect());
-            }
-        } else {
-            if (parentDefinition != null) {
-                definition = parentDefinition;
-            }
         }
         return this;
     }
@@ -117,37 +155,12 @@ public class InstanceValue<T> extends Constant<T> implements Value<T>, Definitio
         }
     }
 
-    public void setParentDefinition(ValueDefinition parentDefinition) {
-        this.parentDefinition = parentDefinition;
-    }
-
-    public void setDefinitionClosure(Closure definitionClosure) {
-        this.definitionClosure = definitionClosure;
-    }
-
-    // todo Serge: fix predicates
-    public ValuePredicate getPredicate() {
-        return predicate;
-    }
-
-    public void setPredicate(ValuePredicate predicate) {
-        this.predicate = predicate;
-    }
-
-    public void setType(Class type) {
-        this.type = type;
-    }
-
-    public void setConstructorValues(List<Value> constructorValues) {
-        this.constructorValues = constructorValues;
-    }
-
-    public InstanceValue<T> addPropertyValue(String property, Value value) {
-        valueDefinitionMap.put(property, value);
+    public InstanceValue<T> registerFieldValue(String field, Value value) {
+        fieldValueMap.put(field, value);
         return this;
     }
 
-    void registerPropertyValues(ValueDefinition valueDefinition) {
+    void registerFieldValues(ValueDefinition valueDefinition) {
         checkFieldMapCreated();
 
         final Map<String, Field> unresolvedProps = new HashMap<String, Field>(fieldMap);
@@ -155,29 +168,27 @@ public class InstanceValue<T> extends Constant<T> implements Value<T>, Definitio
             final ValuePredicate predicate = entry.getKey();
             for (final Field field : fieldMap.values()) {
                 final String propertyName = field.getName();
-                if (!valueDefinitionMap.containsKey(propertyName)) {
+                if (!fieldValueMap.containsKey(propertyName)) {
                     if (predicate.apply(propertyName, field.getValueType())) {
-                        addPropertyValue(propertyName, entry.getValue());
+                        registerFieldValue(propertyName, entry.getValue());
                         break;
                     }
                 }
             }
         }
-        if (valueDefinition.shouldIntrospect()) {
-            unresolvedProps.keySet().removeAll(valueDefinitionMap.keySet());
-            valueDefinitionMap.putAll(introspectTypes(valueDefinition, unresolvedProps));
-        }
+        unresolvedProps.keySet().removeAll(fieldValueMap.keySet());
+        fieldValueMap.putAll(introspectTypes(valueDefinition, unresolvedProps));
     }
 
     public InstanceValue<T> usingDefinitions(ValueDefinition valueDefinition) {
-        registerPropertyValues(valueDefinition);
+        registerFieldValues(valueDefinition);
         valueDefinition.setInstanceValue(this);
         definition = valueDefinition;
         return this;
     }
 
     public InstanceValue<T> usingDefinitions(Map<Object, Object> valueDefinitions) {
-        registerPropertyValues(new ValueDefinition().of(valueDefinitions));
+        registerFieldValues(new ValueDefinition().of(valueDefinitions));
         return this;
     }
 
@@ -217,7 +228,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T>, Definitio
             Value val = null;
             if (supportedTypes.contains(propertyType)) {
                 val = Random.of(propertyType);
-            } else if(propertyType.isArray() && supportedTypes.contains(propertyType.getComponentType())) {
+            } else if (propertyType.isArray() && supportedTypes.contains(propertyType.getComponentType())) {
                 val = Random.of(propertyType, null);
             } else {
                 if (Iterable.class.isAssignableFrom(propertyType) || Map.class.isAssignableFrom(propertyType)) {
@@ -253,7 +264,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T>, Definitio
                 }
                 final List<Value> values = new ArrayList<Value>();
                 for (final Class argType : types) {
-                    // todo Serge: fishy, instead, a full iteration should be done across type map on predicate verification
                     Value val = typeValueMap.get(new TypePredicate(argType));
                     if (val == null && supportedTypes.contains(argType)) {
                         val = Random.of(argType);
@@ -267,13 +277,14 @@ public class InstanceValue<T> extends Constant<T> implements Value<T>, Definitio
                     break;
                 }
             }
-        } catch (Exception ignore) { }
+        } catch (Exception ignore) {
+        }
         return result;
     }
 
     void populate(Object instance) {
-        final Map<String, Object> propertyObjectMap = new LinkedHashMap<String, Object>(valueDefinitionMap.size());
-        for (Map.Entry<String, Value> entry : valueDefinitionMap.entrySet()) {
+        final Map<String, Object> propertyObjectMap = new LinkedHashMap<String, Object>(fieldValueMap.size());
+        for (Map.Entry<String, Value> entry : fieldValueMap.entrySet()) {
             propertyObjectMap.put(entry.getKey(), entry.getValue().next());
         }
         populate(instance, propertyObjectMap);
@@ -325,13 +336,15 @@ public class InstanceValue<T> extends Constant<T> implements Value<T>, Definitio
     void setPropertyValue(PropertyDescriptor propertyDescriptor, Object instance, Object value) {
         try {
             propertyDescriptor.getWriteMethod().invoke(instance, value);
-        } catch (Exception ignore) { }
+        } catch (Exception ignore) {
+        }
     }
 
     void setPropertyValue(PropertyUtilsBean propertyUtils, Object instance, String propertyName, Object value) {
         try {
             propertyUtils.setSimpleProperty(instance, propertyName, value);
-        } catch (Exception ignore) { }
+        } catch (Exception ignore) {
+        }
     }
 
     void setPropertyValue(Object instance, String propertyName, Object value) {
@@ -358,7 +371,8 @@ public class InstanceValue<T> extends Constant<T> implements Value<T>, Definitio
         Object value = null;
         try {
             value = propertyDescriptor.getReadMethod().invoke(instance);
-        } catch (Exception ignore) { }
+        } catch (Exception ignore) {
+        }
         return value;
     }
 
@@ -366,7 +380,8 @@ public class InstanceValue<T> extends Constant<T> implements Value<T>, Definitio
         Object value = null;
         try {
             value = propertyUtils.getProperty(instance, propertyName);
-        } catch (Exception ignore) { }
+        } catch (Exception ignore) {
+        }
         return value;
     }
 

@@ -144,9 +144,9 @@ of org.prismus.scrambler.beans.School.of {
 """)
         expect:
         valueDefinition.typeValueMap.size() > 0
-        valueDefinition.instanceValues.size() > 0
-        valueDefinition.instanceValues[0].definition != null
-        valueDefinition.instanceValues[0].definition.propertyValueMap.size() > 0
+        valueDefinition.instanceValueMap.size() > 0
+        valueDefinition.instanceValueMap[0].definition != null
+        valueDefinition.instanceValueMap[0].definition.propertyValueMap.size() > 0
 
         and:
         parser.parseText("""
@@ -176,11 +176,11 @@ of org.prismus.scrambler.beans.School.of {
 
         expect: 'verify root definition'
         0 < definition.typeValueMap.size()
-//        null != definition.instanceValues[0].definition // todo Serge: fix parent relationships
+//        null != definition.instanceValueMap[0].definition // todo Serge: fix parent relationships
 //        parser.definition == definition.parent // root definition
 //
 //        and: 'verify that parent of inner definition is root one'
-//        definition == definition.instanceValues[0].definition.parent
+//        definition == definition.instanceValueMap[0].definition.parent
 
         and:
         parser.parseText("parent '*Parent'").propertyValueMap.size() > 0

@@ -1,8 +1,6 @@
 package org.prismus.scrambler.value;
 
 import org.prismus.scrambler.Value;
-import org.prismus.scrambler.builder.DefinitionRegistrable;
-import org.prismus.scrambler.builder.ValueDefinition;
 import org.prismus.scrambler.builder.ValuePredicate;
 
 /**
@@ -10,19 +8,19 @@ import org.prismus.scrambler.builder.ValuePredicate;
  *
  * @author Serge Pruteanu
  */
-public class ParentValue implements Value, DefinitionRegistrable {
-    private ValueDefinition definition;
+public class ParentValue implements Value {
+    private InstanceValue instanceValue;
     private ValuePredicate predicate;
 
     public ParentValue() {
     }
 
-    public ParentValue(ValueDefinition definition) {
-        this.definition = definition;
+    public ParentValue(InstanceValue definition) {
+        this.instanceValue = definition;
     }
 
-    public ParentValue(ValueDefinition definition, ValuePredicate predicate) {
-        this.definition = definition;
+    public ParentValue(InstanceValue definition, ValuePredicate predicate) {
+        this.instanceValue = definition;
         this.predicate = predicate;
     }
 
@@ -31,18 +29,12 @@ public class ParentValue implements Value, DefinitionRegistrable {
         return get();
     }
 
-    @Override
-    public void register(ValueDefinition definition) {
-        this.definition = definition;
-    }
-
     public Object get() {
-        final InstanceValue instanceValue = definition.getParent().getInstanceValue();
         return instanceValue != null ? instanceValue.get() : null;
     }
 
-    public void setDefinition(ValueDefinition definition) {
-        this.definition = definition;
+    public void setInstanceValue(InstanceValue instanceValue) {
+        this.instanceValue = instanceValue;
     }
 
     public ValuePredicate getPredicate() { // todo Serge: fix predicates

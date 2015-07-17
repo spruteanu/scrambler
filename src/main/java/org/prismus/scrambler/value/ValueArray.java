@@ -52,7 +52,7 @@ public class ValueArray<T> extends Constant<T[]> {
     }
 
     @SuppressWarnings("unchecked")
-    public ValueArray asType(Class<T> valueType) {
+    public ValueArray forType(Class<T> valueType) {
         this.valueType = valueType.isArray() ? (Class<T>) valueType.getComponentType() : valueType;
         return this;
     }

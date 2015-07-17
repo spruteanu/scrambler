@@ -122,7 +122,7 @@ class InstanceTest extends Specification {
     void 'check value definition introspection'() {
         given:
         GroovyValueDefinition.register()
-        final definition = new ValueDefinition(
+        final instanceValue = new InstanceValue<Order>(Order).usingDefinitions(new ValueDefinition(
                 'firstName': ['Andy', 'Nicole', 'Nicolas', 'Jasmine'].randomOf(),
                 'lastName': ['Smith', 'Ferrara', 'Maldini', "Shaffer"].randomOf(),
                 'age': 11.random(10, 60),
@@ -130,8 +130,8 @@ class InstanceTest extends Specification {
                 'phone': ['425-452-0001', '425-452-0002', '425-452-0003', "425-452-0004"].randomOf(),
                 name: ['Candies', 'Star Wars Lego Factory', 'Star War Ninja GO'].randomOf(),
                 price: 2.0.random(10.0, 50.0),
-        ).of(Order, true)
-        final Order order = (Order) definition.instanceValue.next()
+        ))
+        final Order order = (Order) instanceValue.next()
 
         expect:
         order.total > 0
