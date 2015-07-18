@@ -334,15 +334,19 @@ class GroovyValueDefinition extends Script {
                 return new InstanceValue(
                         type: (Class) delegate,
                         predicate: new TypePredicate(type: (Class) delegate),
-                        definitionClosure: defCl
+                        definitionClosure: new GroovyDefinitionCallable(defCl)
                 )
             }
 
             of { Map<Object, Object> propertyValueMap, Closure defCl = null ->
+                GroovyDefinitionCallable definitionCallable = null
+                if (defCl) {
+                    definitionCallable = new GroovyDefinitionCallable(defCl)
+                }
                 return new InstanceValue(
                         type: (Class) delegate,
                         predicate: new TypePredicate(type: (Class) delegate),
-                        definitionClosure: defCl
+                        definitionClosure: definitionCallable
                 ).usingDefinitions(propertyValueMap)
             }
 
@@ -350,7 +354,7 @@ class GroovyValueDefinition extends Script {
                 return new InstanceValue(
                         type: (Class) delegate,
                         predicate: Util.createPropertyPredicate(propertyName),
-                        definitionClosure: defCl
+                        definitionClosure: new GroovyDefinitionCallable(defCl)
                 )
             }
 
@@ -359,7 +363,7 @@ class GroovyValueDefinition extends Script {
                         type: (Class) delegate,
                         constructorArguments: constructorArgs,
                         predicate: new TypePredicate(type: (Class) delegate),
-                        definitionClosure: defCl
+                        definitionClosure: new GroovyDefinitionCallable(defCl)
                 )
             }
 
@@ -368,7 +372,7 @@ class GroovyValueDefinition extends Script {
                         type: (Class) delegate,
                         constructorArguments: constructorArgs,
                         predicate: Util.createPropertyPredicate(propertyName),
-                        definitionClosure: defCl
+                        definitionClosure: new GroovyDefinitionCallable(defCl)
                 )
             }
 

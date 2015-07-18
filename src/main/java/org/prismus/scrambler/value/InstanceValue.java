@@ -1,9 +1,9 @@
 package org.prismus.scrambler.value;
 
-import groovy.lang.Closure;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.prismus.scrambler.Value;
+import org.prismus.scrambler.builder.AbstractDefinitionCallable;
 import org.prismus.scrambler.builder.TypePredicate;
 import org.prismus.scrambler.builder.ValueDefinition;
 import org.prismus.scrambler.builder.ValuePredicate;
@@ -12,6 +12,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 /**
  * todo: add description
@@ -21,7 +22,7 @@ import java.util.*;
 public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     private ValueDefinition definition;
-    private Closure definitionClosure; //todo Serge: replace closure with callable
+    private Callable<ValueDefinition> definitionClosure;
     private ValuePredicate predicate;
 
     private Object type;
@@ -56,7 +57,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return definition;
     }
 
-    public void setDefinitionClosure(Closure definitionClosure) {
+    public void setDefinitionClosure(Callable<ValueDefinition> definitionClosure) {
         this.definitionClosure = definitionClosure;
     }
 
@@ -107,12 +108,26 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             definition.of((Map) fieldValueMap);
         }
         if (definitionClosure != null) {
-            definitionClosure.rehydrate(definition, definition, definition).call();
+            executeDefinitionClosure();
         }
         if (definitionClosure != null || (fieldValueMap != null && fieldValueMap.size() > 0)) {
             definition.build();
         }
         return this;
+    }
+
+    void executeDefinitionClosure() {
+        try {
+            if (definitionClosure instanceof AbstractDefinitionCallable) {
+                final AbstractDefinitionCallable callable = (AbstractDefinitionCallable) this.definitionClosure;
+                if (callable.getDefinition() == null) {
+                    callable.setDefinition(definition);
+                }
+            }
+            definitionClosure.call();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to execute definition closure", e);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -250,7 +265,8 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                     break;
                 }
             }
-        } catch (Exception ignore) { }
+        } catch (Exception ignore) {
+        }
         return result;
     }
 
@@ -308,13 +324,15 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     void setPropertyValue(PropertyDescriptor propertyDescriptor, Object instance, Object value) {
         try {
             propertyDescriptor.getWriteMethod().invoke(instance, value);
-        } catch (Exception ignore) { }
+        } catch (Exception ignore) {
+        }
     }
 
     void setPropertyValue(PropertyUtilsBean propertyUtils, Object instance, String propertyName, Object value) {
         try {
             propertyUtils.setSimpleProperty(instance, propertyName, value);
-        } catch (Exception ignore) { }
+        } catch (Exception ignore) {
+        }
     }
 
     void setPropertyValue(Object instance, String propertyName, Object value) {
@@ -341,7 +359,8 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         Object value = null;
         try {
             value = propertyDescriptor.getReadMethod().invoke(instance);
-        } catch (Exception ignore) { }
+        } catch (Exception ignore) {
+        }
         return value;
     }
 
@@ -349,7 +368,8 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         Object value = null;
         try {
             value = propertyUtils.getProperty(instance, propertyName);
-        } catch (Exception ignore) { }
+        } catch (Exception ignore) {
+        }
         return value;
     }
 

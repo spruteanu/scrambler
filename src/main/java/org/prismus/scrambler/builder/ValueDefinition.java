@@ -1,6 +1,5 @@
 package org.prismus.scrambler.builder;
 
-import groovy.lang.Closure;
 import org.prismus.scrambler.Value;
 import org.prismus.scrambler.value.*;
 
@@ -8,6 +7,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
  * todo: add description
@@ -293,7 +293,7 @@ public class ValueDefinition {
         return of(type, constructorArgs, null);
     }
 
-    public ValueDefinition of(Class type, Collection constructorArgs, Closure defCl) {
+    public ValueDefinition of(Class type, Collection constructorArgs, Callable<ValueDefinition> defCl) {
         Util.checkNullValue(type);
         final InstanceValue instanceValue = new InstanceValue(type);
         instanceValue.setConstructorArguments(constructorArgs);
