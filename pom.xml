@@ -5,7 +5,7 @@
     <artifactId>scrambler</artifactId>
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
-    <name>Scrambler project</name>
+    <name>Data Scrambler project</name>
 
     <properties>
         <gmaven.version>1.5</gmaven.version>
@@ -19,12 +19,14 @@
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
             <version>${groovy.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
             <version>1.8.3</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
