@@ -153,6 +153,7 @@ class InstanceTest extends Specification {
                 'name': ['Enatai', 'Medina', 'Value Crest', 'Newport'].randomOf(),
                 (List): [].of(ClassRoom.of(
                         parent: School.reference(),
+//                        schoolId: School.reference('schoolId'),
                         roomNumber: "101A".random(4),
                 ), 10),
         )
@@ -164,6 +165,7 @@ class InstanceTest extends Specification {
         school.rooms.size() > 0
         school.rooms[0].roomNumber.length() > 0
         school.rooms[0].parent == school
+//        school.rooms[0].schoolId == school.schoolId
     }
 
 }

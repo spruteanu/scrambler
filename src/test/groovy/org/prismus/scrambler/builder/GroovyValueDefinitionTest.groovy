@@ -12,44 +12,44 @@ class GroovyValueDefinitionTest extends Specification {
         final parser = new GroovyValueDefinition()
 
         expect:
-        parser.parseText("random 1, 100").typeValueMap.size() > 0
-        parser.parseText("random 1L, 100L").typeValueMap.size() > 0
-        parser.parseText("random new Date()").typeValueMap.size() > 0
-        parser.parseText("random('some template string', 100, true, false)").typeValueMap.size() > 0
+        parser.parseText("random 1, 100").propertyValueMap.size() > 0
+        parser.parseText("random 1L, 100L").propertyValueMap.size() > 0
+        parser.parseText("random new Date()").propertyValueMap.size() > 0
+        parser.parseText("random('some template string', 100, true, false)").propertyValueMap.size() > 0
 
-        parser.parseText("randomOf([1, 2, 3])").typeValueMap.size() > 0
+        parser.parseText("randomOf([1, 2, 3])").propertyValueMap.size() > 0
 
         parser.parseText("of(new PropertyPredicate(pattern: ~/\\w+Sid/), new RandomInteger(1, 100))").propertyValueMap.size() > 0
         parser.parseText("of(new PropertyPredicate('*Sid'), new RandomInteger(1, 100))").propertyValueMap.size() > 0
 
-        parser.parseText("incremental 1.0").typeValueMap.size() > 0
-        parser.parseText("incremental 1, 100").typeValueMap.size() > 0
-        parser.parseText("incremental 1L, 100L").typeValueMap.size() > 0
+        parser.parseText("incremental 1.0").propertyValueMap.size() > 0
+        parser.parseText("incremental 1, 100").propertyValueMap.size() > 0
+        parser.parseText("incremental 1L, 100L").propertyValueMap.size() > 0
 
-        parser.parseText("incremental new Date()").typeValueMap.size() > 0
-        parser.parseText("incremental new Date(), 2").typeValueMap.size() > 0
-        parser.parseText("incremental new Date(), 1, Calendar.HOUR").typeValueMap.size() > 0
+        parser.parseText("incremental new Date()").propertyValueMap.size() > 0
+        parser.parseText("incremental new Date(), 2").propertyValueMap.size() > 0
+        parser.parseText("incremental new Date(), 1, Calendar.HOUR").propertyValueMap.size() > 0
 
-        parser.parseText("incremental('some template string', 4)").typeValueMap.size() > 0
-        parser.parseText("incremental('some template string', 'some%d')").typeValueMap.size() > 0
-        parser.parseText("incremental('some template string', 'some%d', 12)").typeValueMap.size() > 0
+        parser.parseText("incremental('some template string', 4)").propertyValueMap.size() > 0
+        parser.parseText("incremental('some template string', 'some%d')").propertyValueMap.size() > 0
+        parser.parseText("incremental('some template string', 'some%d', 12)").propertyValueMap.size() > 0
 
-        parser.parseText("constant 1.0").typeValueMap.size() > 0
-        parser.parseText("constant 1").typeValueMap.size() > 0
-        parser.parseText("constant 1L").typeValueMap.size() > 0
-        parser.parseText("constant new Date()").typeValueMap.size() > 0
-        parser.parseText("constant 'some template string'").typeValueMap.size() > 0
-        parser.parseText("constant new Object()").typeValueMap.size() > 0
+        parser.parseText("constant 1.0").propertyValueMap.size() > 0
+        parser.parseText("constant 1").propertyValueMap.size() > 0
+        parser.parseText("constant 1L").propertyValueMap.size() > 0
+        parser.parseText("constant new Date()").propertyValueMap.size() > 0
+        parser.parseText("constant 'some template string'").propertyValueMap.size() > 0
+        parser.parseText("constant new Object()").propertyValueMap.size() > 0
 
-        parser.parseText("random(new ArrayList(1024), new RandomInteger(1, 100))").typeValueMap.size() > 0
-        parser.parseText("random(new ArrayList(1024), new RandomString('some message', 45), 1024)").typeValueMap.size() > 0
+        parser.parseText("random(new ArrayList(1024), new RandomInteger(1, 100))").propertyValueMap.size() > 0
+        parser.parseText("random(new ArrayList(1024), new RandomString('some message', 45), 1024)").propertyValueMap.size() > 0
 
         parser.parseText("""
 random 1, 100
 randomOf([1, 2, 3])
 incremental new Date(), 1, Calendar.HOUR
 constant 'some template string'
-""").typeValueMap.size() > 0
+""").propertyValueMap.size() > 0
     }
 
     void 'test parse from resource'() {
@@ -57,7 +57,7 @@ constant 'some template string'
         def parser = new GroovyValueDefinition()
         final valueDefinition = parser.parse('/test-vd.groovy')
         expect:
-        valueDefinition.typeValueMap.size() > 0
+        valueDefinition.propertyValueMap.size() > 0
     }
 
     void 'test parse value type definitions'() {
@@ -65,30 +65,30 @@ constant 'some template string'
         final parser = new GroovyValueDefinition()
 
         expect:
-        parser.parseText("of 2.random(1, 100)").typeValueMap.size() > 0
-        parser.parseText("of 3L.random(1L, 100L)").typeValueMap.size() > 0
-        parser.parseText("of new Date().random()").typeValueMap.size() > 0
-        parser.parseText("of 'some template string'.random(100, true, false)").typeValueMap.size() > 0
+        parser.parseText("of 2.random(1, 100)").propertyValueMap.size() > 0
+        parser.parseText("of 3L.random(1L, 100L)").propertyValueMap.size() > 0
+        parser.parseText("of new Date().random()").propertyValueMap.size() > 0
+        parser.parseText("of 'some template string'.random(100, true, false)").propertyValueMap.size() > 0
 
-        parser.parseText("of([1, 2, 3].randomOf())").typeValueMap.size() > 0
+        parser.parseText("of([1, 2, 3].randomOf())").propertyValueMap.size() > 0
 
-        parser.parseText("of 1.0").typeValueMap.size() > 0
-        parser.parseText("of 1.incremental(100)").typeValueMap.size() > 0
-        parser.parseText("of 1L.incremental(100L)").typeValueMap.size() > 0
+        parser.parseText("of 1.0").propertyValueMap.size() > 0
+        parser.parseText("of 1.incremental(100)").propertyValueMap.size() > 0
+        parser.parseText("of 1L.incremental(100L)").propertyValueMap.size() > 0
 
-        parser.parseText("of new Date().incremental()").typeValueMap.size() > 0
-        parser.parseText("of new Date().incremental(2)").typeValueMap.size() > 0
-        parser.parseText("of new Date().incremental(1, Calendar.HOUR)").typeValueMap.size() > 0
+        parser.parseText("of new Date().incremental()").propertyValueMap.size() > 0
+        parser.parseText("of new Date().incremental(2)").propertyValueMap.size() > 0
+        parser.parseText("of new Date().incremental(1, Calendar.HOUR)").propertyValueMap.size() > 0
 
-        parser.parseText("of 'some template string'.incremental('some%d')").typeValueMap.size() > 0
-        parser.parseText("of 'some template string'.incremental('some%d', 12)").typeValueMap.size() > 0
+        parser.parseText("of 'some template string'.incremental('some%d')").propertyValueMap.size() > 0
+        parser.parseText("of 'some template string'.incremental('some%d', 12)").propertyValueMap.size() > 0
 
-        parser.parseText("of 1.0.constant()").typeValueMap.size() > 0
-        parser.parseText("of 1.constant()").typeValueMap.size() > 0
-        parser.parseText("of 1L.constant()").typeValueMap.size() > 0
-        parser.parseText("of new Date().constant()").typeValueMap.size() > 0
-        parser.parseText("of 'some string'").typeValueMap.size() > 0
-        parser.parseText("of new Object().constant()").typeValueMap.size() > 0
+        parser.parseText("of 1.0.constant()").propertyValueMap.size() > 0
+        parser.parseText("of 1.constant()").propertyValueMap.size() > 0
+        parser.parseText("of 1L.constant()").propertyValueMap.size() > 0
+        parser.parseText("of new Date().constant()").propertyValueMap.size() > 0
+        parser.parseText("of 'some string'").propertyValueMap.size() > 0
+        parser.parseText("of new Object().constant()").propertyValueMap.size() > 0
 
         parser.parseText("""
 of '*array', int.array(1.random())
@@ -96,7 +96,7 @@ of 1.random(1, 100)
 of([1, 2, 3].randomOf())
 of new Date().incremental(1, Calendar.HOUR)
 of 'some template string'.constant()
-""").typeValueMap.size() > 0
+""").propertyValueMap.size() > 0
     }
 
     void 'test property value definition'() {
@@ -142,7 +142,7 @@ of org.prismus.scrambler.beans.School.of {
 }
 """)
         expect:
-        valueDefinition.typeValueMap.size() > 0
+        valueDefinition.propertyValueMap.size() > 0
 
         and:
         parser.parseText("""
@@ -155,7 +155,7 @@ of '*Instance|*Object', org.prismus.scrambler.beans.School.of {
 of org.prismus.scrambler.beans.School.of([2.0.random(), 3], {
         of '*Id', 1.random()
 })
-""").typeValueMap.size() > 0
+""").propertyValueMap.size() > 0
     }
 
     void 'test parse text with parent reference definition'() {
@@ -171,12 +171,7 @@ of org.prismus.scrambler.beans.School.of {
 """)
 
         expect: 'verify root definition'
-        0 < definition.typeValueMap.size()
-//        null != definition.instanceValueMap[0].definition // todo Serge: fix parent relationships
-//        parser.definition == definition.parent // root definition
-//
-//        and: 'verify that parent of inner definition is root one'
-//        definition == definition.instanceValueMap[0].definition.parent
+        0 < definition.propertyValueMap.size()
 
         and:
         parser.parseText("parent '*Parent'").propertyValueMap.size() > 0

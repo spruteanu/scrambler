@@ -12,9 +12,11 @@ import org.prismus.scrambler.builder.ValuePredicate;
 public class ReferenceValue implements Value {
     private ValueDefinition definition;
     private ValuePredicate predicate;
+    private ValuePredicate fieldPredicate;
 
-    public ReferenceValue(ValuePredicate predicate) {
+    public ReferenceValue(ValuePredicate predicate, ValuePredicate fieldPredicate) {
         this.predicate = predicate;
+        this.fieldPredicate = fieldPredicate;
     }
 
     public ReferenceValue(ValueDefinition definition, ValuePredicate predicate) {
@@ -46,4 +48,7 @@ public class ReferenceValue implements Value {
         this.predicate = predicate;
     }
 
+    public void setFieldPredicate(ValuePredicate fieldPredicate) {
+        this.fieldPredicate = fieldPredicate;
+    }
 }

@@ -376,8 +376,8 @@ class GroovyValueDefinition extends Script {
                 return ValueArray.of(val, (Class) delegate, count, randomCount)
             }
 
-            reference { ->
-                return new ReferenceValue(new TypePredicate((Class) delegate))
+            reference { String propertyPredicate = null ->
+                return new ReferenceValue(new TypePredicate((Class) delegate), propertyPredicate != null ? Util.createPropertyPredicate(propertyPredicate) : null)
             }
         }
     }

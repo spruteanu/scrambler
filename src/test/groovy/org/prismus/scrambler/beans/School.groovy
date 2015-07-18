@@ -25,6 +25,7 @@ class School {
 
 class ClassRoom {
     School parent
+    int schoolId
     String roomNumber
 }
 

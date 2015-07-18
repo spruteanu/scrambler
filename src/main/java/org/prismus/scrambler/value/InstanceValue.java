@@ -82,7 +82,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             build(null);
             final Object valueType = lookupType();
             if (valueType instanceof Class) {
-                definition.registerTypePredicateValue(new TypePredicate((Class) valueType), this);
+                definition.registerPredicateValue(new TypePredicate((Class) valueType), this);
             }
         }
         final T instance = checkCreateInstance();
@@ -138,7 +138,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         checkFieldMapCreated();
 
         final Map<String, Field> unresolvedProps = new HashMap<String, Field>(fieldMap);
-        for (final Map.Entry<ValuePredicate, Value> entry : valueDefinition.getPredicateValueMap().entrySet()) {
+        for (final Map.Entry<ValuePredicate, Value> entry : valueDefinition.getPropertyValueMap().entrySet()) {
             final ValuePredicate predicate = entry.getKey();
             for (final Field field : fieldMap.values()) {
                 final String propertyName = field.getName();
@@ -229,7 +229,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     List<Value> lookupConstructorArguments(ValueDefinition valueDefinition, Class type, Set<Class> supportedTypes) {
         List<Value> result = null;
         try {
-            final Map<ValuePredicate, Value> typeValueMap = valueDefinition.getTypeValueMap();
+            final Map<ValuePredicate, Value> typeValueMap = valueDefinition.getPropertyValueMap();
             for (final Constructor ctor : type.getConstructors()) {
                 final Class[] types = ctor.getParameterTypes();
                 if (types == null) {
