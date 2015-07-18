@@ -21,7 +21,7 @@ import java.util.*;
 public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     private ValueDefinition definition;
-    private Closure definitionClosure;
+    private Closure definitionClosure; //todo Serge: replace closure with callable
     private ValuePredicate predicate;
 
     private Object type;
