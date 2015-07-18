@@ -80,10 +80,14 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     public T next() {
         if (definition == null) {
             build(null);
+            final Object valueType = lookupType();
+            if (valueType instanceof Class) {
+                definition.registerTypePredicateValue(new TypePredicate((Class) valueType), this);
+            }
         }
         final T instance = checkCreateInstance();
-        populate(instance);
         setValue(instance);
+        populate(instance);
         return instance;
     }
 
@@ -246,8 +250,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                     break;
                 }
             }
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) { }
         return result;
     }
 
@@ -338,8 +341,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         Object value = null;
         try {
             value = propertyDescriptor.getReadMethod().invoke(instance);
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) { }
         return value;
     }
 
@@ -347,21 +349,14 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         Object value = null;
         try {
             value = propertyUtils.getProperty(instance, propertyName);
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) { }
         return value;
     }
 
     @SuppressWarnings({"unchecked"})
     T checkCreateInstance() {
         T result = this.value;
-        Object valueType = this.type;
-        if (valueType == null) {
-            valueType = result;
-        }
-        if (valueType instanceof String) {
-            valueType = lookupType((String) valueType, true);
-        }
+        Object valueType = lookupType();
         if (valueType instanceof Class) {
             Object[] arguments = null;
             Class[] types = null;
@@ -378,6 +373,17 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             result = (T) Util.createInstance((Class) valueType, arguments, types);
         }
         return result;
+    }
+
+    Object lookupType() {
+        Object valueType = type;
+        if (valueType == null) {
+            valueType = value;
+        }
+        if (valueType instanceof String) {
+            valueType = lookupType((String) valueType, true);
+        }
+        return valueType;
     }
 
     static Class lookupType(String classType, boolean throwError) {

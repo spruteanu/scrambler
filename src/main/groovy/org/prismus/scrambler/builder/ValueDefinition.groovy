@@ -41,46 +41,49 @@ class ValueDefinition {
     }
 
     @CompileStatic
-    protected void lookupInstanceValue(ValuePredicate valuePredicate, Value value) {
+    void lookupRegisterInstanceValue(ValuePredicate valuePredicate, Value value) {
         if (InstanceValue.isInstance(value)) {
-            instanceValueMap.put(valuePredicate, (InstanceValue)value)
+            final InstanceValue instanceValue = (InstanceValue) value
+            if (instanceValue.definition != this) {
+                instanceValueMap.put(valuePredicate, instanceValue)
+            }
         } else if (ValueCollection.isInstance(value)) {
-            lookupInstanceValue(valuePredicate, ((ValueCollection)value).getInstance())
+            lookupRegisterInstanceValue(valuePredicate, ((ValueCollection)value).getInstance())
         } else if (ValueArray.isInstance(value)) {
-            lookupInstanceValue(valuePredicate, ((ValueArray)value).getInstance())
+            lookupRegisterInstanceValue(valuePredicate, ((ValueArray)value).getInstance())
         }
     }
 
     @CompileStatic
-    protected void registerTypePredicateValue(TypePredicate valuePredicate, Value value) {
-        lookupInstanceValue(valuePredicate, value)
+    void registerTypePredicateValue(TypePredicate valuePredicate, Value value) {
+        lookupRegisterInstanceValue(valuePredicate, value)
         typeValueMap.put(valuePredicate, value)
     }
 
     @CompileStatic
-    protected void registerPredicateValue(ValuePredicate valuePredicate, Value value) {
-        lookupInstanceValue(valuePredicate, value)
+    void registerPredicateValue(ValuePredicate valuePredicate, Value value) {
+        lookupRegisterInstanceValue(valuePredicate, value)
         propertyValueMap.put(valuePredicate, value)
     }
 
     @CompileStatic
-    protected void registerPredicateValue(ValuePredicate valuePredicate, ReferenceValue value) {
+    void registerPredicateValue(ValuePredicate valuePredicate, ReferenceValue value) {
         value.setDefinition(this)
         registerPredicateValue(valuePredicate, (Value) value)
     }
 
     @CompileStatic
-    protected void registerPredicateValue(ValuePredicate valuePredicate, ValueCollection value) {
+    void registerPredicateValue(ValuePredicate valuePredicate, ValueCollection value) {
         registerPredicateValue(valuePredicate, (Value) value)
     }
 
     @CompileStatic
-    protected void registerPredicateValue(ValuePredicate valuePredicate, ValueArray value) {
+    void registerPredicateValue(ValuePredicate valuePredicate, ValueArray value) {
         registerPredicateValue(valuePredicate, (Value) value)
     }
 
     @CompileStatic
-    protected void registerPredicateValue(ValuePredicate valuePredicate, InstanceValue value) {
+    void registerPredicateValue(ValuePredicate valuePredicate, InstanceValue value) {
         if (valuePredicate != null) {
             if (valuePredicate instanceof TypePredicate) {
                 registerTypePredicateValue(valuePredicate, (Value) value)
