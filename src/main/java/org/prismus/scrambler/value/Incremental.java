@@ -78,29 +78,35 @@ public class Incremental {
 
     @SuppressWarnings("unchecked")
     public static <N extends Number> Value arrayOf(N defaultValue, N step, Integer count) {
-        return arrayOf(((Class<N>) defaultValue.getClass()), defaultValue, step, count);
+        return arrayOf(defaultValue.getClass(), defaultValue, step, count);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <N extends Number> Value arrayOf(Class<N> clazzType, N defaultValue, N step, Integer count) {
+    public static Value arrayOf(Class clazzType, Object defaultValue, Object step, Integer count) {
         if (count != null && count < 0) {
             throw new IllegalArgumentException(String.format("Count should be a positive number: %s", count));
         }
         final Class<?> componentType = clazzType.isArray() ? clazzType.getComponentType() : clazzType;
-        final Value valueType = (Value) Util.createInstance(
-                propertyTypeMap.get(componentType),
-                new Object[]{defaultValue, step},
-                new Class[]{componentType, componentType}
-        );
         final Value value;
         if (componentType.isPrimitive()) {
             value = (Value) Util.createInstance(
                     propertyTypeMap.get(clazzType),
-                    new Object[]{defaultValue, count, valueType},
-                    new Class[]{clazzType, Integer.class, valueType.getClass()}
+                    new Object[]{
+                            clazzType.isInstance(defaultValue) ? defaultValue : null,
+                            count,
+                            (Value) Util.createInstance(
+                                    propertyTypeMap.get(componentType),
+                                    new Object[]{clazzType.isInstance(defaultValue) ? null : defaultValue, step},
+                                    new Class[]{Util.primitiveWrapperMap.get(componentType), Util.primitiveWrapperMap.get(componentType)}
+                            )},
+                    new Class[]{clazzType, Integer.class, Object.class}
             );
         } else {
-            value = new ValueArray(clazzType, count, valueType);
+            value = new ValueArray(clazzType, count, (Value) Util.createInstance(
+                    propertyTypeMap.get(componentType),
+                    new Object[]{defaultValue, step},
+                    new Class[]{componentType, componentType}
+            ));
         }
         return value;
     }

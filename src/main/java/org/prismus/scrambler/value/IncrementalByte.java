@@ -39,9 +39,8 @@ class IncrementalByte extends Constant<Byte> implements ByteArray {
     public void next(byte[] values) {
         byte start = value == null ? 0 : value;
         for (int i = 0; i < values.length; i++) {
-            final byte next = next(start);
-            values[i] = next;
-            start = next;
+            values[i] = start;
+            start = next(start);
         }
         setValue(start);
     }

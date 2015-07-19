@@ -110,4 +110,31 @@ class IncrementalTest extends Specification {
         count << [5, null,]
     }
 
+    void 'verify incremental primitives generation'(Class type, Number start, Number step, Integer count) {
+        given:
+        Value numberValues = Incremental.arrayOf(type, start, step, count)
+
+        expect:
+        for (int i = 0; i < 5; i++) {
+            final values = numberValues.next()
+            Assert.assertNotNull(values)
+            Assert.assertTrue(values.length > 0)
+            if (count != null) {
+                Assert.assertEquals(count, values.length)
+            }
+            Assert.assertEquals(start, values[0])
+            for (int j = 1; j < values.length; j++) {
+                Assert.assertEquals(start + step, values[j])
+                start = values[j]
+            }
+            start += step;
+        }
+
+        where:
+        type << [int[], long[], short[], byte[],]
+        start << [1, 12L, (short)1, (byte)1, ]
+        step << [10, 10L, (short)3, (byte)1, ]
+        count << [5, 3, null, 10, ]
+    }
+
 }
