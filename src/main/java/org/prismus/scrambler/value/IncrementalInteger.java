@@ -30,7 +30,7 @@ class IncrementalInteger extends Constant<Integer> implements IntArray {
 
     @Override
     public Integer next() {
-        Integer value = super.next();
+        Integer value = get();
         value = value != null ? nextValue(value) : 0;
         setValue(value);
         return value;
@@ -39,9 +39,8 @@ class IncrementalInteger extends Constant<Integer> implements IntArray {
     public void next(int[] values) {
         int start = value == null ? 0 : value;
         for (int i = 0; i < values.length; i++) {
-            final int next = nextValue(start);
-            values[i] = next;
-            start = next;
+            values[i] = start;
+            start = nextValue(start);
         }
         setValue(start);
     }

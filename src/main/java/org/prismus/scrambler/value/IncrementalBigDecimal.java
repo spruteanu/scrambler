@@ -28,8 +28,8 @@ class IncrementalBigDecimal extends Constant<BigDecimal> {
 
     @Override
     public BigDecimal next() {
-        BigDecimal value = super.next();
-        value = value != null ? value.add(step) : step;
+        BigDecimal value = get();
+        value = value != null ? value.add(step) : BigDecimal.ZERO;
         setValue(value);
         return value;
     }

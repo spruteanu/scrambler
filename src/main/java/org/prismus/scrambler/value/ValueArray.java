@@ -16,6 +16,7 @@ public class ValueArray<T> extends Constant<T[]> {
     private Value<T> instance;
     private Boolean randomCount;
     private Class<T> valueType;
+    private RandomInteger randomInteger;
 
     public ValueArray() {
     }
@@ -41,6 +42,7 @@ public class ValueArray<T> extends Constant<T[]> {
         this.count = count;
         this.instance = value1;
         this.randomCount = randomCount;
+        checkGenerateRandomCount(array, count);
     }
 
     public ValueArray(Class<T> valueType, Integer count, Value<T> value1, Boolean randomCount) {
@@ -49,6 +51,13 @@ public class ValueArray<T> extends Constant<T[]> {
         this.count = count;
         this.instance = value1;
         this.randomCount = randomCount;
+        checkGenerateRandomCount(null, count);
+    }
+
+    void checkGenerateRandomCount(T[] array, Integer count) {
+        if (array == null && count == null) {
+            this.randomCount = Boolean.TRUE;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -59,20 +68,23 @@ public class ValueArray<T> extends Constant<T[]> {
 
     @Override
     public T[] next() {
-        T[] value = super.next();
-        Util.validateArguments(valueType, value, instance);
         int count = this.count != null ? this.count : 0;
         if (count == 0) {
             count = 20;
         }
         if (randomCount != null && randomCount) {
-            count = new RandomInteger(count).between(1, count).next();
-        }
-        value = checkCreate(value, count);
-        for (int i = 0; i < count; i++) {
-            value[i] = instance.next();
+            if (randomInteger == null) {
+                randomInteger = new RandomInteger(count);
+            }
+            count = randomInteger.between(1, count).next();
         }
 
+        final T[] value = checkCreate(get(), count);
+        T start = instance.get();
+        for (int i = 0; i < count; i++) {
+            value[i] = start;
+            start = instance.next();
+        }
         setValue(value);
         return value;
     }

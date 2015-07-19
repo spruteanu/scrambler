@@ -3,7 +3,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-class IncrementalFloat extends Constant<Float> {
+class IncrementalFloat extends Constant<Float> implements FloatArray{
     private float step;
     private static final float DEFAULT_STEP = 1.0F;
 
@@ -22,22 +22,19 @@ class IncrementalFloat extends Constant<Float> {
 
     @Override
     public Float next() {
-        Float value = super.next();
-        value = value != null ? value + step : step;
+        Float value = get();
+        value = value != null ? value + step : 0.0f;
         setValue(value);
         return value;
     }
 
-    public float[] next(int count) {
-        final float[] values = new float[count];
-        float start = 0.0f;
+    public void next(float[] values) {
+        float start = value != null ? value : 0.0f;
         for (int i = 0; i < values.length; i++) {
-            float next = start + step;
-            values[i] = next;
-            start = next;
+            values[i] = start;
+            start = start + step;
         }
         setValue(start);
-        return values;
     }
 
 }

@@ -26,18 +26,17 @@ class IncrementalDouble extends Constant<Double> implements DoubleArray {
 
     @Override
     public Double next() {
-        Double value = super.next();
-        value = value != null ? value + step : step;
+        Double value = get();
+        value = value != null ? value + step : 0.0;
         setValue(value);
         return value;
     }
 
     public void next(double[] values) {
-        double start = 0.0f;
+        double start = value != null ? value : 0.0;
         for (int i = 0; i < values.length; i++) {
-            double next = start + step;
-            values[i] = next;
-            start = next;
+            values[i] = start;
+            start = start + step;
         }
         setValue(start);
     }

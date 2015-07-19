@@ -26,8 +26,8 @@ public class IncrementalLong extends Constant<Long> implements LongArray {
 
     @Override
     public Long next() {
-        Long value = super.next();
-        value = value != null ? value + step : step;
+        Long value = get();
+        value = value != null ? value + step : 0;
         setValue(value);
         return value;
     }
@@ -35,9 +35,8 @@ public class IncrementalLong extends Constant<Long> implements LongArray {
     public void next(long[] values) {
         long start = value == null ? 0 : value;
         for (int i = 0; i < values.length; i++) {
-            final long next = start + step;
-            values[i] = next;
-            start = next;
+            values[i] = start;
+            start = start + step;
         }
         setValue(start);
     }

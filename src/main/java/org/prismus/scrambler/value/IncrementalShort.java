@@ -30,7 +30,7 @@ class IncrementalShort extends Constant<Short> implements ShortArray {
 
     @Override
     public Short next() {
-        Short value = super.next();
+        Short value = get();
         value = value != null ? next(value) : 0;
         setValue(value);
         return value;
@@ -39,9 +39,8 @@ class IncrementalShort extends Constant<Short> implements ShortArray {
     public void next(short[] values) {
         short start = value == null ? 0 : value;
         for (int i = 0; i < values.length; i++) {
-            final short next = next(start);
-            values[i] = next;
-            start = next;
+            values[i] = start;
+            start = next(start);
         }
         setValue(start);
     }

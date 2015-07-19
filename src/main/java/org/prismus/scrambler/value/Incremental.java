@@ -8,18 +8,25 @@ import java.sql.Timestamp;
 import java.util.*;
 
 /**
+ * Facade class that generates incremental values according to type rules: <><br/>
+ * <li/>Numbers are incremented arithmetically
+ * <li/>Dates are incremented using {@link Calendar} fields
+ * <li/>Strings are generating using provided pattern
+ * <p/>
+ * Along with one type generation, it is possible to get incremental array accordingly
+ *
  * @author Serge Pruteanu
  */
 public class Incremental {
     private static Map<Class, Class<? extends Value>> propertyTypeMap = lookupPropertyTypeMap();
 
     @SuppressWarnings({"unchecked"})
-    public static Value<Number> of(Number value) {
+    public static <N extends Number> Value<N> of(N value) {
         return of((Class) value.getClass(), value, null);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static Value<Number> of(Number value, Number step) {
+    public static <N extends Number> Value<N> of(N value, N step) {
         return of((Class) value.getClass(), value, step);
     }
 
@@ -52,11 +59,11 @@ public class Incremental {
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Value<T> of(Class<T> clazzType, T defaultValue, Number step) {
+    public static <N extends Number> Value<N> of(Class<N> clazzType, N defaultValue, N step) {
         if (propertyTypeMap.containsKey(clazzType)) {
             final Value value;
             if (clazzType.isArray()) {
-                value = of(clazzType, defaultValue, null, step);
+                value = arrayOf(clazzType, defaultValue, step, null);
             } else {
                 value = (Value) Util.createInstance(
                         propertyTypeMap.get(clazzType),
@@ -69,15 +76,23 @@ public class Incremental {
         throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s", clazzType, defaultValue));
     }
 
+    @SuppressWarnings("unchecked")
+    public static <N extends Number> Value arrayOf(N defaultValue, N step, Integer count) {
+        return arrayOf(((Class<N>) defaultValue.getClass()), defaultValue, step, count);
+    }
+
     @SuppressWarnings({"unchecked"})
-    public static <T> Value<T> of(Class<T> clazzType, T defaultValue, Integer count, Number step) {
-        final Class<?> componentType = clazzType.getComponentType();
+    public static <N extends Number> Value arrayOf(Class<N> clazzType, N defaultValue, N step, Integer count) {
+        if (count != null && count < 0) {
+            throw new IllegalArgumentException(String.format("Count should be a positive number: %s", count));
+        }
+        final Class<?> componentType = clazzType.isArray() ? clazzType.getComponentType() : clazzType;
         final Value valueType = (Value) Util.createInstance(
                 propertyTypeMap.get(componentType),
-                new Object[]{null, step},
-                new Class[]{componentType, (step != null ? step.getClass() : componentType)}
+                new Object[]{defaultValue, step},
+                new Class[]{componentType, componentType}
         );
-        final Value<T> value;
+        final Value value;
         if (componentType.isPrimitive()) {
             value = (Value) Util.createInstance(
                     propertyTypeMap.get(clazzType),
@@ -85,7 +100,7 @@ public class Incremental {
                     new Class[]{clazzType, Integer.class, valueType.getClass()}
             );
         } else {
-            value = new ValueArray(clazzType, valueType);
+            value = new ValueArray(clazzType, count, valueType);
         }
         return value;
     }

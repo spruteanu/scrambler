@@ -30,8 +30,8 @@ class IncrementalByte extends Constant<Byte> implements ByteArray {
 
     @Override
     public Byte next() {
-        Byte value = super.next();
-        value = value != null ? next(value) : step;
+        Byte value = get();
+        value = value != null ? next(value) : 0;
         setValue(value);
         return value;
     }

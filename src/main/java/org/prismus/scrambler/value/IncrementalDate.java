@@ -53,7 +53,7 @@ class IncrementalDate extends Constant<Date> {
     }
 
     public Date next() {
-        Date value = super.next();
+        Date value = get();
         if (value == null) {
             value = new Timestamp(System.currentTimeMillis());
         } else {

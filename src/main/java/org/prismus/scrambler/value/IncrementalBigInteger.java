@@ -28,9 +28,10 @@ class IncrementalBigInteger extends Constant<BigInteger> {
 
     @Override
     public BigInteger next() {
-        BigInteger value = super.next();
-        value = value != null ? value.add(step) : step;
+        BigInteger value = get();
+        value = value != null ? value.add(step) : BigInteger.ZERO;
         setValue(value);
         return value;
     }
+
 }
