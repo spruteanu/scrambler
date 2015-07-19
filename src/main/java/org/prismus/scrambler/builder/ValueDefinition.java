@@ -103,6 +103,12 @@ public class ValueDefinition {
         return this;
     }
 
+    public ValueDefinition incremental(Number value, Number step, Integer count) {
+        Util.checkNullValue(value);
+        registerPredicateValue(new TypePredicate(value.getClass()), Incremental.arrayOf(value, step, count));
+        return this;
+    }
+
     public ValueDefinition random() {
         return random((Number) null, null);
     }

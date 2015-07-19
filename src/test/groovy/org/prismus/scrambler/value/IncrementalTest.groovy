@@ -137,4 +137,22 @@ class IncrementalTest extends Specification {
         count << [5, 3, null, 10, ]
     }
 
+    void 'verify incremental dates'(Date date, Integer calendarField, Integer step) {
+        expect:
+        date.before(Incremental.of(date).next())
+        date.before(Incremental.of(date, 100).next())
+        date.before(Incremental.of(date, 4, Calendar.MINUTE).next())
+
+        and: "verify in a loop"
+        final Value<Date> incrementalDate = Incremental.of(date, calendarField, step)
+        for (int i = 0; i < 5; i++) {
+            final nextDate = incrementalDate.next()
+            Assert.assertTrue(date.before(nextDate))
+        }
+
+        where:
+        date << [new Date(), new Date(), new Date(), new Date(),]
+        calendarField << [Calendar.HOUR, Calendar.DATE, Calendar.MONTH, Calendar.YEAR,]
+        step << [1, 1, 1, 1,]
+    }
 }

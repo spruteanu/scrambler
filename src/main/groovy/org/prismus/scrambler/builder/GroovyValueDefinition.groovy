@@ -380,6 +380,10 @@ class GroovyValueDefinition extends Script {
                 return ValueArray.of(val, (Class) delegate, count, randomCount)
             }
 
+            array { Number defaultValue, Number step, Integer count = null ->
+                return Incremental.arrayOf((Class) delegate, defaultValue, step, count)
+            }
+
             reference { String propertyPredicate = null ->
                 return new ReferenceValue(new TypePredicate((Class) delegate), propertyPredicate != null ? Util.createPropertyPredicate(propertyPredicate) : null)
             }

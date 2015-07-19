@@ -20,6 +20,9 @@ import java.util.*;
 public class Incremental {
     private static Map<Class, Class<? extends Value>> propertyTypeMap = lookupPropertyTypeMap();
 
+    //------------------------------------------------------------------------------------------------------------------
+    // Number methods
+    //------------------------------------------------------------------------------------------------------------------
     @SuppressWarnings({"unchecked"})
     public static <N extends Number> Value<N> of(N value) {
         return of((Class) value.getClass(), value, null);
@@ -28,34 +31,6 @@ public class Incremental {
     @SuppressWarnings({"unchecked"})
     public static <N extends Number> Value<N> of(N value, N step) {
         return of((Class) value.getClass(), value, step);
-    }
-
-    public static IncrementalDate of(Date value) {
-        return new IncrementalDate(value);
-    }
-
-    public static IncrementalDate of(Date value, Integer step) {
-        return new IncrementalDate(value, step);
-    }
-
-    public static IncrementalDate of(Date value, Integer step, Integer calendarField) {
-        return new IncrementalDate(value, step, calendarField);
-    }
-
-    public static IncrementalString of(String value) {
-        return new IncrementalString(value);
-    }
-
-    public static IncrementalString of(String value, String pattern) {
-        return new IncrementalString(value, pattern);
-    }
-
-    public static IncrementalString of(String value, Integer index) {
-        return new IncrementalString(value, index);
-    }
-
-    public static IncrementalString of(String value, String pattern, Integer index) {
-        return new IncrementalString(value, pattern, index);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -109,6 +84,40 @@ public class Incremental {
             ));
         }
         return value;
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    // Date methods
+    //------------------------------------------------------------------------------------------------------------------
+    public static IncrementalDate of(Date value) {
+        return new IncrementalDate(value);
+    }
+
+    public static IncrementalDate of(Date value, Integer step) {
+        return new IncrementalDate(value, step);
+    }
+
+    public static IncrementalDate of(Date value, Integer step, Integer calendarField) {
+        return new IncrementalDate(value, step, calendarField);
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    // String methods
+    //------------------------------------------------------------------------------------------------------------------
+    public static IncrementalString of(String value) {
+        return new IncrementalString(value);
+    }
+
+    public static IncrementalString of(String value, String pattern) {
+        return new IncrementalString(value, pattern);
+    }
+
+    public static IncrementalString of(String value, Integer index) {
+        return new IncrementalString(value, index);
+    }
+
+    public static IncrementalString of(String value, String pattern, Integer index) {
+        return new IncrementalString(value, pattern, index);
     }
 
     public static boolean isSupportedType(Class type) {
