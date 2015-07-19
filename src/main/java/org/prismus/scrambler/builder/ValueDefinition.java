@@ -62,7 +62,13 @@ public class ValueDefinition {
     }
 
     public Value lookupValue(ValuePredicate predicate) {
-        Value result = propertyValueMap.get(predicate); // might be lookup should be performed by matching
+        Value result = null;
+        for (final Map.Entry<ValuePredicate, Value> entry : propertyValueMap.entrySet()) {
+            if (predicate.isSame(entry.getKey())) {
+                result = entry.getValue();
+                break;
+            }
+        }
         if (result == null && parent != null) {
             result = parent.lookupValue(predicate);
         }

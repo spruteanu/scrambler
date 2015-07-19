@@ -48,9 +48,9 @@ public class PropertyPredicate implements ValuePredicate {
     @Override
     public boolean isSame(ValuePredicate predicate) {
         if (predicate instanceof PropertyPredicate) {
-
+            return pattern.matcher(((PropertyPredicate) predicate).wildcardPattern).matches();
         } else if (predicate instanceof TypePredicate) {
-
+            return pattern.matcher(((TypePredicate) predicate).getType().getName()).matches();
         }
         return false;
     }

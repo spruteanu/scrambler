@@ -34,7 +34,7 @@ public class ReferenceValue extends Constant<Object> {
         return result;
     }
 
-    Object resolveValue() {
+    final Object resolveValue() {
         Object result = null;
         if (definition != null) {
             if (referencedInstance == null) {

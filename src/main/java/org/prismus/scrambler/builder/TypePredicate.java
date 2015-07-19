@@ -30,14 +30,13 @@ public class TypePredicate implements ValuePredicate {
         return this;
     }
 
+    public Class getType() {
+        return type;
+    }
+
     @Override
     public boolean isSame(ValuePredicate predicate) {
-        if (predicate instanceof PropertyPredicate) {
-
-        } else if (predicate instanceof TypePredicate) {
-
-        }
-        return false;
+        return predicate instanceof TypePredicate && equals(predicate);
     }
 
     @Override
