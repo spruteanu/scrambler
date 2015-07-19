@@ -1,5 +1,6 @@
 package org.prismus.scrambler.value
 
+import org.junit.Assert
 import org.prismus.scrambler.Value
 import org.prismus.scrambler.beans.*
 import org.prismus.scrambler.builder.GroovyValueDefinition
@@ -10,7 +11,7 @@ import spock.lang.Specification
  * @author Serge Pruteanu
  */
 @SuppressWarnings("GroovyConstructorNamedArguments")
-class InstanceTest extends Specification {
+class InstanceValueTest extends Specification {
 
     void 'instance creation'(Object value, Class expectedType) {
         given:
@@ -65,7 +66,7 @@ class InstanceTest extends Specification {
 
     void 'test populate instance with properties'() {
         given:
-        final instance = new InstanceValue<School>().usingValue(new School()).build()
+        final instance = new InstanceValue<School>().usingValue(new School()).build(null)
 
         and:
         instance.populate(instance.get(), [schoolId: 3, name: 'Enatai'])
@@ -153,7 +154,8 @@ class InstanceTest extends Specification {
                 'name': ['Enatai', 'Medina', 'Value Crest', 'Newport'].randomOf(),
                 (List): [].of(ClassRoom.of(
                         parent: School.reference(),
-//                        schoolId: School.reference('schoolId'),
+                        parentId: School.reference('*Id'),
+                        schoolId: School.reference('schoolId'),
                         roomNumber: "101A".random(4),
                 ), 10),
         )
@@ -163,9 +165,13 @@ class InstanceTest extends Specification {
         school != null
         school.rooms != null
         school.rooms.size() > 0
-        school.rooms[0].roomNumber.length() > 0
-        school.rooms[0].parent == school
-//        school.rooms[0].schoolId == school.schoolId
+        for (ClassRoom classRoom : school.rooms) {
+            Assert.assertTrue(classRoom.roomNumber.length() > 0)
+            Assert.assertSame(school, classRoom.parent)
+            Assert.assertEquals(classRoom.schoolId, school.schoolId)
+            Assert.assertEquals(classRoom.parentId, school.schoolId)
+            Assert.assertEquals(classRoom.schoolId, classRoom.parentId)
+        }
     }
 
 }

@@ -31,6 +31,16 @@ public class TypePredicate implements ValuePredicate {
     }
 
     @Override
+    public boolean isSame(ValuePredicate predicate) {
+        if (predicate instanceof PropertyPredicate) {
+
+        } else if (predicate instanceof TypePredicate) {
+
+        }
+        return false;
+    }
+
+    @Override
     public String toString() {
         return type.toString();
     }

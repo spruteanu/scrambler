@@ -9,10 +9,13 @@ import org.prismus.scrambler.builder.ValuePredicate;
  *
  * @author Serge Pruteanu
  */
-public class ReferenceValue implements Value {
+public class ReferenceValue extends Constant<Object> {
     private ValueDefinition definition;
     private ValuePredicate predicate;
     private ValuePredicate fieldPredicate;
+
+    private Value referencedInstance;
+    private Value referencedFieldValue;
 
     public ReferenceValue(ValuePredicate predicate, ValuePredicate fieldPredicate) {
         this.predicate = predicate;
@@ -26,15 +29,27 @@ public class ReferenceValue implements Value {
 
     @Override
     public Object next() {
-        return get();
+        Object result = resolveValue();
+        setValue(result);
+        return result;
     }
 
-    public Object get() {
+    Object resolveValue() {
         Object result = null;
         if (definition != null) {
-            final Value value = definition.lookupValue(predicate);
-            if (value != null) {
-                result = value.get();
+            if (referencedInstance == null) {
+                referencedInstance = definition.lookupValue(predicate);
+            }
+            if (referencedInstance != null) {
+                result = referencedInstance.get();
+                if (fieldPredicate != null) {
+                    if (referencedInstance instanceof InstanceValue && referencedFieldValue == null) {
+                        referencedFieldValue = ((InstanceValue) referencedInstance).lookupFieldValue(fieldPredicate);
+                    }
+                    if (referencedFieldValue != null) {
+                        result = referencedFieldValue.get();
+                    }
+                }
             }
         }
         return result;
@@ -51,4 +66,5 @@ public class ReferenceValue implements Value {
     public void setFieldPredicate(ValuePredicate fieldPredicate) {
         this.fieldPredicate = fieldPredicate;
     }
+
 }

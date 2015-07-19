@@ -27,6 +27,7 @@ class ClassRoom {
     School parent
     int schoolId
     String roomNumber
+    int parentId
 }
 
 class Order {

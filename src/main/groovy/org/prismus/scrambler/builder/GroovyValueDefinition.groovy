@@ -173,13 +173,13 @@ class GroovyValueDefinition extends Script {
     }
 
     @CompileStatic
-    ValueDefinition parent(String propertyName, Class parentPredicate) {
-        return definition.parent(propertyName, parentPredicate)
+    ValueDefinition reference(String propertyName, Class parentPredicate) {
+        return definition.reference(propertyName, parentPredicate)
     }
 
     @CompileStatic
-    ValueDefinition parent(String propertyName) {
-        return definition.parent(propertyName)
+    ValueDefinition reference(String propertyName) {
+        return definition.reference(propertyName)
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -220,8 +220,8 @@ class GroovyValueDefinition extends Script {
     }
 
     @CompileStatic
-    ValueDefinition parent(ValuePredicate valuePredicate, ValuePredicate parentPredicate) {
-        return definition.parent(valuePredicate, parentPredicate)
+    ValueDefinition reference(ValuePredicate valuePredicate, ValuePredicate parentPredicate) {
+        return definition.reference(valuePredicate, parentPredicate)
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -238,23 +238,23 @@ class GroovyValueDefinition extends Script {
     }
 
     @CompileStatic
-    ValueDefinition parent(Class type) {
-        return definition.parent(type)
+    ValueDefinition reference(Class type) {
+        return definition.reference(type)
     }
 
     @CompileStatic
-    ValueDefinition parent(Class type, String parentPredicate) {
-        return definition.parent(type, parentPredicate)
+    ValueDefinition reference(Class type, String parentPredicate) {
+        return definition.reference(type, parentPredicate)
     }
 
     @CompileStatic
-    ValueDefinition parent(Class type, Class parentPredicate) {
-        return definition.parent(type, parentPredicate)
+    ValueDefinition reference(Class type, Class parentPredicate) {
+        return definition.reference(type, parentPredicate)
     }
 
     @CompileStatic
-    ValueDefinition parent(Class type, ValuePredicate parentPredicate) {
-        return definition.parent(type, parentPredicate)
+    ValueDefinition reference(Class type, ValuePredicate parentPredicate) {
+        return definition.reference(type, parentPredicate)
     }
 
     //------------------------------------------------------------------------------------------------------------------

@@ -1,6 +1,5 @@
 package org.prismus.scrambler.value;
 
-import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.prismus.scrambler.Value;
 import org.prismus.scrambler.builder.AbstractDefinitionCallable;
@@ -27,10 +26,10 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     private Object type;
     private Collection<Value> constructorArguments;
-    private Map<String, Value> fieldValueMap;
+    private final Map<String, Value> fieldValueMap;
 
     private Map<String, Field> fieldMap;
-    private BeanUtilsBean beanUtilsBean;
+    private PropertyUtilsBean propertyUtils;
     protected List<Value> constructorValues;
 
     public InstanceValue() {
@@ -50,7 +49,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         this.constructorArguments = constructorArguments;
         this.constructorValues = new ArrayList<Value>();
         fieldValueMap = new LinkedHashMap<String, Value>();
-        beanUtilsBean = Util.createBeanUtilsBean();
+        propertyUtils = Util.createBeanUtilsBean().getPropertyUtils();
     }
 
     public ValueDefinition getDefinition() {
@@ -104,13 +103,11 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         checkDefinitionCreated();
         checkFieldMapCreated();
         definition.setParent(parent);
-        if (fieldValueMap != null) {
-            definition.of((Map) fieldValueMap);
-        }
+        definition.of((Map) fieldValueMap);
         if (definitionClosure != null) {
             executeDefinitionClosure();
         }
-        if (definitionClosure != null || (fieldValueMap != null && fieldValueMap.size() > 0)) {
+        if (definitionClosure != null || fieldValueMap.size() > 0) {
             definition.build();
         }
         return this;
@@ -147,6 +144,19 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     public InstanceValue<T> registerFieldValue(String field, Value value) {
         fieldValueMap.put(field, value);
         return this;
+    }
+
+    public Value lookupFieldValue(ValuePredicate fieldPredicate) {
+        Value result = null;
+        for (final Map.Entry<String, Value> entry : fieldValueMap.entrySet()) {
+            final String fieldName = entry.getKey();
+            final Value value = entry.getValue();
+            if (fieldPredicate.apply(fieldName, value)) {
+                result = value;
+                break;
+            }
+        }
+        return result;
     }
 
     void registerFieldValues(ValueDefinition valueDefinition) {
@@ -265,8 +275,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                     break;
                 }
             }
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) { }
         return result;
     }
 
@@ -299,7 +308,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     }
 
     Map<String, Field> lookupFields(Object instanceType) {
-        final PropertyUtilsBean propertyUtils = beanUtilsBean.getPropertyUtils();
         final boolean isInstance = !(instanceType instanceof Class);
         final Map<String, Field> propertyDefinitionMap = new LinkedHashMap<String, Field>();
 
@@ -324,15 +332,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     void setPropertyValue(PropertyDescriptor propertyDescriptor, Object instance, Object value) {
         try {
             propertyDescriptor.getWriteMethod().invoke(instance, value);
-        } catch (Exception ignore) {
-        }
-    }
-
-    void setPropertyValue(PropertyUtilsBean propertyUtils, Object instance, String propertyName, Object value) {
-        try {
-            propertyUtils.setSimpleProperty(instance, propertyName, value);
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) { }
     }
 
     void setPropertyValue(Object instance, String propertyName, Object value) {
@@ -340,35 +340,29 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         if (field != null) {
             setPropertyValue(field.propertyDescriptor, instance, value);
         } else {
-            setPropertyValue(beanUtilsBean.getPropertyUtils(), instance, propertyName, value);
+            try {
+                propertyUtils.setSimpleProperty(instance, propertyName, value);
+            } catch (Exception ignore) { }
         }
-    }
-
-    Object getPropertyValue(Object instance, String propertyName) {
-        final Field field = fieldMap.get(propertyName);
-        final Object value;
-        if (field != null) {
-            value = getPropertyValue(field.propertyDescriptor, instance);
-        } else {
-            value = getPropertyValue(beanUtilsBean.getPropertyUtils(), instance, propertyName);
-        }
-        return value;
     }
 
     Object getPropertyValue(PropertyDescriptor propertyDescriptor, Object instance) {
         Object value = null;
         try {
             value = propertyDescriptor.getReadMethod().invoke(instance);
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) { }
         return value;
     }
 
-    Object getPropertyValue(PropertyUtilsBean propertyUtils, Object instance, String propertyName) {
+    Object getPropertyValue(Object instance, String propertyName) {
+        final Field field = fieldMap.get(propertyName);
         Object value = null;
-        try {
-            value = propertyUtils.getProperty(instance, propertyName);
-        } catch (Exception ignore) {
+        if (field != null) {
+            value = getPropertyValue(field.propertyDescriptor, instance);
+        } else {
+            try {
+                value = propertyUtils.getProperty(instance, propertyName);
+            } catch (Exception ignore) { }
         }
         return value;
     }

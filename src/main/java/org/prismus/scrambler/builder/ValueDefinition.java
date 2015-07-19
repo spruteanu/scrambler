@@ -61,8 +61,8 @@ public class ValueDefinition {
         propertyValueMap.put(valuePredicate, value);
     }
 
-    public Value lookupValue(ValuePredicate predicate) { // might be lookup should be performed by matching
-        Value result = propertyValueMap.get(predicate);
+    public Value lookupValue(ValuePredicate predicate) {
+        Value result = propertyValueMap.get(predicate); // might be lookup should be performed by matching
         if (result == null && parent != null) {
             result = parent.lookupValue(predicate);
         }
@@ -198,13 +198,13 @@ public class ValueDefinition {
         return this;
     }
 
-    public ValueDefinition parent(String propertyName, Class parentPredicate) {
+    public ValueDefinition reference(String propertyName, Class parentPredicate) {
         Util.checkNullValue(parentPredicate);
-        parent(Util.createPropertyPredicate(propertyName), new TypePredicate(parentPredicate));
+        reference(Util.createPropertyPredicate(propertyName), new TypePredicate(parentPredicate));
         return this;
     }
 
-    public ValueDefinition parent(String propertyName) {
+    public ValueDefinition reference(String propertyName) {
         final ValuePredicate predicate = Util.createPropertyPredicate(propertyName);
         registerPredicateValue(predicate, new ReferenceValue(this, predicate));
         return this;
@@ -263,7 +263,7 @@ public class ValueDefinition {
         return this;
     }
 
-    public ValueDefinition parent(ValuePredicate valuePredicate, ValuePredicate parentPredicate) {
+    public ValueDefinition reference(ValuePredicate valuePredicate, ValuePredicate parentPredicate) {
         Util.checkNullValue(valuePredicate);
         registerPredicateValue(valuePredicate, new ReferenceValue(this, parentPredicate));
         return this;
@@ -302,25 +302,25 @@ public class ValueDefinition {
         return this;
     }
 
-    public ValueDefinition parent(Class type) {
+    public ValueDefinition reference(Class type) {
         Util.checkNullValue(type);
         final ValuePredicate predicate = new TypePredicate(type);
         registerPredicateValue(predicate, new ReferenceValue(this, predicate));
         return this;
     }
 
-    public ValueDefinition parent(Class type, String parentPredicate) {
-        parent(type, Util.createPropertyPredicate(parentPredicate));
+    public ValueDefinition reference(Class type, String parentPredicate) {
+        reference(type, Util.createPropertyPredicate(parentPredicate));
         return this;
     }
 
-    public ValueDefinition parent(Class type, Class parentPredicate) {
+    public ValueDefinition reference(Class type, Class parentPredicate) {
         Util.checkNullValue(parentPredicate);
-        parent(type, new TypePredicate(parentPredicate));
+        reference(type, new TypePredicate(parentPredicate));
         return this;
     }
 
-    public ValueDefinition parent(Class type, ValuePredicate parentPredicate) {
+    public ValueDefinition reference(Class type, ValuePredicate parentPredicate) {
         Util.checkNullValue(type);
         final ValuePredicate predicate = new TypePredicate(type);
         registerPredicateValue(predicate, new ReferenceValue(this, parentPredicate));

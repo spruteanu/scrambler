@@ -166,7 +166,7 @@ of org.prismus.scrambler.beans.School.of([2.0.random(), 3], {
         def definition = parser.parseText("""
 of 'id', 1.incremental(300)
 of org.prismus.scrambler.beans.School.of {
-        parent '*Instance'
+        reference '*Instance'
 }
 """)
 
@@ -174,7 +174,7 @@ of org.prismus.scrambler.beans.School.of {
         0 < definition.propertyValueMap.size()
 
         and:
-        parser.parseText("parent '*Parent'").propertyValueMap.size() > 0
+        parser.parseText("reference '*Parent'").propertyValueMap.size() > 0
     }
 
     void 'test parse container with value'() {
