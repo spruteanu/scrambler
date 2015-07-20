@@ -3,7 +3,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-class IncrementalString extends Constant<String> {
+public class IncrementalString extends Constant<String> {
     private static final String DEFAULT_PATTERN = "%s%010d";
     private static final int DEFAULT_STEP = 1;
 
@@ -40,17 +40,24 @@ class IncrementalString extends Constant<String> {
         this.pattern = pattern;
     }
 
-    @Override
-    public String next() {
-        String value = get();
+    String generateString(Integer index) {
         if (value == null) {
             value = "RandomString";
         }
-        return String.format(checkPattern(), value, nextIndex());
+        return String.format(checkPattern(), value, index);
+    }
+
+    public String get() {
+        return generateString(index);
     }
 
     protected Integer nextIndex() {
-        return index++;
+        return ++index;
+    }
+
+    @Override
+    public String next() {
+        return generateString(nextIndex());
     }
 
     String checkPattern() {
@@ -60,4 +67,5 @@ class IncrementalString extends Constant<String> {
         }
         return pattern;
     }
+
 }

@@ -80,8 +80,8 @@ constant 'some template string'
         parser.parseText("of new Date().incremental(2)").propertyValueMap.size() > 0
         parser.parseText("of new Date().incremental(1, Calendar.HOUR)").propertyValueMap.size() > 0
 
-        parser.parseText("of 'some template string'.incremental('some%d')").propertyValueMap.size() > 0
-        parser.parseText("of 'some template string'.incremental('some%d', 12)").propertyValueMap.size() > 0
+        parser.parseText("of 'some template string'.incremental('some%s%d')").propertyValueMap.size() > 0
+        parser.parseText("of 'some template string'.incremental('some%s%d', 12)").propertyValueMap.size() > 0
 
         parser.parseText("of 1.0.constant()").propertyValueMap.size() > 0
         parser.parseText("of 1.constant()").propertyValueMap.size() > 0

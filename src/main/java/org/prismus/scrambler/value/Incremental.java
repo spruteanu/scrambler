@@ -101,6 +101,10 @@ public class Incremental {
         return new IncrementalDate(value, step, calendarField);
     }
 
+    public static IncrementalDate of(Map<Integer, Integer> calendarFieldStepMap) {
+        return new IncrementalDate().incrementBy(calendarFieldStepMap);
+    }
+
     //------------------------------------------------------------------------------------------------------------------
     // String methods
     //------------------------------------------------------------------------------------------------------------------
@@ -108,16 +112,32 @@ public class Incremental {
         return new IncrementalString(value);
     }
 
+    public static ValueArray<String> of(Integer count, String value) {
+        return new ValueArray<String>(String.class, count, new IncrementalString(value));
+    }
+
     public static IncrementalString of(String value, String pattern) {
         return new IncrementalString(value, pattern);
+    }
+
+    public static ValueArray<String> of(Integer count, String value, String pattern) {
+        return new ValueArray<String>(String.class, count, new IncrementalString(value, pattern));
     }
 
     public static IncrementalString of(String value, Integer index) {
         return new IncrementalString(value, index);
     }
 
+    public static ValueArray<String> of(Integer count, String value, Integer index) {
+        return new ValueArray<String>(String.class, count, new IncrementalString(value, index));
+    }
+
     public static IncrementalString of(String value, String pattern, Integer index) {
         return new IncrementalString(value, pattern, index);
+    }
+
+    public static ValueArray<String> of(Integer count, String value, String pattern, Integer index) {
+        return new ValueArray<String>(String.class, count, new IncrementalString(value, pattern, index));
     }
 
     public static boolean isSupportedType(Class type) {

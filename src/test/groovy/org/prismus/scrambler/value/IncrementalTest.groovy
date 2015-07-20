@@ -143,6 +143,9 @@ class IncrementalTest extends Specification {
         date.before(Incremental.of(date, 100).next())
         date.before(Incremental.of(date, 4, Calendar.MINUTE).next())
 
+        and: "Increment by several criteria: seconds/minutes/hours/weeks/month/years"
+        date.before(new IncrementalDate().seconds(5).minutes(1).hours(2).days(3).years(1).next())
+
         and: "verify in a loop"
         final Value<Date> incrementalDate = Incremental.of(date, calendarField, step)
         for (int i = 0; i < 5; i++) {
@@ -155,4 +158,27 @@ class IncrementalTest extends Specification {
         calendarField << [Calendar.HOUR, Calendar.DATE, Calendar.MONTH, Calendar.YEAR,]
         step << [1, 1, 1, 1,]
     }
+
+    void 'verify string incremental'(String defaultValue, String pattern, Integer index) {
+        expect:
+        defaultValue != Incremental.of(defaultValue).next()
+        defaultValue != Incremental.of(defaultValue, pattern).next()
+        defaultValue != Incremental.of(defaultValue, pattern, index).next()
+
+        5 == Incremental.of(5, defaultValue).next().length
+        5 == Incremental.of(5, defaultValue, pattern).next().length
+        5 == Incremental.of(5, defaultValue, pattern, index).next().length
+
+        and: "verify in a loop"
+        final incrementalString = Incremental.of(defaultValue, pattern, index)
+        for (int i = 0; i < 5; i++) {
+            Assert.assertNotEquals(defaultValue, incrementalString.next())
+        }
+
+        where:
+        defaultValue << ["Attempt N", "Test string ", "I would like ", "I would like to take ",]
+        pattern << ["%s%d", "%s%d", "%s%d candies", "%s%d day offs",]
+        index << [1, 1, 1, 1,]
+    }
+
 }
