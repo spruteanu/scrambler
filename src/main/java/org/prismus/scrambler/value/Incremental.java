@@ -93,16 +93,32 @@ public class Incremental {
         return new IncrementalDate(value);
     }
 
+    public static ValueArray<Date> of(Integer count, Date value) {
+        return new ValueArray<Date>(Date.class, count, of(value));
+    }
+
     public static IncrementalDate of(Date value, Integer step) {
         return new IncrementalDate(value, step);
+    }
+
+    public static ValueArray<Date> of(Integer count, Date value, Integer step) {
+        return new ValueArray<Date>(Date.class, count, of(value, step));
     }
 
     public static IncrementalDate of(Date value, Integer step, Integer calendarField) {
         return new IncrementalDate(value, step, calendarField);
     }
 
+    public static ValueArray<Date> of(Integer count, Date value, Integer step, Integer calendarField) {
+        return new ValueArray<Date>(Date.class, count, of(value, step, calendarField));
+    }
+
     public static IncrementalDate dateBy(Map<Integer, Integer> calendarFieldStepMap) {
         return new IncrementalDate().incrementBy(calendarFieldStepMap);
+    }
+
+    public static ValueArray<Date> dateBy(Integer count, Map<Integer, Integer> calendarFieldStepMap) {
+        return new ValueArray<Date>(Date.class, count, dateBy(calendarFieldStepMap));
     }
 
     //------------------------------------------------------------------------------------------------------------------

@@ -146,6 +146,8 @@ class IncrementalTest extends Specification {
         and: "Increment by several criteria: seconds/minutes/hours/weeks/month/years"
         date.before(new IncrementalDate().seconds(5).minutes(1).hours(2).days(3).years(1).next())
 
+        5 == Incremental.dateBy(5, [(Calendar.MINUTE): 2, (Calendar.HOUR): 1]).next().length
+
         and: "verify in a loop"
         final Value<Date> incrementalDate = Incremental.of(date, calendarField, step)
         for (int i = 0; i < 5; i++) {
