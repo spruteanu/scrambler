@@ -34,7 +34,7 @@ public class Random {
         final Value<T> value = of(clazzType, null);
         if (value instanceof AbstractRandomRange) {
             final AbstractRandomRange<T> randomRangeValue = (AbstractRandomRange<T>) value;
-            randomRangeValue.minimumBound(minimum).maximumBound(maximum);
+            randomRangeValue.between(minimum, maximum);
         } else {
             throw new UnsupportedOperationException(String.format(NOT_SUPPORTED_RANGE_TYPE_MSG, clazzType, minimum, maximum));
         }
@@ -120,7 +120,7 @@ public class Random {
         final Value<N> value = of((Class<N>) val.getClass(), val);
         if (value instanceof AbstractRandomRange) {
             final AbstractRandomRange<Number> randomRangeValue = (AbstractRandomRange<Number>) value;
-            randomRangeValue.minimumBound(minimum).maximumBound(maximum);
+            randomRangeValue.between(minimum, maximum);
         } else {
             throw new UnsupportedOperationException(String.format(NOT_SUPPORTED_RANGE_TYPE_MSG, val.getClass(), minimum, maximum));
         }
@@ -182,6 +182,13 @@ public class Random {
     @SuppressWarnings({"unchecked"})
     public static Value<Date> of(Date val, Date minimum, Date maximum) {
         return new RandomDate(val, minimum, maximum);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static ValueArray<Date> of(Integer count, Date val, Date minimum, Date maximum) {
+        final RandomDate randomDate = new RandomDate(val, minimum, maximum);
+        randomDate.next();
+        return new ValueArray<Date>(Date.class, count, randomDate);
     }
 
     //------------------------------------------------------------------------------------------------------------------

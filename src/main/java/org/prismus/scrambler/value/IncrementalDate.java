@@ -9,8 +9,8 @@ import java.util.*;
  * @author Serge Pruteanu
  */
 public class IncrementalDate extends Constant<Date> {
-    private static final int DEFAULT_STEP = 24 * 60 * 1000;
-    private static final int DEFAULT_CALENDAR_FIELD = Calendar.MILLISECOND;
+    private static final int DEFAULT_STEP = 1;
+    private static final int DEFAULT_CALENDAR_FIELD = Calendar.DATE;
 
     private Map<Integer, Integer> calendarFieldStepMap = new LinkedHashMap<Integer, Integer>();
     private Calendar calendar = Calendar.getInstance();
@@ -92,6 +92,16 @@ public class IncrementalDate extends Constant<Date> {
 
     public IncrementalDate incrementBy(Map<Integer, Integer> calendarFieldStepMap) {
         this.calendarFieldStepMap.putAll(calendarFieldStepMap);
+        return this;
+    }
+
+    public IncrementalDate withCalendarFields(Map<Integer, Integer> calendarFieldStepMap) {
+        this.calendarFieldStepMap = calendarFieldStepMap;
+        return this;
+    }
+
+    public IncrementalDate usingDefaults() {
+        calendarFieldStepMap.put(DEFAULT_CALENDAR_FIELD, DEFAULT_STEP);
         return this;
     }
 

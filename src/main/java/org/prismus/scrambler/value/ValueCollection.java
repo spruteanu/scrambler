@@ -46,7 +46,7 @@ public class ValueCollection<V, T extends Collection<V>> extends Constant<T> {
 
     @Override
     public T next() {
-        final T value = super.next();
+        final T value = get();
         final Value<V> valueInstance = instance;
         Util.validateArguments(value, valueInstance);
         int count = this.count != null ? this.count : 0;

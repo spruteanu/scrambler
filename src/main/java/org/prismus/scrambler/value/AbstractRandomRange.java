@@ -18,31 +18,12 @@ abstract class AbstractRandomRange<T> extends Constant<T> {
     }
 
     public AbstractRandomRange(T minimum, T maximum) {
-        super();
-        this.minimum = minimum;
-        this.maximum = maximum;
+        this(null, minimum, maximum);
     }
 
     public AbstractRandomRange(T value, T minimum, T maximum) {
         super(value);
-        this.minimum = minimum;
-        this.maximum = maximum;
-    }
-
-    public void setDefaultMinimum(T defaultMinimum) {
-        this.defaultMinimum = defaultMinimum;
-    }
-
-    public void setDefaultMaximum(T defaultMaximum) {
-        this.defaultMaximum = defaultMaximum;
-    }
-
-    public void setMinimum(T minimum) {
-        this.minimum = minimum;
-    }
-
-    public void setMaximum(T maximum) {
-        this.maximum = maximum;
+        between(minimum, maximum);
     }
 
     public AbstractRandomRange<T> usingDefaults(T minimum, T maximum) {
@@ -53,26 +34,6 @@ abstract class AbstractRandomRange<T> extends Constant<T> {
 
     public AbstractRandomRange<T> between(T minimum, T maximum) {
         this.minimum = minimum;
-        this.maximum = maximum;
-        return this;
-    }
-
-    public AbstractRandomRange<T> withDefaultMinimum(T defaultMinimum) {
-        this.defaultMinimum = defaultMinimum;
-        return this;
-    }
-
-    public AbstractRandomRange<T> withDefaultMaximum(T defaultMaximum) {
-        this.defaultMaximum = defaultMaximum;
-        return this;
-    }
-
-    public AbstractRandomRange<T> minimumBound(T minimum) {
-        this.minimum = minimum;
-        return this;
-    }
-
-    public AbstractRandomRange<T> maximumBound(T maximum) {
         this.maximum = maximum;
         return this;
     }

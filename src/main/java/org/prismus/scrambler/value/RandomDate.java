@@ -1,13 +1,17 @@
 package org.prismus.scrambler.value;
 
+import org.prismus.scrambler.Value;
+
 import java.sql.Timestamp;
-import java.util.Calendar;
 import java.util.Date;
 
 /**
  * @author Serge Pruteanu
  */
 public class RandomDate extends AbstractRandomRange<Date> {
+
+    private final RandomLong randomLong;
+    private Value<Date> dateValue;
 
     public RandomDate() {
         this(null, null, null);
@@ -23,12 +27,19 @@ public class RandomDate extends AbstractRandomRange<Date> {
 
     public RandomDate(Date value, Date minimum, Date maximum) {
         super(value, minimum, maximum);
+        randomLong = new RandomLong();
+        dateValue = new Constant<Date>(new IncrementalDate().usingDefaults().next());
+    }
+
+    public RandomDate withDateValue(Value<Date> dateValue) {
+        this.dateValue = dateValue;
+        return this;
     }
 
     public Date next() {
-        Date value = super.next();
+        Date value = get();
         if (minimum != null && maximum != null) {
-            value = new Date(new RandomLong().between(minimum.getTime(), maximum.getTime()).next());
+            value = nextValue(minimum, maximum);
         } else {
             if (value == null) {
                 value = minimum;
@@ -39,15 +50,14 @@ public class RandomDate extends AbstractRandomRange<Date> {
             if (value == null) {
                 value = new Timestamp(System.currentTimeMillis());
             }
-            final Calendar calendar = Calendar.getInstance();
-            calendar.setTime(value);
-            calendar.add(Calendar.DATE, 1);
-            value = new Date(new RandomLong().between(
-                    value.getTime(),
-                    calendar.getTimeInMillis()
-            ).next());
+            value = nextValue(value, dateValue.next());
         }
         setValue(value);
         return value;
     }
+
+    Date nextValue(Date minimum, Date maximum) {
+        return new Date(randomLong.between(minimum.getTime(), maximum.getTime()).next());
+    }
+
 }

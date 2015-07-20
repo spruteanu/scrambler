@@ -28,7 +28,7 @@ public class RandomString extends Constant<String> {
 
     @Override
     public String next() {
-        String value = super.next();
+        String value = get();
         if (value == null) {
             value = "RandomString";
         }

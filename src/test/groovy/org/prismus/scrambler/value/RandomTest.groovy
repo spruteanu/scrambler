@@ -42,7 +42,7 @@ class RandomTest extends Specification {
         count << [5, 3, null, 10, 20, null, 13, null, 20, null,]
     }
 
-    void 'verify incremental primitives generation'(Class type, Number minimum, Number maximum, Integer count) {
+    void 'verify random primitives generation'(Class type, Number minimum, Number maximum, Integer count) {
         given:
         Value numberValues = Random.arrayOf(type, count, minimum, maximum)
 
@@ -66,28 +66,27 @@ class RandomTest extends Specification {
         count << [5, 3, null, 10, 20, null,]
     }
 
-    void 'verify incremental dates'(Date date, Integer calendarField, Integer step) {
+    void 'verify random dates'(Date date, Date minimum, Date maximum, Integer count) {
         expect:
-        date.before(Incremental.of(date).next())
-        date.before(Incremental.of(date, 100).next())
-        date.before(Incremental.of(date, 4, Calendar.MINUTE).next())
-
-        and: "Increment by several criteria: seconds/minutes/hours/weeks/month/years"
-        date.before(new IncrementalDate().seconds(5).minutes(1).hours(2).days(3).years(1).next())
-
-        5 == Incremental.dateBy(5, [(Calendar.MINUTE): 2, (Calendar.HOUR): 1]).next().length
+        date.before(Random.of(date).next())
+        date.before(Random.of(minimum, (Date)null).usingValue(date).next())
+        isBetween(minimum, maximum, Random.of(date, minimum, maximum).next())
 
         and: "verify in a loop"
-        final Value<Date> incrementalDate = Incremental.of(date, calendarField, step)
-        for (int i = 0; i < 5; i++) {
-            final nextDate = incrementalDate.next()
-            Assert.assertTrue(date.before(nextDate))
+        final Value<Date[]> randomDate = Random.of(count, date, minimum, maximum)
+        final Date[] dates = randomDate.next();
+        if (count != null) {
+            Assert.assertEquals(count, dates.length)
+        }
+        for (int i = 0; i < dates.length; i++) {
+            Assert.assertTrue(isBetween(minimum, maximum, dates[i]))
         }
 
         where:
         date << [new Date(), new Date(), new Date(), new Date(),]
-        calendarField << [Calendar.HOUR, Calendar.DATE, Calendar.MONTH, Calendar.YEAR,]
-        step << [1, 1, 1, 1,]
+        minimum << [new Date(), new Date(), new Date(), new Date(),]
+        maximum << [Incremental.of(new Date()).next(), Incremental.of(new Date()).next(), Incremental.of(new Date()).next(), Incremental.of(new Date()).next(),]
+        count << [5, 3, null, 10,]
     }
 
     void 'verify random string'(String pattern, Integer count) {
