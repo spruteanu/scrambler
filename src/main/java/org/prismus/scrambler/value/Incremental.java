@@ -101,7 +101,7 @@ public class Incremental {
         return new IncrementalDate(value, step, calendarField);
     }
 
-    public static IncrementalDate of(Map<Integer, Integer> calendarFieldStepMap) {
+    public static IncrementalDate dateBy(Map<Integer, Integer> calendarFieldStepMap) {
         return new IncrementalDate().incrementBy(calendarFieldStepMap);
     }
 
