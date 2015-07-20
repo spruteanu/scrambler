@@ -15,7 +15,7 @@ class GroovyValueDefinitionTest extends Specification {
         parser.parseText("random 1, 100").propertyValueMap.size() > 0
         parser.parseText("random 1L, 100L").propertyValueMap.size() > 0
         parser.parseText("random new Date()").propertyValueMap.size() > 0
-        parser.parseText("random('some template string', 100, true, false)").propertyValueMap.size() > 0
+        parser.parseText("random('some template string', 100)").propertyValueMap.size() > 0
 
         parser.parseText("randomOf([1, 2, 3])").propertyValueMap.size() > 0
 
@@ -68,7 +68,7 @@ constant 'some template string'
         parser.parseText("of 2.random(1, 100)").propertyValueMap.size() > 0
         parser.parseText("of 3L.random(1L, 100L)").propertyValueMap.size() > 0
         parser.parseText("of new Date().random()").propertyValueMap.size() > 0
-        parser.parseText("of 'some template string'.random(100, true, false)").propertyValueMap.size() > 0
+        parser.parseText("of 'some template string'.random(100)").propertyValueMap.size() > 0
 
         parser.parseText("of([1, 2, 3].randomOf())").propertyValueMap.size() > 0
 
@@ -108,7 +108,7 @@ of 'some template string'.constant()
         parser.parseText("of '*prop1', 2.random(1, 100)").propertyValueMap.size() > 0
         parser.parseText("of '*prop2', 3L.random(1L, 100L)").propertyValueMap.size() > 0
         parser.parseText("of '*prop3', new Date().random()").propertyValueMap.size() > 0
-        parser.parseText("of '*prop4', 'some template string'.random(100, true, false)").propertyValueMap.size() > 0
+        parser.parseText("of '*prop4', 'some template string'.random(100)").propertyValueMap.size() > 0
 
         parser.parseText("of('*prop5', [1, 2, 3].randomOf())").propertyValueMap.size() > 0
 
@@ -207,7 +207,7 @@ of org.prismus.scrambler.beans.School.of {
         null != 3L.random(1L, 100L)
         null != new Date().random()
         null != int.array(1.random())
-        null != 'some template string'.random(100, true, false)
+        null != 'some template string'.random(100)
     }
 
     void 'test parse text for map'() {

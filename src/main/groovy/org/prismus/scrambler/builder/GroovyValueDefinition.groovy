@@ -158,8 +158,8 @@ class GroovyValueDefinition extends Script {
     }
 
     @CompileStatic
-    ValueDefinition random(String value, Integer count = null, Boolean includeLetters = null, Boolean includeNumbers = null) {
-        return definition.random(value, count , includeLetters , includeNumbers )
+    ValueDefinition random(String value, Integer count = null) {
+        return definition.random(value, count)
     }
 
     @CompileStatic
@@ -303,8 +303,8 @@ class GroovyValueDefinition extends Script {
                 return Incremental.of((String) delegate, pattern, index)
             }
 
-            random { Integer count = null, Boolean includeLetters = null, Boolean includeNumbers = null ->
-                return org.prismus.scrambler.value.Random.of((String) delegate, count, includeLetters, includeNumbers)
+            random { Integer count = null ->
+                return org.prismus.scrambler.value.Random.of((String) delegate, count)
             }
         }
 

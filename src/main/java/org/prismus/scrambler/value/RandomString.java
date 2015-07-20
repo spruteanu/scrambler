@@ -6,8 +6,6 @@ package org.prismus.scrambler.value;
 public class RandomString extends Constant<String> {
     private final java.util.Random random;
     private Integer count;
-    private Boolean includeLetters;
-    private Boolean includeNumbers;
 
     public RandomString() {
         this(null);
@@ -19,31 +17,13 @@ public class RandomString extends Constant<String> {
     }
 
     public RandomString(String value, Integer count) {
-        this(value, count, false, false);
-    }
-
-    public RandomString(String value, Integer count, Boolean includeLetters) {
-        this(value, count, includeLetters, false);
-    }
-
-    public RandomString(String value, Integer count, Boolean includeLetters, Boolean includeNumbers) {
         super(value);
         this.count = count;
-        this.includeLetters = includeLetters;
-        this.includeNumbers = includeNumbers;
         random = new java.util.Random();
     }
 
     public void setCount(Integer count) {
         this.count = count;
-    }
-
-    public void setIncludeLetters(Boolean includeLetters) {
-        this.includeLetters = includeLetters;
-    }
-
-    public void setIncludeNumbers(Boolean includeNumbers) {
-        this.includeNumbers = includeNumbers;
     }
 
     @Override
@@ -53,9 +33,7 @@ public class RandomString extends Constant<String> {
             value = "RandomString";
         }
         final int count = checkCount(value);
-        final boolean letters = includeLetters == null ? false : includeLetters;
-        final boolean numbers = includeNumbers == null ? false : includeNumbers;
-        value = random(count, 0, value.length(), letters, numbers, value.toCharArray());
+        value = random(count, 0, value.length(), true, true, value.toCharArray());
         return value;
     }
 

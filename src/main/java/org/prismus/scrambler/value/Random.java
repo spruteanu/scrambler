@@ -10,7 +10,7 @@ import java.util.*;
 /**
  * Facade class that generates random values according to type rules: <><br/>
  * <li/>Numbers are generated in defined range
- * <li/>Dates are incremented using {@link Calendar} fields in a defined range
+ * <li/>Dates are generated using {@link Calendar} fields in a defined range
  * <li/>Strings are generating using provided patterns
  * <p/>
  * Along with one type generation, it is possible to get randoms array accordingly
@@ -128,21 +128,35 @@ public class Random {
     }
 
     @SuppressWarnings("unchecked")
-    public static <N extends Number> Value<N> arrayOf(Integer count, N minimum, N maximum) {
+    public static <N extends Number> Value<N> arrayOf(Class clazzType, Integer count, N minimum, N maximum) {
         Util.checkPositiveCount(count);
+
         Object defaultValue = minimum != null ? minimum : maximum != null ? maximum : null;
-        Class clazzType = defaultValue != null ? defaultValue.getClass() : null;
+        if (clazzType == null) {
+            clazzType = defaultValue != null ? defaultValue.getClass() : null;
+        }
         if (clazzType == null) {
             throw new IllegalArgumentException(String.format("Either minimum: %s or maximum: %s should be not null", minimum, maximum));
         }
-        final Class<?> componentType = clazzType.isArray() ? clazzType.getComponentType() : clazzType;
-        final Value<N> value;
-        final Value instance = (Value) Util.createInstance(
+        boolean primitive = false;
+        Class<?> componentType;
+        if (clazzType.isArray()) {
+            componentType = clazzType.getComponentType();
+            if (componentType.isPrimitive()) {
+                primitive = true;
+                componentType = Util.primitiveWrapperMap.get(componentType);
+            }
+        } else {
+            componentType = clazzType;
+        }
+
+        Value instance = (Value) Util.createInstance(
                 propertyTypeMap.get(componentType),
                 new Object[]{minimum, maximum},
                 new Class[]{componentType, componentType}
         );
-        if (componentType.isPrimitive()) {
+        final Value<N> value;
+        if (primitive) {
             value = (Value<N>) Util.createInstance(
                     propertyTypeMap.get(clazzType),
                     new Object[]{clazzType.isInstance(defaultValue) ? defaultValue : null, count, instance},
@@ -181,12 +195,12 @@ public class Random {
         return new RandomString(value, count);
     }
 
-    public static RandomString of(String value, Integer count, Boolean includeLetters) {
-        return new RandomString(value, count, includeLetters);
+    public static ValueArray<String> of(Integer arrayCount, String value) {
+        return new ValueArray<String>(String.class, arrayCount, of(value));
     }
 
-    public static RandomString of(String value, Integer count, Boolean includeLetters, Boolean includeNumbers) {
-        return new RandomString(value, count, includeLetters, includeNumbers);
+    public static ValueArray<String> of(Integer arrayCount, String value, Integer count) {
+        return new ValueArray<String>(String.class, arrayCount, of(value, count));
     }
 
     public static boolean isSupportedType(Class type) {

@@ -179,20 +179,12 @@ public class ValueDefinition {
     }
 
     public ValueDefinition random(String value) {
-        return random(value, null, null, null);
+        return random(value, null);
     }
 
     public ValueDefinition random(String value, Integer count) {
-        return random(value, count, null, null);
-    }
-
-    public ValueDefinition random(String value, Integer count, Boolean includeLetters) {
-        return random(value, count, includeLetters, null);
-    }
-
-    public ValueDefinition random(String value, Integer count, Boolean includeLetters, Boolean includeNumbers) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(String.class), org.prismus.scrambler.value.Random.of(value, count, includeLetters, includeNumbers));
+        registerPredicateValue(new TypePredicate(String.class), org.prismus.scrambler.value.Random.of(value, count));
         return this;
     }
 

@@ -27,24 +27,24 @@ class RandomTest extends Specification {
         }
 
         and: "verify array creation"
-        Number[] numberValues = Random.arrayOf(count, minimum, maximum).next()
+        Number[] numberValues = Random.arrayOf(null, count, minimum, maximum).next()
         for (int i = 0; i < numberValues.length; i++) {
             Assert.assertTrue(isBetween(minimum, maximum, numberValues[i]))
         }
 
         where:
-        minimum << [1,      100L,   new Integer(1).shortValue(),    new Integer(1).byteValue(),
-                    1.0f,   5.0f,           1.0d,        5.0d,
-                    new Integer(6).toBigInteger(),      new Integer(7).toBigDecimal(),]
-        maximum << [10,     1000L,  new Integer(300).shortValue(),  new Integer(127).byteValue(),
-                    10001.0f,   50005.0f,   10001.0d,    50005.0d,
-                    new Integer(600).toBigInteger(),    new Integer(6389).toBigDecimal(),]
-        count   << [5, 3, null, 10, 20, null, 13, null, 20, null, ]
+        minimum << [1, 100L, new Integer(1).shortValue(), new Integer(1).byteValue(),
+                    1.0f, 5.0f, 1.0d, 5.0d,
+                    new Integer(6).toBigInteger(), new Integer(7).toBigDecimal(),]
+        maximum << [10, 1000L, new Integer(300).shortValue(), new Integer(127).byteValue(),
+                    10001.0f, 50005.0f, 10001.0d, 50005.0d,
+                    new Integer(600).toBigInteger(), new Integer(6389).toBigDecimal(),]
+        count << [5, 3, null, 10, 20, null, 13, null, 20, null,]
     }
 
-    void 'verify incremental primitives generation'(Class type, Number start, Number step, Integer count) {
+    void 'verify incremental primitives generation'(Class type, Number minimum, Number maximum, Integer count) {
         given:
-        Value numberValues = Incremental.arrayOf(type, start, step, count)
+        Value numberValues = Random.arrayOf(type, count, minimum, maximum)
 
         expect:
         for (int i = 0; i < 5; i++) {
@@ -54,19 +54,16 @@ class RandomTest extends Specification {
             if (count != null) {
                 Assert.assertEquals(count, values.length)
             }
-            Assert.assertEquals(start, values[0])
-            for (int j = 1; j < values.length; j++) {
-                Assert.assertEquals(start + step, values[j])
-                start = values[j]
+            for (int j = 0; j < values.length; j++) {
+                Assert.assertTrue(isBetween(minimum, maximum, values[j]))
             }
-            start += step;
         }
 
         where:
-        type << [int[], long[], short[], byte[],]
-        start << [1, 12L, (short)1, (byte)1, ]
-        step << [10, 10L, (short)3, (byte)1, ]
-        count << [5, 3, null, 10, ]
+        type << [int[], long[], short[], byte[], float[], double[],]
+        minimum << [1, 100L, new Integer(1).shortValue(), new Integer(1).byteValue(), 1.0f, 1.0d,]
+        maximum << [10, 1000L, new Integer(300).shortValue(), new Integer(127).byteValue(), 10001.0f, 10001.0d,]
+        count << [5, 3, null, 10, 20, null,]
     }
 
     void 'verify incremental dates'(Date date, Integer calendarField, Integer step) {
@@ -93,26 +90,28 @@ class RandomTest extends Specification {
         step << [1, 1, 1, 1,]
     }
 
-    void 'verify string incremental'(String defaultValue, String pattern, Integer index) {
+    void 'verify random string'(String pattern, Integer count) {
         expect:
-        defaultValue != Incremental.of(defaultValue).next()
-        defaultValue != Incremental.of(defaultValue, pattern).next()
-        defaultValue != Incremental.of(defaultValue, pattern, index).next()
+        pattern != Random.of(pattern).next()
+        pattern != Random.of(pattern, count).next()
 
-        5 == Incremental.of(5, defaultValue).next().length
-        5 == Incremental.of(5, defaultValue, pattern).next().length
-        5 == Incremental.of(5, defaultValue, pattern, index).next().length
+        5 == Random.of(5, pattern).next().length
+        5 == Random.of(5, pattern, count).next().length
 
         and: "verify in a loop"
-        final incrementalString = Incremental.of(defaultValue, pattern, index)
+        final randomValue = Random.of(pattern, count)
         for (int i = 0; i < 5; i++) {
-            Assert.assertNotEquals(defaultValue, incrementalString.next())
+            final generatedString = randomValue.next()
+            Assert.assertTrue(generatedString.length() > 0)
+            Assert.assertNotEquals(pattern, generatedString)
+            if (count != null) {
+                Assert.assertEquals(count, generatedString.length())
+            }
         }
 
         where:
-        defaultValue << ["Attempt N", "Test string ", "I would like ", "I would like to take ",]
-        pattern << ["%s%d", "%s%d", "%s%d candies", "%s%d day offs",]
-        index << [1, 1, 1, 1,]
+        pattern << ["Attempt N", "Test string ", "I would like ", "I would like to take ",]
+        count << [100, null, null, 64,]
     }
 
 }
