@@ -26,6 +26,16 @@ class RandomFloat extends AbstractRandomRange<Float> implements FloatArray {
         random = new Random();
     }
 
+    @Override
+    protected Float min(Float val1, Float val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val2 : val1 : null : null;
+    }
+
+    @Override
+    protected Float max(Float val1, Float val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val1 : val2 : val1 : val2;
+    }
+
     float nextValue() {
         final float result;
         if (minimum != null && maximum != null) {

@@ -27,6 +27,17 @@ class RandomShort extends AbstractRandomRange<Short> implements ShortArray {
         random = new Random();
     }
 
+    @Override
+    protected Short min(Short val1, Short val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val2 : val1 : null : null;
+    }
+
+    @Override
+    protected Short max(Short val1, Short val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val1 : val2 : val1 : val2;
+    }
+
+
     short nextValue() {
         final short result;
         if (minimum != null && maximum != null) {

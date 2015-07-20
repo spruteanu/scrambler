@@ -27,6 +27,16 @@ class RandomDouble extends AbstractRandomRange<Double> implements DoubleArray {
         random = new Random();
     }
 
+    @Override
+    protected Double min(Double val1, Double val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val2 : val1 : null : null;
+    }
+
+    @Override
+    protected Double max(Double val1, Double val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val1 : val2 : val1 : val2;
+    }
+
     double nextValue() {
         final double result;
         if (minimum != null && maximum != null) {

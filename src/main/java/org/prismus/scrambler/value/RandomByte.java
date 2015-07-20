@@ -26,6 +26,16 @@ class RandomByte extends AbstractRandomRange<Byte> implements ByteArray {
         random = new Random();
     }
 
+    @Override
+    protected Byte min(Byte val1, Byte val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val2 : val1 : null : null;
+    }
+
+    @Override
+    protected Byte max(Byte val1, Byte val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val1 : val2 : val1 : val2;
+    }
+
     byte nextValue() {
         final byte result;
         if (minimum != null && maximum != null) {

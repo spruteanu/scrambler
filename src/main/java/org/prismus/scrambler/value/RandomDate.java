@@ -36,6 +36,16 @@ public class RandomDate extends AbstractRandomRange<Date> {
         return this;
     }
 
+    @Override
+    protected Date min(Date val1, Date val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val2 : val1 : null : null;
+    }
+
+    @Override
+    protected Date max(Date val1, Date val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val1 : val2 : val1 : val2;
+    }
+
     public Date next() {
         Date value = get();
         if (minimum != null && maximum != null) {

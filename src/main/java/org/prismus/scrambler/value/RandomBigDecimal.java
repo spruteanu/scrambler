@@ -24,6 +24,16 @@ class RandomBigDecimal extends AbstractRandomRange<BigDecimal> {
         usingDefaults(BigDecimal.ZERO, BigDecimal.valueOf(Double.MAX_VALUE));
     }
 
+    @Override
+    protected BigDecimal min(BigDecimal val1, BigDecimal val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val2 : val1 : null : null;
+    }
+
+    @Override
+    protected BigDecimal max(BigDecimal val1, BigDecimal val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val1 : val2 : val1 : val2;
+    }
+
     BigDecimal nextValue() {
         final BigDecimal result;
         if (minimum != null && maximum != null) {

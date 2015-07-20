@@ -27,6 +27,16 @@ class RandomLong extends AbstractRandomRange<Long> implements LongArray {
         random = new Random();
     }
 
+    @Override
+    protected Long min(Long val1, Long val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val2 : val1 : null : null;
+    }
+
+    @Override
+    protected Long max(Long val1, Long val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val1 : val2 : val1 : val2;
+    }
+
     long nextValue() {
         if (minimum != null && maximum != null) {
             final long interval = Math.abs(maximum - minimum);

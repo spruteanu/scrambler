@@ -28,6 +28,16 @@ class RandomBigInteger extends AbstractRandomRange<BigInteger> {
         usingDefaults(BigInteger.ZERO, BigInteger.valueOf(Long.MAX_VALUE));
     }
 
+    @Override
+    protected BigInteger min(BigInteger val1, BigInteger val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val2 : val1 : null : null;
+    }
+
+    @Override
+    protected BigInteger max(BigInteger val1, BigInteger val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val1 : val2 : val1 : val2;
+    }
+
     BigInteger nextValue() {
         final BigInteger result;
         if (minimum != null && maximum != null) {

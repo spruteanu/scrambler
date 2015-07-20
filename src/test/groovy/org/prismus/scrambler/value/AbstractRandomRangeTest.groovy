@@ -2,6 +2,8 @@ package org.prismus.scrambler.value
 
 import spock.lang.Specification
 
+import java.sql.Timestamp
+
 /**
  * todo: add description
  *
@@ -20,15 +22,23 @@ class AbstractRandomRangeTest extends Specification {
             value < maximum
         }
 
+        and:
+        minimum == valueInstance.min(minimum, maximum)
+        null == valueInstance.min(null, maximum)
+        null == valueInstance.min(minimum, null)
+
+        minimum == valueInstance.max(minimum, null)
+        maximum == valueInstance.max(null, maximum)
+
         where:
         minimum << [
-                10, 10L,
+                10, 10L, new Date(),
                 10.shortValue(), 10.byteValue(),
                 10.0.floatValue(), 10.0.doubleValue(),
                 10.0.toBigDecimal(), 10.toBigInteger(),
         ]
         maximum << [
-                50, 50L,
+                50, 50L, new Date(new Timestamp(System.currentTimeMillis() + 24 * 60 * 1000).time),
                 50.shortValue(), 50.byteValue(),
                 50.0.floatValue(), 50.0.doubleValue(),
                 50.0.toBigDecimal(), 50.toBigInteger(),

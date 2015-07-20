@@ -27,16 +27,20 @@ abstract class AbstractRandomRange<T> extends Constant<T> {
     }
 
     public AbstractRandomRange<T> usingDefaults(T minimum, T maximum) {
-        this.defaultMinimum = minimum;
-        this.defaultMaximum = maximum;
+        this.defaultMinimum = min(minimum, maximum);
+        this.defaultMaximum = max(minimum, maximum);
         return this;
     }
 
     public AbstractRandomRange<T> between(T minimum, T maximum) {
-        this.minimum = minimum;
-        this.maximum = maximum;
+        this.minimum = min(minimum, maximum);
+        this.maximum = max(minimum, maximum);
         return this;
     }
+
+    protected abstract T min(T val1, T val2);
+
+    protected abstract T max(T val1, T val2);
 
     protected void checkBoundaries() {
         if (minimum == null && maximum == null) {

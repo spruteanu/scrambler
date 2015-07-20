@@ -27,6 +27,16 @@ class RandomInteger extends AbstractRandomRange<Integer> implements IntArray {
         random = new Random();
     }
 
+    @Override
+    protected Integer min(Integer val1, Integer val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val2 : val1 : null : null;
+    }
+
+    @Override
+    protected Integer max(Integer val1, Integer val2) {
+        return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val1 : val2 : val1 : val2;
+    }
+
     int nextValue(int previousValue) {
         final int result;
         if (minimum != null && maximum != null) {
