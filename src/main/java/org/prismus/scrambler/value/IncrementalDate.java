@@ -4,6 +4,8 @@ import java.sql.Timestamp;
 import java.util.*;
 
 /**
+ * Increments date by seconds/minutes/hours/weeks/month/years values using provided or default calendar
+ *
  * @author Serge Pruteanu
  */
 public class IncrementalDate extends Constant<Date> {
