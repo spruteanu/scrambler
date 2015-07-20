@@ -8,6 +8,13 @@ import java.sql.Timestamp;
 import java.util.*;
 
 /**
+ * Facade class that generates random values according to type rules: <><br/>
+ * <li/>Numbers are generated in defined range
+ * <li/>Dates are incremented using {@link Calendar} fields in a defined range
+ * <li/>Strings are generating using provided patterns
+ * <p/>
+ * Along with one type generation, it is possible to get randoms array accordingly
+ *
  * @author Serge Pruteanu
  */
 public class Random {
@@ -19,40 +26,9 @@ public class Random {
         return of(clazzType, null);
     }
 
-    @SuppressWarnings({"unchecked"})
-    public static Value<Number> of(Number value) {
-        return of((Class) value.getClass(), value);
-    }
-
-    public static RandomDate of(Date value) {
-        return new RandomDate(value);
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static Value<Number> of(Number minimum, Number maximum) {
-        return of((Class) minimum.getClass(), minimum, maximum);
-    }
-
-    public static RandomDate of(Date minimum, Date maximum) {
-        return new RandomDate(minimum, maximum);
-    }
-
-    public static RandomString of(String value) {
-        return new RandomString(value);
-    }
-
-    public static RandomString of(String value, Integer count) {
-        return new RandomString(value, count);
-    }
-
-    public static RandomString of(String value, Integer count, Boolean includeLetters) {
-        return new RandomString(value, count, includeLetters);
-    }
-
-    public static RandomString of(String value, Integer count, Boolean includeLetters, Boolean includeNumbers) {
-        return new RandomString(value, count, includeLetters, includeNumbers);
-    }
-
+    //------------------------------------------------------------------------------------------------------------------
+    // Generic methods
+    //------------------------------------------------------------------------------------------------------------------
     @SuppressWarnings({"unchecked"})
     public static <T> Value<T> of(Class<T> clazzType, T minimum, T maximum) {
         final Value<T> value = of(clazzType, null);
@@ -63,23 +39,6 @@ public class Random {
             throw new UnsupportedOperationException(String.format(NOT_SUPPORTED_RANGE_TYPE_MSG, clazzType, minimum, maximum));
         }
         return value;
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static Value<Number> of(Number val, Number minimum, Number maximum) {
-        final Value<Number> value = of((Class<Number>) val.getClass(), val);
-        if (value instanceof AbstractRandomRange) {
-            final AbstractRandomRange<Number> randomRangeValue = (AbstractRandomRange<Number>) value;
-            randomRangeValue.minimumBound(minimum).maximumBound(maximum);
-        } else {
-            throw new UnsupportedOperationException(String.format(NOT_SUPPORTED_RANGE_TYPE_MSG, val.getClass(), minimum, maximum));
-        }
-        return value;
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static Value<Date> of(Date val, Date minimum, Date maximum) {
-        return new RandomDate(val, minimum, maximum);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -141,6 +100,93 @@ public class Random {
 
     public static <T> Value<T> randomOf(Collection<T> collection) {
         return new RandomElement<T>(new ArrayList<T>(collection));
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    // Number methods
+    //------------------------------------------------------------------------------------------------------------------
+    @SuppressWarnings({"unchecked"})
+    public static <N extends Number> Value<N> of(N value) {
+        return of((Class) value.getClass(), value);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static <N extends Number> Value<N> of(N minimum, N maximum) {
+        return of((Class) minimum.getClass(), minimum, maximum);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static <N extends Number> Value<N> of(N val, N minimum, N maximum) {
+        final Value<N> value = of((Class<N>) val.getClass(), val);
+        if (value instanceof AbstractRandomRange) {
+            final AbstractRandomRange<Number> randomRangeValue = (AbstractRandomRange<Number>) value;
+            randomRangeValue.minimumBound(minimum).maximumBound(maximum);
+        } else {
+            throw new UnsupportedOperationException(String.format(NOT_SUPPORTED_RANGE_TYPE_MSG, val.getClass(), minimum, maximum));
+        }
+        return value;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <N extends Number> Value<N> arrayOf(Integer count, N minimum, N maximum) {
+        Util.checkPositiveCount(count);
+        Object defaultValue = minimum != null ? minimum : maximum != null ? maximum : null;
+        Class clazzType = defaultValue != null ? defaultValue.getClass() : null;
+        if (clazzType == null) {
+            throw new IllegalArgumentException(String.format("Either minimum: %s or maximum: %s should be not null", minimum, maximum));
+        }
+        final Class<?> componentType = clazzType.isArray() ? clazzType.getComponentType() : clazzType;
+        final Value<N> value;
+        final Value instance = (Value) Util.createInstance(
+                propertyTypeMap.get(componentType),
+                new Object[]{minimum, maximum},
+                new Class[]{componentType, componentType}
+        );
+        if (componentType.isPrimitive()) {
+            value = (Value<N>) Util.createInstance(
+                    propertyTypeMap.get(clazzType),
+                    new Object[]{clazzType.isInstance(defaultValue) ? defaultValue : null, count, instance},
+                    new Class[]{clazzType, Integer.class, Object.class}
+            );
+        } else {
+            value = new ValueArray(clazzType, count, instance);
+        }
+        return value;
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    // Dates methods
+    //------------------------------------------------------------------------------------------------------------------
+    public static RandomDate of(Date value) {
+        return new RandomDate(value);
+    }
+
+    public static RandomDate of(Date minimum, Date maximum) {
+        return new RandomDate(minimum, maximum);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static Value<Date> of(Date val, Date minimum, Date maximum) {
+        return new RandomDate(val, minimum, maximum);
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    // String methods
+    //------------------------------------------------------------------------------------------------------------------
+    public static RandomString of(String value) {
+        return new RandomString(value);
+    }
+
+    public static RandomString of(String value, Integer count) {
+        return new RandomString(value, count);
+    }
+
+    public static RandomString of(String value, Integer count, Boolean includeLetters) {
+        return new RandomString(value, count, includeLetters);
+    }
+
+    public static RandomString of(String value, Integer count, Boolean includeLetters, Boolean includeNumbers) {
+        return new RandomString(value, count, includeLetters, includeNumbers);
     }
 
     public static boolean isSupportedType(Class type) {

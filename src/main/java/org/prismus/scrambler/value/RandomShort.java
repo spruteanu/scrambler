@@ -38,6 +38,11 @@ class RandomShort extends AbstractRandomRange<Short> implements ShortArray {
     }
 
     @Override
+    public Short get() {
+        return value == null ? nextValue() : value;
+    }
+
+    @Override
     public Short next() {
         final Short newValue = nextValue();
         setValue(newValue);

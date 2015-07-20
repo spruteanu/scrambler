@@ -38,15 +38,18 @@ class RandomLong extends AbstractRandomRange<Long> implements LongArray {
     }
 
     @Override
+    public Long get() {
+        return value == null ? nextValue() : value;
+    }
+
+    @Override
     public Long next() {
-        checkBoundaries();
         final long result = nextValue();
         setValue(result);
         return result;
     }
 
     public void next(long[] values) {
-        checkBoundaries();
         long next = 0;
         for (int i = 0; i < values.length; i++) {
             next = nextValue();

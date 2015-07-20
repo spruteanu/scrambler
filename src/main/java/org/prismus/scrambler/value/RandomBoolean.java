@@ -23,6 +23,11 @@ class RandomBoolean extends Constant<Boolean> implements BooleanArray {
     }
 
     @Override
+    public Boolean get() {
+        return value == null ? nextValue() : value;
+    }
+
+    @Override
     public Boolean next() {
         final boolean newValue = nextValue();
         setValue(newValue);

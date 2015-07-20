@@ -105,9 +105,9 @@ class IncrementalTest extends Specification {
         }
 
         where:
-        start << [1.0, 11.0,]
-        step << [0.2, 3.7,]
-        count << [5, null,]
+        start << [1.0d, 11.0d,]
+        step << [0.2d, 3.7d,]
+        count << [5d, null,]
     }
 
     void 'verify incremental primitives generation'(Class type, Number start, Number step, Integer count) {

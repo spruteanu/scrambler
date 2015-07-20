@@ -58,9 +58,7 @@ public class Incremental {
 
     @SuppressWarnings({"unchecked"})
     public static Value arrayOf(Class clazzType, Object defaultValue, Object step, Integer count) {
-        if (count != null && count < 0) {
-            throw new IllegalArgumentException(String.format("Count should be a positive number: %s", count));
-        }
+        Util.checkPositiveCount(count);
         final Class<?> componentType = clazzType.isArray() ? clazzType.getComponentType() : clazzType;
         final Value value;
         if (componentType.isPrimitive()) {

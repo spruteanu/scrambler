@@ -159,4 +159,9 @@ public abstract class Util {
         }
     }
 
+    static void checkPositiveCount(Integer count) {
+        if (count != null && count < 0) {
+            throw new IllegalArgumentException(String.format("Count should be a positive number: %s", count));
+        }
+    }
 }

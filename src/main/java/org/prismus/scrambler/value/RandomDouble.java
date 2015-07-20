@@ -39,15 +39,18 @@ class RandomDouble extends AbstractRandomRange<Double> implements DoubleArray {
     }
 
     @Override
+    public Double get() {
+        return value == null ? nextValue() : value;
+    }
+
+    @Override
     public Double next() {
-        checkBoundaries();
         Double result = nextValue();
         setValue(result);
         return result;
     }
 
     public void next(double[] values) {
-        checkBoundaries();
         double next = nextValue();
         for (int i = 0; i < values.length; i++) {
             next = nextValue();

@@ -37,6 +37,11 @@ class RandomByte extends AbstractRandomRange<Byte> implements ByteArray {
     }
 
     @Override
+    public Byte get() {
+        return value == null ? nextValue() : value;
+    }
+
+    @Override
     public Byte next() {
         final Byte newValue = nextValue();
         setValue(newValue);

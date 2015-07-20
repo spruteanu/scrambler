@@ -1,14 +1,11 @@
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.Value;
-
 import java.math.BigDecimal;
 
 /**
  * @author Serge Pruteanu
  */
 class RandomBigDecimal extends AbstractRandomRange<BigDecimal> {
-    private final Value<Double> instance;
 
     public RandomBigDecimal() {
         this(null, null, null);
@@ -24,18 +21,27 @@ class RandomBigDecimal extends AbstractRandomRange<BigDecimal> {
 
     public RandomBigDecimal(BigDecimal value, BigDecimal minimum, BigDecimal maximum) {
         super(value, minimum, maximum);
-        usingDefaults(BigDecimal.valueOf(0), BigDecimal.valueOf(Double.MAX_VALUE));
-        instance = new RandomDouble(value != null ? value.doubleValue() : null)
-                .usingDefaults(defaultMinimum.doubleValue(), defaultMaximum.doubleValue())
-                .between(
-                        minimum != null ? minimum.doubleValue() : null,
-                        maximum != null ? maximum.doubleValue() : null
-                );
+        usingDefaults(BigDecimal.ZERO, BigDecimal.valueOf(Double.MAX_VALUE));
+    }
+
+    BigDecimal nextValue() {
+        final BigDecimal result;
+        if (minimum != null && maximum != null) {
+            result = minimum.add(maximum.subtract(minimum).multiply(new BigDecimal(Math.random())));
+        } else {
+            result = defaultMaximum.multiply(new BigDecimal(Math.random()));
+        }
+        return result;
+    }
+
+    @Override
+    public BigDecimal get() {
+        return value == null ? nextValue() : value;
     }
 
     @Override
     public BigDecimal next() {
-        final BigDecimal newValue = BigDecimal.valueOf(instance.next());
+        final BigDecimal newValue = nextValue();
         setValue(newValue);
         return newValue;
     }

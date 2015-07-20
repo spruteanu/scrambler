@@ -38,6 +38,11 @@ class RandomFloat extends AbstractRandomRange<Float> implements FloatArray {
     }
 
     @Override
+    public Float get() {
+        return value == null ? nextValue() : value;
+    }
+
+    @Override
     public Float next() {
         final Float result = nextValue();
         setValue(result);

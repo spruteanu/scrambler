@@ -1,14 +1,14 @@
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.Value;
-
 import java.math.BigInteger;
+import java.util.Random;
 
 /**
  * @author Serge Pruteanu
  */
 class RandomBigInteger extends AbstractRandomRange<BigInteger> {
-    private final Value<Long> instance;
+
+    private final Random random;
 
     public RandomBigInteger() {
         this(null, null, null);
@@ -24,18 +24,28 @@ class RandomBigInteger extends AbstractRandomRange<BigInteger> {
 
     public RandomBigInteger(BigInteger value, BigInteger minimum, BigInteger maximum) {
         super(value, minimum, maximum);
-        usingDefaults(BigInteger.valueOf(0), BigInteger.valueOf(Long.MAX_VALUE));
-        instance = new RandomLong(value != null ? value.longValue() : null)
-                .usingDefaults(defaultMinimum.longValue(), defaultMaximum.longValue())
-                .between(
-                        minimum != null ? minimum.longValue() : null,
-                        maximum != null ? maximum.longValue() : null
-                );
+        random = new Random();
+        usingDefaults(BigInteger.ZERO, BigInteger.valueOf(Long.MAX_VALUE));
+    }
+
+    BigInteger nextValue() {
+        final BigInteger result;
+        if (minimum != null && maximum != null) {
+            result = minimum.add(new BigInteger(maximum.subtract(minimum).bitCount(), random));
+        } else {
+            result = new BigInteger(defaultMaximum.bitCount(), random);
+        }
+        return result;
+    }
+
+    @Override
+    public BigInteger get() {
+        return value == null ? nextValue() : value;
     }
 
     @Override
     public BigInteger next() {
-        final BigInteger newValue = BigInteger.valueOf(instance.next());
+        final BigInteger newValue = nextValue();
         setValue(newValue);
         return newValue;
     }

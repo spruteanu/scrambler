@@ -38,15 +38,18 @@ class RandomInteger extends AbstractRandomRange<Integer> implements IntArray {
     }
 
     @Override
+    public Integer get() {
+        return value == null ? nextValue(random.nextInt()) : value;
+    }
+
+    @Override
     public Integer next() {
-        checkBoundaries();
         final Integer result = nextValue(value == null ? random.nextInt() : value);
         setValue(result);
         return result;
     }
 
     public void next(int[] values) {
-        checkBoundaries();
         int start = nextValue(value == null ? random.nextInt() : value);
         for (int i = 0; i < values.length; i++) {
             final int next = nextValue(start);
