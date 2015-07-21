@@ -1,8 +1,6 @@
 package org.prismus.scrambler.value;
 
 /**
- * todo: add description
- *
  * @author Serge Pruteanu
  */
 class LongValueArray extends Constant<long[]> {

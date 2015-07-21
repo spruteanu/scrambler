@@ -1,8 +1,6 @@
 package org.prismus.scrambler.value;
 
 /**
- * todo: add description
- *
  * @author Serge Pruteanu
  */
 class ShortValueArray extends Constant<short[]> {

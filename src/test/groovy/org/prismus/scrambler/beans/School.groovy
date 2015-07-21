@@ -1,8 +1,6 @@
 package org.prismus.scrambler.beans
 
 /**
- * todo: add description
- *
  * @author Serge Pruteanu
  */
 class School {

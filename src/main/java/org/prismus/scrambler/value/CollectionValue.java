@@ -5,6 +5,8 @@ import org.prismus.scrambler.Value;
 import java.util.Collection;
 
 /**
+ * todo: add description
+ *
  * @author Serge Pruteanu
  */
 public class CollectionValue<V, T extends Collection<V>> extends Constant<T> {
