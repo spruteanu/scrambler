@@ -11,7 +11,7 @@ class ValueArrayTest extends Specification {
     void 'test array creation'() {
         GroovyValueDefinition.register()
         given:
-        def value = ValueArray.of(10.random(), int, null, null)
+        def value = ValueArray.of(10.random(), int, null)
         def array = value.next()
         expect:
         array.length > 0

@@ -14,9 +14,7 @@ import java.util.Map;
 public class ValueArray<T> extends Constant<T[]> {
     private Integer count;
     private Value<T> instance;
-    private Boolean randomCount;
     private Class<T> valueType;
-    private RandomInteger randomInteger;
 
     public ValueArray() {
     }
@@ -29,35 +27,17 @@ public class ValueArray<T> extends Constant<T[]> {
         this(valueType, null, value);
     }
 
-    public ValueArray(T[] array, Integer count, Value<T> value) {
-        this(array, count, value, null);
-    }
-
-    public ValueArray(Class<T> valueType, Integer count, Value<T> value) {
-        this(valueType, count, value, null);
-    }
-
-    public ValueArray(T[] array, Integer count, Value<T> value1, Boolean randomCount) {
+    public ValueArray(T[] array, Integer count, Value<T> value1) {
         super(array);
         this.count = count;
         this.instance = value1;
-        this.randomCount = randomCount;
-        checkGenerateRandomCount(array, count);
     }
 
-    public ValueArray(Class<T> valueType, Integer count, Value<T> value1, Boolean randomCount) {
+    public ValueArray(Class<T> valueType, Integer count, Value<T> value1) {
         super(null);
         this.valueType = valueType;
         this.count = count;
         this.instance = value1;
-        this.randomCount = randomCount;
-        checkGenerateRandomCount(null, count);
-    }
-
-    void checkGenerateRandomCount(T[] array, Integer count) {
-        if (array == null && count == null) {
-            this.randomCount = Boolean.TRUE;
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -68,15 +48,9 @@ public class ValueArray<T> extends Constant<T[]> {
 
     @Override
     public T[] next() {
-        int count = this.count != null ? this.count : 0;
-        if (count == 0) {
-            count = 20;
-        }
-        if (randomCount != null && randomCount) {
-            if (randomInteger == null) {
-                randomInteger = new RandomInteger(count);
-            }
-            count = randomInteger.between(1, count).next();
+        Integer count = this.count;
+        if (count == null) {
+            count = new RandomInteger(1).between(1, 20).next();
         }
 
         final T[] value = checkCreate(get(), count);
@@ -122,14 +96,6 @@ public class ValueArray<T> extends Constant<T[]> {
         this.instance = instance;
     }
 
-    public Boolean getRandomCount() {
-        return randomCount;
-    }
-
-    public void setRandomCount(Boolean randomCount) {
-        this.randomCount = randomCount;
-    }
-
     public Class getValueType() {
         return valueType;
     }
@@ -139,7 +105,7 @@ public class ValueArray<T> extends Constant<T[]> {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Value<T> of(Value val, Class clazzType, Integer count, Boolean randomCount) {
+    public static <T> Value<T> of(Value val, Class clazzType, Integer count) {
         if (clazzType.isPrimitive()) {
             final Class<? extends Value> arrayValueType = propertyTypeMap.get(clazzType);
             return (Value) Util.createInstance(
@@ -148,7 +114,7 @@ public class ValueArray<T> extends Constant<T[]> {
                     , new Class[]{arrayTypeMap.get(clazzType), Integer.class, Object.class}
             );
         } else {
-            return new ValueArray(clazzType, count, val, randomCount);
+            return new ValueArray(clazzType, count, val);
         }
     }
 

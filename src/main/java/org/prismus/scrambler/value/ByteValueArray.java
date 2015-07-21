@@ -8,7 +8,6 @@ package org.prismus.scrambler.value;
 class ByteValueArray extends Constant<byte[]> {
     private Integer count;
     private ByteArray instance;
-    private Boolean randomCount;
     private boolean useInitialArray;
 
     public ByteValueArray() {
@@ -18,34 +17,22 @@ class ByteValueArray extends Constant<byte[]> {
         this(array, null, value);
     }
 
-    public ByteValueArray(byte[] array, Integer count, ByteArray value) {
-        this(array, count, value, null);
-    }
-
     public ByteValueArray(byte[] array, Integer count, Object value) {
-        this(array, count, (ByteArray)value, null);
+        this(array, count, (ByteArray)value);
     }
 
-    public ByteValueArray(byte[] array, Integer count, ByteArray value1, Boolean randomCount) {
+    public ByteValueArray(byte[] array, Integer count, ByteArray value1) {
         super(array);
         this.count = count;
         this.instance = value1;
-        this.randomCount = randomCount;
-        if (array == null && count == null) {
-            this.randomCount = Boolean.TRUE;
-        }
         useInitialArray = array != null;
     }
 
     @Override
     public byte[] next() {
-        Util.validateArguments(instance);
-        int count = this.count != null ? this.count : 0;
-        if (count == 0) {
-            count = 20;
-        }
-        if (randomCount != null && randomCount) {
-            count = new RandomInteger(count).between(1, count).next();
+        Integer count = this.count;
+        if (count == null) {
+            count = new RandomInteger(1).between(1, 20).next();
         }
 
         byte[] value = useInitialArray ? this.value : new byte[count];

@@ -8,44 +8,31 @@ package org.prismus.scrambler.value;
 class ShortValueArray extends Constant<short[]> {
     private Integer count;
     private ShortArray instance;
-    private Boolean randomCount;
     private boolean useInitialArray;
 
     public ShortValueArray() {
     }
 
     public ShortValueArray(short[] array, ShortArray value) {
-        this(array, null, value, null);
-    }
-
-    public ShortValueArray(short[] array, Integer count, ShortArray value) {
-        this(array, count, value, null);
+        this(array, null, value);
     }
 
     public ShortValueArray(short[] array, Integer count, Object value) {
-        this(array, count, (ShortArray)value, null);
+        this(array, count, (ShortArray)value);
     }
 
-    public ShortValueArray(short[] array, Integer count, ShortArray value1, Boolean randomCount) {
+    public ShortValueArray(short[] array, Integer count, ShortArray value1) {
         super(array);
         this.count = count;
         this.instance = value1;
-        this.randomCount = randomCount;
-        if (array == null && count == null) {
-            this.randomCount = Boolean.TRUE;
-        }
         useInitialArray = array != null;
     }
 
     @Override
     public short[] next() {
-        Util.validateArguments(instance);
-        int count = this.count != null ? this.count : 0;
-        if (count == 0) {
-            count = 20;
-        }
-        if (randomCount != null && randomCount) {
-            count = new RandomInteger(count).between(1, count).next();
+        Integer count = this.count;
+        if (count == null) {
+            count = new RandomInteger(1).between(1, 20).next();
         }
 
         short[] value = useInitialArray ? this.value : new short[count];

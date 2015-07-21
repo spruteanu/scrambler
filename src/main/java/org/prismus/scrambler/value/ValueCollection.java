@@ -10,30 +10,20 @@ import java.util.Collection;
 public class ValueCollection<V, T extends Collection<V>> extends Constant<T> {
     private Integer count;
     private Value<V> instance;
-    private Boolean randomCount;
 
     @SuppressWarnings({"unchecked"})
     public ValueCollection(T collection, Value<V> value) {
         this(collection, null, value);
     }
 
-    public ValueCollection(T collection, Integer count, Value<V> value) {
-        this(collection, count, value, null);
-    }
-
-    public ValueCollection(T value, Integer count, Value<V> value1, Boolean randomCount) {
+    public ValueCollection(T value, Integer count, Value<V> value1) {
         super(value);
         this.count = count;
         this.instance = value1;
-        this.randomCount = randomCount;
     }
 
     public void setCount(Integer count) {
         this.count = count;
-    }
-
-    public void setRandomCount(Boolean randomCount) {
-        this.randomCount = randomCount;
     }
 
     public Value<V> getInstance() {
@@ -46,29 +36,23 @@ public class ValueCollection<V, T extends Collection<V>> extends Constant<T> {
 
     @Override
     public T next() {
-        final T value = get();
-        final Value<V> valueInstance = instance;
-        Util.validateArguments(value, valueInstance);
-        int count = this.count != null ? this.count : 0;
-        if (count == 0) {
-            count = 20;
+        Integer count = this.count;
+        if (count == null) {
+            count = new RandomInteger(1).between(1, 20).next();
         }
-        if (randomCount != null && randomCount) {
-            count = new RandomInteger(count).between(1, count).next();
-        }
-        checkCreate(count);
+        final T value = checkCreate(count);
         for (int i = 0; i < count; i++) {
-            value.add(valueInstance.next());
+            value.add(instance.next());
         }
         setValue(value);
         return value;
     }
 
     @SuppressWarnings("unchecked")
-    Collection<V> checkCreate(int count) {
-        Collection<V> collection = get();
+    T checkCreate(int count) {
+        T collection = get();
         if (collection.size() > 0) {
-            collection = (Collection<V>) Util.createInstance(collection.getClass(), new Object[]{count});
+            collection = (T) Util.createInstance(collection.getClass(), new Object[]{count});
         }
         return collection;
     }

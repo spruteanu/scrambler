@@ -15,38 +15,27 @@ public class ValueMap<K, V> extends Constant<Map<K, V>> {
     private Value<V> entryValue;
 
     private Integer count;
-    private Boolean randomCount;
 
     public ValueMap(Map<K, V> value, Value<K> entryKey, Value<V> entryValue) {
         this(value, 0, entryKey, entryValue);
     }
 
     public ValueMap(Map<K, V> value, Integer count, Value<K> entryKey, Value<V> entryValue) {
-        this(value, entryKey, entryValue, count, null);
+        this(value, entryKey, entryValue, count);
     }
 
-    public ValueMap(Map<K, V> value,
-                    Value<K> entryKey, Value<V> entryValue,
-                    Integer count, Boolean randomCount) {
+    public ValueMap(Map<K, V> value, Value<K> entryKey, Value<V> entryValue, Integer count) {
         super(value);
         this.entryKey = entryKey;
         this.entryValue = entryValue;
         this.count = count;
-        this.randomCount = randomCount;
-    }
-
-    public void setRandomCount(Boolean randomCount) {
-        this.randomCount = randomCount;
     }
 
     @Override
     public Map<K, V> next() {
-        int count = this.count != null ? this.count : 0;
-        if (count == 0) {
-            count = 20;
-        }
-        if (randomCount != null && randomCount) {
-            count = new RandomInteger(count).between(5, count).next();
+        Integer count = this.count;
+        if (count == null) {
+            count = new RandomInteger(1).between(5, 20).next();
         }
         final Map<K, V> kvMap = checkCreate(count);
         for (int i = 0; i < count; i++) {
@@ -63,26 +52,6 @@ public class ValueMap<K, V> extends Constant<Map<K, V>> {
             valueMap = (Map<K, V>) Util.createInstance(valueMap.getClass(), new Object[]{count});
         }
         return valueMap;
-    }
-
-    public Value<K> getEntryKey() {
-        return entryKey;
-    }
-
-    public void setEntryKey(Value<K> entryKey) {
-        this.entryKey = entryKey;
-    }
-
-    public Value<V> getEntryValue() {
-        return entryValue;
-    }
-
-    public void setEntryValue(Value<V> entryValue) {
-        this.entryValue = entryValue;
-    }
-
-    public int getCount() {
-        return count;
     }
 
     public void setCount(int count) {

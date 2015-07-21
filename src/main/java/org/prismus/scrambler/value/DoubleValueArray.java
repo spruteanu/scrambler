@@ -8,7 +8,6 @@ package org.prismus.scrambler.value;
 class DoubleValueArray extends Constant<double[]> {
     private Integer count;
     private DoubleArray instance;
-    private Boolean randomCount;
     private boolean useInitialArray;
 
     public DoubleValueArray() {
@@ -18,34 +17,22 @@ class DoubleValueArray extends Constant<double[]> {
         this(array, null, value);
     }
 
-    public DoubleValueArray(double[] array, Integer count, DoubleArray value) {
-        this(array, count, value, null);
-    }
-
     public DoubleValueArray(double[] array, Integer count, Object value) {
-        this(array, count, (DoubleArray)value, null);
+        this(array, count, (DoubleArray)value);
     }
 
-    public DoubleValueArray(double[] array, Integer count, DoubleArray value1, Boolean randomCount) {
+    public DoubleValueArray(double[] array, Integer count, DoubleArray value1) {
         super(array);
         this.count = count;
         this.instance = value1;
-        this.randomCount = randomCount;
-        if (array == null && count == null) {
-            this.randomCount = Boolean.TRUE;
-        }
         useInitialArray = array != null;
     }
 
     @Override
     public double[] next() {
-        Util.validateArguments(instance);
-        int count = this.count != null ? this.count : 0;
-        if (count == 0) {
-            count = 20;
-        }
-        if (randomCount != null && randomCount) {
-            count = new RandomInteger(count).between(1, count).next();
+        Integer count = this.count;
+        if (count == null) {
+            count = new RandomInteger(1).between(1, 20).next();
         }
 
         double[] value = useInitialArray ? this.value : new double[count];

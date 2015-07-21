@@ -309,9 +309,9 @@ class GroovyValueDefinition extends Script {
         }
 
         Collection.metaClass {
-            of { Value val, Integer count = null, Boolean randomCount = null ->
+            of { Value val, Integer count = null ->
                 Util.checkNullValue(val)
-                return new ValueCollection((Collection) delegate, count, val, randomCount)
+                return new ValueCollection((Collection) delegate, count, val)
             }
 
             randomOf { ->
@@ -322,10 +322,10 @@ class GroovyValueDefinition extends Script {
         }
 
         Map.metaClass {
-            of { Value entryKey, Value entryValue, Integer count = null, Boolean randomCount = null ->
+            of { Value entryKey, Value entryValue, Integer count = null ->
                 Util.checkNullValue(entryKey)
                 Util.checkNullValue(entryValue)
-                return new ValueMap((Map) delegate, entryKey, entryValue, count, randomCount)
+                return new ValueMap((Map) delegate, entryKey, entryValue, count)
             }
         }
 
@@ -376,8 +376,8 @@ class GroovyValueDefinition extends Script {
                 )
             }
 
-            array { Value val, Integer count = null, Boolean randomCount = null ->
-                return ValueArray.of(val, (Class) delegate, count, randomCount)
+            array { Value val, Integer count = null ->
+                return ValueArray.of(val, (Class) delegate, count)
             }
 
             array { Number defaultValue, Number step, Integer count = null ->
