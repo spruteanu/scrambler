@@ -210,6 +210,53 @@ public class Random {
         return new ValueArray<String>(String.class, arrayCount, of(value, count));
     }
 
+    //------------------------------------------------------------------------------------------------------------------
+    // Boolean methods
+    //------------------------------------------------------------------------------------------------------------------
+    public static Value<Boolean> of(Boolean value) {
+        return new RandomBoolean(value);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Value of(Class clazzType, Integer count, Boolean value) {
+        Util.checkPositiveCount(count);
+
+        if (clazzType == null) {
+            clazzType = value != null ? value.getClass() : null;
+        }
+        if (clazzType == null) {
+            throw new IllegalArgumentException(String.format("Either classType: %s or value: %s should be not null", null, value));
+        }
+        boolean primitive = false;
+        Class<?> componentType;
+        if (clazzType.isArray()) {
+            componentType = clazzType.getComponentType();
+            if (componentType.isPrimitive()) {
+                primitive = true;
+                componentType = Util.primitiveWrapperMap.get(componentType);
+            }
+        } else {
+            componentType = clazzType;
+        }
+
+        Value instance = (Value) Util.createInstance(
+                propertyTypeMap.get(componentType),
+                new Object[]{value},
+                new Class[]{componentType}
+        );
+        final Value valueArray;
+        if (primitive) {
+            valueArray = (Value) Util.createInstance(
+                    propertyTypeMap.get(clazzType),
+                    new Object[]{clazzType.isInstance(value) ? value : null, count, instance},
+                    new Class[]{clazzType, Integer.class, Object.class}
+            );
+        } else {
+            valueArray = new ValueArray(clazzType, count, instance);
+        }
+        return valueArray;
+    }
+
     public static boolean isSupportedType(Class type) {
         return propertyTypeMap.containsKey(type);
     }

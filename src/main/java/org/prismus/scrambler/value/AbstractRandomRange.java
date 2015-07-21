@@ -35,6 +35,7 @@ abstract class AbstractRandomRange<T> extends Constant<T> {
     public AbstractRandomRange<T> between(T minimum, T maximum) {
         this.minimum = min(minimum, maximum);
         this.maximum = max(minimum, maximum);
+        checkBoundaries();
         return this;
     }
 

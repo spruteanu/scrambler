@@ -32,8 +32,7 @@ public abstract class Util {
     }};
 
     @SuppressWarnings({"unchecked"})
-    public static Object createInstance(Class clazzType,
-                                        Object[] arguments) {
+    public static Object createInstance(Class clazzType, Object[] arguments) {
         try {
             return ConstructorUtils.invokeConstructor(clazzType, arguments);
         } catch (Exception e) {
@@ -105,14 +104,6 @@ public abstract class Util {
         return new BeanUtilsBean(convertUtilsBean);
     }
 
-    public static <V> Map<Pattern, V> getPatternObjectMap(Map<String, V> regExObjectMap) {
-        final Map<Pattern, V> patternObjectMap = new HashMap<Pattern, V>();
-        for (final Map.Entry<String, V> entry : regExObjectMap.entrySet()) {
-            patternObjectMap.put(Pattern.compile(replaceWildcards(entry.getKey()), Pattern.CASE_INSENSITIVE), entry.getValue());
-        }
-        return patternObjectMap;
-    }
-
     public static String replaceWildcards(String wildcardPattern) {
         final StringBuilder builder = new StringBuilder();
         builder.append('^');
@@ -139,17 +130,6 @@ public abstract class Util {
     static <V> void validateArguments(Collection<V> value, Value<V> property) {
         if (value == null || property == null) {
             throw new IllegalArgumentException("Collection/property instances should not be null");
-        }
-    }
-
-    static void validateArguments(Class valueType, Object array, Value property) {
-        if (array == null) {
-            if (valueType == null) {
-                throw new IllegalArgumentException("Array instance or array type should not be null");
-            }
-        }
-        if (property == null) {
-            throw new IllegalArgumentException("Value instance should not be null");
         }
     }
 

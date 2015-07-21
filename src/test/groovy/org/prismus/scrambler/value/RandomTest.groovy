@@ -66,10 +66,32 @@ class RandomTest extends Specification {
         count << [5, 3, null, 10, 20, null,]
     }
 
+    void 'verify random boolean generation'(Class type, Boolean value, Integer count) {
+        expect:
+        null != Random.of(value).next()
+        null != Random.of(value).next()
+
+        and: ''
+        final numberValues = Random.of(type, count, value)
+        for (int i = 0; i < 5; i++) {
+            final values = numberValues.next()
+            Assert.assertNotNull(values)
+            Assert.assertTrue(values.length > 0)
+            if (count != null) {
+                Assert.assertEquals(count, values.length)
+            }
+        }
+
+        where:
+        type << [boolean[], null,]
+        value << [Boolean.TRUE, Boolean.FALSE,]
+        count << [5, null,]
+    }
+
     void 'verify random dates'(Date date, Date minimum, Date maximum, Integer count) {
         expect:
         date.before(Random.of(date).next())
-        date.before(Random.of(minimum, (Date)null).usingValue(date).next())
+        date.before(Random.of(minimum, (Date) null).usingValue(date).next())
         isBetween(minimum, maximum, Random.of(date, minimum, maximum).next())
 
         and: "verify in a loop"
