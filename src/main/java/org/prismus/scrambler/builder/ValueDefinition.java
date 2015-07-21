@@ -43,7 +43,7 @@ public class ValueDefinition {
         return this;
     }
 
-    public void lookupRegisterInstanceValue(ValuePredicate valuePredicate, Value value) {
+    void lookupRegisterInstanceValue(ValuePredicate valuePredicate, Value value) {
         if (InstanceValue.class.isInstance(value)) {
             final InstanceValue instanceValue = (InstanceValue) value;
             if (instanceValue.getDefinition() != this) {
@@ -56,9 +56,10 @@ public class ValueDefinition {
         }
     }
 
-    public void registerPredicateValue(ValuePredicate valuePredicate, Value value) {
+    public ValueDefinition registerPredicateValue(ValuePredicate valuePredicate, Value value) {
         lookupRegisterInstanceValue(valuePredicate, value);
         propertyValueMap.put(valuePredicate, value);
+        return this;
     }
 
     public Value lookupValue(ValuePredicate predicate) {
@@ -230,7 +231,7 @@ public class ValueDefinition {
         return random(collection, value, 0);
     }
 
-    public ValueDefinition random(Collection collection, Value value, int count) {
+    public ValueDefinition random(Collection collection, Value value, Integer count) {
         Util.checkNullValue(value);
         Util.checkNullValue(collection);
         registerPredicateValue(new TypePredicate(Collection.class), new CollectionValue(collection, value, count));
