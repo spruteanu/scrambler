@@ -89,7 +89,7 @@ public class Random {
                     , new Class[]{clazzType, Integer.class, Object.class}
             );
         } else {
-            value = new ValueArray(clazzType, valueType);
+            value = new ArrayValue(clazzType, valueType);
         }
         return value;
     }
@@ -167,7 +167,7 @@ public class Random {
                     new Class[]{clazzType, Integer.class, Object.class}
             );
         } else {
-            value = new ValueArray(clazzType, count, instance);
+            value = new ArrayValue(clazzType, count, instance);
         }
         return value;
     }
@@ -189,10 +189,10 @@ public class Random {
     }
 
     @SuppressWarnings({"unchecked"})
-    public static ValueArray<Date> of(Integer count, Date val, Date minimum, Date maximum) {
+    public static ArrayValue<Date> of(Integer count, Date val, Date minimum, Date maximum) {
         final RandomDate randomDate = new RandomDate(val, minimum, maximum);
         randomDate.next();
-        return new ValueArray<Date>(Date.class, count, randomDate);
+        return new ArrayValue<Date>(Date.class, count, randomDate);
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -206,12 +206,12 @@ public class Random {
         return new RandomString(value, count);
     }
 
-    public static ValueArray<String> of(Integer arrayCount, String value) {
-        return new ValueArray<String>(String.class, arrayCount, of(value));
+    public static ArrayValue<String> of(Integer arrayCount, String value) {
+        return new ArrayValue<String>(String.class, arrayCount, of(value));
     }
 
-    public static ValueArray<String> of(Integer arrayCount, String value, Integer count) {
-        return new ValueArray<String>(String.class, arrayCount, of(value, count));
+    public static ArrayValue<String> of(Integer arrayCount, String value, Integer count) {
+        return new ArrayValue<String>(String.class, arrayCount, of(value, count));
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -256,7 +256,7 @@ public class Random {
                     new Class[]{clazzType, Integer.class, Object.class}
             );
         } else {
-            valueArray = new ValueArray(clazzType, count, instance);
+            valueArray = new ArrayValue(clazzType, count, instance);
         }
         return valueArray;
     }

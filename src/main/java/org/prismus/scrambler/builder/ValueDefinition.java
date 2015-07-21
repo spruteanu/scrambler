@@ -49,10 +49,10 @@ public class ValueDefinition {
             if (instanceValue.getDefinition() != this) {
                 instanceValueMap.put(valuePredicate, instanceValue);
             }
-        } else if (ValueCollection.class.isInstance(value)) {
-            lookupRegisterInstanceValue(valuePredicate, ((ValueCollection) value).getInstance());
-        } else if (value instanceof ValueArray) {
-            lookupRegisterInstanceValue(valuePredicate, ((ValueArray) value).getInstance());
+        } else if (CollectionValue.class.isInstance(value)) {
+            lookupRegisterInstanceValue(valuePredicate, ((CollectionValue) value).getInstance());
+        } else if (value instanceof ArrayValue) {
+            lookupRegisterInstanceValue(valuePredicate, ((ArrayValue) value).getInstance());
         }
     }
 
@@ -233,7 +233,7 @@ public class ValueDefinition {
     public ValueDefinition random(Collection collection, Value value, int count) {
         Util.checkNullValue(value);
         Util.checkNullValue(collection);
-        registerPredicateValue(new TypePredicate(Collection.class), new ValueCollection(collection, count, value));
+        registerPredicateValue(new TypePredicate(Collection.class), new CollectionValue(collection, value, count));
         return this;
     }
 

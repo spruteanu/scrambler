@@ -5,8 +5,6 @@ import org.prismus.scrambler.Value
 import spock.lang.Specification
 
 /**
- * todo: add description
- *
  * @author Serge Pruteanu
  */
 class IncrementalTest extends Specification {

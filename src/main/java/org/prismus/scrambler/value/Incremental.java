@@ -75,7 +75,7 @@ public class Incremental {
                     new Class[]{clazzType, Integer.class, Object.class}
             );
         } else {
-            value = new ValueArray(clazzType, count, (Value) Util.createInstance(
+            value = new ArrayValue(clazzType, count, (Value) Util.createInstance(
                     propertyTypeMap.get(componentType),
                     new Object[]{defaultValue, step},
                     new Class[]{componentType, componentType}
@@ -91,32 +91,32 @@ public class Incremental {
         return new IncrementalDate(value);
     }
 
-    public static ValueArray<Date> of(Integer count, Date value) {
-        return new ValueArray<Date>(Date.class, count, of(value));
+    public static ArrayValue<Date> of(Integer count, Date value) {
+        return new ArrayValue<Date>(Date.class, count, of(value));
     }
 
     public static IncrementalDate of(Date value, Integer step) {
         return new IncrementalDate(value, step);
     }
 
-    public static ValueArray<Date> of(Integer count, Date value, Integer step) {
-        return new ValueArray<Date>(Date.class, count, of(value, step));
+    public static ArrayValue<Date> of(Integer count, Date value, Integer step) {
+        return new ArrayValue<Date>(Date.class, count, of(value, step));
     }
 
     public static IncrementalDate of(Date value, Integer step, Integer calendarField) {
         return new IncrementalDate(value, step, calendarField);
     }
 
-    public static ValueArray<Date> of(Integer count, Date value, Integer step, Integer calendarField) {
-        return new ValueArray<Date>(Date.class, count, of(value, step, calendarField));
+    public static ArrayValue<Date> of(Integer count, Date value, Integer step, Integer calendarField) {
+        return new ArrayValue<Date>(Date.class, count, of(value, step, calendarField));
     }
 
     public static IncrementalDate dateBy(Map<Integer, Integer> calendarFieldStepMap) {
         return new IncrementalDate().incrementBy(calendarFieldStepMap);
     }
 
-    public static ValueArray<Date> dateBy(Integer count, Map<Integer, Integer> calendarFieldStepMap) {
-        return new ValueArray<Date>(Date.class, count, dateBy(calendarFieldStepMap));
+    public static ArrayValue<Date> dateBy(Integer count, Map<Integer, Integer> calendarFieldStepMap) {
+        return new ArrayValue<Date>(Date.class, count, dateBy(calendarFieldStepMap));
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -126,32 +126,32 @@ public class Incremental {
         return new IncrementalString(value);
     }
 
-    public static ValueArray<String> of(Integer count, String value) {
-        return new ValueArray<String>(String.class, count, new IncrementalString(value));
+    public static ArrayValue<String> of(Integer count, String value) {
+        return new ArrayValue<String>(String.class, count, new IncrementalString(value));
     }
 
     public static IncrementalString of(String value, String pattern) {
         return new IncrementalString(value, pattern);
     }
 
-    public static ValueArray<String> of(Integer count, String value, String pattern) {
-        return new ValueArray<String>(String.class, count, new IncrementalString(value, pattern));
+    public static ArrayValue<String> of(Integer count, String value, String pattern) {
+        return new ArrayValue<String>(String.class, count, new IncrementalString(value, pattern));
     }
 
     public static IncrementalString of(String value, Integer index) {
         return new IncrementalString(value, index);
     }
 
-    public static ValueArray<String> of(Integer count, String value, Integer index) {
-        return new ValueArray<String>(String.class, count, new IncrementalString(value, index));
+    public static ArrayValue<String> of(Integer count, String value, Integer index) {
+        return new ArrayValue<String>(String.class, count, new IncrementalString(value, index));
     }
 
     public static IncrementalString of(String value, String pattern, Integer index) {
         return new IncrementalString(value, pattern, index);
     }
 
-    public static ValueArray<String> of(Integer count, String value, String pattern, Integer index) {
-        return new ValueArray<String>(String.class, count, new IncrementalString(value, pattern, index));
+    public static ArrayValue<String> of(Integer count, String value, String pattern, Integer index) {
+        return new ArrayValue<String>(String.class, count, new IncrementalString(value, pattern, index));
     }
 
     public static boolean isSupportedType(Class type) {

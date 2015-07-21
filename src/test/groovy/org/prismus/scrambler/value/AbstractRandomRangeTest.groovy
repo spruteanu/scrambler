@@ -5,8 +5,6 @@ import spock.lang.Specification
 import java.sql.Timestamp
 
 /**
- * todo: add description
- *
  * @author Serge Pruteanu
  */
 class AbstractRandomRangeTest extends Specification {

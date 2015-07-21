@@ -182,13 +182,13 @@ of org.prismus.scrambler.beans.School.of {
         final parser = new GroovyValueDefinition()
 
         and:
-        def valueDefinition = parser.parseText("of'mumu', [:].of('param'.incremental(null, 1), 1.incremental(1))")
+        def valueDefinition = parser.parseText("of'mumu', [:].of(prop1: 'param'.incremental(null, 1), prop2: 1.incremental(1))")
 
         expect:
         valueDefinition.propertyValueMap.size() > 0
 
         and:
-        0 < parser.parseText("of 'cucu*', [:].of('param'.random(10), 1.incremental(1))").propertyValueMap.size()
+        0 < parser.parseText("of 'cucu*', [:].of(prop1: 'param'.incremental(null, 1), prop2: 1.incremental(1))").propertyValueMap.size()
         0 < parser.parseText("of 'cucu*', [].of('param'.random(10))").propertyValueMap.size()
     }
 

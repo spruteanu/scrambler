@@ -11,29 +11,29 @@ import java.util.Map;
  *
  * @author Serge Pruteanu
  */
-public class ValueArray<T> extends Constant<T[]> {
+public class ArrayValue<T> extends Constant<T[]> {
     private Integer count;
     private Value<T> instance;
     private Class<T> valueType;
 
-    public ValueArray() {
+    public ArrayValue() {
     }
 
-    public ValueArray(T[] array, Value<T> value) {
+    public ArrayValue(T[] array, Value<T> value) {
         this(array, null, value);
     }
 
-    public ValueArray(Class<T> valueType, Value<T> value) {
+    public ArrayValue(Class<T> valueType, Value<T> value) {
         this(valueType, null, value);
     }
 
-    public ValueArray(T[] array, Integer count, Value<T> value1) {
+    public ArrayValue(T[] array, Integer count, Value<T> value1) {
         super(array);
         this.count = count;
         this.instance = value1;
     }
 
-    public ValueArray(Class<T> valueType, Integer count, Value<T> value1) {
+    public ArrayValue(Class<T> valueType, Integer count, Value<T> value1) {
         super(null);
         this.valueType = valueType;
         this.count = count;
@@ -41,7 +41,7 @@ public class ValueArray<T> extends Constant<T[]> {
     }
 
     @SuppressWarnings("unchecked")
-    public ValueArray forType(Class<T> valueType) {
+    public ArrayValue forType(Class<T> valueType) {
         this.valueType = valueType.isArray() ? (Class<T>) valueType.getComponentType() : valueType;
         return this;
     }
@@ -114,7 +114,7 @@ public class ValueArray<T> extends Constant<T[]> {
                     , new Class[]{arrayTypeMap.get(clazzType), Integer.class, Object.class}
             );
         } else {
-            return new ValueArray(clazzType, count, val);
+            return new ArrayValue(clazzType, count, val);
         }
     }
 

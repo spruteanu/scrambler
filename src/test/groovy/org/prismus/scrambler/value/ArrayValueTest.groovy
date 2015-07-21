@@ -6,12 +6,12 @@ import spock.lang.Specification
 /**
  * @author Serge Pruteanu
  */
-class ValueArrayTest extends Specification {
+class ArrayValueTest extends Specification {
 
     void 'test array creation'() {
         GroovyValueDefinition.register()
         given:
-        def value = ValueArray.of(10.random(), int, null)
+        def value = ArrayValue.of(10.random(), int, null)
         def array = value.next()
         expect:
         array.length > 0
