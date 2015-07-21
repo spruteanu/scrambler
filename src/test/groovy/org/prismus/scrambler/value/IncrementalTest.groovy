@@ -22,7 +22,7 @@ class IncrementalTest extends Specification {
         }
 
         and: "verify array creation"
-        Value<Number[]> numberValues = Incremental.arrayOf(start, step, count)
+        Value<Number[]> numberValues = Incremental.arrayOf(count, start, step)
         for (int i = 0; i < 5; i++) {
             Number[] values = numberValues.next()
             Assert.assertNotNull(values)
@@ -55,7 +55,7 @@ class IncrementalTest extends Specification {
         }
 
         and: "verify array creation"
-        Value<Float[]> numberValues = Incremental.arrayOf(start, step, count)
+        Value<Float[]> numberValues = Incremental.arrayOf(count, start, step)
         for (int i = 0; i < 5; i++) {
             Float[] values = numberValues.next()
             Assert.assertNotNull(values)
@@ -88,7 +88,7 @@ class IncrementalTest extends Specification {
         }
 
         and: "verify array creation"
-        Value<Double[]> numberValues = Incremental.arrayOf(start, step, count)
+        Value<Double[]> numberValues = Incremental.arrayOf(count, start, step)
         for (int i = 0; i < 5; i++) {
             Double[] values = numberValues.next()
             Assert.assertNotNull(values)
@@ -122,19 +122,30 @@ class IncrementalTest extends Specification {
             if (count != null) {
                 Assert.assertEquals(count, values.length)
             }
-            Assert.assertEquals(start, values[0])
+            checkEqual(start, values[0])
             for (int j = 1; j < values.length; j++) {
-                Assert.assertEquals(start + step, values[j])
-                start = values[j]
+                final val = values[j]
+                checkEqual(start + step, val)
+                start = val
             }
             start += step;
         }
 
         where:
-        type << [int[], long[], short[], byte[],]
-        start << [1, 12L, (short)1, (byte)1, ]
-        step << [10, 10L, (short)3, (byte)1, ]
-        count << [5, 3, null, 10, ]
+        type << [int[], long[], short[], byte[], float[], double[], ]
+        start << [1, 12L, (short)1, (byte)1, 3.0f, 5.0d,]
+        step << [10, 10L, (short)3, (byte)1, 0.25f, 0.15d, ]
+        count << [5, 3, null, 10, 25, 15, ]
+    }
+
+    private static void checkEqual(def start, def val) {
+        if (start instanceof Float) {
+            Assert.assertEquals(start, val, 0.0f)
+        } else if (start instanceof Double) {
+            Assert.assertEquals(start, val, 0.0d)
+        } else {
+            Assert.assertEquals(start, val)
+        }
     }
 
     void 'verify incremental dates'(Date date, Integer calendarField, Integer step) {

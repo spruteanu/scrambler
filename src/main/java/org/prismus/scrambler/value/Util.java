@@ -4,12 +4,10 @@ import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.ConstructorUtils;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.commons.beanutils.converters.DateConverter;
-import org.prismus.scrambler.Value;
 import org.prismus.scrambler.builder.PropertyPredicate;
 import org.prismus.scrambler.builder.ValuePredicate;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * @author Serge Pruteanu
@@ -125,18 +123,6 @@ public abstract class Util {
         }
         builder.append('$');
         return replaced ? builder.toString() : wildcardPattern;
-    }
-
-    static <V> void validateArguments(Collection<V> value, Value<V> property) {
-        if (value == null || property == null) {
-            throw new IllegalArgumentException("Collection/property instances should not be null");
-        }
-    }
-
-    static void validateArguments(Object value) {
-        if (value == null) {
-            throw new IllegalArgumentException("Instance should not be null");
-        }
     }
 
     static void checkPositiveCount(Integer count) {

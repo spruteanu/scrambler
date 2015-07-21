@@ -105,7 +105,7 @@ public class ValueDefinition {
 
     public ValueDefinition incremental(Number value, Number step, Integer count) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(value.getClass()), Incremental.arrayOf(value, step, count));
+        registerPredicateValue(new TypePredicate(value.getClass()), Incremental.arrayOf(count, value, step));
         return this;
     }
 

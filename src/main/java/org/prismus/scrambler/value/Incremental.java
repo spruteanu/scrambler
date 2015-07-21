@@ -52,7 +52,7 @@ public class Incremental {
     }
 
     @SuppressWarnings("unchecked")
-    public static <N extends Number> Value arrayOf(N defaultValue, N step, Integer count) {
+    public static <N extends Number> Value arrayOf(Integer count, N defaultValue, N step) {
         return arrayOf(defaultValue.getClass(), defaultValue, step, count);
     }
 
