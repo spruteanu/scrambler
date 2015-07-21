@@ -135,4 +135,18 @@ class RandomTest extends Specification {
         count << [100, null, null, 64,]
     }
 
+    void 'verify random element'() {
+        given:
+        final randomElement = Random.randomOf(randoms)
+        final containerSet = randoms.class.isArray() ? new HashSet(Arrays.asList(randoms)) : new HashSet(new ArrayList(randoms))
+
+        expect:
+        for (int i = 0; i < randoms.size(); i++) {
+            Assert.assertTrue(containerSet.contains(randomElement.next()))
+        }
+
+        where:
+        randoms << [[1..30], new HashSet<>(['a'..'z']), ['aaa', 'bbb', 'vvv'] as String[], [1, 2, 3, 4, 5] as int[]]
+    }
+
 }

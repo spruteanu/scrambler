@@ -95,11 +95,15 @@ public class Random {
     }
 
     public static <T> Value<T> randomOf(List<T> values) {
-        return new RandomElement<T>(values);
+        return new ListRandomElement<T>(values);
     }
 
     public static <T> Value<T> randomOf(Collection<T> collection) {
-        return new RandomElement<T>(new ArrayList<T>(collection));
+        return new ListRandomElement<T>(new ArrayList<T>(collection));
+    }
+
+    public static <T> Value<T> randomOf(T[] array) {
+        return new ArrayRandomElement<T>(array);
     }
 
     //------------------------------------------------------------------------------------------------------------------

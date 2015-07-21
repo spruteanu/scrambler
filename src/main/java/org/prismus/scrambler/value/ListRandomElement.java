@@ -6,11 +6,11 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-class RandomElement<T> extends Constant<T> {
+class ListRandomElement<T> extends Constant<T> {
     private final Random random;
     private List<T> values;
 
-    public RandomElement(List<T> values) {
+    public ListRandomElement(List<T> values) {
         super();
         this.values = values;
         setValue(values.get(0));
@@ -22,7 +22,7 @@ class RandomElement<T> extends Constant<T> {
     }
 
     public T next() {
-        final T value = values.get(Math.abs(random.nextInt(values.size())));
+        final T value = values.get(random.nextInt(values.size()));
         setValue(value);
         return value;
     }
