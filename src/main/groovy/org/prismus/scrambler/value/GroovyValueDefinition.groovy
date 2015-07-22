@@ -1,11 +1,10 @@
-package org.prismus.scrambler.builder
+package org.prismus.scrambler.value
 
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.codehaus.groovy.runtime.ResourceGroovyMethods
 import org.prismus.scrambler.Value
-import org.prismus.scrambler.value.*
 
 /**
  * todo: add description

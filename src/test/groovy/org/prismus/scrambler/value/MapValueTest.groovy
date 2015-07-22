@@ -24,7 +24,7 @@ class MapValueTest extends Specification {
         and: 'verify case where a map of map is generated'
         ClassValue.of(Hashtable,
                 ['ValueSID': NumberValue.increment(1), 'SomeID': new Constant(1), 'Amount': NumberValue.increment(100.0d),
-                 'products': CollectionValue.of(
+                 'products': ClassValue.collection(
                          ArrayList,
                          ClassValue.of(LinkedHashMap, [
                                  'ProductSID': NumberValue.increment(1),

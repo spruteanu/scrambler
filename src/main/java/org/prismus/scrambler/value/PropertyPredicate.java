@@ -1,6 +1,6 @@
-package org.prismus.scrambler.builder;
+package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.value.Util;
+import org.prismus.scrambler.ValuePredicate;
 
 import java.util.regex.Pattern;
 

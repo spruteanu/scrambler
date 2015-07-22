@@ -1,6 +1,5 @@
 package org.prismus.scrambler.value
 
-import org.prismus.scrambler.builder.GroovyValueDefinition
 import spock.lang.Specification
 
 /**

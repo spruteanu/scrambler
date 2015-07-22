@@ -46,10 +46,6 @@ public class CollectionValue<V, T extends Collection<V>> extends Constant<T> {
         return instance;
     }
 
-    public void setInstance(Value<V> instance) {
-        this.instance = instance;
-    }
-
     @Override
     public T next() {
         Integer count = this.count;
@@ -81,10 +77,6 @@ public class CollectionValue<V, T extends Collection<V>> extends Constant<T> {
 
     public static <V, T extends Collection<V>> CollectionValue<V, T> of(T collection, Value<V> value) {
         return new CollectionValue<V, T>(collection, value);
-    }
-
-    public static <V, T extends Collection<V>> CollectionValue<V, T> of(Class<V> clazzType, Value<V> value) {
-        return new CollectionValue<V, T>(clazzType, value, null);
     }
 
     public static <T> Value<T> randomOf(List<T> values) {

@@ -3,8 +3,6 @@ package org.prismus.scrambler.value
 import org.junit.Assert
 import org.prismus.scrambler.Value
 import org.prismus.scrambler.beans.*
-import org.prismus.scrambler.builder.GroovyValueDefinition
-import org.prismus.scrambler.builder.ValueDefinition
 import spock.lang.Specification
 
 /**

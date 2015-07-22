@@ -1,8 +1,7 @@
-package org.prismus.scrambler.builder;
+package org.prismus.scrambler.value;
 
 import org.prismus.scrambler.Value;
-import org.prismus.scrambler.value.*;
-import org.prismus.scrambler.value.ClassValue;
+import org.prismus.scrambler.ValuePredicate;
 
 import java.util.Collection;
 import java.util.Date;
@@ -37,7 +36,10 @@ public class ValueDefinition {
         return propertyValueMap;
     }
 
-    public ValueDefinition build() {
+    //------------------------------------------------------------------------------------------------------------------
+    // Internal Methods
+    //------------------------------------------------------------------------------------------------------------------
+    ValueDefinition build() {
         for (final InstanceValue value : instanceValueMap.values()) {
             value.build(this);
         }

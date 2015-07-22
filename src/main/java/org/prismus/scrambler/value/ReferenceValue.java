@@ -1,8 +1,7 @@
 package org.prismus.scrambler.value;
 
 import org.prismus.scrambler.Value;
-import org.prismus.scrambler.builder.ValueDefinition;
-import org.prismus.scrambler.builder.ValuePredicate;
+import org.prismus.scrambler.ValuePredicate;
 
 /**
  * todo: add description

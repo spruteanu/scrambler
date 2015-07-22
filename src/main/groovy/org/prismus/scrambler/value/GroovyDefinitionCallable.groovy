@@ -1,5 +1,4 @@
-package org.prismus.scrambler.builder
-
+package org.prismus.scrambler.value
 /**
  * todo: add description
  *

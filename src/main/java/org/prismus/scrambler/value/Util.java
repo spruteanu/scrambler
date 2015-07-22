@@ -4,8 +4,7 @@ import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.ConstructorUtils;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.commons.beanutils.converters.DateConverter;
-import org.prismus.scrambler.builder.PropertyPredicate;
-import org.prismus.scrambler.builder.ValuePredicate;
+import org.prismus.scrambler.ValuePredicate;
 
 import java.util.*;
 

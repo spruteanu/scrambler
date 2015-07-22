@@ -1,4 +1,4 @@
-package org.prismus.scrambler.builder;
+package org.prismus.scrambler.value;
 
 import java.util.concurrent.Callable;
 
@@ -7,7 +7,7 @@ import java.util.concurrent.Callable;
  *
  * @author Serge Pruteanu
  */
-public abstract class AbstractDefinitionCallable implements Callable<ValueDefinition> {
+abstract class AbstractDefinitionCallable implements Callable<ValueDefinition> {
     private ValueDefinition definition;
 
     public AbstractDefinitionCallable() {

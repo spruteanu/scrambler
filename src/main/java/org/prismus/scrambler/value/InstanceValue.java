@@ -2,10 +2,7 @@ package org.prismus.scrambler.value;
 
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.prismus.scrambler.Value;
-import org.prismus.scrambler.builder.AbstractDefinitionCallable;
-import org.prismus.scrambler.builder.TypePredicate;
-import org.prismus.scrambler.builder.ValueDefinition;
-import org.prismus.scrambler.builder.ValuePredicate;
+import org.prismus.scrambler.ValuePredicate;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
@@ -30,7 +27,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     private Map<String, Field> fieldMap;
     private PropertyUtilsBean propertyUtils;
-    protected List<Value> constructorValues;
+    private List<Value> constructorValues;
 
     public InstanceValue() {
         this(null, null, null);
@@ -54,10 +51,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     public ValueDefinition getDefinition() {
         return definition;
-    }
-
-    public void setDefinitionClosure(Callable<ValueDefinition> definitionClosure) {
-        this.definitionClosure = definitionClosure;
     }
 
     public void setPredicate(ValuePredicate predicate) {
@@ -91,42 +84,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return instance;
     }
 
-    void checkDefinitionCreated() {
-        if (definition == null) {
-            definition = new ValueDefinition();
-            registerFieldValues(definition);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public InstanceValue<T> build(ValueDefinition parent) {
-        checkDefinitionCreated();
-        checkFieldMapCreated();
-        definition.setParent(parent);
-        definition.of((Map) fieldValueMap);
-        if (definitionClosure != null) {
-            executeDefinitionClosure();
-        }
-        if (definitionClosure != null || fieldValueMap.size() > 0) {
-            definition.build();
-        }
-        return this;
-    }
-
-    void executeDefinitionClosure() {
-        try {
-            if (definitionClosure instanceof AbstractDefinitionCallable) {
-                final AbstractDefinitionCallable callable = (AbstractDefinitionCallable) this.definitionClosure;
-                if (callable.getDefinition() == null) {
-                    callable.setDefinition(definition);
-                }
-            }
-            definitionClosure.call();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to execute definition closure", e);
-        }
-    }
-
     @SuppressWarnings("unchecked")
     public void setConstructorArguments(Collection constructorArguments) {
         this.constructorArguments = new ArrayList<Value>();
@@ -157,26 +114,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             }
         }
         return result;
-    }
-
-    void registerFieldValues(ValueDefinition valueDefinition) {
-        checkFieldMapCreated();
-
-        final Map<String, Field> unresolvedProps = new HashMap<String, Field>(fieldMap);
-        for (final Map.Entry<ValuePredicate, Value> entry : valueDefinition.getPropertyValueMap().entrySet()) {
-            final ValuePredicate predicate = entry.getKey();
-            for (final Field field : fieldMap.values()) {
-                final String propertyName = field.getName();
-                if (!fieldValueMap.containsKey(propertyName)) {
-                    if (predicate.apply(propertyName, field.getValueType())) {
-                        registerFieldValue(propertyName, entry.getValue());
-                        break;
-                    }
-                }
-            }
-        }
-        unresolvedProps.keySet().removeAll(fieldValueMap.keySet());
-        fieldValueMap.putAll(introspectTypes(valueDefinition, unresolvedProps));
     }
 
     public InstanceValue<T> usingDefinitions(ValueDefinition valueDefinition) {
@@ -215,6 +152,76 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return this;
     }
 
+    //------------------------------------------------------------------------------------------------------------------
+    // Internal Methods
+    //------------------------------------------------------------------------------------------------------------------
+    void setDefinitionClosure(Callable<ValueDefinition> definitionClosure) {
+        this.definitionClosure = definitionClosure;
+    }
+
+    void registerFieldValues(ValueDefinition valueDefinition) {
+        checkFieldMapCreated();
+
+        final Map<String, Field> unresolvedProps = new HashMap<String, Field>(fieldMap);
+        for (final Map.Entry<ValuePredicate, Value> entry : valueDefinition.getPropertyValueMap().entrySet()) {
+            final ValuePredicate predicate = entry.getKey();
+            for (final Field field : fieldMap.values()) {
+                final String propertyName = field.getName();
+                if (!fieldValueMap.containsKey(propertyName)) {
+                    if (predicate.apply(propertyName, field.getValueType())) {
+                        registerFieldValue(propertyName, entry.getValue());
+                        break;
+                    }
+                }
+            }
+        }
+        unresolvedProps.keySet().removeAll(fieldValueMap.keySet());
+        fieldValueMap.putAll(introspectTypes(valueDefinition, unresolvedProps));
+    }
+
+    void checkDefinitionCreated() {
+        if (definition == null) {
+            definition = new ValueDefinition();
+            registerFieldValues(definition);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    InstanceValue<T> build(ValueDefinition parent) {
+        checkDefinitionCreated();
+        checkFieldMapCreated();
+        definition.setParent(parent);
+        definition.of((Map) fieldValueMap);
+        if (definitionClosure != null) {
+            executeDefinitionClosure();
+        }
+        if (definitionClosure != null || fieldValueMap.size() > 0) {
+            definition.build();
+        }
+        return this;
+    }
+
+    void executeDefinitionClosure() {
+        try {
+            if (definitionClosure instanceof AbstractDefinitionCallable) {
+                final AbstractDefinitionCallable callable = (AbstractDefinitionCallable) this.definitionClosure;
+                if (callable.getDefinition() == null) {
+                    callable.setDefinition(definition);
+                }
+            }
+            definitionClosure.call();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to execute definition closure", e);
+        }
+    }
+
+    Set<Class> getSupportedTypes() {
+        final Set<Class> knownTypes = new HashSet<Class>();
+        knownTypes.addAll(Types.getSupportedIncrementTypes());
+        knownTypes.addAll(Types.getSupportedRandomTypes());
+        return knownTypes;
+    }
+
     @SuppressWarnings("unchecked")
     Map<String, Value> introspectTypes(ValueDefinition valueDefinition, Map<String, Field> unresolvedProps) {
         final Set<Class> supportedTypes = getSupportedTypes();
@@ -242,13 +249,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             }
         }
         return propertyValueMap;
-    }
-
-    protected Set<Class> getSupportedTypes() {
-        final Set<Class> knownTypes = new HashSet<Class>();
-        knownTypes.addAll(Types.getSupportedIncrementTypes());
-        knownTypes.addAll(Types.getSupportedRandomTypes());
-        return knownTypes;
     }
 
     List<Value> lookupConstructorArguments(ValueDefinition valueDefinition, Class type, Set<Class> supportedTypes) {

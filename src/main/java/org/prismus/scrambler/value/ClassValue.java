@@ -2,6 +2,7 @@ package org.prismus.scrambler.value;
 
 import org.prismus.scrambler.Value;
 
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -182,6 +183,10 @@ public class ClassValue {
 
     public static <K> MapValue<K> of(Class<Map<K, Object>> mapType, Map<K, Value> keyValueMap) {
         return new MapValue<K>(mapType, keyValueMap);
+    }
+
+    public static <V, T extends Collection<V>> CollectionValue<V, T> collection(Class<V> clazzType, Value<V> value) {
+        return new CollectionValue<V, T>(clazzType, value, null);
     }
 
 }

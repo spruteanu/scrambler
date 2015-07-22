@@ -1,4 +1,6 @@
-package org.prismus.scrambler.builder;
+package org.prismus.scrambler.value;
+
+import org.prismus.scrambler.ValuePredicate;
 
 /**
  * todo: add description
