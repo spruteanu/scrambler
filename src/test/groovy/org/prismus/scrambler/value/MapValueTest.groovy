@@ -17,16 +17,16 @@ class MapValueTest extends Specification {
 
         expect:
         generatedMap.keySet().containsAll(keyValueMap.keySet())
-        generatedMap == ClassValue.of(HashMap,
+        generatedMap == ClassValue.mapOf(HashMap,
                 ['ValueSID': NumberValue.increment(1), 'SomeID': new Constant(1), 'Amount': NumberValue.increment(100.0d)]
         ).next()
 
         and: 'verify case where a map of map is generated'
-        ClassValue.of(Hashtable,
+        ClassValue.mapOf(Hashtable,
                 ['ValueSID': NumberValue.increment(1), 'SomeID': new Constant(1), 'Amount': NumberValue.increment(100.0d),
-                 'products': ClassValue.collection(
+                 'products': ClassValue.collectionOf(
                          ArrayList,
-                         ClassValue.of(LinkedHashMap, [
+                         ClassValue.mapOf(LinkedHashMap, [
                                  'ProductSID': NumberValue.increment(1),
                                  'Name': new ListRandomElement<String>(Arrays.asList('Table Tennis Set', 'Ping Pong Balls', 'Table Tennis Racket')),
                                  'Price': NumberValue.random(16.0d, 200.0d),

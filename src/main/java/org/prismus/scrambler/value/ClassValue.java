@@ -181,11 +181,11 @@ public class ClassValue {
         return value;
     }
 
-    public static <K> MapValue<K> of(Class<Map<K, Object>> mapType, Map<K, Value> keyValueMap) {
+    public static <K> MapValue<K> mapOf(Class<Map<K, Object>> mapType, Map<K, Value> keyValueMap) {
         return new MapValue<K>(mapType, keyValueMap);
     }
 
-    public static <V, T extends Collection<V>> CollectionValue<V, T> collection(Class<V> clazzType, Value<V> value) {
+    public static <V, T extends Collection<V>> CollectionValue<V, T> collectionOf(Class<V> clazzType, Value<V> value) {
         return new CollectionValue<V, T>(clazzType, value, null);
     }
 

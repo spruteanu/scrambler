@@ -3,10 +3,7 @@ package org.prismus.scrambler.value;
 import org.prismus.scrambler.Value;
 import org.prismus.scrambler.ValuePredicate;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 /**
@@ -82,6 +79,27 @@ public class ValueDefinition {
     //------------------------------------------------------------------------------------------------------------------
     // Object Methods
     //------------------------------------------------------------------------------------------------------------------
+    public ValueDefinition of(Map.Entry entry) {
+        Util.checkNullValue(entry);
+
+        final Object predicate = entry.getKey();
+        Util.checkNullValue(predicate);
+
+        final Object value = entry.getValue();
+        Util.checkNullValue(value);
+
+        if (predicate instanceof ValuePredicate) {
+            registerPredicateValue((ValuePredicate)predicate, value instanceof Value ? (Value) value : new Constant(value));
+        } else if (predicate instanceof String) {
+            of ((String)predicate, value);
+        } else if (predicate instanceof Class) {
+            of ((Class)predicate, value);
+        } else {
+            throw new IllegalArgumentException(String.format("Not supported key/predicate provided: %s; Valid types are: %s", predicate, Arrays.asList(ValuePredicate.class, String.class, Class.class)));
+        }
+        return this;
+    }
+
     public ValueDefinition of(Object value) {
         Util.checkNullValue(value);
         registerPredicateValue(new TypePredicate(value.getClass()), new Constant(value));
