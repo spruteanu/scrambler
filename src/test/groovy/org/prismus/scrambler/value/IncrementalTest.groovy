@@ -110,7 +110,7 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental primitives generation'(Class type, Number start, Number step, Integer count) {
         given:
-        Value numberValues = NumberValue.incrementArray(start, step, count, type)
+        Value numberValues = ClassValue.incrementArray(type, start, step, count)
 
         expect:
         for (int i = 0; i < 5; i++) {

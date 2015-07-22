@@ -8,6 +8,34 @@ import org.prismus.scrambler.Value;
  * @author Serge Pruteanu
  */
 public class ClassValue {
+    @SuppressWarnings({"unchecked"})
+    public static Value incrementArray(Class clazzType, Object defaultValue, Object step, Integer count) {
+        Util.checkPositiveCount(count);
+        final Class<?> componentType = clazzType.isArray() ? clazzType.getComponentType() : clazzType;
+        final Value value;
+        if (componentType.isPrimitive()) {
+            value = (Value) Util.createInstance(
+                    Types.incrementTypeMap.get(clazzType),
+                    new Object[]{
+                            clazzType.isInstance(defaultValue) ? defaultValue : null,
+                            count,
+                            (Value) Util.createInstance(
+                                    Types.incrementTypeMap.get(componentType),
+                                    new Object[]{clazzType.isInstance(defaultValue) ? null : defaultValue, step},
+                                    new Class[]{Util.primitiveWrapperMap.get(componentType), Util.primitiveWrapperMap.get(componentType)}
+                            )},
+                    new Class[]{clazzType, Integer.class, Object.class}
+            );
+        } else {
+            value = new ArrayValue(clazzType, count, (Value) Util.createInstance(
+                    Types.incrementTypeMap.get(componentType),
+                    new Object[]{defaultValue, step},
+                    new Class[]{componentType, componentType}
+            ));
+        }
+        return value;
+    }
+
     public static <T> Value<T> random(Class<T> clazzType) {
         return random(clazzType, null);
     }

@@ -199,7 +199,7 @@ class GroovyValueDefinition {
             }
 
             array { Number defaultValue, Number step, Integer count = null ->
-                return NumberValue.incrementArray(defaultValue, step, count, (Class) delegate)
+                return ClassValue.incrementArray((Class) delegate, defaultValue, step, count)
             }
 
             reference { String propertyPredicate = null ->

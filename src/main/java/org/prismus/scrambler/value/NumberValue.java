@@ -20,7 +20,7 @@ public class NumberValue {
 
     @SuppressWarnings("unchecked")
     public static <N extends Number> Value incrementArray(N self, N step, Integer count) {
-        return incrementArray(self, step, count, self.getClass());
+        return ClassValue.incrementArray(self.getClass(), self, step, count);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -28,7 +28,7 @@ public class NumberValue {
         if (Types.incrementTypeMap.containsKey(clazzType)) {
             final Value value;
             if (clazzType.isArray()) {
-                value = incrementArray(self, step, null, clazzType);
+                value = ClassValue.incrementArray(clazzType, self, step, null);
             } else {
                 value = (Value) Util.createInstance(
                         Types.incrementTypeMap.get(clazzType),
@@ -39,35 +39,6 @@ public class NumberValue {
             return value;
         }
         throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s", clazzType, self));
-    }
-
-    @SuppressWarnings({"unchecked"})
-    // todo Serge: fix Object self, define 2 explicit methods that creates Number[] and primitive array
-    public static Value incrementArray(Object self, Object step, Integer count, Class clazzType) {
-        Util.checkPositiveCount(count);
-        final Class<?> componentType = clazzType.isArray() ? clazzType.getComponentType() : clazzType;
-        final Value value;
-        if (componentType.isPrimitive()) {
-            value = (Value) Util.createInstance(
-                    Types.incrementTypeMap.get(clazzType),
-                    new Object[]{
-                            clazzType.isInstance(self) ? self : null,
-                            count,
-                            (Value) Util.createInstance(
-                                    Types.incrementTypeMap.get(componentType),
-                                    new Object[]{clazzType.isInstance(self) ? null : self, step},
-                                    new Class[]{Util.primitiveWrapperMap.get(componentType), Util.primitiveWrapperMap.get(componentType)}
-                            )},
-                    new Class[]{clazzType, Integer.class, Object.class}
-            );
-        } else {
-            value = new ArrayValue(clazzType, count, (Value) Util.createInstance(
-                    Types.incrementTypeMap.get(componentType),
-                    new Object[]{self, step},
-                    new Class[]{componentType, componentType}
-            ));
-        }
-        return value;
     }
 
     @SuppressWarnings({"unchecked"})
