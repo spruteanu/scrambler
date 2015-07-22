@@ -25,7 +25,7 @@ class RandomTest extends Specification {
         }
 
         and: "verify array creation"
-        Number[] numberValues = NumberValue.randomArray(minimum, maximum, null, count).next()
+        Number[] numberValues = ClassValue.randomArray(null, minimum, maximum, count).next()
         for (int i = 0; i < numberValues.length; i++) {
             Assert.assertTrue(isBetween(minimum, maximum, numberValues[i]))
         }
@@ -42,7 +42,7 @@ class RandomTest extends Specification {
 
     void 'verify random primitives generation'(Class type, Number minimum, Number maximum, Integer count) {
         given:
-        Value numberValues = NumberValue.randomArray(minimum, maximum, type, count)
+        Value numberValues = ClassValue.randomArray(type, minimum, maximum, count)
 
         expect:
         for (int i = 0; i < 5; i++) {

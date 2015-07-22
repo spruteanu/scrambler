@@ -8,6 +8,7 @@ import org.prismus.scrambler.Value;
  * @author Serge Pruteanu
  */
 public class ClassValue {
+
     @SuppressWarnings({"unchecked"})
     public static <T> Value<T> incrementArray(Class<T> self, T defaultValue, Object step, Integer count) {
         Util.checkPositiveCount(count);
@@ -34,6 +35,24 @@ public class ClassValue {
             ));
         }
         return value;
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static <N extends Number> Value<N> increment(Class<N> self, N defaultValue, N step) {
+        if (Types.incrementTypeMap.containsKey(self)) {
+            final Value value;
+            if (self.isArray()) {
+                value = incrementArray(self, defaultValue, step, null);
+            } else {
+                value = (Value) Util.createInstance(
+                        Types.incrementTypeMap.get(self),
+                        new Object[]{defaultValue, step},
+                        new Class[]{self, self}
+                );
+            }
+            return value;
+        }
+        throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s", self, self));
     }
 
     public static <T> Value<T> random(Class<T> self) {
@@ -116,6 +135,47 @@ public class ClassValue {
         } else {
             return new ArrayValue(clazzType, count, val);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <N extends Number> Value<N> randomArray(Class self, N minimum, N maximum, Integer count) {
+        Util.checkPositiveCount(count);
+
+        Object defaultValue = minimum != null ? minimum : maximum != null ? maximum : null;
+        if (self == null) {
+            self = defaultValue != null ? defaultValue.getClass() : null;
+        }
+        if (self == null) {
+            throw new IllegalArgumentException(String.format("Either minimum: %s or maximum: %s should be not null", minimum, maximum));
+        }
+        boolean primitive = false;
+        Class<?> componentType;
+        if (self.isArray()) {
+            componentType = self.getComponentType();
+            if (componentType.isPrimitive()) {
+                primitive = true;
+                componentType = Util.primitiveWrapperMap.get(componentType);
+            }
+        } else {
+            componentType = self;
+        }
+
+        Value instance = (Value) Util.createInstance(
+                Types.randomTypeMap.get(componentType),
+                new Object[]{minimum, maximum},
+                new Class[]{componentType, componentType}
+        );
+        final Value<N> value;
+        if (primitive) {
+            value = (Value<N>) Util.createInstance(
+                    Types.randomTypeMap.get(self),
+                    new Object[]{self.isInstance(defaultValue) ? defaultValue : null, count, instance},
+                    new Class[]{self, Integer.class, Object.class}
+            );
+        } else {
+            value = new ArrayValue(self, count, instance);
+        }
+        return value;
     }
 
 }
