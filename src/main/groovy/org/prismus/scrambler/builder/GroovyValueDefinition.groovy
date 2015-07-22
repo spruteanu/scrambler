@@ -100,31 +100,31 @@ class GroovyValueDefinition {
 
         Number.metaClass {
             incremental { Number step = null ->
-                return Incremental.of((Number) delegate, step)
+                return NumberValue.increment((Number) delegate, step)
             }
 
             random { Number minimum = null, Number maximum = null ->
-                return org.prismus.scrambler.value.Random.of((Number) delegate, minimum, maximum)
+                return NumberValue.random((Number) delegate, minimum, maximum)
             }
         }
 
         Date.metaClass {
             incremental { Integer step = null, Integer calendarField = null ->
-                return Incremental.of((Date) delegate, step, calendarField)
+                return DateValue.increment((Date) delegate, step, calendarField)
             }
 
             random { Date minimum = null, Date maximum = null ->
-                return org.prismus.scrambler.value.Random.of((Date) delegate, minimum, maximum)
+                return DateValue.random((Date) delegate, minimum, maximum)
             }
         }
 
         String.metaClass {
             incremental { String pattern = null, Integer index = null ->
-                return Incremental.of((String) delegate, pattern, index)
+                return StringValue.increment((String) delegate, pattern, index)
             }
 
             random { Integer count = null ->
-                return org.prismus.scrambler.value.Random.of((String) delegate, count)
+                return StringValue.random((String) delegate, count)
             }
         }
 
@@ -137,7 +137,7 @@ class GroovyValueDefinition {
             randomOf { ->
                 final collection = (Collection) delegate
                 Util.checkEmptyCollection(collection)
-                return org.prismus.scrambler.value.Random.randomOf(collection)
+                return CollectionValue.randomOf(collection)
             }
         }
 
@@ -199,7 +199,7 @@ class GroovyValueDefinition {
             }
 
             array { Number defaultValue, Number step, Integer count = null ->
-                return Incremental.arrayOf((Class) delegate, defaultValue, step, count)
+                return NumberValue.incrementArray(defaultValue, step, count, (Class) delegate)
             }
 
             reference { String propertyPredicate = null ->

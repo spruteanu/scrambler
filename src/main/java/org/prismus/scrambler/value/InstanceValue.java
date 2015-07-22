@@ -225,9 +225,9 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             final Class propertyType = field.getType();
             Value val = null;
             if (supportedTypes.contains(propertyType)) {
-                val = Random.of(propertyType);
+                val = ClassValue.random(propertyType);
             } else if (propertyType.isArray() && supportedTypes.contains(propertyType.getComponentType())) {
-                val = Random.of(propertyType, null);
+                val = ClassValue.random(propertyType, null);
             } else {
                 if (Iterable.class.isAssignableFrom(propertyType) || Map.class.isAssignableFrom(propertyType)) {
                     continue;
@@ -246,8 +246,8 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     protected Set<Class> getSupportedTypes() {
         final Set<Class> knownTypes = new HashSet<Class>();
-        knownTypes.addAll(Incremental.getSupportedTypes());
-        knownTypes.addAll(org.prismus.scrambler.value.Random.getSupportedTypes());
+        knownTypes.addAll(Types.getSupportedIncrementTypes());
+        knownTypes.addAll(Types.getSupportedRandomTypes());
         return knownTypes;
     }
 
@@ -264,7 +264,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                 for (final Class argType : types) {
                     Value val = typeValueMap.get(new TypePredicate(argType));
                     if (val == null && supportedTypes.contains(argType)) {
-                        val = Random.of(argType);
+                        val = ClassValue.random(argType);
                     }
                     if (val != null) {
                         values.add(val);

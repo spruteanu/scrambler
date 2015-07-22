@@ -62,9 +62,9 @@ public class RandomString extends Constant<String> {
      * <p>If set is not {@code null}, characters between start and
      * end are chosen.</p>
      * <p/>
-     * <p>This method accepts a user-supplied {@link Random}
+     * <p>This method accepts a user-supplied {@link java.util.Random}
      * instance to use as a source of randomness. By seeding a single
-     * {@link Random} instance with a fixed seed and using it for each call,
+     * {@link java.util.Random} instance with a fixed seed and using it for each call,
      * the same random sequence of strings can be generated repeatedly
      * and predictably.</p>
      *

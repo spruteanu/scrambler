@@ -11,7 +11,7 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental number generation'(Number start, Number step, Integer count) {
         given:
-        Value<Number> numberValue = Incremental.of(start, step)
+        Value<Number> numberValue = NumberValue.increment(start, step)
 
         expect:
         numberValue.get() == start
@@ -20,7 +20,7 @@ class IncrementalTest extends Specification {
         }
 
         and: "verify array creation"
-        Value<Number[]> numberValues = Incremental.arrayOf(count, start, step)
+        Value<Number[]> numberValues = NumberValue.incrementArray(start, step, count)
         for (int i = 0; i < 5; i++) {
             Number[] values = numberValues.next()
             Assert.assertNotNull(values)
@@ -44,7 +44,7 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental float values'(Float start, Float step, Integer count) {
         given:
-        Value<Float> numberValue = Incremental.of(start, step)
+        Value<Float> numberValue = NumberValue.increment(start, step)
 
         expect:
         numberValue.get() == start
@@ -53,7 +53,7 @@ class IncrementalTest extends Specification {
         }
 
         and: "verify array creation"
-        Value<Float[]> numberValues = Incremental.arrayOf(count, start, step)
+        Value<Float[]> numberValues = NumberValue.incrementArray(start, step, count)
         for (int i = 0; i < 5; i++) {
             Float[] values = numberValues.next()
             Assert.assertNotNull(values)
@@ -77,7 +77,7 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental double values'(Double start, Double step, Integer count) {
         given:
-        Value<Double> numberValue = Incremental.of(start, step)
+        Value<Double> numberValue = NumberValue.increment(start, step)
 
         expect:
         numberValue.get() == start
@@ -86,7 +86,7 @@ class IncrementalTest extends Specification {
         }
 
         and: "verify array creation"
-        Value<Double[]> numberValues = Incremental.arrayOf(count, start, step)
+        Value<Double[]> numberValues = NumberValue.incrementArray(start, step, count)
         for (int i = 0; i < 5; i++) {
             Double[] values = numberValues.next()
             Assert.assertNotNull(values)
@@ -110,7 +110,7 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental primitives generation'(Class type, Number start, Number step, Integer count) {
         given:
-        Value numberValues = Incremental.arrayOf(type, start, step, count)
+        Value numberValues = NumberValue.incrementArray(start, step, count, type)
 
         expect:
         for (int i = 0; i < 5; i++) {
@@ -148,17 +148,17 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental dates'(Date date, Integer calendarField, Integer step) {
         expect:
-        date.before(Incremental.of(date).next())
-        date.before(Incremental.of(date, 100).next())
-        date.before(Incremental.of(date, 4, Calendar.MINUTE).next())
+        date.before(DateValue.increment(date).next())
+        date.before(DateValue.increment(date, 100).next())
+        date.before(DateValue.increment(date, 4, Calendar.MINUTE).next())
 
         and: "Increment by several criteria: seconds/minutes/hours/weeks/month/years"
         date.before(new IncrementalDate().seconds(5).minutes(1).hours(2).days(3).years(1).next())
 
-        5 == Incremental.dateBy(5, [(Calendar.MINUTE): 2, (Calendar.HOUR): 1]).next().length
+        5 == DateValue.incrementArray(new Date(), [(Calendar.MINUTE): 2, (Calendar.HOUR): 1], 5).next().length
 
         and: "verify in a loop"
-        final Value<Date> incrementalDate = Incremental.of(date, calendarField, step)
+        final Value<Date> incrementalDate = DateValue.increment(date, calendarField, step)
         for (int i = 0; i < 5; i++) {
             final nextDate = incrementalDate.next()
             Assert.assertTrue(date.before(nextDate))
@@ -172,16 +172,16 @@ class IncrementalTest extends Specification {
 
     void 'verify string incremental'(String defaultValue, String pattern, Integer index) {
         expect:
-        defaultValue != Incremental.of(defaultValue).next()
-        defaultValue != Incremental.of(defaultValue, pattern).next()
-        defaultValue != Incremental.of(defaultValue, pattern, index).next()
+        defaultValue != StringValue.increment(defaultValue).next()
+        defaultValue != StringValue.increment(defaultValue, pattern).next()
+        defaultValue != StringValue.increment(defaultValue, pattern, index).next()
 
-        5 == Incremental.of(5, defaultValue).next().length
-        5 == Incremental.of(5, defaultValue, pattern).next().length
-        5 == Incremental.of(5, defaultValue, pattern, index).next().length
+        5 == StringValue.incrementArray(defaultValue, 5).next().length
+        5 == StringValue.incrementArray(defaultValue, pattern, 5).next().length
+        5 == StringValue.incrementArray(defaultValue, pattern, index, 5).next().length
 
         and: "verify in a loop"
-        final incrementalString = Incremental.of(defaultValue, pattern, index)
+        final incrementalString = StringValue.increment(defaultValue, pattern, index)
         for (int i = 0; i < 5; i++) {
             Assert.assertNotEquals(defaultValue, incrementalString.next())
         }

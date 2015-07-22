@@ -15,17 +15,17 @@ class RandomTest extends Specification {
 
     void 'verify random number generation'(Number minimum, Number maximum, Integer count) {
         given:
-        Value<Number> randomNumber = Random.of(minimum, maximum)
+        Value<Number> randomNumber = NumberValue.random(minimum, maximum)
 
         expect:
-        null != Random.of(maximum).next()
+        null != NumberValue.random(maximum).next()
 
         for (int i = 0; i < 100; i++) {
             Assert.assertTrue(isBetween(minimum, maximum, randomNumber.next()))
         }
 
         and: "verify array creation"
-        Number[] numberValues = Random.arrayOf(null, count, minimum, maximum).next()
+        Number[] numberValues = NumberValue.randomArray(minimum, maximum, null, count).next()
         for (int i = 0; i < numberValues.length; i++) {
             Assert.assertTrue(isBetween(minimum, maximum, numberValues[i]))
         }
@@ -42,7 +42,7 @@ class RandomTest extends Specification {
 
     void 'verify random primitives generation'(Class type, Number minimum, Number maximum, Integer count) {
         given:
-        Value numberValues = Random.arrayOf(type, count, minimum, maximum)
+        Value numberValues = NumberValue.randomArray(minimum, maximum, type, count)
 
         expect:
         for (int i = 0; i < 5; i++) {
@@ -66,11 +66,11 @@ class RandomTest extends Specification {
 
     void 'verify random boolean generation'(Class type, Boolean value, Integer count) {
         expect:
-        null != Random.of(value).next()
-        null != Random.of(value).next()
+        null != BooleanValue.random(value).next()
+        null != BooleanValue.random(value).next()
 
         and: ''
-        final numberValues = Random.of(type, count, value)
+        final numberValues = BooleanValue.random(value, count, type)
         for (int i = 0; i < 5; i++) {
             final values = numberValues.next()
             Assert.assertNotNull(values)
@@ -88,12 +88,12 @@ class RandomTest extends Specification {
 
     void 'verify random dates'(Date date, Date minimum, Date maximum, Integer count) {
         expect:
-        date.before(Random.of(date).next())
-        date.before(Random.of(minimum, (Date) null).usingValue(date).next())
-        isBetween(minimum, maximum, Random.of(date, minimum, maximum).next())
+        date.before(DateValue.random(date).next())
+        date.before(DateValue.random(minimum, (Date) null).usingValue(date).next())
+        isBetween(minimum, maximum, DateValue.random(date, minimum, maximum).next())
 
         and: "verify in a loop"
-        final Value<Date[]> randomDate = Random.of(count, date, minimum, maximum)
+        final Value<Date[]> randomDate = DateValue.randomArray(date, minimum, maximum, count)
         final Date[] dates = randomDate.next();
         if (count != null) {
             Assert.assertEquals(count, dates.length)
@@ -105,20 +105,20 @@ class RandomTest extends Specification {
         where:
         date << [new Date(), new Date(), new Date(), new Date(),]
         minimum << [new Date(), new Date(), new Date(), new Date(),]
-        maximum << [Incremental.of(new Date()).next(), Incremental.of(new Date()).next(), Incremental.of(new Date()).next(), Incremental.of(new Date()).next(),]
+        maximum << [DateValue.increment(new Date()).next(), DateValue.increment(new Date()).next(), DateValue.increment(new Date()).next(), DateValue.increment(new Date()).next(),]
         count << [5, 3, null, 10,]
     }
 
     void 'verify random string'(String pattern, Integer count) {
         expect:
-        pattern != Random.of(pattern).next()
-        pattern != Random.of(pattern, count).next()
+        pattern != StringValue.random(pattern).next()
+        pattern != StringValue.random(pattern, count).next()
 
-        5 == Random.of(5, pattern).next().length
-        5 == Random.of(5, pattern, count).next().length
+        5 == StringValue.randomArray(pattern, 5).next().length
+        5 == StringValue.randomArray(pattern, count, 5).next().length
 
         and: "verify in a loop"
-        final randomValue = Random.of(pattern, count)
+        final randomValue = StringValue.random(pattern, count)
         for (int i = 0; i < 5; i++) {
             final generatedString = randomValue.next()
             Assert.assertTrue(generatedString.length() > 0)
@@ -133,10 +133,10 @@ class RandomTest extends Specification {
         count << [100, null, null, 64,]
     }
 
-    void 'verify random element'() {
+    void 'verify random collection element'() {
         given:
-        final randomElement = Random.randomOf(randoms)
-        final containerSet = randoms.class.isArray() ? new HashSet(Arrays.asList(randoms)) : new HashSet(new ArrayList(randoms))
+        final randomElement = CollectionValue.randomOf(randoms)
+        final containerSet =  new HashSet(new ArrayList(randoms))
 
         expect:
         for (int i = 0; i < randoms.size(); i++) {
@@ -144,7 +144,21 @@ class RandomTest extends Specification {
         }
 
         where:
-        randoms << [[1..30], new HashSet<>(['a'..'z']), ['aaa', 'bbb', 'vvv'] as String[], [1, 2, 3, 4, 5] as int[]]
+        randoms << [[1..30], new HashSet<>(['a'..'z']), ]
+    }
+
+    void 'verify random array element'() {
+        given:
+        final randomElement = ObjectValue.randomOf(randoms)
+        final containerSet = new HashSet(Arrays.asList(randoms))
+
+        expect:
+        for (int i = 0; i < randoms.size(); i++) {
+            Assert.assertTrue(containerSet.contains(randomElement.next()))
+        }
+
+        where:
+        randoms << [['aaa', 'bbb', 'vvv'] as String[], [1, 2, 3, 4, 5] as int[]]
     }
 
 }

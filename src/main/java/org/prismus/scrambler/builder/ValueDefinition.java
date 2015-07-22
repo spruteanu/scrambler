@@ -100,13 +100,13 @@ public class ValueDefinition {
 
     public ValueDefinition incremental(Number value, Number step) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(value.getClass()), Incremental.of(value, step));
+        registerPredicateValue(new TypePredicate(value.getClass()), NumberValue.increment(value, step));
         return this;
     }
 
     public ValueDefinition incremental(Number value, Number step, Integer count) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(value.getClass()), Incremental.arrayOf(count, value, step));
+        registerPredicateValue(new TypePredicate(value.getClass()), NumberValue.incrementArray(value, step, count));
         return this;
     }
 
@@ -121,7 +121,7 @@ public class ValueDefinition {
     public ValueDefinition random(Number minimum, Number maximum) {
         Util.checkNullValue(minimum, maximum);
         final Number value = Util.getNotNullValue(minimum, maximum);
-        registerPredicateValue(new TypePredicate(value.getClass()), org.prismus.scrambler.value.Random.of(minimum, maximum));
+        registerPredicateValue(new TypePredicate(value.getClass()), NumberValue.random(minimum, maximum));
         return this;
     }
 
@@ -138,7 +138,7 @@ public class ValueDefinition {
 
     public ValueDefinition incremental(Date value, Integer step, Integer calendarField) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(value.getClass()), Incremental.of(value, step, calendarField));
+        registerPredicateValue(new TypePredicate(value.getClass()), DateValue.increment(value, step, calendarField));
         return this;
     }
 
@@ -152,7 +152,7 @@ public class ValueDefinition {
 
     public ValueDefinition random(Date value, Date minimum, Date maximum) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(Date.class), org.prismus.scrambler.value.Random.of(value, minimum, maximum));
+        registerPredicateValue(new TypePredicate(Date.class), DateValue.random(value, minimum, maximum));
         return this;
     }
 
@@ -161,7 +161,7 @@ public class ValueDefinition {
     //------------------------------------------------------------------------------------------------------------------
     public ValueDefinition incremental(String value, Integer index) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(value.getClass()), Incremental.of(value, index));
+        registerPredicateValue(new TypePredicate(value.getClass()), StringValue.increment(value, index));
         return this;
     }
 
@@ -175,7 +175,7 @@ public class ValueDefinition {
 
     public ValueDefinition incremental(String value, String pattern, Integer index) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(String.class), Incremental.of(value, pattern, index));
+        registerPredicateValue(new TypePredicate(String.class), StringValue.increment(value, pattern, index));
         return this;
     }
 
@@ -185,7 +185,7 @@ public class ValueDefinition {
 
     public ValueDefinition random(String value, Integer count) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(String.class), org.prismus.scrambler.value.Random.of(value, count));
+        registerPredicateValue(new TypePredicate(String.class), StringValue.random(value, count));
         return this;
     }
 
@@ -223,7 +223,7 @@ public class ValueDefinition {
         Util.checkEmptyCollection(values);
 
         final Object value = values.iterator().next();
-        registerPredicateValue(new TypePredicate(value.getClass()), org.prismus.scrambler.value.Random.randomOf(values));
+        registerPredicateValue(new TypePredicate(value.getClass()), CollectionValue.randomOf(values));
         return this;
     }
 

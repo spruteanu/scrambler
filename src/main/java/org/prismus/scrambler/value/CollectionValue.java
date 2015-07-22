@@ -2,7 +2,9 @@ package org.prismus.scrambler.value;
 
 import org.prismus.scrambler.Value;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * todo: add description
@@ -83,6 +85,14 @@ public class CollectionValue<V, T extends Collection<V>> extends Constant<T> {
 
     public static <V, T extends Collection<V>> CollectionValue<V, T> of(Class<V> clazzType, Value<V> value) {
         return new CollectionValue<V, T>(clazzType, value, null);
+    }
+
+    public static <T> Value<T> randomOf(List<T> values) {
+        return new ListRandomElement<T>(values);
+    }
+
+    public static <T> Value<T> randomOf(Collection<T> collection) {
+        return new ListRandomElement<T>(new ArrayList<T>(collection));
     }
 
 }
