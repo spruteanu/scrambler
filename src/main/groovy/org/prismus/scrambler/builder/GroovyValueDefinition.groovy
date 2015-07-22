@@ -13,7 +13,7 @@ import org.prismus.scrambler.value.*
  * @author Serge Pruteanu
  */
 @SuppressWarnings(["GroovyAssignabilityCheck", "UnnecessaryQualifiedReference"])
-class GroovyValueDefinition extends Script {
+class GroovyValueDefinition {
     private Properties configurationProperties
     private GroovyShell shell
 
@@ -23,27 +23,13 @@ class GroovyValueDefinition extends Script {
     }
 
     @CompileStatic
-    ValueDefinition getDefinition() {
-        return definition
-    }
-
-    @Override
-    @CompileStatic
-    Object run() {
-        return this
-    }
-
-    @CompileStatic
     ValueDefinition parseText(String definitionText) {
         if (!shell) {
             shell = createGroovyShell()
         }
-        final GroovyValueDefinition result = (GroovyValueDefinition)shell.evaluate(
-                definitionText
-                        + "\n    definition.build()"
-                        + "\n    return this"
-        )
-        definition = result.definition
+        final script = (DelegatingScript)shell.parse(definitionText)
+        script.setDelegate(definition)
+        script.run()
         return definition
     }
 
@@ -63,7 +49,7 @@ class GroovyValueDefinition extends Script {
     @CompileStatic
     protected GroovyShell createGroovyShell() {
         final compilerConfiguration = new CompilerConfiguration()
-        compilerConfiguration.setScriptBaseClass(GroovyValueDefinition.name)
+        compilerConfiguration.setScriptBaseClass(DelegatingScript.name)
 
         final importCustomizer = new ImportCustomizer()
         importCustomizer.addStarImports(Value.package.name)
@@ -102,172 +88,6 @@ class GroovyValueDefinition extends Script {
                 } catch (IOException ignore) { }
             }
         }
-    }
-
-    //------------------------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------------------------
-    // Object Methods
-    //------------------------------------------------------------------------------------------------------------------
-    @CompileStatic
-    ValueDefinition of(Object value) {
-        return definition.of(value)
-    }
-
-    @CompileStatic
-    ValueDefinition constant(Object value) {
-        return definition.constant(value)
-    }
-
-    //------------------------------------------------------------------------------------------------------------------
-    // Number Methods
-    //------------------------------------------------------------------------------------------------------------------
-    @CompileStatic
-    ValueDefinition incremental(Number value, Number step = null) {
-        return definition.incremental(value, step)
-    }
-
-    @CompileStatic
-    ValueDefinition random(Number minimum = null, Number maximum = null) {
-        return definition.incremental(minimum, maximum)
-    }
-
-    //------------------------------------------------------------------------------------------------------------------
-    // Date Methods
-    //------------------------------------------------------------------------------------------------------------------
-    @CompileStatic
-    ValueDefinition incremental(Date value, Integer step = null, Integer calendarField = null) {
-        return definition.incremental(value, step, calendarField)
-    }
-
-    @CompileStatic
-    ValueDefinition random(Date value, Date minimum = null, Date maximum = null) {
-        return definition.random(value, minimum, maximum)
-    }
-
-    //------------------------------------------------------------------------------------------------------------------
-    // String Methods
-    //------------------------------------------------------------------------------------------------------------------
-    @CompileStatic
-    ValueDefinition incremental(String value, Integer index) {
-        return definition.incremental(value, index)
-    }
-
-    @CompileStatic
-    ValueDefinition incremental(String value, String pattern = null, Integer index = null) {
-        return definition.incremental(value, pattern , index )
-    }
-
-    @CompileStatic
-    ValueDefinition random(String value, Integer count = null) {
-        return definition.random(value, count)
-    }
-
-    @CompileStatic
-    ValueDefinition of(String propertyName, Object value) {
-        return definition.of(propertyName, value)
-    }
-
-    @CompileStatic
-    ValueDefinition of(String propertyName, Value value) {
-        return definition.of(propertyName, value)
-    }
-
-    @CompileStatic
-    ValueDefinition reference(String propertyName, Class parentPredicate) {
-        return definition.reference(propertyName, parentPredicate)
-    }
-
-    @CompileStatic
-    ValueDefinition reference(String propertyName) {
-        return definition.reference(propertyName)
-    }
-
-    //------------------------------------------------------------------------------------------------------------------
-    // Collection Methods
-    //------------------------------------------------------------------------------------------------------------------
-    @CompileStatic
-    ValueDefinition randomOf(Collection values) {
-        return definition.randomOf(values)
-    }
-
-    @SuppressWarnings("GroovyAssignabilityCheck")
-    @CompileStatic
-    ValueDefinition random(Collection collection, Value value, int count = 0) {
-        return definition.random(collection, value, count)
-    }
-
-    //------------------------------------------------------------------------------------------------------------------
-    // Value Methods
-    //------------------------------------------------------------------------------------------------------------------
-    @CompileStatic
-    ValueDefinition of(Value value) {
-        return definition.of(value)
-    }
-
-    @CompileStatic
-    ValueDefinition of(InstanceValue value) {
-        return definition.of(value)
-    }
-
-    @CompileStatic
-    ValueDefinition of(ValuePredicate valuePredicate, Value value) {
-        return definition.of(valuePredicate, value)
-    }
-
-    @CompileStatic
-    ValueDefinition of(ValuePredicate valuePredicate, Object value) {
-        return definition.of(valuePredicate, value)
-    }
-
-    @CompileStatic
-    ValueDefinition reference(ValuePredicate valuePredicate, ValuePredicate parentPredicate) {
-        return definition.reference(valuePredicate, parentPredicate)
-    }
-
-    //------------------------------------------------------------------------------------------------------------------
-    // Class Methods
-    //------------------------------------------------------------------------------------------------------------------
-    @CompileStatic
-    ValueDefinition of(Class type, Object value) {
-        return definition.of(type, value)
-    }
-
-    @CompileStatic
-    ValueDefinition of(Class type, Value value) {
-        return definition.of(type, value)
-    }
-
-    @CompileStatic
-    ValueDefinition reference(Class type) {
-        return definition.reference(type)
-    }
-
-    @CompileStatic
-    ValueDefinition reference(Class type, String parentPredicate) {
-        return definition.reference(type, parentPredicate)
-    }
-
-    @CompileStatic
-    ValueDefinition reference(Class type, Class parentPredicate) {
-        return definition.reference(type, parentPredicate)
-    }
-
-    @CompileStatic
-    ValueDefinition reference(Class type, ValuePredicate parentPredicate) {
-        return definition.reference(type, parentPredicate)
-    }
-
-    //------------------------------------------------------------------------------------------------------------------
-    // Map Methods
-    //------------------------------------------------------------------------------------------------------------------
-    @CompileStatic
-    ValueDefinition of(Map<Object, Object> props) {
-        return definition.of(props)
-    }
-
-    @CompileStatic
-    ValueDefinition constant(Map props) {
-        return definition.constant(props)
     }
 
     //------------------------------------------------------------------------------------------------------------------

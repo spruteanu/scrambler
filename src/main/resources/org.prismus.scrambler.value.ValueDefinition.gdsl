@@ -3,10 +3,11 @@
  *
  * @author Serge Pruteanu
  */
-//def scriptContext = context(scope: scriptScope(name: 'test-vd.groovy'))
-def scriptContext = context(ctype: "groovy.lang.Script")
+def scriptContext = context(
+
+)
 contributor(scriptContext) {
-    delegatesTo(findClass("org.prismus.scrambler.builder.ValueDefinition"))
+    delegatesTo(findClass('org.prismus.scrambler.builder.ValueDefinition'))
 //    ValueDefinition.methods.each { meth ->
 //        method name: meth.name, type: meth.returnType
 //    }
