@@ -45,17 +45,14 @@ public class DateValue {
         return new RandomDate(value);
     }
 
-    public static RandomDate random(Date minimum, Date maximum) { // todo Serge: review signature to use 3 args: val, min, max
-        return new RandomDate(minimum, maximum);
+    public static RandomDate random(Date self, Date minimum, Date maximum) {
+        return new RandomDate(self, minimum, maximum);
     }
 
-    public static RandomDate random(Date val, Date minimum, Date maximum) {
-        return new RandomDate(val, minimum, maximum);
-    }
-
-    public static ArrayValue<Date> randomArray(Date val, Date minimum, Date maximum, Integer count) {
-        final RandomDate randomDate = new RandomDate(val, minimum, maximum);
+    public static ArrayValue<Date> randomArray(Date self, Date minimum, Date maximum, Integer count) {
+        final RandomDate randomDate = new RandomDate(self, minimum, maximum);
         randomDate.next();
         return new ArrayValue<Date>(Date.class, count, randomDate);
     }
+
 }

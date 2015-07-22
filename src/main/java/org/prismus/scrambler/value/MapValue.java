@@ -72,12 +72,8 @@ public class MapValue<K> extends Constant<Map<K, Object>> {
         return valueMap;
     }
 
-    public static <K> MapValue<K> of(Map<K, Object> valueMap) {
-        return new MapValue<K>(valueMap);
-    }
-
-    public static <K> MapValue<K> of(Class<Map<K, Object>> mapType) {
-        return new MapValue<K>(mapType);
+    public static <K> MapValue<K> of(Map<K, Object> self, Map<K, Value> keyValueMap) {
+        return new MapValue<K>(self, keyValueMap);
     }
 
 }

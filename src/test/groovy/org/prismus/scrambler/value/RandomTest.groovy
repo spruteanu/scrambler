@@ -89,7 +89,7 @@ class RandomTest extends Specification {
     void 'verify random dates'(Date date, Date minimum, Date maximum, Integer count) {
         expect:
         date.before(DateValue.random(date).next())
-        date.before(DateValue.random(minimum, (Date) null).usingValue(date).next())
+        date.before(DateValue.random(null, minimum, (Date) null).usingValue(date).next())
         isBetween(minimum, maximum, DateValue.random(date, minimum, maximum).next())
 
         and: "verify in a loop"

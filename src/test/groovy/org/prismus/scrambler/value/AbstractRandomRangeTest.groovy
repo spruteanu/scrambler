@@ -55,7 +55,7 @@ class AbstractRandomRangeTest extends Specification {
         calendar.add(Calendar.SECOND, 10)
         maximum = calendar.getTime()
 
-        final valueInstance = DateValue.random(minimum, maximum)
+        final valueInstance = DateValue.random(null, minimum, maximum)
 
         expect:
         maximum > minimum

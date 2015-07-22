@@ -2,6 +2,8 @@ package org.prismus.scrambler.value;
 
 import org.prismus.scrambler.Value;
 
+import java.util.Map;
+
 /**
  * todo: add description
  *
@@ -176,6 +178,10 @@ public class ClassValue {
             value = new ArrayValue(self, count, instance);
         }
         return value;
+    }
+
+    public static <K> MapValue<K> of(Class<Map<K, Object>> mapType, Map<K, Value> keyValueMap) {
+        return new MapValue<K>(mapType, keyValueMap);
     }
 
 }
