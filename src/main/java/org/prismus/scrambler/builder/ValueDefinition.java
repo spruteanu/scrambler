@@ -2,6 +2,7 @@ package org.prismus.scrambler.builder;
 
 import org.prismus.scrambler.Value;
 import org.prismus.scrambler.value.*;
+import org.prismus.scrambler.value.ClassValue;
 
 import java.util.Collection;
 import java.util.Date;
@@ -88,6 +89,20 @@ public class ValueDefinition {
     public ValueDefinition constant(Object value) {
         Util.checkNullValue(value);
         registerPredicateValue(new TypePredicate(value.getClass()), new Constant(value));
+        return this;
+    }
+
+    public ValueDefinition of(String propertyName, Object value) {
+        registerPredicateValue(Util.createPropertyPredicate(propertyName), new Constant(value));
+        return this;
+    }
+
+    public ValueDefinition of(String propertyName, Value value) {
+        Util.checkNullValue(value);
+        if (value instanceof ReferenceValue) {
+            ((ReferenceValue) value).setDefinition(this);
+        }
+        registerPredicateValue(Util.createPropertyPredicate(propertyName), value);
         return this;
     }
 
@@ -189,20 +204,6 @@ public class ValueDefinition {
         return this;
     }
 
-    public ValueDefinition of(String propertyName, Object value) {
-        registerPredicateValue(Util.createPropertyPredicate(propertyName), new Constant(value));
-        return this;
-    }
-
-    public ValueDefinition of(String propertyName, Value value) {
-        Util.checkNullValue(value);
-        if (value instanceof ReferenceValue) {
-            ((ReferenceValue) value).setDefinition(this);
-        }
-        registerPredicateValue(Util.createPropertyPredicate(propertyName), value);
-        return this;
-    }
-
     public ValueDefinition reference(String propertyName, Class parentPredicate) {
         Util.checkNullValue(parentPredicate);
         reference(Util.createPropertyPredicate(propertyName), new TypePredicate(parentPredicate));
@@ -290,8 +291,15 @@ public class ValueDefinition {
         return this;
     }
 
+    public ValueDefinition of(Class type, Value value, Integer count) {
+        Util.checkNullValue(type);
+        Util.checkNullValue(value);
+        registerPredicateValue(new TypePredicate(type), ClassValue.of(type, value, count));
+        return this;
+    }
+
     public ValueDefinition of(Class type) {
-        return of(type, null, null);
+        return of(type, null, (Callable<ValueDefinition>)null);
     }
 
     public ValueDefinition of(Class type, Collection constructorArgs) {

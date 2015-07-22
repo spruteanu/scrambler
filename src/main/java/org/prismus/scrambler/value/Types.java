@@ -16,6 +16,16 @@ public class Types {
     static final String NOT_SUPPORTED_RANGE_TYPE_MSG = "Not supported range method for provided class type: %s, range of [%s, %s]";
     static Map<Class, Class<? extends Value>> randomTypeMap = lookupRandomTypeMap();
     static Map<Class, Class<? extends Value>> incrementTypeMap = lookupIncrementTypeMap();
+    static Map<Class, Class> arrayTypeMap = new LinkedHashMap<Class, Class>() {{
+        put(byte.class, byte[].class);
+        put(short.class, short[].class);
+        put(boolean.class, boolean[].class);
+        put(double.class, double[].class);
+        put(float.class, float[].class);
+        put(int.class, int[].class);
+        put(long.class, long[].class);
+    }};
+    static Map<Class, Class<? extends Value>> primitivesTypeMap = lookupPrimitiveTypeMap();
 
     public static boolean isSupportedRandomType(Class type) {
         return randomTypeMap.containsKey(type);
@@ -25,7 +35,11 @@ public class Types {
         return Collections.unmodifiableSet(randomTypeMap.keySet());
     }
 
-    static Map<Class, Class<? extends Value>> lookupRandomTypeMap() {
+    public static Set<Class> getSupportedIncrementTypes() {
+        return Collections.unmodifiableSet(incrementTypeMap.keySet());
+    }
+
+    private static Map<Class, Class<? extends Value>> lookupRandomTypeMap() {
         final Map<Class, Class<? extends Value>> typeMap = new LinkedHashMap<Class, Class<? extends Value>>();
         typeMap.put(Byte.TYPE, RandomByte.class);
         typeMap.put(Byte.class, RandomByte.class);
@@ -65,11 +79,7 @@ public class Types {
         return typeMap;
     }
 
-    public static Set<Class> getSupportedIncrementTypes() {
-        return Collections.unmodifiableSet(incrementTypeMap.keySet());
-    }
-
-    static Map<Class, Class<? extends Value>> lookupIncrementTypeMap() {
+    private static Map<Class, Class<? extends Value>> lookupIncrementTypeMap() {
         final Map<Class, Class<? extends Value>> typeMap = new LinkedHashMap<Class, Class<? extends Value>>();
         typeMap.put(Byte.TYPE, IncrementalByte.class);
         typeMap.put(Byte.class, IncrementalByte.class);
@@ -104,4 +114,17 @@ public class Types {
         typeMap.put(Timestamp.class, IncrementalDate.class);
         return typeMap;
     }
+
+    private static Map<Class, Class<? extends Value>> lookupPrimitiveTypeMap() {
+        final Map<Class, Class<? extends Value>> typeMap = new LinkedHashMap<Class, Class<? extends Value>>();
+        typeMap.put(byte.class, ByteValueArray.class);
+        typeMap.put(short.class, ShortValueArray.class);
+        typeMap.put(boolean.class, BooleanValueArray.class);
+        typeMap.put(double.class, DoubleValueArray.class);
+        typeMap.put(float.class, FloatValueArray.class);
+        typeMap.put(int.class, IntValueArray.class);
+        typeMap.put(long.class, LongValueArray.class);
+        return typeMap;
+    }
+
 }

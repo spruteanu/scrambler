@@ -195,7 +195,7 @@ class GroovyValueDefinition {
             }
 
             array { Value val, Integer count = null ->
-                return ArrayValue.of(val, (Class) delegate, count)
+                return ClassValue.of((Class) delegate, val, count)
             }
 
             array { Number defaultValue, Number step, Integer count = null ->

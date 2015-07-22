@@ -10,17 +10,17 @@ import org.prismus.scrambler.Value;
 public class NumberValue {
     @SuppressWarnings({"unchecked"})
     public static <N extends Number> Value<N> increment(N self) {
-        return increment(self, null, (Class) self.getClass());
+        return increment(self, null, (Class<N>) self.getClass());
     }
 
     @SuppressWarnings({"unchecked"})
     public static <N extends Number> Value<N> increment(N self, N step) {
-        return increment(self, step, (Class) self.getClass());
+        return increment(self, step, (Class<N>) self.getClass());
     }
 
     @SuppressWarnings("unchecked")
     public static <N extends Number> Value incrementArray(N self, N step, Integer count) {
-        return ClassValue.incrementArray(self.getClass(), self, step, count);
+        return ClassValue.incrementArray((Class<N>) self.getClass(), self, step, count);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -43,12 +43,12 @@ public class NumberValue {
 
     @SuppressWarnings({"unchecked"})
     public static <N extends Number> Value<N> random(N value) {
-        return ClassValue.random((Class) value.getClass(), value);
+        return ClassValue.random((Class<N>) value.getClass(), value);
     }
 
     @SuppressWarnings({"unchecked"})
     public static <N extends Number> Value<N> random(N minimum, N maximum) {
-        return ClassValue.random((Class) minimum.getClass(), minimum, maximum);
+        return ClassValue.random((Class<N>) minimum.getClass(), minimum, maximum);
     }
 
     @SuppressWarnings({"unchecked"})

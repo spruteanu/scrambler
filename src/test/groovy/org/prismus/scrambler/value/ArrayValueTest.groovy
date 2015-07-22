@@ -11,8 +11,9 @@ class ArrayValueTest extends Specification {
     void 'test array creation'() {
         GroovyValueDefinition.register()
         given:
-        def value = ArrayValue.of(10.random(), int, null)
+        def value = int.array(10.random(), null)
         def array = value.next()
+
         expect:
         array.length > 0
         int[] == array.class

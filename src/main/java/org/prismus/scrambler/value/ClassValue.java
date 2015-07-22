@@ -9,25 +9,25 @@ import org.prismus.scrambler.Value;
  */
 public class ClassValue {
     @SuppressWarnings({"unchecked"})
-    public static Value incrementArray(Class clazzType, Object defaultValue, Object step, Integer count) {
+    public static <T> Value<T> incrementArray(Class<T> self, T defaultValue, Object step, Integer count) {
         Util.checkPositiveCount(count);
-        final Class<?> componentType = clazzType.isArray() ? clazzType.getComponentType() : clazzType;
+        final Class<?> componentType = self.isArray() ? self.getComponentType() : self;
         final Value value;
         if (componentType.isPrimitive()) {
             value = (Value) Util.createInstance(
-                    Types.incrementTypeMap.get(clazzType),
+                    Types.incrementTypeMap.get(self),
                     new Object[]{
-                            clazzType.isInstance(defaultValue) ? defaultValue : null,
+                            self.isInstance(defaultValue) ? defaultValue : null,
                             count,
                             (Value) Util.createInstance(
                                     Types.incrementTypeMap.get(componentType),
-                                    new Object[]{clazzType.isInstance(defaultValue) ? null : defaultValue, step},
+                                    new Object[]{self.isInstance(defaultValue) ? null : defaultValue, step},
                                     new Class[]{Util.primitiveWrapperMap.get(componentType), Util.primitiveWrapperMap.get(componentType)}
                             )},
-                    new Class[]{clazzType, Integer.class, Object.class}
+                    new Class[]{self, Integer.class, Object.class}
             );
         } else {
-            value = new ArrayValue(clazzType, count, (Value) Util.createInstance(
+            value = new ArrayValue(self, count, (Value) Util.createInstance(
                     Types.incrementTypeMap.get(componentType),
                     new Object[]{defaultValue, step},
                     new Class[]{componentType, componentType}
@@ -36,47 +36,47 @@ public class ClassValue {
         return value;
     }
 
-    public static <T> Value<T> random(Class<T> clazzType) {
-        return random(clazzType, null);
-    }
-
-    public static <T> Value<T> random(Class<T> clazzType, T minimum, T maximum) {
-        final Value<T> value = random(clazzType, null);
-        if (value instanceof AbstractRandomRange) {
-            final AbstractRandomRange<T> randomRangeValue = (AbstractRandomRange<T>) value;
-            randomRangeValue.between(minimum, maximum);
-        } else {
-            throw new UnsupportedOperationException(String.format(Types.NOT_SUPPORTED_RANGE_TYPE_MSG, clazzType, minimum, maximum));
-        }
-        return value;
+    public static <T> Value<T> random(Class<T> self) {
+        return random(self, null);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Value<T> random(Class<T> clazzType, T defaultValue) {
-        if (Types.randomTypeMap.containsKey(clazzType)) {
-            if (clazzType.isArray()) {
-                return random(clazzType, defaultValue, (Integer) null);
+    public static <T> Value<T> random(Class<T> self, T defaultValue) {
+        if (Types.randomTypeMap.containsKey(self)) {
+            if (self.isArray()) {
+                return random(self, defaultValue, (Integer) null);
             } else {
-                if (clazzType.isPrimitive()) {
+                if (self.isPrimitive()) {
                     return (Value) Util.createInstance(
-                            Types.randomTypeMap.get(clazzType), null, null
+                            Types.randomTypeMap.get(self), null, null
                     );
                 } else {
                     return (Value) Util.createInstance(
-                            Types.randomTypeMap.get(clazzType),
+                            Types.randomTypeMap.get(self),
                             new Object[]{defaultValue},
-                            new Class[]{clazzType}
+                            new Class[]{self}
                     );
                 }
             }
         }
         throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s",
-                clazzType, defaultValue));
+                self, defaultValue));
+    }
+
+    public static <T> Value<T> random(Class<T> self, T minimum, T maximum) {
+        final Value<T> value = random(self, null);
+        if (value instanceof AbstractRandomRange) {
+            final AbstractRandomRange<T> randomRangeValue = (AbstractRandomRange<T>) value;
+            randomRangeValue.between(minimum, maximum);
+        } else {
+            throw new UnsupportedOperationException(String.format(Types.NOT_SUPPORTED_RANGE_TYPE_MSG, self, minimum, maximum));
+        }
+        return value;
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Value<T> random(Class<T> clazzType, T defaultValue, Integer count) {
-        final Class<?> componentType = clazzType.getComponentType();
+    public static <T> Value<T> random(Class<T> self, T defaultValue, Integer count) {
+        final Class<?> componentType = self.getComponentType();
         Value valueType;
         if (defaultValue != null) {
             valueType = (Value) Util.createInstance(
@@ -94,13 +94,28 @@ public class ClassValue {
         final Value<T> value;
         if (componentType.isPrimitive()) {
             value = (Value) Util.createInstance(
-                    Types.randomTypeMap.get(clazzType),
+                    Types.randomTypeMap.get(self),
                     new Object[]{defaultValue, count, valueType}
-                    , new Class[]{clazzType, Integer.class, Object.class}
+                    , new Class[]{self, Integer.class, Object.class}
             );
         } else {
-            value = new ArrayValue(clazzType, valueType);
+            value = new ArrayValue(self, valueType);
         }
         return value;
     }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Value<T> of(Class clazzType, Value val, Integer count) {
+        if (clazzType.isPrimitive()) {
+            final Class<? extends Value> arrayValueType = Types.primitivesTypeMap.get(clazzType);
+            return (Value) Util.createInstance(
+                    arrayValueType,
+                    new Object[]{null, count, val}
+                    , new Class[]{Types.arrayTypeMap.get(clazzType), Integer.class, Object.class}
+            );
+        } else {
+            return new ArrayValue(clazzType, count, val);
+        }
+    }
+
 }
