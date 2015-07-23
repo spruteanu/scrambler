@@ -5,29 +5,29 @@
  * @author Serge Pruteanu
  */
 contributor context(ctype: Number.name) , {
-    findClass('org.prismus.scrambler.value.NumberCategory')?.methods?.each { add it }
+    findClass('org.prismus.scrambler.value.GroovyValueDefinition.NumberCategory')?.methods?.each { add it }
 }
 
 contributor context(ctype: Date.name) , {
-    findClass('org.prismus.scrambler.value.DateCategory')?.methods?.each { add it }
+    findClass('org.prismus.scrambler.value.GroovyValueDefinition.DateCategory')?.methods?.each { add it }
 }
 
 contributor context(ctype: String.name) , {
-    findClass('org.prismus.scrambler.value.StringCategory')?.methods?.each { add it }
+    findClass('org.prismus.scrambler.value.GroovyValueDefinition.StringCategory')?.methods?.each { add it }
 }
 
 contributor context(ctype: Collection.name) , {
-    findClass('org.prismus.scrambler.value.CollectionCategory')?.methods?.each { add it }
+    findClass('org.prismus.scrambler.value.GroovyValueDefinition.CollectionCategory')?.methods?.each { add it }
 }
 
 contributor context(ctype: Map.name) , {
-    findClass('org.prismus.scrambler.value.MapCategory')?.methods?.each { add it }
+    findClass('org.prismus.scrambler.value.GroovyValueDefinition.MapCategory')?.methods?.each { add it }
 }
 
 contributor context(ctype: Object.name) , {
-    findClass('org.prismus.scrambler.value.ObjectCategory')?.methods?.each { add it }
+    findClass('org.prismus.scrambler.value.GroovyValueDefinition.ObjectCategory')?.methods?.each { add it }
 }
 
 contributor context(ctype: Class.name) , {
-    findClass('org.prismus.scrambler.value.ClassCategory')?.methods?.each { add it }
+    findClass('org.prismus.scrambler.value.GroovyValueDefinition.ClassCategory')?.methods?.each { add it }
 }

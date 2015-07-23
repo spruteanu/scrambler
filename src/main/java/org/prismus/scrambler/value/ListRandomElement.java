@@ -6,7 +6,7 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-class ListRandomElement<T> extends Constant<T> {
+public class ListRandomElement<T> extends Constant<T> {
     private final Random random;
     private List<T> values;
 

@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-class ArrayRandomElement<T> extends Constant<T> {
+public class ArrayRandomElement<T> extends Constant<T> {
     private final Random random;
     private T[] values;
 

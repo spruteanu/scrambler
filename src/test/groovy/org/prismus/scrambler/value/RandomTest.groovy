@@ -1,6 +1,7 @@
 package org.prismus.scrambler.value
 
 import org.junit.Assert
+import org.prismus.scrambler.DataScrambler
 import org.prismus.scrambler.Value
 import spock.lang.Specification
 
@@ -15,17 +16,17 @@ class RandomTest extends Specification {
 
     void 'verify random number generation'(Number minimum, Number maximum, Integer count) {
         given:
-        Value<Number> randomNumber = NumberCategory.random(minimum, maximum)
+        Value<Number> randomNumber = DataScrambler.random(minimum, maximum)
 
         expect:
-        null != NumberCategory.random(maximum).next()
+        null != DataScrambler.random(maximum).next()
 
         for (int i = 0; i < 100; i++) {
             Assert.assertTrue(isBetween(minimum, maximum, randomNumber.next()))
         }
 
         and: "verify array creation"
-        Number[] numberValues = ClassCategory.randomArray(null, minimum, maximum, count).next()
+        Number[] numberValues = DataScrambler.randomArray(null, minimum, maximum, count).next()
         for (int i = 0; i < numberValues.length; i++) {
             Assert.assertTrue(isBetween(minimum, maximum, numberValues[i]))
         }
@@ -42,7 +43,7 @@ class RandomTest extends Specification {
 
     void 'verify random primitives generation'(Class type, Number minimum, Number maximum, Integer count) {
         given:
-        Value numberValues = ClassCategory.randomArray(type, minimum, maximum, count)
+        Value numberValues = DataScrambler.randomArray(type, minimum, maximum, count)
 
         expect:
         for (int i = 0; i < 5; i++) {
@@ -88,12 +89,12 @@ class RandomTest extends Specification {
 
     void 'verify random dates'(Date date, Date minimum, Date maximum, Integer count) {
         expect:
-        date.before(DateCategory.random(date).next())
-        date.before(DateCategory.random(null, minimum, (Date) null).usingValue(date).next())
-        isBetween(minimum, maximum, DateCategory.random(date, minimum, maximum).next())
+        date.before(DataScrambler.random(date).next())
+        date.before(DataScrambler.random(null, minimum, (Date) null).usingValue(date).next())
+        isBetween(minimum, maximum, DataScrambler.random(date, minimum, maximum).next())
 
         and: "verify in a loop"
-        final Value<Date[]> randomDate = DateCategory.randomArray(date, minimum, maximum, count)
+        final Value<Date[]> randomDate = DataScrambler.randomArray(date, minimum, maximum, count)
         final Date[] dates = randomDate.next();
         if (count != null) {
             Assert.assertEquals(count, dates.length)
@@ -105,20 +106,20 @@ class RandomTest extends Specification {
         where:
         date << [new Date(), new Date(), new Date(), new Date(),]
         minimum << [new Date(), new Date(), new Date(), new Date(),]
-        maximum << [DateCategory.increment(new Date()).next(), DateCategory.increment(new Date()).next(), DateCategory.increment(new Date()).next(), DateCategory.increment(new Date()).next(),]
+        maximum << [DataScrambler.increment(new Date()).next(), DataScrambler.increment(new Date()).next(), DataScrambler.increment(new Date()).next(), DataScrambler.increment(new Date()).next(),]
         count << [5, 3, null, 10,]
     }
 
     void 'verify random string'(String pattern, Integer count) {
         expect:
-        pattern != StringCategory.random(pattern).next()
-        pattern != StringCategory.random(pattern, count).next()
+        pattern != DataScrambler.random(pattern).next()
+        pattern != DataScrambler.random(pattern, count).next()
 
-        5 == StringCategory.randomArray(pattern, 5).next().length
-        5 == StringCategory.randomArray(pattern, 5, count).next().length
+        5 == DataScrambler.randomArray(pattern, 5).next().length
+        5 == DataScrambler.randomArray(pattern, 5, count).next().length
 
         and: "verify in a loop"
-        final randomValue = StringCategory.random(pattern, count)
+        final randomValue = DataScrambler.random(pattern, count)
         for (int i = 0; i < 5; i++) {
             final generatedString = randomValue.next()
             Assert.assertTrue(generatedString.length() > 0)
@@ -135,7 +136,7 @@ class RandomTest extends Specification {
 
     void 'verify random collection element'() {
         given:
-        final randomElement = CollectionCategory.randomOf(randoms)
+        final randomElement = DataScrambler.randomOf(randoms)
         final containerSet =  new HashSet(new ArrayList(randoms))
 
         expect:
@@ -149,7 +150,7 @@ class RandomTest extends Specification {
 
     void 'verify random array element'() {
         given:
-        final randomElement = ObjectCategory.randomOf(randoms)
+        final randomElement = DataScrambler.randomOf(randoms)
         final containerSet = new HashSet(Arrays.asList(randoms))
 
         expect:

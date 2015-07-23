@@ -1,6 +1,7 @@
 package org.prismus.scrambler.value;
 
 import org.apache.commons.beanutils.PropertyUtilsBean;
+import org.prismus.scrambler.DataScrambler;
 import org.prismus.scrambler.Value;
 import org.prismus.scrambler.ValuePredicate;
 
@@ -250,9 +251,9 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             final Class propertyType = field.getType();
             Value val = null;
             if (supportedTypes.contains(propertyType)) {
-                val = ClassCategory.random(propertyType);
+                val = DataScrambler.random(propertyType);
             } else if (propertyType.isArray() && supportedTypes.contains(propertyType.getComponentType())) {
-                val = ClassCategory.random(propertyType, null);
+                val = DataScrambler.random(propertyType, null);
             } else {
                 if (Iterable.class.isAssignableFrom(propertyType) || Map.class.isAssignableFrom(propertyType)) {
                     continue;
@@ -282,7 +283,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                 for (final Class argType : types) {
                     Value val = typeValueMap.get(new TypePredicate(argType));
                     if (val == null && supportedTypes.contains(argType)) {
-                        val = ClassCategory.random(argType);
+                        val = DataScrambler.random(argType);
                     }
                     if (val != null) {
                         values.add(val);
@@ -293,7 +294,8 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                     break;
                 }
             }
-        } catch (Exception ignore) { }
+        } catch (Exception ignore) {
+        }
         return result;
     }
 
@@ -350,7 +352,8 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     void setPropertyValue(PropertyDescriptor propertyDescriptor, Object instance, Object value) {
         try {
             propertyDescriptor.getWriteMethod().invoke(instance, value);
-        } catch (Exception ignore) { }
+        } catch (Exception ignore) {
+        }
     }
 
     void setPropertyValue(Object instance, String propertyName, Object value) {
@@ -360,7 +363,8 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         } else {
             try {
                 propertyUtils.setSimpleProperty(instance, propertyName, value);
-            } catch (Exception ignore) { }
+            } catch (Exception ignore) {
+            }
         }
     }
 
@@ -368,7 +372,8 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         Object value = null;
         try {
             value = propertyDescriptor.getReadMethod().invoke(instance);
-        } catch (Exception ignore) { }
+        } catch (Exception ignore) {
+        }
         return value;
     }
 
@@ -380,7 +385,8 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         } else {
             try {
                 value = propertyUtils.getProperty(instance, propertyName);
-            } catch (Exception ignore) { }
+            } catch (Exception ignore) {
+            }
         }
         return value;
     }

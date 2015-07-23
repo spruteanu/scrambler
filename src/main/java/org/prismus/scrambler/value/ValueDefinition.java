@@ -1,5 +1,6 @@
 package org.prismus.scrambler.value;
 
+import org.prismus.scrambler.DataScrambler;
 import org.prismus.scrambler.Value;
 import org.prismus.scrambler.ValuePredicate;
 
@@ -135,13 +136,13 @@ public class ValueDefinition {
 
     public ValueDefinition incremental(Number value, Number step) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(value.getClass()), NumberCategory.increment(value, step));
+        registerPredicateValue(new TypePredicate(value.getClass()), DataScrambler.increment(value, step));
         return this;
     }
 
     public ValueDefinition incremental(Number value, Number step, Integer count) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(value.getClass()), NumberCategory.incrementArray(value, step, count));
+        registerPredicateValue(new TypePredicate(value.getClass()), DataScrambler.incrementArray(value, step, count));
         return this;
     }
 
@@ -156,7 +157,7 @@ public class ValueDefinition {
     public ValueDefinition random(Number minimum, Number maximum) {
         Util.checkNullValue(minimum, maximum);
         final Number value = Util.getNotNullValue(minimum, maximum);
-        registerPredicateValue(new TypePredicate(value.getClass()), NumberCategory.random(minimum, maximum));
+        registerPredicateValue(new TypePredicate(value.getClass()), DataScrambler.random(minimum, maximum));
         return this;
     }
 
@@ -173,7 +174,7 @@ public class ValueDefinition {
 
     public ValueDefinition incremental(Date value, Integer step, Integer calendarField) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(value.getClass()), DateCategory.increment(value, step, calendarField));
+        registerPredicateValue(new TypePredicate(value.getClass()), DataScrambler.increment(value, step, calendarField));
         return this;
     }
 
@@ -187,7 +188,7 @@ public class ValueDefinition {
 
     public ValueDefinition random(Date value, Date minimum, Date maximum) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(Date.class), DateCategory.random(value, minimum, maximum));
+        registerPredicateValue(new TypePredicate(Date.class), DataScrambler.random(value, minimum, maximum));
         return this;
     }
 
@@ -196,7 +197,7 @@ public class ValueDefinition {
     //------------------------------------------------------------------------------------------------------------------
     public ValueDefinition incremental(String value, Integer index) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(value.getClass()), StringCategory.increment(value, null, index));
+        registerPredicateValue(new TypePredicate(value.getClass()), DataScrambler.increment(value, null, index));
         return this;
     }
 
@@ -210,7 +211,7 @@ public class ValueDefinition {
 
     public ValueDefinition incremental(String value, String pattern, Integer index) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(String.class), StringCategory.increment(value, pattern, index));
+        registerPredicateValue(new TypePredicate(String.class), DataScrambler.increment(value, pattern, index));
         return this;
     }
 
@@ -220,7 +221,7 @@ public class ValueDefinition {
 
     public ValueDefinition random(String value, Integer count) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(String.class), StringCategory.random(value, count));
+        registerPredicateValue(new TypePredicate(String.class), DataScrambler.random(value, count));
         return this;
     }
 
@@ -244,7 +245,7 @@ public class ValueDefinition {
         Util.checkEmptyCollection(values);
 
         final Object value = values.iterator().next();
-        registerPredicateValue(new TypePredicate(value.getClass()), CollectionCategory.randomOf(values));
+        registerPredicateValue(new TypePredicate(value.getClass()), DataScrambler.randomOf(values));
         return this;
     }
 
@@ -314,7 +315,7 @@ public class ValueDefinition {
     public ValueDefinition of(Class type, Value value, Integer count) {
         Util.checkNullValue(type);
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(type), ClassCategory.of(type, value, count));
+        registerPredicateValue(new TypePredicate(type), DataScrambler.of(type, value, count));
         return this;
     }
 

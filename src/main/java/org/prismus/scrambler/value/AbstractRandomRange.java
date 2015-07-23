@@ -3,7 +3,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-abstract class AbstractRandomRange<T> extends Constant<T> {
+public abstract class AbstractRandomRange<T> extends Constant<T> {
     protected T defaultMinimum;
     protected T defaultMaximum;
     protected T minimum;
