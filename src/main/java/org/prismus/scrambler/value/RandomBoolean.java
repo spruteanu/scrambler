@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-class RandomBoolean extends Constant<Boolean> implements BooleanArray {
+public class RandomBoolean extends Constant<Boolean> implements BooleanArray {
 
     private final Random random;
 

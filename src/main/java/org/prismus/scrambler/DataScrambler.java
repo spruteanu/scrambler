@@ -12,6 +12,79 @@ import java.util.*;
 public class DataScrambler {
 
     //------------------------------------------------------------------------------------------------------------------
+    // Parsing methods
+    //------------------------------------------------------------------------------------------------------------------
+    // todo Serge: parse from resource, parse from associated class resource
+
+    //------------------------------------------------------------------------------------------------------------------
+    // InstanceValue methods
+    //------------------------------------------------------------------------------------------------------------------
+    public static <T> InstanceValue<T> instanceOf(String type) {
+        return instanceOf(type, null);
+    }
+
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType) {
+        return instanceOf(clazzType, null);
+    }
+
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<Object, Object> fieldMap) {
+        return new InstanceValue<T>(clazzType).usingDefinitions(fieldMap);
+    }
+
+    public static <T> InstanceValue<T> instanceOf(String type, Map<Object, Object> fieldMap) {
+        return new InstanceValue<T>(type).usingDefinitions(fieldMap);
+    }
+
+    public static <T> InstanceValue<T> of(Class<T> self, AbstractDefinitionCallable defCl) {
+        return new InstanceValue<T>(self).withPredicate(new TypePredicate(self)).withDefinitionClosure(defCl);
+    }
+
+    public static <T> InstanceValue<T> of(Class<T> self, Map<Object, Object> propertyValueMap) {
+        return of(self, propertyValueMap, null);
+    }
+
+    public static <T> InstanceValue<T> of(Class<T> self, Map<Object, Object> propertyValueMap, AbstractDefinitionCallable defCl) {
+        return new InstanceValue<T>(self).withPredicate(new TypePredicate(self)).withDefinitionClosure(defCl).usingDefinitions(propertyValueMap);
+    }
+
+    public static <T> InstanceValue<T> of(Class<T> self, String propertyName, AbstractDefinitionCallable defCl) {
+        return new InstanceValue<T>(self).withPredicate(Util.createPropertyPredicate(propertyName)).withDefinitionClosure(defCl);
+    }
+
+    public static <T> InstanceValue<T> of(Class<T> self, Collection constructorArgs, AbstractDefinitionCallable defCl) {
+        return new InstanceValue<T>(self).withPredicate(new TypePredicate(self)).withDefinitionClosure(defCl).withConstructorArguments(constructorArgs);
+    }
+
+    public static <T> InstanceValue<T> of(Class<T> self, String propertyName, Collection constructorArgs, AbstractDefinitionCallable defCl) {
+        return new InstanceValue<T>(self).withPredicate(Util.createPropertyPredicate(propertyName)).withDefinitionClosure(defCl).withConstructorArguments(constructorArgs);
+    }
+
+    public static ReferenceValue reference(Class selfl) {
+        return reference(selfl, null);
+    }
+
+    public static ReferenceValue reference(Class self, String propertyPredicate) {
+        return new ReferenceValue(new TypePredicate(self), propertyPredicate != null ? Util.createPropertyPredicate(propertyPredicate) : null);
+    }
+
+    public static <T> Value<T> arrayOf(Class<T> self, Value val) {
+        return of(self, val, null);
+    }
+
+    public static <T> Value<T> arrayOf(Class<T> self, Value val, Integer count) {
+        return of(self, val, count);
+    }
+
+
+    //------------------------------------------------------------------------------------------------------------------
+    // Map methods
+    //------------------------------------------------------------------------------------------------------------------
+    public static <K> MapValue<K> of(Map<K, Object> self, Map<K, Value> keyValueMap) {
+        return new MapValue<K>(self, keyValueMap);
+    }
+
+
+    //------------------------------------------------------------------------------------------------------------------
     // String methods
     //------------------------------------------------------------------------------------------------------------------
     public static IncrementalString increment(String self) {
@@ -60,14 +133,6 @@ public class DataScrambler {
 
     public static ArrayValue<String> randomArray(String value, Integer count, Integer arrayCount) {
         return new ArrayValue<String>(String.class, count, random(value, arrayCount));
-    }
-
-
-    //------------------------------------------------------------------------------------------------------------------
-    // Map methods
-    //------------------------------------------------------------------------------------------------------------------
-    public static <K> MapValue<K> of(Map<K, Object> self, Map<K, Value> keyValueMap) {
-        return new MapValue<K>(self, keyValueMap);
     }
 
 
@@ -240,7 +305,7 @@ public class DataScrambler {
     public static <T> Value<T> random(Class<T> self, T defaultValue) {
         if (Types.randomTypeMap.containsKey(self)) {
             if (self.isArray()) {
-                return random(self, defaultValue, (Integer) null);
+                return randomArray(self, defaultValue, null);
             } else {
                 if (self.isPrimitive()) {
                     return (Value) Util.createInstance(Types.randomTypeMap.get(self), null, null);
@@ -253,7 +318,7 @@ public class DataScrambler {
     }
 
     public static <T> Value<T> random(Class<T> self, T minimum, T maximum) {
-        final Value<T> value = random(self, null);
+        final Value<T> value = random(self, minimum);
         if (value instanceof AbstractRandomRange) {
             final AbstractRandomRange<T> randomRangeValue = (AbstractRandomRange<T>) value;
             randomRangeValue.between(minimum, maximum);
@@ -264,7 +329,7 @@ public class DataScrambler {
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Value<T> random(Class<T> self, T defaultValue, Integer count) {
+    public static <T> Value<T> randomArray(Class<T> self, T defaultValue, Integer count) {
         final Class<?> componentType = self.getComponentType();
         Value valueType;
         if (defaultValue != null) {
@@ -338,62 +403,52 @@ public class DataScrambler {
     }
 
     //------------------------------------------------------------------------------------------------------------------
-    // InstanceValue methods
+    // Boolean methods
     //------------------------------------------------------------------------------------------------------------------
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType) {
-        return instanceOf(clazzType, null);
+    public static Value<Boolean> random(Boolean value) {
+        return new RandomBoolean(value);
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<Object, Object> fieldMap) {
-        return new InstanceValue<T>(clazzType).usingDefinitions(fieldMap);
+    public static Value randomArray(Boolean value) {
+        return randomArray(value, null, null);
     }
 
-    public static <T> InstanceValue<T> instanceOf(String type) {
-        return instanceOf(type, null);
+    public static Value randomArray(Boolean value, Integer count) {
+        return randomArray(value, count, null);
     }
 
-    public static <T> InstanceValue<T> instanceOf(String type, Map<Object, Object> fieldMap) {
-        return new InstanceValue<T>(type).usingDefinitions(fieldMap);
-    }
+    @SuppressWarnings("unchecked")
+    public static Value randomArray(Boolean value, Integer count, Class clazzType) {
+        Util.checkPositiveCount(count);
 
-    public static <T> InstanceValue<T> of(Class<T> self, AbstractDefinitionCallable defCl) {
-        return new InstanceValue<T>(self).withPredicate(new TypePredicate(self)).withDefinitionClosure(defCl);
-    }
+        if (clazzType == null) {
+            clazzType = value != null ? value.getClass() : null;
+        }
+        if (clazzType == null) {
+            throw new IllegalArgumentException(String.format("Either classType: %s or value: %s should be not null", null, value));
+        }
+        boolean primitive = false;
+        Class<?> componentType;
+        if (clazzType.isArray()) {
+            componentType = clazzType.getComponentType();
+            if (componentType.isPrimitive()) {
+                primitive = true;
+                componentType = Types.primitiveWrapperMap.get(componentType);
+            }
+        } else {
+            componentType = clazzType;
+        }
 
-    public static <T> InstanceValue<T> of(Class<T> self, Map<Object, Object> propertyValueMap) {
-        return of(self, propertyValueMap, null);
+        Value instance = (Value) Util.createInstance(Types.randomTypeMap.get(componentType), new Object[]{value}, new Class[]{componentType});
+        final Value valueArray;
+        if (primitive) {
+            valueArray = (Value) Util.createInstance(Types.randomTypeMap.get(clazzType),
+                    new Object[]{clazzType.isInstance(value) ? value : null, count, instance},
+                    new Class[]{clazzType, Integer.class, Object.class}
+            );
+        } else {
+            valueArray = new ArrayValue(clazzType, count, instance);
+        }
+        return valueArray;
     }
-
-    public static <T> InstanceValue<T> of(Class<T> self, Map<Object, Object> propertyValueMap, AbstractDefinitionCallable defCl) {
-        return new InstanceValue<T>(self).withPredicate(new TypePredicate(self)).withDefinitionClosure(defCl).usingDefinitions(propertyValueMap);
-    }
-
-    public static <T> InstanceValue<T> of(Class<T> self, String propertyName, AbstractDefinitionCallable defCl) {
-        return new InstanceValue<T>(self).withPredicate(Util.createPropertyPredicate(propertyName)).withDefinitionClosure(defCl);
-    }
-
-    public static <T> InstanceValue<T> of(Class<T> self, Collection constructorArgs, AbstractDefinitionCallable defCl) {
-        return new InstanceValue<T>(self).withPredicate(new TypePredicate(self)).withDefinitionClosure(defCl).withConstructorArguments(constructorArgs);
-    }
-
-    public static <T> InstanceValue<T> of(Class<T> self, String propertyName, Collection constructorArgs, AbstractDefinitionCallable defCl) {
-        return new InstanceValue<T>(self).withPredicate(Util.createPropertyPredicate(propertyName)).withDefinitionClosure(defCl).withConstructorArguments(constructorArgs);
-    }
-
-    public static ReferenceValue reference(Class selfl) {
-        return reference(selfl, null);
-    }
-
-    public static ReferenceValue reference(Class self, String propertyPredicate) {
-        return new ReferenceValue(new TypePredicate(self), propertyPredicate != null ? Util.createPropertyPredicate(propertyPredicate) : null);
-    }
-
-    public static <T> Value<T> arrayOf(Class<T> self, Value val) {
-        return of(self, val, null);
-    }
-
-    public static <T> Value<T> arrayOf(Class<T> self, Value val, Integer count) {
-        return of(self, val, count);
-    }
-
 }

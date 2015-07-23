@@ -12,26 +12,26 @@ class GroovyValueDefinitionTest extends Specification {
         final parser = new GroovyValueDefinition()
 
         expect:
-        parser.parseText("random 1, 100").propertyValueMap.size() > 0
-        parser.parseText("random 1L, 100L").propertyValueMap.size() > 0
-        parser.parseText("random new Date()").propertyValueMap.size() > 0
-        parser.parseText("random('some template string', 100)").propertyValueMap.size() > 0
+        parser.parseText("of Integer.random(1, 100)").propertyValueMap.size() > 0
+        parser.parseText("of Long.random(1L, 100L)").propertyValueMap.size() > 0
+        parser.parseText("of new Date().random()").propertyValueMap.size() > 0
+        parser.parseText("of 'some template string'.random(100)").propertyValueMap.size() > 0
 
-        parser.parseText("randomOf([1, 2, 3])").propertyValueMap.size() > 0
+        parser.parseText("of([1, 2, 3].randomOf())").propertyValueMap.size() > 0
 
         parser.parseText("of(new PropertyPredicate(pattern: ~/\\w+Sid/), new RandomInteger(1, 100))").propertyValueMap.size() > 0
         parser.parseText("of(new PropertyPredicate('*Sid'), new RandomInteger(1, 100))").propertyValueMap.size() > 0
 
-        parser.parseText("incremental 1.0").propertyValueMap.size() > 0
-        parser.parseText("incremental 1, 100").propertyValueMap.size() > 0
-        parser.parseText("incremental 1L, 100L").propertyValueMap.size() > 0
+        parser.parseText("of 1.0.increment()").propertyValueMap.size() > 0
+        parser.parseText("of Integer.increment(1, 100)").propertyValueMap.size() > 0
+        parser.parseText("of Long.increment(1L, 100L)").propertyValueMap.size() > 0
 
-        parser.parseText("incremental new Date()").propertyValueMap.size() > 0
-        parser.parseText("incremental new Date(), 2").propertyValueMap.size() > 0
-        parser.parseText("incremental new Date(), 1, Calendar.HOUR").propertyValueMap.size() > 0
+        parser.parseText("of new Date().increment()").propertyValueMap.size() > 0
+        parser.parseText("of new Date().increment(Calendar.MINUTE)").propertyValueMap.size() > 0
+        parser.parseText("of new Date().increment(Calendar.HOUR, 2)").propertyValueMap.size() > 0
 
-        parser.parseText("'some template string'.increment('some%d')").propertyValueMap.size() > 0
-        parser.parseText("'some template string'.increment('some%d', 12)").propertyValueMap.size() > 0
+        parser.parseText("of 'some template string'.increment('some%s%d')").propertyValueMap.size() > 0
+        parser.parseText("of 'some template string'.increment('some%s%d', 12)").propertyValueMap.size() > 0
 
         parser.parseText("constant 1.0").propertyValueMap.size() > 0
         parser.parseText("constant 1").propertyValueMap.size() > 0
@@ -40,13 +40,13 @@ class GroovyValueDefinitionTest extends Specification {
         parser.parseText("constant 'some template string'").propertyValueMap.size() > 0
         parser.parseText("constant new Object()").propertyValueMap.size() > 0
 
-        parser.parseText("random(new ArrayList(1024), new RandomInteger(1, 100))").propertyValueMap.size() > 0
-        parser.parseText("random(new ArrayList(1024), new RandomString('some message', 45), 1024)").propertyValueMap.size() > 0
+        parser.parseText("of new ArrayList(1024).of(new RandomInteger(1, 100))").propertyValueMap.size() > 0
+        parser.parseText("of new ArrayList(1024).of(new RandomString('some message', 45), 1024)").propertyValueMap.size() > 0
 
         parser.parseText("""
-random 1, 100
-randomOf([1, 2, 3])
-incremental new Date(), 1, Calendar.HOUR
+of(1.random(0, 100))
+of([1, 2, 3].randomOf())
+of new Date().increment(Calendar.HOUR)
 constant 'some template string'
 """).propertyValueMap.size() > 0
     }
@@ -71,7 +71,7 @@ constant 'some template string'
 
         parser.parseText("of([1, 2, 3].randomOf())").propertyValueMap.size() > 0
 
-        parser.parseText("of 1.0").propertyValueMap.size() > 0
+        parser.parseText("constant 1.0").propertyValueMap.size() > 0
         parser.parseText("of 1.increment(100)").propertyValueMap.size() > 0
         parser.parseText("of 1L.increment(100L)").propertyValueMap.size() > 0
 
@@ -86,7 +86,7 @@ constant 'some template string'
         parser.parseText("of 1.constant()").propertyValueMap.size() > 0
         parser.parseText("of 1L.constant()").propertyValueMap.size() > 0
         parser.parseText("of new Date().constant()").propertyValueMap.size() > 0
-        parser.parseText("of 'some string'").propertyValueMap.size() > 0
+        parser.parseText("constant 'some string'").propertyValueMap.size() > 0
         parser.parseText("of new Object().constant()").propertyValueMap.size() > 0
 
         parser.parseText("""
@@ -212,9 +212,10 @@ of org.prismus.scrambler.beans.School.of {
     void 'test parse text for map'() {
         given:
         final parser = new GroovyValueDefinition()
-
-        and:
-        def valueDefinition = parser.parseText("of('a*':1.constant(), b:2.random(), c:'cucu')")
+        final valueDefinition = parser.parseText("""
+of('a*':1.constant(), b:2.random(), c:'cucu')
+of('*Sid': Integer.random(1, 100))
+""")
 
         expect:
         valueDefinition.propertyValueMap.size() > 0

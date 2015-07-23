@@ -23,7 +23,14 @@ class GroovyValueDefinition {
     }
 
     @CompileStatic
-    ValueDefinition parseText(String definitionText) {
+    ValueDefinition parseDefinitions(String definitionText /*language="groovy"*/) {
+        throw new RuntimeException('Implement me')
+    }
+
+    @CompileStatic
+    ValueDefinition parseText(String definitionText /*language="groovy"*/) { // todo Serge: change to parseValue?
+    // todo  Serge: cache parsed definitions?
+    // todo  Serge: simplify groovy scripting: remove definition delegation/injection by creating explicit methods: parseText and parseDefinition, where parseDefinition will inject definition instance passed as parameter
         if (!shell) {
             shell = createGroovyShell()
         }
@@ -34,6 +41,7 @@ class GroovyValueDefinition {
     }
 
     @CompileStatic
+    // todo Serge: change to parseValue/parseDefinitions?
     ValueDefinition parse(String resource) throws IOException {
         final URL url = this.getClass().getResource(resource)
         if (url == null) {
@@ -90,22 +98,6 @@ class GroovyValueDefinition {
         }
     }
 
-    //------------------------------------------------------------------------------------------------------------------
-    static void register() {
-        Object.metaClass.mixin ObjectCategory
-        Number.metaClass.mixin NumberCategory
-        Date.metaClass.mixin DateCategory
-        String.metaClass.mixin StringCategory
-        Collection.metaClass.mixin CollectionCategory
-        Map.metaClass.mixin MapCategory
-
-        Class.metaClass.mixin ClassCategory
-    }
-
-    static {
-        register()
-    }
-
     @CompileStatic
     static class ClassCategory {
 
@@ -129,8 +121,8 @@ class GroovyValueDefinition {
             return DataScrambler.random(self, minimum, maximum)
         }
 
-        static <T> Value<T> random(Class<T> self, T defaultValue, Integer count) {
-            return DataScrambler.random(self, defaultValue, count)
+        static <T> Value<T> randomArray(Class<T> self, T defaultValue, Integer count) {
+            return DataScrambler.randomArray(self, defaultValue, count)
         }
 
         static <T> Value<T> of(Class clazzType, Value val, Integer count) {
@@ -300,7 +292,7 @@ class GroovyValueDefinition {
     @CompileStatic
     static class StringCategory {
 
-        static IncrementalString increment(String self, String pattern = null, Integer index = null) {
+        static IncrementalString increment(String self, String pattern = null, Integer index = null) { // todo Serge: passed pattern must contain JUST 2 formatters: %s and %d. review to validate the pattern
             return DataScrambler.increment(self, pattern, index)
         }
 
@@ -328,6 +320,38 @@ class GroovyValueDefinition {
             return DataScrambler.randomArray(value, count, arrayCount)
         }
 
+    }
+
+    @CompileStatic
+    static class BooleanCategory {
+
+        static Value<Boolean> random(Boolean value) {
+            return DataScrambler.random(value);
+        }
+
+        static Value randomArray(Boolean value, Integer count = null, Class clazzType = null) {
+            return DataScrambler.randomArray(value, count, clazzType);
+        }
+
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    // Definitions registration
+    //------------------------------------------------------------------------------------------------------------------
+    static void register() {
+        Object.metaClass.mixin ObjectCategory
+        Number.metaClass.mixin NumberCategory
+        Date.metaClass.mixin DateCategory
+        String.metaClass.mixin StringCategory
+        Collection.metaClass.mixin CollectionCategory
+        Map.metaClass.mixin MapCategory
+        Boolean.metaClass.mixin BooleanCategory
+
+        Class.metaClass.mixin ClassCategory
+    }
+
+    static {
+        register()
     }
 
 }

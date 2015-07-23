@@ -67,11 +67,11 @@ class RandomTest extends Specification {
 
     void 'verify random boolean generation'(Class type, Boolean value, Integer count) {
         expect:
-        null != BooleanValue.random(value).next()
-        null != BooleanValue.random(value).next()
+        null != DataScrambler.random(value).next()
+        null != DataScrambler.random(value).next()
 
         and: ''
-        final numberValues = BooleanValue.random(value, count, type)
+        final numberValues = DataScrambler.randomArray(value, count, type)
         for (int i = 0; i < 5; i++) {
             final values = numberValues.next()
             Assert.assertNotNull(values)
