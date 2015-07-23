@@ -98,6 +98,22 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         }
     }
 
+    public InstanceValue<T> withConstructorArguments(Collection constructorArguments) {
+        this.constructorArguments = new ArrayList<Value>();
+        setConstructorArguments(constructorArguments);
+        return this;
+    }
+
+    public InstanceValue<T> withPredicate(ValuePredicate predicate) {
+        this.predicate = predicate;
+        return this;
+    }
+
+    public InstanceValue<T> withDefinitionClosure(AbstractDefinitionCallable definitionClosure) {
+        this.definitionClosure = definitionClosure;
+        return this;
+    }
+
     public InstanceValue<T> registerFieldValue(String field, Value value) {
         fieldValueMap.put(field, value);
         return this;

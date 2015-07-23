@@ -90,7 +90,7 @@ constant 'some template string'
         parser.parseText("of new Object().constant()").propertyValueMap.size() > 0
 
         parser.parseText("""
-of '*array', int.array(1.random())
+of '*array', int.arrayOf(1.random())
 of 1.random(1, 100)
 of([1, 2, 3].randomOf())
 of new Date().increment(Calendar.HOUR, 1)
@@ -205,7 +205,7 @@ of org.prismus.scrambler.beans.School.of {
         null != 2.random(1, 100)
         null != 3L.random(1L, 100L)
         null != new Date().random()
-        null != int.array(1.random())
+        null != int.arrayOf(1.random())
         null != 'some template string'.random(100)
     }
 

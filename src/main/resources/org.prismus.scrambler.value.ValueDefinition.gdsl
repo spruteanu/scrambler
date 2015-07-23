@@ -27,3 +27,7 @@ contributor context(ctype: Map.name) , {
 contributor context(ctype: Object.name) , {
     findClass('org.prismus.scrambler.value.ObjectCategory')?.methods?.each { add it }
 }
+
+contributor context(ctype: Class.name) , {
+    findClass('org.prismus.scrambler.value.ClassCategory')?.methods?.each { add it }
+}

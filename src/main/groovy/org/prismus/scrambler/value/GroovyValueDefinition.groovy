@@ -98,65 +98,7 @@ class GroovyValueDefinition {
         Collection.metaClass.mixin CollectionCategory
         Map.metaClass.mixin MapCategory
 
-        Class.metaClass {
-            of { Closure defCl ->
-                return new InstanceValue(
-                        type: (Class) delegate,
-                        predicate: new TypePredicate(type: (Class) delegate),
-                        definitionClosure: new GroovyDefinitionCallable(defCl)
-                )
-            }
-
-            of { Map<Object, Object> propertyValueMap, Closure defCl = null ->
-                GroovyDefinitionCallable definitionCallable = null
-                if (defCl) {
-                    definitionCallable = new GroovyDefinitionCallable(defCl)
-                }
-                return new InstanceValue(
-                        type: (Class) delegate,
-                        predicate: new TypePredicate(type: (Class) delegate),
-                        definitionClosure: definitionCallable
-                ).usingDefinitions(propertyValueMap)
-            }
-
-            of { String propertyName, Closure defCl ->
-                return new InstanceValue(
-                        type: (Class) delegate,
-                        predicate: Util.createPropertyPredicate(propertyName),
-                        definitionClosure: new GroovyDefinitionCallable(defCl)
-                )
-            }
-
-            of { Collection constructorArgs, Closure defCl ->
-                return new InstanceValue(
-                        type: (Class) delegate,
-                        constructorArguments: constructorArgs,
-                        predicate: new TypePredicate(type: (Class) delegate),
-                        definitionClosure: new GroovyDefinitionCallable(defCl)
-                )
-            }
-
-            of { String propertyName, Collection constructorArgs, Closure defCl ->
-                return new InstanceValue(
-                        type: (Class) delegate,
-                        constructorArguments: constructorArgs,
-                        predicate: Util.createPropertyPredicate(propertyName),
-                        definitionClosure: new GroovyDefinitionCallable(defCl)
-                )
-            }
-
-            array { Value val, Integer count = null ->
-                return ClassCategory.of((Class) delegate, val, count)
-            }
-
-            array { Number defaultValue, Number step, Integer count = null ->
-                return ClassCategory.incrementArray((Class) delegate, defaultValue, step, count)
-            }
-
-            reference { String propertyPredicate = null ->
-                return new ReferenceValue(new TypePredicate((Class) delegate), propertyPredicate != null ? Util.createPropertyPredicate(propertyPredicate) : null)
-            }
-        }
+        Class.metaClass.mixin ClassCategory
     }
 
     static {

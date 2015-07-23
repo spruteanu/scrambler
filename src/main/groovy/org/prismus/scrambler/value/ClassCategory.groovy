@@ -11,7 +11,7 @@ import org.prismus.scrambler.Value
 @CompileStatic
 class ClassCategory {
 
-    public static <T> Value<T> incrementArray(Class<T> self, T defaultValue, T step, Integer count) {
+    static <T> Value<T> incrementArray(Class<T> self, T defaultValue, T step, Integer count) {
         Util.checkPositiveCount(count)
         final Class<?> componentType = self.isArray() ? self.getComponentType() : self
         final Value value
@@ -36,11 +36,11 @@ class ClassCategory {
         return value
     }
 
-    public static <T extends Number> Value<T> increment(Class<T> self, T defaultValue, T step) {
+    static <T extends Number> Value<T> increment(Class<T> self, T defaultValue, T step) {
         if (Types.incrementTypeMap.containsKey(self)) {
             final Value<T> value
             if (self.isArray()) {
-                value = incrementArray((Class<T>)self, defaultValue, step, null)
+                value = incrementArray((Class<T>) self, defaultValue, step, null)
             } else {
                 value = (Value<T>) Util.createInstance(Types.incrementTypeMap.get(self), [defaultValue, step] as Object[], [self, self] as Class[])
             }
@@ -49,11 +49,11 @@ class ClassCategory {
         throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s", self, self))
     }
 
-    public static <T> Value<T> random(Class<T> self) {
-        return random(self, (T)null)
+    static <T> Value<T> random(Class<T> self) {
+        return random(self, (T) null)
     }
 
-    public static <T> Value<T> random(Class<T> self, T defaultValue) {
+    static <T> Value<T> random(Class<T> self, T defaultValue) {
         if (Types.randomTypeMap.containsKey(self)) {
             if (self.isArray()) {
                 return random(self, defaultValue, (Integer) null)
@@ -68,8 +68,8 @@ class ClassCategory {
         throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s", self, defaultValue))
     }
 
-    public static <T> Value<T> random(Class<T> self, T minimum, T maximum) {
-        final Value<T> value = random(self, (T)null)
+    static <T> Value<T> random(Class<T> self, T minimum, T maximum) {
+        final Value<T> value = random(self, (T) null)
         if (value instanceof AbstractRandomRange) {
             final AbstractRandomRange<T> randomRangeValue = (AbstractRandomRange<T>) value
             randomRangeValue.between(minimum, maximum)
@@ -79,7 +79,7 @@ class ClassCategory {
         return value
     }
 
-    public static <T> Value<T> random(Class<T> self, T defaultValue, Integer count) {
+    static <T> Value<T> random(Class<T> self, T defaultValue, Integer count) {
         final Class<?> componentType = self.getComponentType()
         Value valueType
         if (defaultValue != null) {
@@ -98,7 +98,7 @@ class ClassCategory {
         return value
     }
 
-    public static <T> Value<T> of(Class clazzType, Value val, Integer count) {
+    static <T> Value<T> of(Class clazzType, Value val, Integer count) {
         if (clazzType.isPrimitive()) {
             final Class<? extends Value> arrayValueType = Types.primitivesTypeMap.get(clazzType)
             return (Value) Util.createInstance(
@@ -110,7 +110,7 @@ class ClassCategory {
         }
     }
 
-    public static <N extends Number> Value<N> randomArray(Class self, N minimum, N maximum, Integer count) {
+    static <N extends Number> Value<N> randomArray(Class self, N minimum, N maximum, Integer count) {
         Util.checkPositiveCount(count)
 
         Object defaultValue = minimum != null ? minimum : maximum != null ? maximum : null
@@ -147,28 +147,73 @@ class ClassCategory {
         return value
     }
 
-    public static <K> MapValue<K> mapOf(Class<Map<K, Object>> mapType, Map<K, Value> keyValueMap) {
+    static <K> MapValue<K> mapOf(Class<Map<K, Object>> mapType, Map<K, Value> keyValueMap) {
         return new MapValue<K>(mapType, keyValueMap)
     }
 
-    public static <V, T extends Collection<V>> CollectionValue<V, T> collectionOf(Class<V> clazzType, Value<V> value) {
+    static <V, T extends Collection<V>> CollectionValue<V, T> collectionOf(Class<V> clazzType, Value<V> value) {
         return new CollectionValue<V, T>(clazzType, value, null)
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType) {
+    static <T> InstanceValue<T> instanceOf(Class<T> clazzType) {
         return instanceOf(clazzType, null)
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<Object, Object> fieldMap) {
+    static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<Object, Object> fieldMap) {
         return new InstanceValue<T>(clazzType).usingDefinitions(fieldMap)
     }
 
-    public static <T> InstanceValue<T> instanceOf(String type) {
+    static <T> InstanceValue<T> instanceOf(String type) {
         return instanceOf(type, null)
     }
 
-    public static <T> InstanceValue<T> instanceOf(String type, Map<Object, Object> fieldMap) {
+    static <T> InstanceValue<T> instanceOf(String type, Map<Object, Object> fieldMap) {
         return new InstanceValue<T>(type).usingDefinitions(fieldMap)
+    }
+
+    static <T> InstanceValue<T> of(Class<T> self, Closure defCl) {
+        return new InstanceValue(self)
+                .withPredicate(new TypePredicate(self))
+                .withDefinitionClosure(new GroovyDefinitionCallable(defCl))
+    }
+
+    static <T> InstanceValue<T> of(Class<T> self, Map<Object, Object> propertyValueMap, Closure defCl = null) {
+        GroovyDefinitionCallable definitionCallable = null
+        if (defCl) {
+            definitionCallable = new GroovyDefinitionCallable(defCl)
+        }
+        return new InstanceValue(self)
+                .withPredicate(new TypePredicate(self))
+                .withDefinitionClosure(definitionCallable)
+                .usingDefinitions(propertyValueMap)
+    }
+
+    static <T> InstanceValue<T> of(Class<T> self, String propertyName, Closure defCl) {
+        return new InstanceValue(self)
+                .withPredicate(Util.createPropertyPredicate(propertyName))
+                .withDefinitionClosure(new GroovyDefinitionCallable(defCl))
+    }
+
+    static <T> InstanceValue<T> of(Class<T> self, Collection constructorArgs, Closure defCl) {
+        return new InstanceValue(self)
+                .withPredicate(new TypePredicate(self))
+                .withDefinitionClosure(new GroovyDefinitionCallable(defCl))
+                .withConstructorArguments(constructorArgs)
+    }
+
+    static <T> InstanceValue<T> of(Class<T> self, String propertyName, Collection constructorArgs, Closure defCl) {
+        return new InstanceValue(self)
+                .withPredicate(Util.createPropertyPredicate(propertyName))
+                .withDefinitionClosure(new GroovyDefinitionCallable(defCl))
+                .withConstructorArguments(constructorArgs)
+    }
+
+    static ReferenceValue reference(Class self, String propertyPredicate = null) {
+        return new ReferenceValue(new TypePredicate(self), propertyPredicate != null ? Util.createPropertyPredicate(propertyPredicate) : null)
+    }
+
+    static <T> Value<T> arrayOf(Class<T> self, Value val, Integer count = null) {
+        return of(self, val, count)
     }
 
 }

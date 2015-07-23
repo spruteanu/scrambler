@@ -79,7 +79,7 @@ class InstanceValueTest extends Specification {
         GroovyValueDefinition.register()
         final instance = new InstanceValue<Order>(Order).usingDefinitions(
                 (BigDecimal): BigDecimal.ONE.random(1.0, 100.0),
-                (int[]): int.array(10.increment(10)),
+                (int[]): int.arrayOf(10.increment(10)),
                 person: Person.of(
                         'firstName': ['Andy', 'Nicole', 'Nicolas', 'Jasmine'].randomOf(),
                         'lastName': ['Smith', 'Ferrara', 'Maldini', "Shaffer"].randomOf(),
