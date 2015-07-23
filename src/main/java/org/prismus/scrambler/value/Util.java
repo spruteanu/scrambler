@@ -18,15 +18,6 @@ public abstract class Util {
     private static final String FAILED_CREATE_INSTANCE_MSG = "Failed to create instance of type: %s, arguments: %s, types: %s";
 
     private static final Set<Character> PREFIXED_CHAR_SET = new HashSet<Character>(Arrays.asList('+', '(', ')', '^', '$', '.', '{', '}', '[', ']', '|', '\\'));
-    static Map<Class, Class> primitiveWrapperMap = new LinkedHashMap<Class, Class>() {{
-        put(byte.class, Byte.class);
-        put(short.class, Short.class);
-        put(boolean.class, Boolean.class);
-        put(double.class, Double.class);
-        put(float.class, Float.class);
-        put(int.class, Integer.class);
-        put(long.class, Long.class);
-    }};
 
     @SuppressWarnings({"unchecked"})
     public static Object createInstance(Class clazzType, Object[] arguments) {

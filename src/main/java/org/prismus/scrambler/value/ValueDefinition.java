@@ -135,13 +135,13 @@ public class ValueDefinition {
 
     public ValueDefinition incremental(Number value, Number step) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(value.getClass()), NumberValue.increment(value, step));
+        registerPredicateValue(new TypePredicate(value.getClass()), NumberCategory.increment(value, step));
         return this;
     }
 
     public ValueDefinition incremental(Number value, Number step, Integer count) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(value.getClass()), NumberValue.incrementArray(value, step, count));
+        registerPredicateValue(new TypePredicate(value.getClass()), NumberCategory.incrementArray(value, step, count));
         return this;
     }
 
@@ -156,7 +156,7 @@ public class ValueDefinition {
     public ValueDefinition random(Number minimum, Number maximum) {
         Util.checkNullValue(minimum, maximum);
         final Number value = Util.getNotNullValue(minimum, maximum);
-        registerPredicateValue(new TypePredicate(value.getClass()), NumberValue.random(minimum, maximum));
+        registerPredicateValue(new TypePredicate(value.getClass()), NumberCategory.random(minimum, maximum));
         return this;
     }
 
@@ -173,7 +173,7 @@ public class ValueDefinition {
 
     public ValueDefinition incremental(Date value, Integer step, Integer calendarField) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(value.getClass()), DateValue.increment(value, step, calendarField));
+        registerPredicateValue(new TypePredicate(value.getClass()), DateCategory.increment(value, step, calendarField));
         return this;
     }
 
@@ -187,7 +187,7 @@ public class ValueDefinition {
 
     public ValueDefinition random(Date value, Date minimum, Date maximum) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(Date.class), DateValue.random(value, minimum, maximum));
+        registerPredicateValue(new TypePredicate(Date.class), DateCategory.random(value, minimum, maximum));
         return this;
     }
 
@@ -314,7 +314,7 @@ public class ValueDefinition {
     public ValueDefinition of(Class type, Value value, Integer count) {
         Util.checkNullValue(type);
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(type), ClassValue.of(type, value, count));
+        registerPredicateValue(new TypePredicate(type), ClassCategory.of(type, value, count));
         return this;
     }
 

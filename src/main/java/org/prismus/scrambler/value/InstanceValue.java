@@ -123,7 +123,9 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     }
 
     public InstanceValue<T> usingDefinitions(Map<Object, Object> valueDefinitions) {
-        registerFieldValues(new ValueDefinition().of(valueDefinitions));
+        if (valueDefinitions != null && valueDefinitions.size() > 0) {
+            registerFieldValues(new ValueDefinition().of(valueDefinitions));
+        }
         return this;
     }
 
@@ -232,9 +234,9 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             final Class propertyType = field.getType();
             Value val = null;
             if (supportedTypes.contains(propertyType)) {
-                val = ClassValue.random(propertyType);
+                val = ClassCategory.random(propertyType);
             } else if (propertyType.isArray() && supportedTypes.contains(propertyType.getComponentType())) {
-                val = ClassValue.random(propertyType, null);
+                val = ClassCategory.random(propertyType, null);
             } else {
                 if (Iterable.class.isAssignableFrom(propertyType) || Map.class.isAssignableFrom(propertyType)) {
                     continue;
@@ -264,7 +266,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                 for (final Class argType : types) {
                     Value val = typeValueMap.get(new TypePredicate(argType));
                     if (val == null && supportedTypes.contains(argType)) {
-                        val = ClassValue.random(argType);
+                        val = ClassCategory.random(argType);
                     }
                     if (val != null) {
                         values.add(val);

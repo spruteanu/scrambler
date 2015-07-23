@@ -15,17 +15,17 @@ class RandomTest extends Specification {
 
     void 'verify random number generation'(Number minimum, Number maximum, Integer count) {
         given:
-        Value<Number> randomNumber = NumberValue.random(minimum, maximum)
+        Value<Number> randomNumber = NumberCategory.random(minimum, maximum)
 
         expect:
-        null != NumberValue.random(maximum).next()
+        null != NumberCategory.random(maximum).next()
 
         for (int i = 0; i < 100; i++) {
             Assert.assertTrue(isBetween(minimum, maximum, randomNumber.next()))
         }
 
         and: "verify array creation"
-        Number[] numberValues = ClassValue.randomArray(null, minimum, maximum, count).next()
+        Number[] numberValues = ClassCategory.randomArray(null, minimum, maximum, count).next()
         for (int i = 0; i < numberValues.length; i++) {
             Assert.assertTrue(isBetween(minimum, maximum, numberValues[i]))
         }
@@ -42,7 +42,7 @@ class RandomTest extends Specification {
 
     void 'verify random primitives generation'(Class type, Number minimum, Number maximum, Integer count) {
         given:
-        Value numberValues = ClassValue.randomArray(type, minimum, maximum, count)
+        Value numberValues = ClassCategory.randomArray(type, minimum, maximum, count)
 
         expect:
         for (int i = 0; i < 5; i++) {
@@ -88,12 +88,12 @@ class RandomTest extends Specification {
 
     void 'verify random dates'(Date date, Date minimum, Date maximum, Integer count) {
         expect:
-        date.before(DateValue.random(date).next())
-        date.before(DateValue.random(null, minimum, (Date) null).usingValue(date).next())
-        isBetween(minimum, maximum, DateValue.random(date, minimum, maximum).next())
+        date.before(DateCategory.random(date).next())
+        date.before(DateCategory.random(null, minimum, (Date) null).usingValue(date).next())
+        isBetween(minimum, maximum, DateCategory.random(date, minimum, maximum).next())
 
         and: "verify in a loop"
-        final Value<Date[]> randomDate = DateValue.randomArray(date, minimum, maximum, count)
+        final Value<Date[]> randomDate = DateCategory.randomArray(date, minimum, maximum, count)
         final Date[] dates = randomDate.next();
         if (count != null) {
             Assert.assertEquals(count, dates.length)
@@ -105,7 +105,7 @@ class RandomTest extends Specification {
         where:
         date << [new Date(), new Date(), new Date(), new Date(),]
         minimum << [new Date(), new Date(), new Date(), new Date(),]
-        maximum << [DateValue.increment(new Date()).next(), DateValue.increment(new Date()).next(), DateValue.increment(new Date()).next(), DateValue.increment(new Date()).next(),]
+        maximum << [DateCategory.increment(new Date()).next(), DateCategory.increment(new Date()).next(), DateCategory.increment(new Date()).next(), DateCategory.increment(new Date()).next(),]
         count << [5, 3, null, 10,]
     }
 
@@ -149,7 +149,7 @@ class RandomTest extends Specification {
 
     void 'verify random array element'() {
         given:
-        final randomElement = ObjectValue.randomOf(randoms)
+        final randomElement = ObjectCategory.randomOf(randoms)
         final containerSet = new HashSet(Arrays.asList(randoms))
 
         expect:

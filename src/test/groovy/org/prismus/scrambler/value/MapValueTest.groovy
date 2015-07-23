@@ -11,25 +11,25 @@ class MapValueTest extends Specification {
     @SuppressWarnings("GroovyAssignabilityCheck")
     void 'verify map creation'() {
         given:
-        Map<String, Value> keyValueMap = ['ValueSID': NumberValue.increment(1), 'SomeID': new Constant(1), 'Amount': NumberValue.increment(100.0d)]
+        Map<String, Value> keyValueMap = ['ValueSID': NumberCategory.increment(1), 'SomeID': new Constant(1), 'Amount': NumberCategory.increment(100.0d)]
         MapValue mapValue = MapValue.of(new HashMap(), keyValueMap)
         final generatedMap = mapValue.next()
 
         expect:
         generatedMap.keySet().containsAll(keyValueMap.keySet())
-        generatedMap == ClassValue.mapOf(HashMap,
-                ['ValueSID': NumberValue.increment(1), 'SomeID': new Constant(1), 'Amount': NumberValue.increment(100.0d)]
+        generatedMap == ClassCategory.mapOf(HashMap,
+                ['ValueSID': NumberCategory.increment(1), 'SomeID': new Constant(1), 'Amount': NumberCategory.increment(100.0d)]
         ).next()
 
         and: 'verify case where a map of map is generated'
-        ClassValue.mapOf(Hashtable,
-                ['ValueSID': NumberValue.increment(1), 'SomeID': new Constant(1), 'Amount': NumberValue.increment(100.0d),
-                 'products': ClassValue.collectionOf(
+        ClassCategory.mapOf(Hashtable,
+                ['ValueSID': NumberCategory.increment(1), 'SomeID': new Constant(1), 'Amount': NumberCategory.increment(100.0d),
+                 'products': ClassCategory.collectionOf(
                          ArrayList,
-                         ClassValue.mapOf(LinkedHashMap, [
-                                 'ProductSID': NumberValue.increment(1),
+                         ClassCategory.mapOf(LinkedHashMap, [
+                                 'ProductSID': NumberCategory.increment(1),
                                  'Name': new ListRandomElement<String>(Arrays.asList('Table Tennis Set', 'Ping Pong Balls', 'Table Tennis Racket')),
-                                 'Price': NumberValue.random(16.0d, 200.0d),
+                                 'Price': NumberCategory.random(16.0d, 200.0d),
                          ])
                  )
                 ]

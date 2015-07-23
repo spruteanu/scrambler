@@ -28,7 +28,7 @@ public class BooleanValue {
             componentType = clazzType.getComponentType();
             if (componentType.isPrimitive()) {
                 primitive = true;
-                componentType = Util.primitiveWrapperMap.get(componentType);
+                componentType = Types.primitiveWrapperMap.get(componentType);
             }
         } else {
             componentType = clazzType;

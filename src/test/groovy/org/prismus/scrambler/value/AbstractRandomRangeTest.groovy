@@ -11,7 +11,7 @@ class AbstractRandomRangeTest extends Specification {
 
     void 'test number ranges generation'() {
         given:
-        final valueInstance = NumberValue.random(minimum, maximum)
+        final valueInstance = NumberCategory.random(minimum, maximum)
 
         expect:
         1000.times {
@@ -55,7 +55,7 @@ class AbstractRandomRangeTest extends Specification {
         calendar.add(Calendar.SECOND, 10)
         maximum = calendar.getTime()
 
-        final valueInstance = DateValue.random(null, minimum, maximum)
+        final valueInstance = DateCategory.random(null, minimum, maximum)
 
         expect:
         maximum > minimum

@@ -13,10 +13,10 @@ import java.util.*;
  * @author Serge Pruteanu
  */
 public class Types {
-    static final String NOT_SUPPORTED_RANGE_TYPE_MSG = "Not supported range method for provided class type: %s, range of [%s, %s]";
-    static Map<Class, Class<? extends Value>> randomTypeMap = lookupRandomTypeMap();
-    static Map<Class, Class<? extends Value>> incrementTypeMap = lookupIncrementTypeMap();
-    static Map<Class, Class> arrayTypeMap = new LinkedHashMap<Class, Class>() {{
+    public static final String NOT_SUPPORTED_RANGE_TYPE_MSG = "Not supported range method for provided class type: %s, range of [%s, %s]";
+    public static Map<Class, Class<? extends Value>> randomTypeMap = lookupRandomTypeMap();
+    public static Map<Class, Class<? extends Value>> incrementTypeMap = lookupIncrementTypeMap();
+    public static Map<Class, Class> arrayTypeMap = new LinkedHashMap<Class, Class>() {{
         put(byte.class, byte[].class);
         put(short.class, short[].class);
         put(boolean.class, boolean[].class);
@@ -25,7 +25,16 @@ public class Types {
         put(int.class, int[].class);
         put(long.class, long[].class);
     }};
-    static Map<Class, Class<? extends Value>> primitivesTypeMap = lookupPrimitiveTypeMap();
+    public static Map<Class, Class<? extends Value>> primitivesTypeMap = lookupPrimitiveTypeMap();
+    public static Map<Class, Class> primitiveWrapperMap = new LinkedHashMap<Class, Class>() {{
+        put(byte.class, Byte.class);
+        put(short.class, Short.class);
+        put(boolean.class, Boolean.class);
+        put(double.class, Double.class);
+        put(float.class, Float.class);
+        put(int.class, Integer.class);
+        put(long.class, Long.class);
+    }};
 
     public static boolean isSupportedRandomType(Class type) {
         return randomTypeMap.containsKey(type);

@@ -26,4 +26,8 @@ class ArrayRandomElement<T> extends Constant<T> {
         return value;
     }
 
+    public T[] getValues() {
+        return values;
+    }
+
 }

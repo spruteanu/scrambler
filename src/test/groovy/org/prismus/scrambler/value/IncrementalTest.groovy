@@ -11,7 +11,7 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental number generation'(Number start, Number step, Integer count) {
         given:
-        Value<Number> numberValue = NumberValue.increment(start, step)
+        Value<Number> numberValue = NumberCategory.increment(start, step)
 
         expect:
         numberValue.get() == start
@@ -20,7 +20,7 @@ class IncrementalTest extends Specification {
         }
 
         and: "verify array creation"
-        Value<Number[]> numberValues = NumberValue.incrementArray(start, step, count)
+        Value<Number[]> numberValues = NumberCategory.incrementArray(start, step, count)
         for (int i = 0; i < 5; i++) {
             Number[] values = numberValues.next()
             Assert.assertNotNull(values)
@@ -44,7 +44,7 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental float values'(Float start, Float step, Integer count) {
         given:
-        Value<Float> numberValue = NumberValue.increment(start, step)
+        Value<Float> numberValue = NumberCategory.increment(start, step)
 
         expect:
         numberValue.get() == start
@@ -53,7 +53,7 @@ class IncrementalTest extends Specification {
         }
 
         and: "verify array creation"
-        Value<Float[]> numberValues = NumberValue.incrementArray(start, step, count)
+        Value<Float[]> numberValues = NumberCategory.incrementArray(start, step, count)
         for (int i = 0; i < 5; i++) {
             Float[] values = numberValues.next()
             Assert.assertNotNull(values)
@@ -77,7 +77,7 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental double values'(Double start, Double step, Integer count) {
         given:
-        Value<Double> numberValue = NumberValue.increment(start, step)
+        Value<Double> numberValue = NumberCategory.increment(start, step)
 
         expect:
         numberValue.get() == start
@@ -86,7 +86,7 @@ class IncrementalTest extends Specification {
         }
 
         and: "verify array creation"
-        Value<Double[]> numberValues = NumberValue.incrementArray(start, step, count)
+        Value<Double[]> numberValues = NumberCategory.incrementArray(start, step, count)
         for (int i = 0; i < 5; i++) {
             Double[] values = numberValues.next()
             Assert.assertNotNull(values)
@@ -110,7 +110,7 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental primitives generation'(Class type, Number start, Number step, Integer count) {
         given:
-        Value numberValues = ClassValue.incrementArray(type, start, step, count)
+        Value numberValues = ClassCategory.incrementArray(type, start, step, count)
 
         expect:
         for (int i = 0; i < 5; i++) {
@@ -148,17 +148,17 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental dates'(Date date, Integer calendarField, Integer step) {
         expect:
-        date.before(DateValue.increment(date).next())
-        date.before(DateValue.increment(date, 100).next())
-        date.before(DateValue.increment(date, 4, Calendar.MINUTE).next())
+        date.before(DateCategory.increment(date).next())
+        date.before(DateCategory.increment(date, 100).next())
+        date.before(DateCategory.increment(date, 4, Calendar.MINUTE).next())
 
         and: "Increment by several criteria: seconds/minutes/hours/weeks/month/years"
         date.before(new IncrementalDate().seconds(5).minutes(1).hours(2).days(3).years(1).next())
 
-        5 == DateValue.incrementArray(new Date(), [(Calendar.MINUTE): 2, (Calendar.HOUR): 1], 5).next().length
+        5 == DateCategory.incrementArray(new Date(), [(Calendar.MINUTE): 2, (Calendar.HOUR): 1], 5).next().length
 
         and: "verify in a loop"
-        final Value<Date> incrementalDate = DateValue.increment(date, calendarField, step)
+        final Value<Date> incrementalDate = DateCategory.increment(date, calendarField, step)
         for (int i = 0; i < 5; i++) {
             final nextDate = incrementalDate.next()
             Assert.assertTrue(date.before(nextDate))

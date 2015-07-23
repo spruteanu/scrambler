@@ -99,21 +99,21 @@ class GroovyValueDefinition {
 
         Number.metaClass {
             incremental { Number step = null ->
-                return NumberValue.increment((Number) delegate, step)
+                return NumberCategory.increment((Number) delegate, step)
             }
 
             random { Number minimum = null, Number maximum = null ->
-                return NumberValue.random((Number) delegate, minimum, maximum)
+                return NumberCategory.random((Number) delegate, minimum, maximum)
             }
         }
 
         Date.metaClass {
             incremental { Integer step = null, Integer calendarField = null ->
-                return DateValue.increment((Date) delegate, step, calendarField)
+                return DateCategory.increment((Date) delegate, step, calendarField)
             }
 
             random { Date minimum = null, Date maximum = null ->
-                return DateValue.random((Date) delegate, minimum, maximum)
+                return DateCategory.random((Date) delegate, minimum, maximum)
             }
         }
 
@@ -194,11 +194,11 @@ class GroovyValueDefinition {
             }
 
             array { Value val, Integer count = null ->
-                return ClassValue.of((Class) delegate, val, count)
+                return ClassCategory.of((Class) delegate, val, count)
             }
 
             array { Number defaultValue, Number step, Integer count = null ->
-                return ClassValue.incrementArray((Class) delegate, defaultValue, step, count)
+                return ClassCategory.incrementArray((Class) delegate, defaultValue, step, count)
             }
 
             reference { String propertyPredicate = null ->
