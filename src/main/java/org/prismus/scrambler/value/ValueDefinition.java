@@ -244,7 +244,7 @@ public class ValueDefinition {
         Util.checkEmptyCollection(values);
 
         final Object value = values.iterator().next();
-        registerPredicateValue(new TypePredicate(value.getClass()), CollectionValue.randomOf(values));
+        registerPredicateValue(new TypePredicate(value.getClass()), CollectionCategory.randomOf(values));
         return this;
     }
 

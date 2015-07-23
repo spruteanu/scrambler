@@ -12,7 +12,7 @@ class MapValueTest extends Specification {
     void 'verify map creation'() {
         given:
         Map<String, Value> keyValueMap = ['ValueSID': NumberCategory.increment(1), 'SomeID': new Constant(1), 'Amount': NumberCategory.increment(100.0d)]
-        MapValue mapValue = MapValue.of(new HashMap(), keyValueMap)
+        MapValue mapValue = MapCategory.of(new HashMap(), keyValueMap)
         final generatedMap = mapValue.next()
 
         expect:

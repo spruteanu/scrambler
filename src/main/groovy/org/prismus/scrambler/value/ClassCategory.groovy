@@ -8,10 +8,10 @@ import org.prismus.scrambler.Value
  *
  * @author Serge Pruteanu
  */
+@CompileStatic
 class ClassCategory {
 
-    @CompileStatic
-    public static <T> Value<T> incrementArray(Class<T> self, Object defaultValue, Object step, Integer count) {
+    public static <T> Value<T> incrementArray(Class<T> self, T defaultValue, T step, Integer count) {
         Util.checkPositiveCount(count)
         final Class<?> componentType = self.isArray() ? self.getComponentType() : self
         final Value value
@@ -36,26 +36,23 @@ class ClassCategory {
         return value
     }
 
-    @CompileStatic
-    public static <N extends Number> Value<N> increment(Class<N> self, N defaultValue, N step) {
+    public static <T extends Number> Value<T> increment(Class<T> self, T defaultValue, T step) {
         if (Types.incrementTypeMap.containsKey(self)) {
-            final Value<N> value
+            final Value<T> value
             if (self.isArray()) {
-                value = incrementArray((Class)self, (Object)defaultValue, (Object)step, (Integer)null)
+                value = incrementArray((Class<T>)self, defaultValue, step, null)
             } else {
-                value = (Value<N>) Util.createInstance(Types.incrementTypeMap.get(self), [defaultValue, step] as Object[], [self, self] as Class[])
+                value = (Value<T>) Util.createInstance(Types.incrementTypeMap.get(self), [defaultValue, step] as Object[], [self, self] as Class[])
             }
             return value
         }
         throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s", self, self))
     }
 
-    @CompileStatic
     public static <T> Value<T> random(Class<T> self) {
         return random(self, (T)null)
     }
 
-    @CompileStatic
     public static <T> Value<T> random(Class<T> self, T defaultValue) {
         if (Types.randomTypeMap.containsKey(self)) {
             if (self.isArray()) {
@@ -71,7 +68,6 @@ class ClassCategory {
         throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s", self, defaultValue))
     }
 
-    @CompileStatic
     public static <T> Value<T> random(Class<T> self, T minimum, T maximum) {
         final Value<T> value = random(self, (T)null)
         if (value instanceof AbstractRandomRange) {
@@ -83,7 +79,6 @@ class ClassCategory {
         return value
     }
 
-    @CompileStatic
     public static <T> Value<T> random(Class<T> self, T defaultValue, Integer count) {
         final Class<?> componentType = self.getComponentType()
         Value valueType
@@ -95,7 +90,7 @@ class ClassCategory {
         final Value<T> value
         if (componentType.isPrimitive()) {
             value = (Value) Util.createInstance(
-                    Types.randomTypeMap.get(self), [defaultValue, count, valueType] as Object[], [self, Integer.class, Object.class] as Class[]
+                    Types.randomTypeMap.get(self), [defaultValue, count, valueType] as Object[], [self, Integer, Object] as Class[]
             )
         } else {
             value = new ArrayValue(self, valueType)
@@ -103,20 +98,18 @@ class ClassCategory {
         return value
     }
 
-    @CompileStatic
     public static <T> Value<T> of(Class clazzType, Value val, Integer count) {
         if (clazzType.isPrimitive()) {
             final Class<? extends Value> arrayValueType = Types.primitivesTypeMap.get(clazzType)
             return (Value) Util.createInstance(
                     arrayValueType,
-                    [null, count, val] as Object[], [Types.arrayTypeMap.get(clazzType), Integer.class, Object.class] as Class[]
+                    [null, count, val] as Object[], [Types.arrayTypeMap.get(clazzType), Integer, Object] as Class[]
             )
         } else {
             return new ArrayValue(clazzType, count, val)
         }
     }
 
-    @CompileStatic
     public static <N extends Number> Value<N> randomArray(Class self, N minimum, N maximum, Integer count) {
         Util.checkPositiveCount(count)
 
@@ -154,32 +147,26 @@ class ClassCategory {
         return value
     }
 
-    @CompileStatic
     public static <K> MapValue<K> mapOf(Class<Map<K, Object>> mapType, Map<K, Value> keyValueMap) {
         return new MapValue<K>(mapType, keyValueMap)
     }
 
-    @CompileStatic
     public static <V, T extends Collection<V>> CollectionValue<V, T> collectionOf(Class<V> clazzType, Value<V> value) {
         return new CollectionValue<V, T>(clazzType, value, null)
     }
 
-    @CompileStatic
     public static <T> InstanceValue<T> instanceOf(Class<T> clazzType) {
         return instanceOf(clazzType, null)
     }
 
-    @CompileStatic
     public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<Object, Object> fieldMap) {
         return new InstanceValue<T>(clazzType).usingDefinitions(fieldMap)
     }
 
-    @CompileStatic
     public static <T> InstanceValue<T> instanceOf(String type) {
         return instanceOf(type, null)
     }
 
-    @CompileStatic
     public static <T> InstanceValue<T> instanceOf(String type, Map<Object, Object> fieldMap) {
         return new InstanceValue<T>(type).usingDefinitions(fieldMap)
     }

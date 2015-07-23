@@ -8,14 +8,13 @@ import org.prismus.scrambler.Value
  *
  * @author Serge Pruteanu
  */
+@CompileStatic
 class ObjectCategory {
 
-    @CompileStatic
     public static <T> Value<T> constant(T value) {
         return new Constant<T>(value)
     }
 
-    @CompileStatic
     public static <T> Value<T> randomOf(T[] array) {
         return new ArrayRandomElement<T>(array)
     }

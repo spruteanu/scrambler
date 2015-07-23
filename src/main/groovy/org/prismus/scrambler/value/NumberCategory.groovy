@@ -8,38 +8,33 @@ import org.prismus.scrambler.Value
  *
  * @author Serge Pruteanu
  */
+@CompileStatic
 class NumberCategory {
 
-    @CompileStatic
-    public static <N extends Number> Value<N> increment(N self) {
-        return ClassCategory.increment((Class<N>) self.getClass(), self, null)
+    public static <T extends Number> Value<T> increment(T self) {
+        return ClassCategory.increment((Class<T>) self.getClass(), self, null)
     }
 
-    @CompileStatic
-    public static <N extends Number> Value<N> increment(N self, N step) {
-        return ClassCategory.increment((Class<N>) self.getClass(), self, step)
+    public static <T extends Number> Value<T> increment(T self, T step) {
+        return ClassCategory.increment((Class<T>) self.getClass(), self, step)
     }
 
-    @CompileStatic
-    public static <N extends Number> Value incrementArray(N self, N step, Integer count) {
-        return ClassCategory.incrementArray((Class<N>) self.getClass(), self, step, count)
+    public static <T extends Number> Value incrementArray(T self, T step, Integer count) {
+        return ClassCategory.incrementArray((Class<T>) self.getClass(), self, step, count)
     }
 
-    @CompileStatic
-    public static <N extends Number> Value<N> random(N value) {
-        return ClassCategory.random((Class<N>) value.getClass(), value)
+    public static <T extends Number> Value<T> random(T value) {
+        return ClassCategory.random((Class<T>) value.getClass(), value)
     }
 
-    @CompileStatic
-    public static <N extends Number> Value<N> random(N minimum, N maximum) {
-        return ClassCategory.random((Class<N>) minimum.getClass(), minimum, maximum)
+    public static <T extends Number> Value<T> random(T minimum, T maximum) {
+        return ClassCategory.random((Class<T>) minimum.getClass(), minimum, maximum)
     }
 
-    @CompileStatic
-    public static <N extends Number> Value<N> random(N val, N minimum, N maximum) {
-        final Value<N> value = ClassCategory.random((Class) val.getClass(), val)
+    public static <T extends Number> Value<T> random(T val, T minimum, T maximum) {
+        final Value<T> value = ClassCategory.random((Class<T>) val.getClass(), val)
         if (value instanceof AbstractRandomRange) {
-            final AbstractRandomRange<Number> randomRangeValue = (AbstractRandomRange<N>) value
+            final AbstractRandomRange<Number> randomRangeValue = (AbstractRandomRange<T>) value
             randomRangeValue.between(minimum, maximum)
         } else {
             throw new UnsupportedOperationException(String.format(Types.NOT_SUPPORTED_RANGE_TYPE_MSG, val.getClass(), minimum, maximum))

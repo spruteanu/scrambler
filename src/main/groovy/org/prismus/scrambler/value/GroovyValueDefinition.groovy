@@ -136,7 +136,7 @@ class GroovyValueDefinition {
             randomOf { ->
                 final collection = (Collection) delegate
                 Util.checkEmptyCollection(collection)
-                return CollectionValue.randomOf(collection)
+                return CollectionCategory.randomOf(collection)
             }
         }
 

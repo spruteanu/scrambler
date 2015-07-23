@@ -135,7 +135,7 @@ class RandomTest extends Specification {
 
     void 'verify random collection element'() {
         given:
-        final randomElement = CollectionValue.randomOf(randoms)
+        final randomElement = CollectionCategory.randomOf(randoms)
         final containerSet =  new HashSet(new ArrayList(randoms))
 
         expect:
