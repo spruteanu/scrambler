@@ -196,7 +196,7 @@ public class ValueDefinition {
     //------------------------------------------------------------------------------------------------------------------
     public ValueDefinition incremental(String value, Integer index) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(value.getClass()), StringValue.increment(value, index));
+        registerPredicateValue(new TypePredicate(value.getClass()), StringCategory.increment(value, null, index));
         return this;
     }
 
@@ -210,7 +210,7 @@ public class ValueDefinition {
 
     public ValueDefinition incremental(String value, String pattern, Integer index) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(String.class), StringValue.increment(value, pattern, index));
+        registerPredicateValue(new TypePredicate(String.class), StringCategory.increment(value, pattern, index));
         return this;
     }
 
@@ -220,7 +220,7 @@ public class ValueDefinition {
 
     public ValueDefinition random(String value, Integer count) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate(String.class), StringValue.random(value, count));
+        registerPredicateValue(new TypePredicate(String.class), StringCategory.random(value, count));
         return this;
     }
 

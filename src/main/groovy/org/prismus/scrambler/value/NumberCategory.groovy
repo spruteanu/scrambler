@@ -11,27 +11,23 @@ import org.prismus.scrambler.Value
 @CompileStatic
 class NumberCategory {
 
-    public static <T extends Number> Value<T> increment(T self) {
-        return ClassCategory.increment((Class<T>) self.getClass(), self, null)
-    }
-
-    public static <T extends Number> Value<T> increment(T self, T step) {
+    static <T extends Number> Value<T> increment(T self, T step = null) {
         return ClassCategory.increment((Class<T>) self.getClass(), self, step)
     }
 
-    public static <T extends Number> Value incrementArray(T self, T step, Integer count) {
+    static <T extends Number> Value incrementArray(T self, T step = null, Integer count = null) {
         return ClassCategory.incrementArray((Class<T>) self.getClass(), self, step, count)
     }
 
-    public static <T extends Number> Value<T> random(T value) {
+    static <T extends Number> Value<T> random(T value) {
         return ClassCategory.random((Class<T>) value.getClass(), value)
     }
 
-    public static <T extends Number> Value<T> random(T minimum, T maximum) {
+    static <T extends Number> Value<T> random(T minimum, T maximum) {
         return ClassCategory.random((Class<T>) minimum.getClass(), minimum, maximum)
     }
 
-    public static <T extends Number> Value<T> random(T val, T minimum, T maximum) {
+    static <T extends Number> Value<T> random(T val, T minimum, T maximum) {
         final Value<T> value = ClassCategory.random((Class<T>) val.getClass(), val)
         if (value instanceof AbstractRandomRange) {
             final AbstractRandomRange<Number> randomRangeValue = (AbstractRandomRange<T>) value

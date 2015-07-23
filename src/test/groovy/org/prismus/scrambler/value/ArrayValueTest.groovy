@@ -16,7 +16,7 @@ class ArrayValueTest extends Specification {
         expect:
         array.length > 0
         int[] == array.class
-        Integer[] == Integer[].array(1.incremental(100)).next().class
+        Integer[] == Integer[].array(1.increment(100)).next().class
     }
 
 }

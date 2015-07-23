@@ -91,60 +91,12 @@ class GroovyValueDefinition {
 
     //------------------------------------------------------------------------------------------------------------------
     static void register() {
-        Object.metaClass {
-            constant { ->
-                return new Constant(delegate)
-            }
-        }
-
-        Number.metaClass {
-            incremental { Number step = null ->
-                return NumberCategory.increment((Number) delegate, step)
-            }
-
-            random { Number minimum = null, Number maximum = null ->
-                return NumberCategory.random((Number) delegate, minimum, maximum)
-            }
-        }
-
-        Date.metaClass {
-            incremental { Integer step = null, Integer calendarField = null ->
-                return DateCategory.increment((Date) delegate, step, calendarField)
-            }
-
-            random { Date minimum = null, Date maximum = null ->
-                return DateCategory.random((Date) delegate, minimum, maximum)
-            }
-        }
-
-        String.metaClass {
-            incremental { String pattern = null, Integer index = null ->
-                return StringValue.increment((String) delegate, pattern, index)
-            }
-
-            random { Integer count = null ->
-                return StringValue.random((String) delegate, count)
-            }
-        }
-
-        Collection.metaClass {
-            of { Value val, Integer count = null ->
-                Util.checkNullValue(val)
-                return new CollectionValue((Collection) delegate, val, count)
-            }
-
-            randomOf { ->
-                final collection = (Collection) delegate
-                Util.checkEmptyCollection(collection)
-                return CollectionCategory.randomOf(collection)
-            }
-        }
-
-        Map.metaClass {
-            of { Map keyValueMap = null ->
-                return new MapValue((Map) delegate, keyValueMap)
-            }
-        }
+        Object.metaClass.mixin ObjectCategory
+        Number.metaClass.mixin NumberCategory
+        Date.metaClass.mixin DateCategory
+        String.metaClass.mixin StringCategory
+        Collection.metaClass.mixin CollectionCategory
+        Map.metaClass.mixin MapCategory
 
         Class.metaClass {
             of { Closure defCl ->

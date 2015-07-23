@@ -10,47 +10,31 @@ import groovy.transform.CompileStatic
 @CompileStatic
 class DateCategory {
 
-    public static IncrementalDate increment(Date self) {
-        return new IncrementalDate(self)
-    }
-
-    public static IncrementalDate increment(Date self, Integer step) {
-        return new IncrementalDate(self, step)
-    }
-
-    public static IncrementalDate increment(Date self, Integer step, Integer calendarField) {
+    public static IncrementalDate increment(Date self, Integer calendarField = null, Integer step = null) {
         return new IncrementalDate(self, step, calendarField)
     }
 
-    public static ArrayValue<Date> incrementArray(Date self, Integer step, Integer count) {
-        return new ArrayValue<Date>(Date.class, count, increment(self, step))
-    }
-
-    public static IncrementalDate increment(Date self, Map<Integer, Integer> calendarFieldStepMap) {
+    static IncrementalDate increment(Date self, Map<Integer, Integer> calendarFieldStepMap) {
         return new IncrementalDate(self).incrementBy(calendarFieldStepMap)
     }
 
-    public static ArrayValue<Date> incrementArray(Date self, Map<Integer, Integer> calendarFieldStepMap, Integer count) {
+    static ArrayValue<Date> incrementArray(Date self, Integer step = null, Integer count = null) {
+        return new ArrayValue<Date>(Date.class, count, increment(self, step))
+    }
+
+    static ArrayValue<Date> incrementArray(Date self, Map<Integer, Integer> calendarFieldStepMap, Integer count = null) {
         return new ArrayValue<Date>(Date.class, count, increment(self, calendarFieldStepMap))
     }
 
-    public static ArrayValue<Date> incrementArray(Date self, Integer step, Integer calendarField, Integer count) {
+    static ArrayValue<Date> incrementArray(Date self, Integer calendarField, Integer step, Integer count) {
         return new ArrayValue<Date>(Date.class, count, increment(self, step, calendarField))
     }
 
-    public static ArrayValue<Date> incrementArray(Date self, Integer count) {
-        return new ArrayValue<Date>(Date.class, count, increment(self))
-    }
-
-    public static RandomDate random(Date value) {
-        return new RandomDate(value)
-    }
-
-    public static RandomDate random(Date self, Date minimum, Date maximum) {
+    static RandomDate random(Date self, Date minimum = null, Date maximum = null) {
         return new RandomDate(self, minimum, maximum)
     }
 
-    public static ArrayValue<Date> randomArray(Date self, Date minimum, Date maximum, Integer count) {
+    static ArrayValue<Date> randomArray(Date self, Date minimum = null, Date maximum = null, Integer count = null) {
         final RandomDate randomDate = new RandomDate(self, minimum, maximum)
         randomDate.next()
         return new ArrayValue<Date>(Date.class, count, randomDate)

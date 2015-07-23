@@ -111,14 +111,14 @@ class RandomTest extends Specification {
 
     void 'verify random string'(String pattern, Integer count) {
         expect:
-        pattern != StringValue.random(pattern).next()
-        pattern != StringValue.random(pattern, count).next()
+        pattern != StringCategory.random(pattern).next()
+        pattern != StringCategory.random(pattern, count).next()
 
-        5 == StringValue.randomArray(pattern, 5).next().length
-        5 == StringValue.randomArray(pattern, count, 5).next().length
+        5 == StringCategory.randomArray(pattern, 5).next().length
+        5 == StringCategory.randomArray(pattern, 5, count).next().length
 
         and: "verify in a loop"
-        final randomValue = StringValue.random(pattern, count)
+        final randomValue = StringCategory.random(pattern, count)
         for (int i = 0; i < 5; i++) {
             final generatedString = randomValue.next()
             Assert.assertTrue(generatedString.length() > 0)

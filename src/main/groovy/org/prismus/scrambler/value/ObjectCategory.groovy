@@ -11,12 +11,12 @@ import org.prismus.scrambler.Value
 @CompileStatic
 class ObjectCategory {
 
-    public static <T> Value<T> constant(T value) {
-        return new Constant<T>(value)
+    static <T> Value<T> constant(T self) {
+        return new Constant<T>(self)
     }
 
-    public static <T> Value<T> randomOf(T[] array) {
-        return new ArrayRandomElement<T>(array)
+    static <T> Value<T> randomOf(T[] self) {
+        return new ArrayRandomElement<T>(self)
     }
 
 }

@@ -11,8 +11,8 @@ import org.prismus.scrambler.Value
 @CompileStatic
 class CollectionCategory {
 
-    public static <V, T extends Collection<V>> CollectionValue<V, T> of(T collection, Value<V> value) {
-        return new CollectionValue<V, T>(collection, value)
+    public static <V, T extends Collection<V>> CollectionValue<V, T> of(T collection, Value<V> value, Integer count = null) {
+        return new CollectionValue<V, T>(collection, value, count)
     }
 
     public static <T> Value<T> randomOf(List<T> values) {

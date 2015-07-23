@@ -20,20 +20,20 @@ public class IncrementalDate extends Constant<Date> {
     }
 
     public IncrementalDate(Integer step) {
-        this(new Date(), step, DEFAULT_CALENDAR_FIELD);
+        this(new Date(), DEFAULT_CALENDAR_FIELD, step);
     }
 
     public IncrementalDate(Date value) {
-        this(value, DEFAULT_STEP, DEFAULT_CALENDAR_FIELD);
+        this(value, DEFAULT_CALENDAR_FIELD, DEFAULT_STEP);
     }
 
     public IncrementalDate(Date value, Integer step) {
-        this(value, step, DEFAULT_CALENDAR_FIELD);
+        this(value, DEFAULT_CALENDAR_FIELD, step);
     }
 
-    public IncrementalDate(Date value, Integer step, Integer calendarField) {
+    public IncrementalDate(Date value, Integer calendarField, Integer step) {
         super(value);
-        calendarFieldStepMap.put(calendarField, step);
+        calendarFieldStepMap.put(calendarField != null ? calendarField : DEFAULT_CALENDAR_FIELD, step != null ? step : DEFAULT_STEP);
     }
 
     public void setCalendar(Calendar calendar) {

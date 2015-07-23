@@ -79,7 +79,7 @@ class InstanceValueTest extends Specification {
         GroovyValueDefinition.register()
         final instance = new InstanceValue<Order>(Order).usingDefinitions(
                 (BigDecimal): BigDecimal.ONE.random(1.0, 100.0),
-                (int[]): int.array(10.incremental(10)),
+                (int[]): int.array(10.increment(10)),
                 person: Person.of(
                         'firstName': ['Andy', 'Nicole', 'Nicolas', 'Jasmine'].randomOf(),
                         'lastName': ['Smith', 'Ferrara', 'Maldini', "Shaffer"].randomOf(),
@@ -148,7 +148,7 @@ class InstanceValueTest extends Specification {
         GroovyValueDefinition.register()
 
         final instance = new InstanceValue<School>(School).usingDefinitions(
-                '*Id': 1.incremental(1),
+                '*Id': 1.increment(1),
                 'name': ['Enatai', 'Medina', 'Value Crest', 'Newport'].randomOf(),
                 (List): [].of(ClassRoom.of(
                         parent: School.reference(),

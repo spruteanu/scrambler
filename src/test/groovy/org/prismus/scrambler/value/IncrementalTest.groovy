@@ -172,16 +172,16 @@ class IncrementalTest extends Specification {
 
     void 'verify string incremental'(String defaultValue, String pattern, Integer index) {
         expect:
-        defaultValue != StringValue.increment(defaultValue).next()
-        defaultValue != StringValue.increment(defaultValue, pattern).next()
-        defaultValue != StringValue.increment(defaultValue, pattern, index).next()
+        defaultValue != StringCategory.increment(defaultValue).next()
+        defaultValue != StringCategory.increment(defaultValue, pattern).next()
+        defaultValue != StringCategory.increment(defaultValue, pattern, index).next()
 
-        5 == StringValue.incrementArray(defaultValue, 5).next().length
-        5 == StringValue.incrementArray(defaultValue, pattern, 5).next().length
-        5 == StringValue.incrementArray(defaultValue, pattern, index, 5).next().length
+        5 == StringCategory.incrementArray(defaultValue, 5).next().length
+        5 == StringCategory.incrementArray(defaultValue, pattern, 5).next().length
+        5 == StringCategory.incrementArray(defaultValue, pattern, index, 5).next().length
 
         and: "verify in a loop"
-        final incrementalString = StringValue.increment(defaultValue, pattern, index)
+        final incrementalString = StringCategory.increment(defaultValue, pattern, index)
         for (int i = 0; i < 5; i++) {
             Assert.assertNotEquals(defaultValue, incrementalString.next())
         }
