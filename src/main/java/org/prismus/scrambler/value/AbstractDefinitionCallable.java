@@ -7,7 +7,7 @@ import java.util.concurrent.Callable;
  *
  * @author Serge Pruteanu
  */
-abstract class AbstractDefinitionCallable implements Callable<ValueDefinition> {
+public abstract class AbstractDefinitionCallable implements Callable<ValueDefinition> {
     private ValueDefinition definition;
 
     public AbstractDefinitionCallable() {

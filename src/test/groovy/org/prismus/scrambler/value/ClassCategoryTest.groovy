@@ -4,8 +4,6 @@ import org.prismus.scrambler.DataScrambler
 import spock.lang.Specification
 
 /**
- * todo: add description
- *
  * @author Serge Pruteanu
  */
 class ClassCategoryTest extends Specification {

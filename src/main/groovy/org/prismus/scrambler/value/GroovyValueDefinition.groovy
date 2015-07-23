@@ -146,7 +146,7 @@ class GroovyValueDefinition {
         }
 
         static <V, T extends Collection<V>> CollectionValue<V, T> collectionOf(Class<V> clazzType, Value<V> value) {
-            return DataScrambler.collectionOf(clazzType, value);
+            return DataScrambler.collectionOf(clazzType, value)
         }
 
         static <T> InstanceValue<T> instanceOf(Class<T> clazzType) {
@@ -154,7 +154,7 @@ class GroovyValueDefinition {
         }
 
         static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<Object, Object> fieldMap) {
-            return DataScrambler.instanceOf(clazzType, fieldMap);
+            return DataScrambler.instanceOf(clazzType, fieldMap)
         }
 
         static <T> InstanceValue<T> instanceOf(String type) {
@@ -162,31 +162,35 @@ class GroovyValueDefinition {
         }
 
         static <T> InstanceValue<T> instanceOf(String type, Map<Object, Object> fieldMap) {
-            return DataScrambler.instanceOf(type, fieldMap);
+            return DataScrambler.instanceOf(type, fieldMap)
         }
 
         static <T> InstanceValue<T> of(Class<T> self, Closure defCl) {
-            return DataScrambler.of(self, defCl);
+            return DataScrambler.of(self, new GroovyDefinitionCallable(defCl))
         }
 
         static <T> InstanceValue<T> of(Class<T> self, Map<Object, Object> propertyValueMap, Closure defCl = null) {
-            return DataScrambler.of(self, propertyValueMap, defCl);
+            GroovyDefinitionCallable definitionCallable = null
+            if (defCl != null) {
+                definitionCallable = new GroovyDefinitionCallable(defCl)
+            }
+            return DataScrambler.of(self, propertyValueMap, definitionCallable)
         }
 
         static <T> InstanceValue<T> of(Class<T> self, String propertyName, Closure defCl) {
-            return DataScrambler.of(self, propertyName, defCl);
+            return DataScrambler.of(self, propertyName, new GroovyDefinitionCallable(defCl))
         }
 
         static <T> InstanceValue<T> of(Class<T> self, Collection constructorArgs, Closure defCl) {
-            return DataScrambler.of(self, constructorArgs, defCl);
+            return DataScrambler.of(self, constructorArgs, new GroovyDefinitionCallable(defCl))
         }
 
         static <T> InstanceValue<T> of(Class<T> self, String propertyName, Collection constructorArgs, Closure defCl) {
-            return DataScrambler.of(self, propertyName, constructorArgs, defCl);
+            return DataScrambler.of(self, propertyName, constructorArgs, new GroovyDefinitionCallable(defCl))
         }
 
         static ReferenceValue reference(Class self, String propertyPredicate = null) {
-            return DataScrambler.reference(self, propertyPredicate);
+            return DataScrambler.reference(self, propertyPredicate)
         }
 
         static <T> Value<T> arrayOf(Class<T> self, Value val, Integer count = null) {
@@ -217,11 +221,11 @@ class GroovyValueDefinition {
     static class DateCategory {
 
         public static IncrementalDate increment(Date self, Integer calendarField = null, Integer step = null) {
-            return DataScrambler.increment(self, calendarField, step);
+            return DataScrambler.increment(self, calendarField, step)
         }
 
         static IncrementalDate increment(Date self, Map<Integer, Integer> calendarFieldStepMap) {
-            return DataScrambler.increment(self, calendarFieldStepMap);
+            return DataScrambler.increment(self, calendarFieldStepMap)
         }
 
         static ArrayValue<Date> incrementArray(Date self, Integer step = null, Integer count = null) {
@@ -275,7 +279,7 @@ class GroovyValueDefinition {
         }
 
         static <T extends Number> Value<T> random(T val, T minimum, T maximum) {
-            return DataScrambler.random(val, minimum, maximum);
+            return DataScrambler.random(val, minimum, maximum)
         }
 
     }

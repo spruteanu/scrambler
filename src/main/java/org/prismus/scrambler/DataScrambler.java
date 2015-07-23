@@ -1,6 +1,5 @@
 package org.prismus.scrambler;
 
-import groovy.lang.Closure;
 import org.prismus.scrambler.value.*;
 
 import java.util.*;
@@ -12,6 +11,9 @@ import java.util.*;
  */
 public class DataScrambler {
 
+    //------------------------------------------------------------------------------------------------------------------
+    // String methods
+    //------------------------------------------------------------------------------------------------------------------
     public static IncrementalString increment(String self) {
         return new IncrementalString(self);
     }
@@ -61,12 +63,17 @@ public class DataScrambler {
     }
 
 
+    //------------------------------------------------------------------------------------------------------------------
+    // Map methods
+    //------------------------------------------------------------------------------------------------------------------
     public static <K> MapValue<K> of(Map<K, Object> self, Map<K, Value> keyValueMap) {
         return new MapValue<K>(self, keyValueMap);
     }
 
 
-
+    //------------------------------------------------------------------------------------------------------------------
+    // Collection methods
+    //------------------------------------------------------------------------------------------------------------------
     public static <V, T extends Collection<V>> CollectionValue<V, T> of(T collection, Value<V> value) {
         return of(collection, value, null);
     }
@@ -84,8 +91,9 @@ public class DataScrambler {
     }
 
 
-
-
+    //------------------------------------------------------------------------------------------------------------------
+    // Dates methods
+    //------------------------------------------------------------------------------------------------------------------
     public static IncrementalDate increment(Date self) {
         return new IncrementalDate(self);
     }
@@ -133,8 +141,9 @@ public class DataScrambler {
     }
 
 
-
-
+    //------------------------------------------------------------------------------------------------------------------
+    // Number methods
+    //------------------------------------------------------------------------------------------------------------------
     @SuppressWarnings({"unchecked"})
     public static <T extends Number> Value<T> increment(T self) {
         return increment((Class<T>) self.getClass(), self, null);
@@ -173,7 +182,9 @@ public class DataScrambler {
     }
 
 
-
+    //------------------------------------------------------------------------------------------------------------------
+    // Object methods
+    //------------------------------------------------------------------------------------------------------------------
     public static <T> Value<T> constant(T value) {
         return new Constant<T>(value);
     }
@@ -183,32 +194,26 @@ public class DataScrambler {
     }
 
 
-
-
+    //------------------------------------------------------------------------------------------------------------------
+    // Class methods
+    //------------------------------------------------------------------------------------------------------------------
     @SuppressWarnings({"unchecked"})
     public static <T> Value<T> incrementArray(Class<T> self, T defaultValue, Object step, Integer count) {
         Util.checkPositiveCount(count);
         final Class<?> componentType = self.isArray() ? self.getComponentType() : self;
         final Value value;
         if (componentType.isPrimitive()) {
-            value = (Value) Util.createInstance(
-                    Types.incrementTypeMap.get(self),
-                    new Object[]{
-                            self.isInstance(defaultValue) ? defaultValue : null,
-                            count,
+            value = (Value) Util.createInstance(Types.incrementTypeMap.get(self), new Object[]{
+                            self.isInstance(defaultValue) ? defaultValue : null, count,
                             (Value) Util.createInstance(
                                     Types.incrementTypeMap.get(componentType),
                                     new Object[]{self.isInstance(defaultValue) ? null : defaultValue, step},
                                     new Class[]{Types.primitiveWrapperMap.get(componentType), Types.primitiveWrapperMap.get(componentType)}
-                            )},
-                    new Class[]{self, Integer.class, Object.class}
+                            )}, new Class[]{self, Integer.class, Object.class}
             );
         } else {
-            value = new ArrayValue(self, count, (Value) Util.createInstance(
-                    Types.incrementTypeMap.get(componentType),
-                    new Object[]{defaultValue, step},
-                    new Class[]{componentType, componentType}
-            ));
+            value = new ArrayValue(self, count, (Value) Util.createInstance(Types.incrementTypeMap.get(componentType),
+                    new Object[]{defaultValue, step}, new Class[]{componentType, componentType}));
         }
         return value;
     }
@@ -220,11 +225,7 @@ public class DataScrambler {
             if (self.isArray()) {
                 value = incrementArray(self, defaultValue, step, null);
             } else {
-                value = (Value) Util.createInstance(
-                        Types.incrementTypeMap.get(self),
-                        new Object[]{defaultValue, step},
-                        new Class[]{self, self}
-                );
+                value = (Value) Util.createInstance(Types.incrementTypeMap.get(self), new Object[]{defaultValue, step}, new Class[]{self, self});
             }
             return value;
         }
@@ -242,20 +243,13 @@ public class DataScrambler {
                 return random(self, defaultValue, (Integer) null);
             } else {
                 if (self.isPrimitive()) {
-                    return (Value) Util.createInstance(
-                            Types.randomTypeMap.get(self), null, null
-                    );
+                    return (Value) Util.createInstance(Types.randomTypeMap.get(self), null, null);
                 } else {
-                    return (Value) Util.createInstance(
-                            Types.randomTypeMap.get(self),
-                            new Object[]{defaultValue},
-                            new Class[]{self}
-                    );
+                    return (Value) Util.createInstance(Types.randomTypeMap.get(self), new Object[]{defaultValue}, new Class[]{self});
                 }
             }
         }
-        throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s",
-                self, defaultValue));
+        throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s", self, defaultValue));
     }
 
     public static <T> Value<T> random(Class<T> self, T minimum, T maximum) {
@@ -274,25 +268,13 @@ public class DataScrambler {
         final Class<?> componentType = self.getComponentType();
         Value valueType;
         if (defaultValue != null) {
-            valueType = (Value) Util.createInstance(
-                    Types.randomTypeMap.get(componentType),
-                    new Object[]{defaultValue,},
-                    new Class[]{componentType,}
-            );
+            valueType = (Value) Util.createInstance(Types.randomTypeMap.get(componentType), new Object[]{defaultValue,}, new Class[]{componentType,});
         } else {
-            valueType = (Value) Util.createInstance(
-                    Types.randomTypeMap.get(componentType),
-                    new Object[]{},
-                    new Class[]{}
-            );
+            valueType = (Value) Util.createInstance(Types.randomTypeMap.get(componentType), new Object[]{}, new Class[]{});
         }
         final Value<T> value;
         if (componentType.isPrimitive()) {
-            value = (Value) Util.createInstance(
-                    Types.randomTypeMap.get(self),
-                    new Object[]{defaultValue, count, valueType}
-                    , new Class[]{self, Integer.class, Object.class}
-            );
+            value = (Value) Util.createInstance(Types.randomTypeMap.get(self), new Object[]{defaultValue, count, valueType}, new Class[]{self, Integer.class, Object.class});
         } else {
             value = new ArrayValue(self, valueType);
         }
@@ -303,11 +285,7 @@ public class DataScrambler {
     public static <T> Value<T> of(Class clazzType, Value val, Integer count) {
         if (clazzType.isPrimitive()) {
             final Class<? extends Value> arrayValueType = Types.primitivesTypeMap.get(clazzType);
-            return (Value) Util.createInstance(
-                    arrayValueType,
-                    new Object[]{null, count, val}
-                    , new Class[]{Types.arrayTypeMap.get(clazzType), Integer.class, Object.class}
-            );
+            return (Value) Util.createInstance(arrayValueType, new Object[]{null, count, val}, new Class[]{Types.arrayTypeMap.get(clazzType), Integer.class, Object.class});
         } else {
             return new ArrayValue(clazzType, count, val);
         }
@@ -336,15 +314,12 @@ public class DataScrambler {
             componentType = self;
         }
 
-        Value instance = (Value) Util.createInstance(
-                Types.randomTypeMap.get(componentType),
-                new Object[]{minimum, maximum},
-                new Class[]{componentType, componentType}
+        Value instance = (Value) Util.createInstance(Types.randomTypeMap.get(componentType),
+                new Object[]{minimum, maximum}, new Class[]{componentType, componentType}
         );
         final Value<T> value;
         if (primitive) {
-            value = (Value<T>) Util.createInstance(
-                    Types.randomTypeMap.get(self),
+            value = (Value<T>) Util.createInstance( Types.randomTypeMap.get(self),
                     new Object[]{self.isInstance(defaultValue) ? defaultValue : null, count, instance},
                     new Class[]{self, Integer.class, Object.class}
             );
@@ -362,6 +337,9 @@ public class DataScrambler {
         return new CollectionValue<V, T>(clazzType, value, null);
     }
 
+    //------------------------------------------------------------------------------------------------------------------
+    // InstanceValue methods
+    //------------------------------------------------------------------------------------------------------------------
     public static <T> InstanceValue<T> instanceOf(Class<T> clazzType) {
         return instanceOf(clazzType, null);
     }
@@ -378,52 +356,35 @@ public class DataScrambler {
         return new InstanceValue<T>(type).usingDefinitions(fieldMap);
     }
 
-    public static <T> InstanceValue<T> of(Class<T> self, Closure defCl) {
-        return new InstanceValue<T>(self)
-                .withPredicate(new TypePredicate(self))
-                .withDefinitionClosure(new GroovyDefinitionCallable(defCl));
+    public static <T> InstanceValue<T> of(Class<T> self, AbstractDefinitionCallable defCl) {
+        return new InstanceValue<T>(self).withPredicate(new TypePredicate(self)).withDefinitionClosure(defCl);
     }
 
     public static <T> InstanceValue<T> of(Class<T> self, Map<Object, Object> propertyValueMap) {
         return of(self, propertyValueMap, null);
     }
 
-    public static <T> InstanceValue<T> of(Class<T> self, Map<Object, Object> propertyValueMap, Closure defCl ) {
-        GroovyDefinitionCallable definitionCallable = null;
-        if (defCl != null) {
-            definitionCallable = new GroovyDefinitionCallable(defCl);
-        }
-        return new InstanceValue<T>(self)
-                .withPredicate(new TypePredicate(self))
-                .withDefinitionClosure(definitionCallable)
-                .usingDefinitions(propertyValueMap);
+    public static <T> InstanceValue<T> of(Class<T> self, Map<Object, Object> propertyValueMap, AbstractDefinitionCallable defCl) {
+        return new InstanceValue<T>(self).withPredicate(new TypePredicate(self)).withDefinitionClosure(defCl).usingDefinitions(propertyValueMap);
     }
 
-    public static <T> InstanceValue<T> of(Class<T> self, String propertyName, Closure defCl) {
-        return new InstanceValue<T>(self)
-                .withPredicate(Util.createPropertyPredicate(propertyName))
-                .withDefinitionClosure(new GroovyDefinitionCallable(defCl));
+    public static <T> InstanceValue<T> of(Class<T> self, String propertyName, AbstractDefinitionCallable defCl) {
+        return new InstanceValue<T>(self).withPredicate(Util.createPropertyPredicate(propertyName)).withDefinitionClosure(defCl);
     }
 
-    public static <T> InstanceValue<T> of(Class<T> self, Collection constructorArgs, Closure defCl) {
-        return new InstanceValue<T>(self)
-                .withPredicate(new TypePredicate(self))
-                .withDefinitionClosure(new GroovyDefinitionCallable(defCl))
-                .withConstructorArguments(constructorArgs);
+    public static <T> InstanceValue<T> of(Class<T> self, Collection constructorArgs, AbstractDefinitionCallable defCl) {
+        return new InstanceValue<T>(self).withPredicate(new TypePredicate(self)).withDefinitionClosure(defCl).withConstructorArguments(constructorArgs);
     }
 
-    public static <T> InstanceValue<T> of(Class<T> self, String propertyName, Collection constructorArgs, Closure defCl) {
-        return new InstanceValue<T>(self)
-                .withPredicate(Util.createPropertyPredicate(propertyName))
-                .withDefinitionClosure(new GroovyDefinitionCallable(defCl))
-                .withConstructorArguments(constructorArgs);
+    public static <T> InstanceValue<T> of(Class<T> self, String propertyName, Collection constructorArgs, AbstractDefinitionCallable defCl) {
+        return new InstanceValue<T>(self).withPredicate(Util.createPropertyPredicate(propertyName)).withDefinitionClosure(defCl).withConstructorArguments(constructorArgs);
     }
 
     public static ReferenceValue reference(Class selfl) {
         return reference(selfl, null);
     }
 
-    public static ReferenceValue reference(Class self, String propertyPredicate ) {
+    public static ReferenceValue reference(Class self, String propertyPredicate) {
         return new ReferenceValue(new TypePredicate(self), propertyPredicate != null ? Util.createPropertyPredicate(propertyPredicate) : null);
     }
 
