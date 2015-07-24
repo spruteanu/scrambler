@@ -65,6 +65,7 @@ constant 'some template string'
 
         and: 'check value parse from different resource'
         Value.isInstance(parser.parseValue(this.class.getResource('/test-value.groovy')))
+        Value.isInstance(parser.parseValue('/test-value.groovy'))
     }
 
     void 'test parse value type definitions'() {
