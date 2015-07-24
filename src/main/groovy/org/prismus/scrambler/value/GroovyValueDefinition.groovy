@@ -7,6 +7,8 @@ import org.codehaus.groovy.runtime.ResourceGroovyMethods
 import org.prismus.scrambler.DataScrambler
 import org.prismus.scrambler.Value
 
+import java.util.concurrent.ConcurrentHashMap
+
 /**
  * todo: add description
  *
@@ -17,41 +19,101 @@ class GroovyValueDefinition {
     private Properties configurationProperties
     private GroovyShell shell
 
-    private ValueDefinition definition = new ValueDefinition()
+    private Map<String, ValueDefinition> cachedDefinitionMap = new ConcurrentHashMap<>()
+    private Map<String, Value> cachedValueMap = new ConcurrentHashMap<>()
 
     GroovyValueDefinition() {
     }
 
     @CompileStatic
-    ValueDefinition parseDefinitions(String definitionText /*language="groovy"*/) {
-        throw new RuntimeException('Implement me')
-    }
-
-    @CompileStatic
-    ValueDefinition parseText(String definitionText /*language="groovy"*/) { // todo Serge: change to parseValue?
-    // todo  Serge: cache parsed definitions?
-    // todo  Serge: simplify groovy scripting: remove definition delegation/injection by creating explicit methods: parseText and parseDefinition, where parseDefinition will inject definition instance passed as parameter
+    protected GroovyShell checkCreateShell() {
         if (!shell) {
             shell = createGroovyShell()
         }
-        final script = (DelegatingScript)shell.parse(definitionText)
+        return shell
+    }
+
+    @CompileStatic
+    protected ValueDefinition doParseDefinition(String definitionText) {
+        checkCreateShell()
+        final script = (DelegatingScript) shell.parse(definitionText)
+        final ValueDefinition definition = new ValueDefinition()
         script.setDelegate(definition)
         script.run()
         return definition
     }
 
     @CompileStatic
-    // todo Serge: change to parseValue/parseDefinitions?
-    ValueDefinition parse(String resource) throws IOException {
+    ValueDefinition parseDefinitionText(String definitionText) {
+        ValueDefinition definition = cachedDefinitionMap.get(definitionText)
+        if (definition == null) {
+            definition = doParseDefinition(definitionText)
+            cachedDefinitionMap.put(definitionText, definition.clone() as ValueDefinition)
+        }
+        return definition
+    }
+
+    @CompileStatic
+    ValueDefinition parseDefinition(String resource) throws IOException {
         final URL url = this.getClass().getResource(resource)
         if (url == null) {
             throw new IllegalArgumentException(String.format("Not found resource for: %s", resource))
         }
-        return parseText(ResourceGroovyMethods.getText(url))
+        ValueDefinition definition = cachedDefinitionMap.get(resource)
+        if (definition == null) {
+            definition = doParseDefinition(url.text)
+            cachedDefinitionMap.put(resource, definition.clone() as ValueDefinition)
+        }
+        return definition
     }
 
-    ValueDefinition parse(def resource) throws IOException {
-        return parseText(resource.text)
+    ValueDefinition parseDefinition(def resource) throws IOException {
+        ValueDefinition definition = cachedDefinitionMap.get(resource.toString())
+        if (definition == null) {
+            definition = doParseDefinition(resource.text)
+            cachedDefinitionMap.put(resource, definition.clone() as ValueDefinition)
+        }
+        return definition
+    }
+
+    @CompileStatic
+    protected Value doParseValue(String definitionText) {
+        checkCreateShell()
+        final script = (DelegatingScript) shell.parse(definitionText)
+        return script.run() as Value
+    }
+
+    @CompileStatic
+    Value parseValueText(String definitionText) {
+        Value value = cachedValueMap.get(definitionText)
+        if (value == null) {
+            value = doParseValue(definitionText)
+            cachedValueMap.put(definitionText, value.clone() as Value)
+        }
+        return value
+    }
+
+    @CompileStatic
+    Value parseValue(String resource) throws IOException {
+        final URL url = this.getClass().getResource(resource)
+        if (url == null) {
+            throw new IllegalArgumentException(String.format("Not found resource for: %s", resource))
+        }
+        Value value = cachedValueMap.get(resource)
+        if (value == null) {
+            value = parseValueText(ResourceGroovyMethods.getText(url))
+            cachedValueMap.put(resource, value.clone() as Value)
+        }
+        return value
+    }
+
+    Value parseValue(def resource) throws IOException {
+        Value value = cachedValueMap.get(resource)
+        if (value == null) {
+            value = parseValueText(resource.text)
+            cachedValueMap.put(resource, value.clone() as Value)
+        }
+        return value
     }
 
     @CompileStatic
@@ -93,7 +155,8 @@ class GroovyValueDefinition {
             } finally {
                 try {
                     inputStream.close()
-                } catch (IOException ignore) { }
+                } catch (IOException ignore) {
+                }
             }
         }
     }
@@ -292,7 +355,8 @@ class GroovyValueDefinition {
     @CompileStatic
     static class StringCategory {
 
-        static IncrementalString increment(String self, String pattern = null, Integer index = null) { // todo Serge: passed pattern must contain JUST 2 formatters: %s and %d. review to validate the pattern
+        static IncrementalString increment(String self, String pattern = null, Integer index = null) {
+            // todo Serge: passed pattern must contain JUST 2 formatters: %s and %d. review to validate the pattern
             return DataScrambler.increment(self, pattern, index)
         }
 

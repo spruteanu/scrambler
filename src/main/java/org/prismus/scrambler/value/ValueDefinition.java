@@ -12,7 +12,7 @@ import java.util.Map;
  * @author Serge Pruteanu
  */
 @SuppressWarnings("unchecked")
-public class ValueDefinition {
+public class ValueDefinition implements Cloneable {
     private ValueDefinition parent;
 
     private Map<ValuePredicate, Value> propertyValueMap = new LinkedHashMap<ValuePredicate, Value>();
@@ -235,6 +235,11 @@ public class ValueDefinition {
             result = parent.lookupValue(predicate);
         }
         return result;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 
 }

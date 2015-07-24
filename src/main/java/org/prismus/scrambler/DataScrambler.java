@@ -14,7 +14,7 @@ public class DataScrambler {
     //------------------------------------------------------------------------------------------------------------------
     // Parsing methods
     //------------------------------------------------------------------------------------------------------------------
-    // todo Serge: parse from resource, parse from associated class resource
+    // todo Serge: parseDefinition from resource, parseDefinition from associated class resource
 
     //------------------------------------------------------------------------------------------------------------------
     // InstanceValue methods

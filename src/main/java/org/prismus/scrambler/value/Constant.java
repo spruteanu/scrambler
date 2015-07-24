@@ -3,10 +3,12 @@ package org.prismus.scrambler.value;
 import org.prismus.scrambler.Value;
 
 /**
+ * Value instance that represents a constant. Methods get/next will return same value
+ * 
  * @author Serge Pruteanu
  */
-public class Constant<T> implements Value<T>, Cloneable {
-    protected T value;
+public class Constant<T> implements Value<T> {
+    protected transient T value;
 
     public Constant() {
     }
