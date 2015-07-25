@@ -6,6 +6,7 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.codehaus.groovy.runtime.ResourceGroovyMethods
 import org.prismus.scrambler.DataScrambler
 import org.prismus.scrambler.Value
+import org.prismus.scrambler.ValuePredicate
 
 import java.util.concurrent.ConcurrentHashMap
 
@@ -55,16 +56,24 @@ class GroovyValueDefinition {
 
     @CompileStatic
     ValueDefinition parseDefinition(String resource) throws IOException {
-        final URL url = this.getClass().getResource(resource)
-        if (url == null) {
-            throw new IllegalArgumentException(String.format("Not found resource for: %s", resource))
+        if (resource.endsWith('groovy')) {
+            final URL url = this.getClass().getResource(resource)
+            if (url == null) {
+                if (!new File(resource).exists()) {
+                    throw new IllegalArgumentException(String.format("Not found resource for: %s", resource))
+                } else {
+                    return parseDefinition(new File(resource))
+                }
+            }
+            ValueDefinition definition = cachedDefinitionMap.get(resource)
+            if (definition == null) {
+                definition = doParseDefinition(url.text)
+                cachedDefinitionMap.put(resource, definition.clone() as ValueDefinition)
+            }
+            return definition
+        } else {
+            return parseDefinitionText(resource)
         }
-        ValueDefinition definition = cachedDefinitionMap.get(resource)
-        if (definition == null) {
-            definition = doParseDefinition(url.text)
-            cachedDefinitionMap.put(resource, definition.clone() as ValueDefinition)
-        }
-        return definition
     }
 
     ValueDefinition parseDefinition(def resource) throws IOException {
@@ -205,7 +214,7 @@ class GroovyValueDefinition {
         }
 
         static <T> InstanceValue<T> instanceOf(Class<T> clazzType) {
-            return DataScrambler.instanceOf(clazzType, null)
+            return DataScrambler.instanceOf(clazzType, (Map<Object, Object>)null)
         }
 
         static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<Object, Object> fieldMap) {
@@ -213,7 +222,7 @@ class GroovyValueDefinition {
         }
 
         static <T> InstanceValue<T> instanceOf(String type) {
-            return DataScrambler.instanceOf(type, null)
+            return DataScrambler.instanceOf(type, (Map<Object, Object>)null)
         }
 
         static <T> InstanceValue<T> instanceOf(String type, Map<Object, Object> fieldMap) {
@@ -395,6 +404,83 @@ class GroovyValueDefinition {
 
         static Value randomArray(Boolean value, Integer count = null, Class clazzType = null) {
             return DataScrambler.randomArray(value, count, clazzType);
+        }
+
+    }
+
+    @CompileStatic
+    static class ValueDefinitionCategory {
+
+        static ValueDefinition of(ValueDefinition self, Value value) {
+            return self.of(value)
+        }
+
+        static ValueDefinition of(ValueDefinition self, InstanceValue value) {
+            return self.of(value)
+        }
+
+        static ValueDefinition of(ValueDefinition self, Map<Object, Object> props) {
+            return self.of(props)
+        }
+
+        static ValueDefinition constant(ValueDefinition self, Object value) {
+            return self.constant(value)
+        }
+
+        static ValueDefinition constant(ValueDefinition self, Map<Object, Object> props) {
+            return self.constant(props)
+        }
+
+        static ValueDefinition of(ValueDefinition self, String propertyName, Object value) {
+            return self.of(propertyName, value)
+        }
+
+        static ValueDefinition of(ValueDefinition self, Class type, Object value) {
+            return self.of(type, value)
+        }
+
+        static ValueDefinition of(ValueDefinition self, String propertyName, Value value) {
+            return self.of(propertyName, value)
+        }
+
+        static ValueDefinition of(ValueDefinition self, Class type, Value value) {
+            return self.of(type, value)
+        }
+
+        static ValueDefinition of(ValueDefinition self, ValuePredicate valuePredicate, Value value) {
+            return self.of(valuePredicate, value)
+        }
+
+        static ValueDefinition of(ValueDefinition self, ValuePredicate valuePredicate, Object value) {
+            return self.of(valuePredicate, value)
+        }
+
+        static ValueDefinition reference(ValueDefinition self, Class type) {
+            return self.reference(type)
+        }
+
+        static ValueDefinition reference(ValueDefinition self, Class type, String parentPredicate) {
+            return self.reference(type, parentPredicate)
+        }
+
+        static ValueDefinition reference(ValueDefinition self, Class type, Class parentPredicate) {
+            return self.reference(type, parentPredicate)
+        }
+
+        static ValueDefinition reference(ValueDefinition self, Class type, ValuePredicate parentPredicate) {
+            return self.reference(type, parentPredicate)
+        }
+
+        static ValueDefinition reference(ValueDefinition self, String propertyName, Class parentPredicate) {
+            return self.reference(propertyName, parentPredicate)
+        }
+
+        static ValueDefinition reference(ValueDefinition self, String propertyName) {
+            return self.reference(propertyName)
+        }
+
+        static ValueDefinition reference(ValueDefinition self, ValuePredicate valuePredicate, ValuePredicate parentPredicate) {
+            return self.reference(valuePredicate, parentPredicate)
         }
 
     }

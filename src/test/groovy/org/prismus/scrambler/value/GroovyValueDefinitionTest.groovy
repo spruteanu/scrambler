@@ -58,7 +58,7 @@ constant 'some template string'
         ValueDefinition valueDefinition = parser.parseDefinition('/test-vd.groovy')
 
         expect:
-        valueDefinition.propertyValueMap.size() > 0
+        7 == valueDefinition.propertyValueMap.size()
 
         and: 'check definitions parse from different resource'
         parser.parseDefinition(this.class.getResource('/test-vd.groovy')).propertyValueMap.size() > 0

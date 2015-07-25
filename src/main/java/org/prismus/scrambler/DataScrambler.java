@@ -2,6 +2,10 @@ package org.prismus.scrambler;
 
 import org.prismus.scrambler.value.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.util.*;
 
 /**
@@ -12,19 +16,97 @@ import java.util.*;
 public class DataScrambler {
 
     //------------------------------------------------------------------------------------------------------------------
-    // Parsing methods
+    // Parse definition methods
     //------------------------------------------------------------------------------------------------------------------
-    // todo Serge: parseDefinition from resource, parseDefinition from associated class resource
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, String definition) throws IOException {
+        return instanceOf(clazzType).usingDefinitions(new GroovyValueDefinition().parseDefinition(definition));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> InstanceValue<T> instanceOf(String clazzType, String definition) throws IOException {
+        return (InstanceValue<T>) instanceOf(clazzType).usingDefinitions(new GroovyValueDefinition().parseDefinition(definition));
+    }
+
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, File definition) throws IOException {
+        return instanceOf(clazzType).usingDefinitions(new GroovyValueDefinition().parseDefinition(definition));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> InstanceValue<T> instanceOf(String clazzType, File definition) throws IOException {
+        return (InstanceValue<T>) instanceOf(clazzType).usingDefinitions(new GroovyValueDefinition().parseDefinition(definition));
+    }
+
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, InputStream inputStream) throws IOException {
+        return instanceOf(clazzType).usingDefinitions(new GroovyValueDefinition().parseDefinition(inputStream));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> InstanceValue<T> instanceOf(String clazzType, InputStream inputStream) throws IOException {
+        return (InstanceValue<T>) instanceOf(clazzType).usingDefinitions(new GroovyValueDefinition().parseDefinition(inputStream));
+    }
+
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Reader reader) throws IOException {
+        return instanceOf(clazzType).usingDefinitions(new GroovyValueDefinition().parseDefinition(reader));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> InstanceValue<T> instanceOf(String clazzType, Reader reader) throws IOException {
+        return (InstanceValue<T>) instanceOf(clazzType).usingDefinitions(new GroovyValueDefinition().parseDefinition(reader));
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    // Value definition parse methods
+    //------------------------------------------------------------------------------------------------------------------
+    @SuppressWarnings("unchecked")
+    public static <T> Value<T> valueOf(Class<T> clazzType, String definitionResource) throws IOException {
+        return new GroovyValueDefinition().parseValue(definitionResource);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Value<T> valueOf(String clazzType, String definitionResource) throws IOException {
+        return new GroovyValueDefinition().parseValue(definitionResource);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Value<T> valueOf(Class<T> clazzType, File definition) throws IOException {
+        return new GroovyValueDefinition().parseValue(definition);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Value<T> valueOf(String clazzType, File definition) throws IOException {
+        return new GroovyValueDefinition().parseValue(definition);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Value<T> valueOf(Class<T> clazzType, InputStream inputStream) throws IOException {
+        return new GroovyValueDefinition().parseValue(inputStream);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Value<T> valueOf(String clazzType, InputStream inputStream) throws IOException {
+        return new GroovyValueDefinition().parseValue(inputStream);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Value<T> valueOf(Class<T> clazzType, Reader reader) throws IOException {
+        return new GroovyValueDefinition().parseValue(reader);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Value<T> valueOf(Reader reader) throws IOException {
+        return new GroovyValueDefinition().parseValue(reader);
+    }
+
 
     //------------------------------------------------------------------------------------------------------------------
     // InstanceValue methods
     //------------------------------------------------------------------------------------------------------------------
     public static <T> InstanceValue<T> instanceOf(String type) {
-        return instanceOf(type, null);
+        return instanceOf(type, (Map<Object, Object>)null);
     }
 
     public static <T> InstanceValue<T> instanceOf(Class<T> clazzType) {
-        return instanceOf(clazzType, null);
+        return instanceOf(clazzType, (Map<Object, Object>)null);
     }
 
     public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<Object, Object> fieldMap) {
