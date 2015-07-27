@@ -5,7 +5,13 @@ import org.prismus.scrambler.ValuePredicate;
 import java.util.regex.Pattern;
 
 /**
- * todo: add description
+ * Property matcher using regular expression. Used when an Instance definition is built to
+ * match property by name. Property predicate can be expressed either by wildcard pattern
+ * (that is converted into regular expression pattern) or provided by an explicit {@link Pattern}
+ * Supported wildcard characters:
+ * <li/>*   -> all
+ * <li/>?   -> one character
+ * Found regular expression characters are ignored (prefixed)
  *
  * @author Serge Pruteanu
  */
@@ -18,6 +24,10 @@ public class PropertyPredicate implements ValuePredicate {
 
     public PropertyPredicate(String wildcardPattern) {
         setPattern(wildcardPattern);
+    }
+
+    public PropertyPredicate(Pattern pattern) {
+        withPattern(pattern);
     }
 
     @Override
@@ -47,12 +57,11 @@ public class PropertyPredicate implements ValuePredicate {
 
     @Override
     public boolean isSame(ValuePredicate predicate) {
-        if (predicate instanceof PropertyPredicate) {
-            return pattern.matcher(((PropertyPredicate) predicate).wildcardPattern).matches();
-        } else if (predicate instanceof TypePredicate) {
-            return pattern.matcher(((TypePredicate) predicate).getType().getName()).matches();
-        }
-        return false;
+        return predicate instanceof PropertyPredicate && pattern.matcher(((PropertyPredicate) predicate).wildcardPattern).matches();
+    }
+
+    public Pattern getPattern() {
+        return pattern;
     }
 
     @Override
@@ -79,6 +88,10 @@ public class PropertyPredicate implements ValuePredicate {
 
     public static PropertyPredicate of(String wildcardPattern) {
         return new PropertyPredicate(wildcardPattern);
+    }
+
+    public static PropertyPredicate of(Pattern pattern) {
+        return new PropertyPredicate(pattern);
     }
 
 }

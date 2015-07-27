@@ -8,8 +8,6 @@ import java.sql.Timestamp;
 import java.util.*;
 
 /**
- * todo: add description
- *
  * @author Serge Pruteanu
  */
 public class Types {

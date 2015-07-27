@@ -353,6 +353,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         try {
             propertyDescriptor.getWriteMethod().invoke(instance, value);
         } catch (Exception ignore) {
+            ignore.printStackTrace();
         }
     }
 
@@ -363,8 +364,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         } else {
             try {
                 propertyUtils.setSimpleProperty(instance, propertyName, value);
-            } catch (Exception ignore) {
-            }
+            } catch (Exception ignore) { }
         }
     }
 
@@ -372,8 +372,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         Object value = null;
         try {
             value = propertyDescriptor.getReadMethod().invoke(instance);
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) { }
         return value;
     }
 

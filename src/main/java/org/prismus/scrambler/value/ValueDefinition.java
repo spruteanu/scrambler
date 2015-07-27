@@ -5,6 +5,7 @@ import org.prismus.scrambler.ValuePredicate;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * todo: add description
@@ -63,6 +64,12 @@ public class ValueDefinition implements Cloneable {
                 } else {
                     of((String) key, value);
                 }
+            } else if (Pattern.class.isInstance(key)) {
+                if (value instanceof Value) {
+                    of(new PropertyPredicate((Pattern) key), (Value) value);
+                } else {
+                    of(new PropertyPredicate((Pattern) key), value);
+                }
             } else if (key instanceof Class) {
                 if (value instanceof Value) {
                     of((Class) key, (Value) value);
@@ -116,6 +123,11 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
+    public ValueDefinition of(Pattern pattern, Object value) {
+        registerPredicateValue(PropertyPredicate.of(pattern), new Constant(value));
+        return this;
+    }
+
     public ValueDefinition of(Class type, Object value) {
         Util.checkNullValue(type);
         registerPredicateValue(new TypePredicate(type), new Constant(value));
@@ -128,6 +140,15 @@ public class ValueDefinition implements Cloneable {
             ((ReferenceValue) value).setDefinition(this);
         }
         registerPredicateValue(Util.createPropertyPredicate(propertyName), value);
+        return this;
+    }
+
+    public ValueDefinition of(Pattern pattern, Value value) {
+        Util.checkNullValue(value);
+        if (value instanceof ReferenceValue) {
+            ((ReferenceValue) value).setDefinition(this);
+        }
+        registerPredicateValue(PropertyPredicate.of(pattern), value);
         return this;
     }
 
@@ -182,8 +203,20 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
+    public ValueDefinition reference(Pattern pattern, Class parentPredicate) {
+        Util.checkNullValue(parentPredicate);
+        reference(PropertyPredicate.of(pattern), new TypePredicate(parentPredicate));
+        return this;
+    }
+
     public ValueDefinition reference(String propertyName) {
         final ValuePredicate predicate = Util.createPropertyPredicate(propertyName);
+        registerPredicateValue(predicate, new ReferenceValue(this, predicate));
+        return this;
+    }
+
+    public ValueDefinition reference(Pattern pattern) {
+        final PropertyPredicate predicate = PropertyPredicate.of(pattern);
         registerPredicateValue(predicate, new ReferenceValue(this, predicate));
         return this;
     }

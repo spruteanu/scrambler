@@ -83,7 +83,6 @@ class InstanceValueTest extends Specification {
                 person: Person.of(
                         'firstName': ['Andy', 'Nicole', 'Nicolas', 'Jasmine'].randomOf(),
                         'lastName': ['Smith', 'Ferrara', 'Maldini', "Shaffer"].randomOf(),
-                        'age': 11.random(10, 60),
                         'sex': ['M' as char, 'F' as char].randomOf(),
                         'phone': ['425-452-0001', '425-452-0002', '425-452-0003', "425-452-0004"].randomOf()
                 ),
@@ -107,7 +106,6 @@ class InstanceValueTest extends Specification {
         order.person.firstName != null
         order.person.lastName != null
         order.person.phone != null
-        order.person.age >= 10
         ['M' as char, 'F' as char].contains(order.person.sex)
         order.items.size() > 0
         order.items[0].quantity > 0
@@ -124,7 +122,6 @@ class InstanceValueTest extends Specification {
         final instanceValue = new InstanceValue<Order>(Order).usingDefinitions(new ValueDefinition(
                 'firstName': ['Andy', 'Nicole', 'Nicolas', 'Jasmine'].randomOf(),
                 'lastName': ['Smith', 'Ferrara', 'Maldini', "Shaffer"].randomOf(),
-                'age': 11.random(10, 60),
                 'sex': ['M' as char, 'F' as char].randomOf(),
                 'phone': ['425-452-0001', '425-452-0002', '425-452-0003', "425-452-0004"].randomOf(),
                 name: ['Candies', 'Star Wars Lego Factory', 'Star War Ninja GO'].randomOf(),
@@ -140,7 +137,6 @@ class InstanceValueTest extends Specification {
         order.person.firstName != null
         order.person.lastName != null
         order.person.phone != null
-        order.person.age > 1
     }
 
     void 'test if parent is set properly'() {
@@ -152,7 +148,6 @@ class InstanceValueTest extends Specification {
                 'name': ['Enatai', 'Medina', 'Value Crest', 'Newport'].randomOf(),
                 (List): [].of(ClassRoom.of(
                         parent: School.reference(),
-                        parentId: School.reference('*Id'),
                         schoolId: School.reference('schoolId'),
                         roomNumber: "101A".random(4),
                 ), 10),
@@ -167,8 +162,6 @@ class InstanceValueTest extends Specification {
             Assert.assertTrue(classRoom.roomNumber.length() > 0)
             Assert.assertSame(school, classRoom.parent)
             Assert.assertEquals(classRoom.schoolId, school.schoolId)
-            Assert.assertEquals(classRoom.parentId, school.schoolId)
-            Assert.assertEquals(classRoom.schoolId, classRoom.parentId)
         }
     }
 

@@ -3,7 +3,7 @@ package org.prismus.scrambler.value;
 import org.prismus.scrambler.ValuePredicate;
 
 /**
- * todo: add description
+ * Type predicate, used to match definitions by class type
  *
  * @author Serge Pruteanu
  */

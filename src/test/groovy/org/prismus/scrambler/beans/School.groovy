@@ -7,6 +7,10 @@ class School {
     int schoolId
     String name
     List<ClassRoom> rooms
+    Address address
+
+    Person principle
+    List<Person> staff
 
     School() {
     }
@@ -22,16 +26,42 @@ class School {
 }
 
 class ClassRoom {
+    int classRoomId
+
     School parent
     int schoolId
     String roomNumber
-    int parentId
+
+    Person teacher
+    List<Person> students
+}
+
+class Person {
+    long personId
+
+    String firstName
+    String lastName
+    String middleName
+    String dob
+
+    char sex
+    String phone
+
+    Address address
+}
+
+class Address {
+    String number
+    String street
+    String postalCode
+    String city
+    String room
 }
 
 class Order {
+    Person person
     BigDecimal total
     List<OrderItem> items = new ArrayList<OrderItem>()
-    Person person
 
     int[] arrayField
 }
@@ -48,24 +78,6 @@ class OrderItem {
     Product product
 }
 
-class Person {
-    String firstName
-    String lastName
-    int age
-    char sex
-    String phone
-
-    Address address
-}
-
-class Address {
-    String number
-    String street
-    String postalCode
-    String city
-    String room
-}
-
 class Book {
     String author
     String title
@@ -73,11 +85,3 @@ class Book {
     Integer numberOfPages
     String publisher
 }
-
-class Employee {
-    String name
-    int age
-    String designation
-    double salary
-}
-

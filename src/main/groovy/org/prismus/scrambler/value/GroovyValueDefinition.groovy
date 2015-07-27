@@ -9,6 +9,7 @@ import org.prismus.scrambler.Value
 import org.prismus.scrambler.ValuePredicate
 
 import java.util.concurrent.ConcurrentHashMap
+import java.util.regex.Pattern
 
 /**
  * todo: add description
@@ -435,12 +436,20 @@ class GroovyValueDefinition {
             return self.of(propertyName, value)
         }
 
+        static ValueDefinition of(ValueDefinition self, Pattern pattern, Object value) {
+            return self.of(pattern, value)
+        }
+
         static ValueDefinition of(ValueDefinition self, Class type, Object value) {
             return self.of(type, value)
         }
 
         static ValueDefinition of(ValueDefinition self, String propertyName, Value value) {
             return self.of(propertyName, value)
+        }
+
+        static ValueDefinition of(ValueDefinition self, Pattern pattern, Value value) {
+            return self.of(pattern, value)
         }
 
         static ValueDefinition of(ValueDefinition self, Class type, Value value) {
@@ -475,13 +484,27 @@ class GroovyValueDefinition {
             return self.reference(propertyName, parentPredicate)
         }
 
+        static ValueDefinition reference(ValueDefinition self, Pattern pattern, Class parentPredicate) {
+            return self.reference(pattern, parentPredicate)
+        }
+
         static ValueDefinition reference(ValueDefinition self, String propertyName) {
             return self.reference(propertyName)
+        }
+
+        static ValueDefinition reference(ValueDefinition self, Pattern pattern) {
+            return self.reference(pattern)
         }
 
         static ValueDefinition reference(ValueDefinition self, ValuePredicate valuePredicate, ValuePredicate parentPredicate) {
             return self.reference(valuePredicate, parentPredicate)
         }
+
+    }
+
+    @CompileStatic
+    static class ValuePredicateCategory {
+
 
     }
 

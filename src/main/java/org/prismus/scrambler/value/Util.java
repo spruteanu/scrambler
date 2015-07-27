@@ -73,15 +73,15 @@ public abstract class Util {
 
     public static ValuePredicate createPropertyPredicate(String propertyWildcard) {
         checkEmpty(propertyWildcard);
-        return new PropertyPredicate(propertyWildcard);
-    }
-
-    public static Number getNotNullValue(Number minimum, Number maximum) {
-        Number value = minimum;
-        if (value == null) {
-            value = maximum;
+        final String predicatePattern = replaceWildcards(propertyWildcard);
+        final ValuePredicate propertyPredicate;
+        if (propertyWildcard.equals(predicatePattern)) {
+            propertyPredicate = new SimplePropertyPredicate(propertyWildcard);
+//            propertyPredicate = new PropertyPredicate(propertyWildcard);
+        } else {
+            propertyPredicate = new PropertyPredicate(propertyWildcard);
         }
-        return value;
+        return propertyPredicate;
     }
 
     public static BeanUtilsBean createBeanUtilsBean() {
