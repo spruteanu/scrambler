@@ -20,17 +20,6 @@ public class SimplePropertyPredicate implements ValuePredicate {
     }
 
     @Override
-    public boolean isSame(ValuePredicate predicate) {
-        boolean result = false;
-        if (predicate instanceof PropertyPredicate) {
-            result = (((PropertyPredicate) predicate).getPattern()).matcher(property).matches();
-        } else if (predicate instanceof SimplePropertyPredicate) {
-            result = equals(predicate);
-        }
-        return result;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

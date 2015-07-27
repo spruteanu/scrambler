@@ -8,6 +8,5 @@ package org.prismus.scrambler;
 public interface ValuePredicate {
 
     boolean apply(String property, Object value);
-    boolean isSame(ValuePredicate predicate);
 
 }

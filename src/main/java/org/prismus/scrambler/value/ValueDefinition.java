@@ -257,13 +257,7 @@ public class ValueDefinition implements Cloneable {
     }
 
     public Value lookupValue(ValuePredicate predicate) {
-        Value result = null;
-        for (final Map.Entry<ValuePredicate, Value> entry : propertyValueMap.entrySet()) {
-            if (predicate.isSame(entry.getKey())) {
-                result = entry.getValue();
-                break;
-            }
-        }
+        Value result = propertyValueMap.get(predicate);
         if (result == null && parent != null) {
             result = parent.lookupValue(predicate);
         }

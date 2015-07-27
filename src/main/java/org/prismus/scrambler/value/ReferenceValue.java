@@ -3,6 +3,8 @@ package org.prismus.scrambler.value;
 import org.prismus.scrambler.Value;
 import org.prismus.scrambler.ValuePredicate;
 
+import java.util.regex.Pattern;
+
 /**
  * todo: add description
  *
@@ -16,9 +18,25 @@ public class ReferenceValue extends Constant<Object> {
     private Value referencedInstance;
     private Value referencedFieldValue;
 
+    public ReferenceValue(ValuePredicate predicate) {
+        this(predicate, null);
+    }
+
+    public ReferenceValue(Pattern fieldPattern) {
+        this((ValuePredicate)null, PropertyPredicate.of(fieldPattern));
+    }
+
     public ReferenceValue(ValuePredicate predicate, ValuePredicate fieldPredicate) {
         this.predicate = predicate;
         this.fieldPredicate = fieldPredicate;
+    }
+
+    public ReferenceValue(Pattern predicatePattern, Pattern fieldPattern) {
+        this(PropertyPredicate.of(predicatePattern), PropertyPredicate.of(fieldPattern));
+    }
+
+    public ReferenceValue(ValueDefinition definition, Pattern pattern) {
+        this(definition, PropertyPredicate.of(pattern));
     }
 
     public ReferenceValue(ValueDefinition definition, ValuePredicate predicate) {
@@ -36,18 +54,21 @@ public class ReferenceValue extends Constant<Object> {
     final Object resolveValue() {
         Object result = null;
         if (definition != null) {
-            if (referencedInstance == null) {
+            if (referencedInstance == null && predicate != null) {
                 referencedInstance = definition.lookupValue(predicate);
             }
             if (referencedInstance != null) {
                 result = referencedInstance.get();
-                if (fieldPredicate != null) {
-                    if (referencedInstance instanceof InstanceValue && referencedFieldValue == null) {
-                        referencedFieldValue = ((InstanceValue) referencedInstance).lookupFieldValue(fieldPredicate);
-                    }
-                    if (referencedFieldValue != null) {
-                        result = referencedFieldValue.get();
-                    }
+            }
+            if (fieldPredicate != null) {
+                if (referencedInstance instanceof InstanceValue && referencedFieldValue == null) {
+                    referencedFieldValue = ((InstanceValue) referencedInstance).lookupFieldValue(fieldPredicate);
+                }
+                if (referencedFieldValue == null && definition != null) {
+                    referencedFieldValue = definition.lookupValue(fieldPredicate);
+                }
+                if (referencedFieldValue != null) {
+                    result = referencedFieldValue.get();
                 }
             }
         }

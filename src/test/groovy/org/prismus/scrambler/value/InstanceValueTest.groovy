@@ -83,7 +83,7 @@ class InstanceValueTest extends Specification {
                 person: Person.of(
                         'firstName': ['Andy', 'Nicole', 'Nicolas', 'Jasmine'].randomOf(),
                         'lastName': ['Smith', 'Ferrara', 'Maldini', "Shaffer"].randomOf(),
-                        'sex': ['M' as char, 'F' as char].randomOf(),
+                        'sex': ['M', 'F'].randomOf(),
                         'phone': ['425-452-0001', '425-452-0002', '425-452-0003', "425-452-0004"].randomOf()
                 ),
                 'item*': [].of(OrderItem.of(
@@ -106,7 +106,7 @@ class InstanceValueTest extends Specification {
         order.person.firstName != null
         order.person.lastName != null
         order.person.phone != null
-        ['M' as char, 'F' as char].contains(order.person.sex)
+        ['M', 'F'].contains(order.person.sex)
         order.items.size() > 0
         order.items[0].quantity > 0
         order.items[0].details.length() > 0

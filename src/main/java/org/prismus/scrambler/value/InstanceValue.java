@@ -294,8 +294,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                     break;
                 }
             }
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) { }
         return result;
     }
 
@@ -349,22 +348,16 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return propertyDefinitionMap;
     }
 
-    void setPropertyValue(PropertyDescriptor propertyDescriptor, Object instance, Object value) {
-        try {
-            propertyDescriptor.getWriteMethod().invoke(instance, value);
-        } catch (Exception ignore) {
-            ignore.printStackTrace();
-        }
+    void setPropertyValue(PropertyDescriptor propertyDescriptor, Object instance, Object value) throws Exception {
+        propertyDescriptor.getWriteMethod().invoke(instance, value);
     }
 
-    void setPropertyValue(Object instance, String propertyName, Object value) {
+    void setPropertyValue(Object instance, String propertyName, Object value) throws Exception {
         final Field field = fieldMap.get(propertyName);
         if (field != null) {
             setPropertyValue(field.propertyDescriptor, instance, value);
         } else {
-            try {
-                propertyUtils.setSimpleProperty(instance, propertyName, value);
-            } catch (Exception ignore) { }
+            propertyUtils.setSimpleProperty(instance, propertyName, value);
         }
     }
 
@@ -373,20 +366,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         try {
             value = propertyDescriptor.getReadMethod().invoke(instance);
         } catch (Exception ignore) { }
-        return value;
-    }
-
-    Object getPropertyValue(Object instance, String propertyName) {
-        final Field field = fieldMap.get(propertyName);
-        Object value = null;
-        if (field != null) {
-            value = getPropertyValue(field.propertyDescriptor, instance);
-        } else {
-            try {
-                value = propertyUtils.getProperty(instance, propertyName);
-            } catch (Exception ignore) {
-            }
-        }
         return value;
     }
 

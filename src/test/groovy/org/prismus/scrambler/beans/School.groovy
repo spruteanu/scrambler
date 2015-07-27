@@ -40,11 +40,11 @@ class Person {
     long personId
 
     String firstName
-    String lastName
     String middleName
+    String lastName
     String dob
 
-    char sex
+    String sex
     String phone
 
     Address address

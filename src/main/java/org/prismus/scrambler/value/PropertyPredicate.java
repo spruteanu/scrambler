@@ -55,11 +55,6 @@ public class PropertyPredicate implements ValuePredicate {
         }
     }
 
-    @Override
-    public boolean isSame(ValuePredicate predicate) {
-        return predicate instanceof PropertyPredicate && pattern.matcher(((PropertyPredicate) predicate).wildcardPattern).matches();
-    }
-
     public Pattern getPattern() {
         return pattern;
     }
