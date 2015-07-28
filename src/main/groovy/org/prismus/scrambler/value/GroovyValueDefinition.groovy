@@ -35,12 +35,21 @@ class GroovyValueDefinition {
         return shell
     }
 
+    protected void lookupAddContext(Script script, Map<String, Object> context) {
+        if (context) {
+            final binding = new Binding()
+            binding.setVariable('context', context)
+            script.setBinding(binding)
+        }
+    }
+
     @CompileStatic
-    protected ValueDefinition doParseDefinition(String definitionText) {
+    protected ValueDefinition doParseDefinition(String definitionText, Map<String, Object> context = null) {
         checkCreateShell()
         final script = (DelegatingScript) shell.parse(definitionText)
         final ValueDefinition definition = new ValueDefinition()
         script.setDelegate(definition)
+        lookupAddContext(script, context)
         script.run()
         return definition
     }

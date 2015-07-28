@@ -141,8 +141,8 @@ public class DataScrambler {
         return new InstanceValue<T>(self).withPredicate(Util.createPropertyPredicate(propertyName)).withDefinitionClosure(defCl).withConstructorArguments(constructorArgs);
     }
 
-    public static ReferenceValue reference(Class selfl) {
-        return reference(selfl, null);
+    public static ReferenceValue reference(Class self) {
+        return reference(self, null);
     }
 
     public static ReferenceValue reference(Class self, String propertyPredicate) {
