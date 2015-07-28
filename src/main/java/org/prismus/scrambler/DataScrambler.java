@@ -18,40 +18,82 @@ public class DataScrambler {
     //------------------------------------------------------------------------------------------------------------------
     // Parse definition methods
     //------------------------------------------------------------------------------------------------------------------
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, String definition) throws IOException {
-        return instanceOf(clazzType).usingDefinitions(Holder.groovyValueDefinition.parseDefinition(definition));
+    static <T> InstanceValue<T> parseDefinitions(InstanceValue<T> instanceValue, String... definitions) throws IOException {
+        if (definitions != null) {
+            for (String definition : definitions) {
+                instanceValue.usingDefinitions(Holder.groovyValueDefinition.parseDefinition(definition));
+            }
+        }
+        return instanceValue;
+    }
+
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, String... definitions) throws IOException {
+        return parseDefinitions(instanceOf(clazzType), definitions);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, String definition) throws IOException {
-        return (InstanceValue<T>) instanceOf(clazzType).usingDefinitions(Holder.groovyValueDefinition.parseDefinition(definition));
+    public static <T> InstanceValue<T> instanceOf(String clazzType, String... definitions) throws IOException {
+        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), definitions);
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, File definition) throws IOException {
-        return instanceOf(clazzType).usingDefinitions(Holder.groovyValueDefinition.parseDefinition(definition));
+    static <T> InstanceValue<T> parseDefinitions(InstanceValue<T> instanceValue, File... definitions) throws IOException {
+        if (definitions != null) {
+            for (File definition : definitions) {
+                instanceValue.usingDefinitions(Holder.groovyValueDefinition.parseDefinition(definition));
+            }
+        }
+        return instanceValue;
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, File definition) throws IOException {
-        return (InstanceValue<T>) instanceOf(clazzType).usingDefinitions(Holder.groovyValueDefinition.parseDefinition(definition));
-    }
-
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, InputStream inputStream) throws IOException {
-        return instanceOf(clazzType).usingDefinitions(Holder.groovyValueDefinition.parseDefinition(inputStream));
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, InputStream inputStream) throws IOException {
-        return (InstanceValue<T>) instanceOf(clazzType).usingDefinitions(Holder.groovyValueDefinition.parseDefinition(inputStream));
-    }
-
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Reader reader) throws IOException {
-        return instanceOf(clazzType).usingDefinitions(Holder.groovyValueDefinition.parseDefinition(reader));
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, File... definitions) throws IOException {
+        return parseDefinitions(instanceOf(clazzType), definitions);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, Reader reader) throws IOException {
-        return (InstanceValue<T>) instanceOf(clazzType).usingDefinitions(Holder.groovyValueDefinition.parseDefinition(reader));
+    public static <T> InstanceValue<T> instanceOf(String clazzType, File... definitions) throws IOException {
+        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), definitions);
+    }
+
+    static <T> InstanceValue<T> parseDefinitions(InstanceValue<T> instanceValue, InputStream... inputStreams) throws IOException {
+        if (inputStreams != null) {
+            for (InputStream inputStream : inputStreams) {
+                try {
+                    instanceValue.usingDefinitions(Holder.groovyValueDefinition.parseDefinition(inputStream));
+                } finally {
+                    try {
+                        inputStream.close();
+                    } catch (IOException ignore) { }
+                }
+            }
+        }
+        return instanceValue;
+    }
+
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, InputStream... inputStreams) throws IOException {
+        return parseDefinitions(instanceOf(clazzType), inputStreams);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> InstanceValue<T> instanceOf(String clazzType, InputStream... inputStreams) throws IOException {
+        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), inputStreams);
+    }
+
+    static <T> InstanceValue<T> parseDefinitions(InstanceValue<T> instanceValue, Reader[] readers) throws IOException {
+        if (readers != null) {
+            for (Reader reader : readers) {
+                instanceValue.usingDefinitions(Holder.groovyValueDefinition.parseDefinition(readers));
+            }
+        }
+        return instanceValue;
+    }
+
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Reader... readers) throws IOException {
+        return parseDefinitions(instanceOf(clazzType), readers);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> InstanceValue<T> instanceOf(String clazzType, Reader... readers) throws IOException {
+        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), readers);
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -102,7 +144,7 @@ public class DataScrambler {
     // InstanceValue methods
     //------------------------------------------------------------------------------------------------------------------
     public static <T> InstanceValue<T> instanceOf(String type) {
-        return instanceOf(type, (Map<Object, Object>)null);
+        return instanceOf(type, (Map<Object, Object>) null);
     }
 
     public static <T> InstanceValue<T> instanceOf(Class<T> clazzType) {
@@ -163,6 +205,23 @@ public class DataScrambler {
     //------------------------------------------------------------------------------------------------------------------
     public static <K> MapValue<K> of(Map<K, Object> self, Map<K, Value> keyValueMap) {
         return new MapValue<K>(self, keyValueMap);
+    }
+
+    public static <K> MapValue<K> mapOf(Set<K> self, Map<ValuePredicate, Value> definitionMap) {
+        final Map<K, Object> valueMap = new LinkedHashMap<K, Object>();
+        final Map<K, Value> keyValueMap = new LinkedHashMap<K, Value>();
+        for (Map.Entry<ValuePredicate, Value> entry : definitionMap.entrySet()) {
+            for (K key : self) {
+                final ValuePredicate predicate = entry.getKey();
+                final Value value = entry.getValue();
+                if (predicate.apply(key.toString(), value.get())) {
+                    keyValueMap.put(key, value);
+                    valueMap.put(key, value.get());
+                    break;
+                }
+            }
+        }
+        return new MapValue<K>(valueMap, keyValueMap);
     }
 
 

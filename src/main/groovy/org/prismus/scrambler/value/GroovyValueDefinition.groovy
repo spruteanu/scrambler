@@ -35,37 +35,28 @@ class GroovyValueDefinition {
         return shell
     }
 
-    protected void lookupAddContext(Script script, Map<String, Object> context) {
-        if (context) {
-            final binding = new Binding()
-            binding.setVariable('context', context)
-            script.setBinding(binding)
-        }
-    }
-
     @CompileStatic
     protected ValueDefinition doParseDefinition(String definitionText, Map<String, Object> context = null) {
         checkCreateShell()
         final script = (DelegatingScript) shell.parse(definitionText)
-        final ValueDefinition definition = new ValueDefinition()
+        final ValueDefinition definition = new ValueDefinition().usingContext(context)
         script.setDelegate(definition)
-        lookupAddContext(script, context)
         script.run()
         return definition
     }
 
     @CompileStatic
-    ValueDefinition parseDefinitionText(String definitionText) {
+    ValueDefinition parseDefinitionText(String definitionText, Map<String, Object> context = null) {
         ValueDefinition definition = cachedDefinitionMap.get(definitionText)
         if (definition == null) {
-            definition = doParseDefinition(definitionText)
+            definition = doParseDefinition(definitionText, context)
             cachedDefinitionMap.put(definitionText, definition.clone() as ValueDefinition)
         }
         return definition
     }
 
     @CompileStatic
-    ValueDefinition parseDefinition(String resource) throws IOException {
+    ValueDefinition parseDefinition(String resource, Map<String, Object> context = null) throws IOException {
         if (resource.endsWith('groovy')) {
             final URL url = this.getClass().getResource(resource)
             if (url == null) {
@@ -77,7 +68,7 @@ class GroovyValueDefinition {
             }
             ValueDefinition definition = cachedDefinitionMap.get(resource)
             if (definition == null) {
-                definition = doParseDefinition(url.text)
+                definition = doParseDefinition(url.text, context)
                 cachedDefinitionMap.put(resource, definition.clone() as ValueDefinition)
             }
             return definition
@@ -86,50 +77,52 @@ class GroovyValueDefinition {
         }
     }
 
-    ValueDefinition parseDefinition(def resource) throws IOException {
+    ValueDefinition parseDefinition(def resource, Map<String, Object> context = null) throws IOException {
         ValueDefinition definition = cachedDefinitionMap.get(resource.toString())
         if (definition == null) {
-            definition = doParseDefinition(resource.text)
+            definition = doParseDefinition(resource.text, context)
             cachedDefinitionMap.put(resource, definition.clone() as ValueDefinition)
         }
         return definition
     }
 
     @CompileStatic
-    protected Value doParseValue(String definitionText) {
+    protected Value doParseValue(String definitionText, Map<String, Object> context = null) {
         checkCreateShell()
         final script = (DelegatingScript) shell.parse(definitionText)
+        final ValueDefinition definition = new ValueDefinition().usingContext(context)
+        script.setDelegate(definition)
         return script.run() as Value
     }
 
     @CompileStatic
-    Value parseValueText(String definitionText) {
+    Value parseValueText(String definitionText, Map<String, Object> context = null) {
         Value value = cachedValueMap.get(definitionText)
         if (value == null) {
-            value = doParseValue(definitionText)
+            value = doParseValue(definitionText, context)
             cachedValueMap.put(definitionText, value.clone() as Value)
         }
         return value
     }
 
     @CompileStatic
-    Value parseValue(String resource) throws IOException {
+    Value parseValue(String resource, Map<String, Object> context = null) throws IOException {
         final URL url = this.getClass().getResource(resource)
         if (url == null) {
             throw new IllegalArgumentException(String.format("Not found resource for: %s", resource))
         }
         Value value = cachedValueMap.get(resource)
         if (value == null) {
-            value = parseValueText(ResourceGroovyMethods.getText(url))
+            value = parseValueText(ResourceGroovyMethods.getText(url), context)
             cachedValueMap.put(resource, value.clone() as Value)
         }
         return value
     }
 
-    Value parseValue(def resource) throws IOException {
+    Value parseValue(def resource, Map<String, Object> context = null) throws IOException {
         Value value = cachedValueMap.get(resource)
         if (value == null) {
-            value = parseValueText(resource.text)
+            value = parseValueText(resource.text, context)
             cachedValueMap.put(resource, value.clone() as Value)
         }
         return value
@@ -281,12 +274,16 @@ class GroovyValueDefinition {
             return DataScrambler.of(collection, value, count)
         }
 
-        public static <T> Value<T> randomOf(List<T> values) {
+        static <T> Value<T> randomOf(List<T> values) {
             return DataScrambler.randomOf(values)
         }
 
-        public static <T> Value<T> randomOf(Collection<T> collection) {
+        static <T> Value<T> randomOf(Collection<T> collection) {
             return DataScrambler.randomOf(collection)
+        }
+
+        static <K> MapValue<K> mapOf(Set<K> self, Map<ValuePredicate, Value> definitionMap) {
+            return DataScrambler.mapOf(self, definitionMap)
         }
 
     }
@@ -294,7 +291,7 @@ class GroovyValueDefinition {
     @CompileStatic
     static class DateCategory {
 
-        public static IncrementalDate increment(Date self, Integer calendarField = null, Integer step = null) {
+        static IncrementalDate increment(Date self, Integer calendarField = null, Integer step = null) {
             return DataScrambler.increment(self, calendarField, step)
         }
 
@@ -327,7 +324,7 @@ class GroovyValueDefinition {
     @CompileStatic
     static class MapCategory {
 
-        public static <K> MapValue<K> of(Map<K, Object> self, Map<K, Value> keyValueMap) {
+        static <K> MapValue<K> of(Map<K, Object> self, Map<K, Value> keyValueMap) {
             return DataScrambler.of(self, keyValueMap)
         }
 
@@ -507,6 +504,10 @@ class GroovyValueDefinition {
 
         static ValueDefinition reference(ValueDefinition self, ValuePredicate valuePredicate, ValuePredicate parentPredicate) {
             return self.reference(valuePredicate, parentPredicate)
+        }
+
+        static Object getContextProperty(ValueDefinition self, String propertyName) {
+            return self.getContextProperty(propertyName)
         }
 
     }

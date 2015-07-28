@@ -1,5 +1,5 @@
 /**
- * todo: add description
+ * Example of value definition
  *
  * @author Serge Pruteanu
  */

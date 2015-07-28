@@ -3,7 +3,8 @@ package org.prismus.scrambler.value;
 import java.util.concurrent.Callable;
 
 /**
- * todo: add description
+ * Abstract class used to customize value definitions creation/registration. Before an instance will be created,
+ * {@code definition} instance will be injected/set
  *
  * @author Serge Pruteanu
  */

@@ -5,7 +5,7 @@ import org.prismus.scrambler.Value;
 import java.util.Collection;
 
 /**
- * todo: add description
+ * Value instance that allows to create collection of values using provided value instance strategy (@code instance)
  *
  * @author Serge Pruteanu
  */

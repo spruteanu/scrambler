@@ -134,6 +134,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     }
 
     public InstanceValue<T> usingDefinitions(ValueDefinition valueDefinition) {
+        // todo Serge: make sure that definition is thread safe
         registerFieldValues(valueDefinition);
         definition = valueDefinition;
         return this;

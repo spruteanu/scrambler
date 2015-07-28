@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * todo: add description
+ * Value instance that allows to create a map of values using provided values strategy (@code keyValueMap)
  *
  * @author Serge Pruteanu
  */

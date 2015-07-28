@@ -18,6 +18,7 @@ public class ValueDefinition implements Cloneable {
 
     private Map<ValuePredicate, Value> propertyValueMap = new LinkedHashMap<ValuePredicate, Value>();
     private Map<ValuePredicate, InstanceValue> instanceValueMap = new LinkedHashMap<ValuePredicate, InstanceValue>();
+    private Map<String, Object> contextMap = new LinkedHashMap<String, Object>();
 
     public ValueDefinition() {
     }
@@ -227,6 +228,13 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
+    public ValueDefinition usingContext(Map<String, Object> contextMap) {
+        if (contextMap != null) {
+            this.contextMap.putAll(contextMap);
+        }
+        return this;
+    }
+
     //------------------------------------------------------------------------------------------------------------------
     // Internal Methods
     //------------------------------------------------------------------------------------------------------------------
@@ -262,6 +270,10 @@ public class ValueDefinition implements Cloneable {
             result = parent.lookupValue(predicate);
         }
         return result;
+    }
+
+    public Object getContextProperty(String property) {
+        return contextMap.get(property);
     }
 
     @Override

@@ -5,7 +5,7 @@ import org.prismus.scrambler.Value;
 import java.lang.reflect.Array;
 
 /**
- * todo: add description
+ * Value instance that allows to create an array of values using provided value instance strategy (@code instance)
  *
  * @author Serge Pruteanu
  */
