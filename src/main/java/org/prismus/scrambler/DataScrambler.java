@@ -81,7 +81,13 @@ public class DataScrambler {
     static <T> InstanceValue<T> parseDefinitions(InstanceValue<T> instanceValue, Reader[] readers) throws IOException {
         if (readers != null) {
             for (Reader reader : readers) {
-                instanceValue.usingDefinitions(Holder.groovyValueDefinition.parseDefinition(readers));
+                try {
+                    instanceValue.usingDefinitions(Holder.groovyValueDefinition.parseDefinition(readers));
+                } finally {
+                    try {
+                        reader.close();
+                    } catch (IOException ignore) { }
+                }
             }
         }
         return instanceValue;
