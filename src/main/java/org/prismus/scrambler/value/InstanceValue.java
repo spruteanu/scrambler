@@ -10,6 +10,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * todo: add description
@@ -29,6 +30,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     private Map<String, Field> fieldMap;
     private PropertyUtilsBean propertyUtils;
     private List<Value> constructorValues;
+    private AtomicBoolean instanceBuilt = new AtomicBoolean();
 
     public InstanceValue() {
         this(null, null, null);
@@ -70,8 +72,13 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         this.constructorValues = constructorValues;
     }
 
+    boolean isInstanceBuilt() {
+        return instanceBuilt.get();
+    }
+
     @Override
     public T next() {
+//        if (isInstanceBuilt()) { // todo Serge: fix definition initializing
         if (definition == null) {
             build(null);
             final Object valueType = lookupType();
@@ -134,9 +141,9 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     }
 
     public InstanceValue<T> usingDefinitions(ValueDefinition valueDefinition) {
-        // todo Serge: make sure that definition is thread safe
         registerFieldValues(valueDefinition);
-        definition = valueDefinition;
+        checkDefinitionCreated();
+        definition.usingDefinition(valueDefinition);
         return this;
     }
 
@@ -183,7 +190,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         checkFieldMapCreated();
 
         final Map<String, Field> unresolvedProps = new HashMap<String, Field>(fieldMap);
-        for (final Map.Entry<ValuePredicate, Value> entry : valueDefinition.getPropertyValueMap().entrySet()) {
+        for (final Map.Entry<ValuePredicate, Value> entry : valueDefinition.getDefinitionMap().entrySet()) {
             final ValuePredicate predicate = entry.getKey();
             for (final Field field : fieldMap.values()) {
                 final String propertyName = field.getName();
@@ -209,6 +216,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     @SuppressWarnings("unchecked")
     InstanceValue<T> build(ValueDefinition parent) {
         checkDefinitionCreated();
+        instanceBuilt.set(true);
         checkFieldMapCreated();
         definition.setParent(parent);
         definition.of((Map) fieldValueMap);
@@ -274,7 +282,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     List<Value> lookupConstructorArguments(ValueDefinition valueDefinition, Class type, Set<Class> supportedTypes) {
         List<Value> result = null;
         try {
-            final Map<ValuePredicate, Value> typeValueMap = valueDefinition.getPropertyValueMap();
+            final Map<ValuePredicate, Value> typeValueMap = valueDefinition.getDefinitionMap();
             for (final Constructor ctor : type.getConstructors()) {
                 final Class[] types = ctor.getParameterTypes();
                 if (types == null) {

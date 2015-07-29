@@ -53,9 +53,9 @@ class Person {
 class Address {
     String number
     String street
-    String postalCode
     String city
-    String room
+    String state
+    String postalCode
 }
 
 class Order {

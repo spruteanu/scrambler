@@ -18,10 +18,14 @@ public class DataScrambler {
     //------------------------------------------------------------------------------------------------------------------
     // Parse definition methods
     //------------------------------------------------------------------------------------------------------------------
+    public static ValueDefinition parseDefinition(String definition) throws IOException {
+        return Holder.groovyValueDefinition.parseDefinition(definition);
+    }
+
     static <T> InstanceValue<T> parseDefinitions(InstanceValue<T> instanceValue, String... definitions) throws IOException {
         if (definitions != null) {
             for (String definition : definitions) {
-                instanceValue.usingDefinitions(Holder.groovyValueDefinition.parseDefinition(definition));
+                instanceValue.usingDefinitions(parseDefinition(definition));
             }
         }
         return instanceValue;
@@ -36,10 +40,14 @@ public class DataScrambler {
         return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), definitions);
     }
 
+    public static ValueDefinition parseDefinition(File definition) throws IOException {
+        return Holder.groovyValueDefinition.parseDefinition(definition);
+    }
+
     static <T> InstanceValue<T> parseDefinitions(InstanceValue<T> instanceValue, File... definitions) throws IOException {
         if (definitions != null) {
             for (File definition : definitions) {
-                instanceValue.usingDefinitions(Holder.groovyValueDefinition.parseDefinition(definition));
+                instanceValue.usingDefinitions(parseDefinition(definition));
             }
         }
         return instanceValue;
@@ -54,11 +62,15 @@ public class DataScrambler {
         return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), definitions);
     }
 
+    public static ValueDefinition parseDefinition(InputStream inputStream) throws IOException {
+        return Holder.groovyValueDefinition.parseDefinition(inputStream);
+    }
+
     static <T> InstanceValue<T> parseDefinitions(InstanceValue<T> instanceValue, InputStream... inputStreams) throws IOException {
         if (inputStreams != null) {
             for (InputStream inputStream : inputStreams) {
                 try {
-                    instanceValue.usingDefinitions(Holder.groovyValueDefinition.parseDefinition(inputStream));
+                    instanceValue.usingDefinitions(parseDefinition(inputStream));
                 } finally {
                     try {
                         inputStream.close();
@@ -78,11 +90,15 @@ public class DataScrambler {
         return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), inputStreams);
     }
 
+    public static ValueDefinition parseDefinition(Reader reader) throws IOException {
+        return Holder.groovyValueDefinition.parseDefinition(reader);
+    }
+
     static <T> InstanceValue<T> parseDefinitions(InstanceValue<T> instanceValue, Reader[] readers) throws IOException {
         if (readers != null) {
             for (Reader reader : readers) {
                 try {
-                    instanceValue.usingDefinitions(Holder.groovyValueDefinition.parseDefinition(readers));
+                    instanceValue.usingDefinitions(parseDefinition(reader));
                 } finally {
                     try {
                         reader.close();

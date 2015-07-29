@@ -167,8 +167,7 @@ class GroovyValueDefinition {
             } finally {
                 try {
                     inputStream.close()
-                } catch (IOException ignore) {
-                }
+                } catch (IOException ignore) { }
             }
         }
     }
@@ -508,6 +507,10 @@ class GroovyValueDefinition {
 
         static Object getContextProperty(ValueDefinition self, String propertyName) {
             return self.getContextProperty(propertyName)
+        }
+
+        static ValueDefinition usingDefinition(ValueDefinition self, ValueDefinition valueDefinition) {
+            return self.usingDefinition(valueDefinition)
         }
 
     }

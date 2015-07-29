@@ -8,7 +8,7 @@ import org.prismus.scrambler.value.ReferenceValue
  * @author Serge Pruteanu
  */
 //first name    //http://deron.meranda.us/data/census-dist-female-first.txt
-                //http://deron.meranda.us/data/census-dist-male-first.txt
+//http://deron.meranda.us/data/census-dist-male-first.txt
 final femaleFirstNames = 'http://deron.meranda.us/data/census-dist-female-first.txt'.toURL().readLines().collect { String line ->
     return line.split('\\s')[0].toLowerCase().capitalize()
 } as Set<String>
@@ -31,7 +31,7 @@ of(~/(?i)middle\w*/, new ReferenceValue(firstNamePattern) {
     Object next() {
         String value = null
         final middleRandomRange = randomRange.next()
-        if (50<=middleRandomRange && 61 > middleRandomRange) {
+        if (50 <= middleRandomRange && 61 > middleRandomRange) {
             value = randomMiddle.next()
         }
         setValue(value)
@@ -70,9 +70,9 @@ of(~/(?i)(?:\w*dob)|(?:\w*birth)/, new Constant() {
 
 //phone
 of(~/(?i)\w*phone/, new Constant() {
-    Value group1 = Integer.random(1, 999)
-    Value group2 = Integer.random(1, 999)
-    Value group3 = Integer.random(1, 9999)
+    Value group1 = Integer.random(100, 999)
+    Value group2 = Integer.random(100, 999)
+    Value group3 = Integer.random(1000, 9999)
 
     @Override
     Object next() {

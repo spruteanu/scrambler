@@ -16,23 +16,23 @@ import java.util.regex.Pattern;
 public class ValueDefinition implements Cloneable {
     private ValueDefinition parent;
 
-    private Map<ValuePredicate, Value> propertyValueMap = new LinkedHashMap<ValuePredicate, Value>();
+    private Map<ValuePredicate, Value> definitionMap = new LinkedHashMap<ValuePredicate, Value>();
     private Map<ValuePredicate, InstanceValue> instanceValueMap = new LinkedHashMap<ValuePredicate, InstanceValue>();
     private Map<String, Object> contextMap = new LinkedHashMap<String, Object>();
 
     public ValueDefinition() {
     }
 
-    public ValueDefinition(Map<Object, Value> propertyValueMap) {
-        of((Map) propertyValueMap);
+    public ValueDefinition(Map<Object, Value> definitionMap) {
+        of((Map) definitionMap);
     }
 
     public void setParent(ValueDefinition parent) {
         this.parent = parent;
     }
 
-    public Map<ValuePredicate, Value> getPropertyValueMap() {
-        return propertyValueMap;
+    public Map<ValuePredicate, Value> getDefinitionMap() {
+        return definitionMap;
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -260,12 +260,22 @@ public class ValueDefinition implements Cloneable {
 
     public ValueDefinition registerPredicateValue(ValuePredicate valuePredicate, Value value) {
         lookupRegisterInstanceValue(valuePredicate, value);
-        propertyValueMap.put(valuePredicate, value);
+        definitionMap.put(valuePredicate, value);
+        return this;
+    }
+
+    public ValueDefinition usingDefinition(ValueDefinition definition) {
+        contextMap.putAll(definition.contextMap);
+        return usingDefinitions(definition.getDefinitionMap());
+    }
+
+    public ValueDefinition usingDefinitions(Map<ValuePredicate, Value> definitions) {
+        definitionMap.putAll(definitions);
         return this;
     }
 
     public Value lookupValue(ValuePredicate predicate) {
-        Value result = propertyValueMap.get(predicate);
+        Value result = definitionMap.get(predicate);
         if (result == null && parent != null) {
             result = parent.lookupValue(predicate);
         }

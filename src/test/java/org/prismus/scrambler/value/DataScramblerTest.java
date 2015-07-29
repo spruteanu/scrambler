@@ -2,6 +2,7 @@ package org.prismus.scrambler.value;
 
 import org.junit.Test;
 import org.prismus.scrambler.DataScrambler;
+import org.prismus.scrambler.beans.Address;
 import org.prismus.scrambler.beans.Person;
 import org.spockframework.util.Assert;
 
@@ -15,9 +16,20 @@ public class DataScramblerTest {
 
     @Test
     public void test_parse_definition() throws IOException {
-        DataScrambler.random(new Date());
-        final InstanceValue<Person> value = DataScrambler.instanceOf(Person.class, "/person-definition.groovy");
-        Assert.notNull(value.next());
+        final InstanceValue<Person> personValue = DataScrambler.instanceOf(Person.class, "/person-definition.groovy");
+        final Person person = personValue.next();
+        Assert.notNull(person.getFirstName());
+        Assert.notNull(person.getLastName());
+        Assert.notNull(person.getSex());
+        Assert.notNull(person.getDob());
+
+        final InstanceValue<Address> addressValue = DataScrambler.instanceOf(Address.class, "/address-definition.groovy");
+        final Address address = addressValue.next();
+        Assert.notNull(address.getNumber());
+        Assert.notNull(address.getStreet());
+        Assert.notNull(address.getCity());
+        Assert.notNull(address.getState());
+        Assert.notNull(address.getPostalCode());
     }
 
 }
