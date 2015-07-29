@@ -13,7 +13,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * todo: add description
+ * Instance value, used to populate/generate field values using provided definitions.
  *
  * @author Serge Pruteanu
  */
@@ -30,7 +30,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     private Map<String, Field> fieldMap;
     private PropertyUtilsBean propertyUtils;
     private List<Value> constructorValues;
-    private AtomicBoolean instanceBuilt = new AtomicBoolean();
+    private AtomicBoolean shouldBuild = new AtomicBoolean(true);
 
     public InstanceValue() {
         this(null, null, null);
@@ -72,14 +72,13 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         this.constructorValues = constructorValues;
     }
 
-    boolean isInstanceBuilt() {
-        return instanceBuilt.get();
+    boolean shouldBuildInstance() {
+        return shouldBuild.get();
     }
 
     @Override
     public T next() {
-//        if (isInstanceBuilt()) { // todo Serge: fix definition initializing
-        if (definition == null) {
+        if (shouldBuildInstance()) {
             build(null);
             final Object valueType = lookupType();
             if (valueType instanceof Class) {
@@ -124,6 +123,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     public InstanceValue<T> registerFieldValue(String field, Value value) {
         fieldValueMap.put(field, value);
+        shouldBuild.set(true);
         return this;
     }
 
@@ -144,12 +144,14 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         registerFieldValues(valueDefinition);
         checkDefinitionCreated();
         definition.usingDefinition(valueDefinition);
+        shouldBuild.set(true);
         return this;
     }
 
     public InstanceValue<T> usingDefinitions(Map<Object, Object> valueDefinitions) {
         if (valueDefinitions != null && valueDefinitions.size() > 0) {
-            registerFieldValues(new ValueDefinition().of(valueDefinitions));
+            usingDefinitions(new ValueDefinition().of(valueDefinitions));
+            shouldBuild.set(true);
         }
         return this;
     }
@@ -184,6 +186,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     //------------------------------------------------------------------------------------------------------------------
     void setDefinitionClosure(Callable<ValueDefinition> definitionClosure) {
         this.definitionClosure = definitionClosure;
+        shouldBuild.set(true);
     }
 
     void registerFieldValues(ValueDefinition valueDefinition) {
@@ -216,16 +219,16 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     @SuppressWarnings("unchecked")
     InstanceValue<T> build(ValueDefinition parent) {
         checkDefinitionCreated();
-        instanceBuilt.set(true);
         checkFieldMapCreated();
         definition.setParent(parent);
-        definition.of((Map) fieldValueMap);
+        definition.of((Map) fieldValueMap); // todo Serge: this invocation might not be needed
         if (definitionClosure != null) {
             executeDefinitionClosure();
         }
         if (definitionClosure != null || fieldValueMap.size() > 0) {
             definition.build();
         }
+        shouldBuild.set(false);
         return this;
     }
 
