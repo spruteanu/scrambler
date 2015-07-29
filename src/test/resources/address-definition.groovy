@@ -65,7 +65,7 @@ Texas,TX,Austin,75-79
 Utah,UT,Salt Lake City,84
 Vermont,VT,Montpelier,05
 Virginia,VA,Richmond,220-246
-Washington,WA,Olympia,980-994
+Washington,WA,Olympia,9800-9940
 West Virginia,WV,Charleston,246-269
 Wisconsin,WI,Madison,53-54
 Wyoming,WY,Cheyenne,820-831""".split('\n').collect { String line ->
@@ -136,7 +136,7 @@ of(~/(?i)state/, new Constant<String>() {
     private String state = getContextProperty('state')
     @Override
     String next() {
-        String state = this.state == null ? randomState.next() : state
+        String state = this.state == null ? randomState.next() : this.state
         setValue(state)
         return state
     }
@@ -144,7 +144,7 @@ of(~/(?i)state/, new Constant<String>() {
 
 of(~/(?i)city/, new ReferenceValue(~/(?i)state/) {
     @Override
-    String next() {
+    Object next() {
         String state = super.next()
         String city = stateCitiesMap.get(state).randomOf().next()
         setValue(city)
@@ -155,7 +155,7 @@ of(~/(?i)city/, new ReferenceValue(~/(?i)state/) {
 of(~/(?i)(?:postal\w*)|(?:zip\w*)/, new ReferenceValue(~/(?i)state/) {
     private AbstractRandomRange<Integer> randomRange = Integer.random(1, 1000)
     @Override
-    String next() {
+    Object next() {
         final String state = super.next()
         final stateInfo = stateInfoMap.get(state)
         String code = stateInfo.get('zipRange')

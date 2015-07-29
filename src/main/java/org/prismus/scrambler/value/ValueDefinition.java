@@ -286,6 +286,14 @@ public class ValueDefinition implements Cloneable {
         return contextMap.get(property);
     }
 
+    public Object getContextProperty(String property, Object defaultValue) {
+        Object result = contextMap.get(property);
+        if (result == null) {
+            result = defaultValue;
+        }
+        return result;
+    }
+
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();

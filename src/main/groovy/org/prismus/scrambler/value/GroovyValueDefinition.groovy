@@ -505,8 +505,8 @@ class GroovyValueDefinition {
             return self.reference(valuePredicate, parentPredicate)
         }
 
-        static Object getContextProperty(ValueDefinition self, String propertyName) {
-            return self.getContextProperty(propertyName)
+        static Object getContextProperty(ValueDefinition self, String propertyName, Object defaultValue = null) {
+            return self.getContextProperty(propertyName, defaultValue)
         }
 
         static ValueDefinition usingDefinition(ValueDefinition self, ValueDefinition valueDefinition) {

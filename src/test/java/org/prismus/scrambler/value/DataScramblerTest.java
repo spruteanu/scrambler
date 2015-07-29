@@ -7,7 +7,7 @@ import org.prismus.scrambler.beans.Person;
 import org.spockframework.util.Assert;
 
 import java.io.IOException;
-import java.util.Date;
+import java.util.HashMap;
 
 /**
  * @author Serge Pruteanu
@@ -38,6 +38,20 @@ public class DataScramblerTest {
         Assert.notNull(person.getSex());
         Assert.notNull(person.getDob());
         Assert.that(person.getAddress() != null);
+    }
+
+    @Test
+    public void test_parse_definition_with_context_map_injection() throws IOException {
+        final InstanceValue<Address> addressValue = DataScrambler.instanceOf(Address.class, new HashMap<String, Object>() {{
+            put("state", "Washington");
+        }}, "/address-definition.groovy");
+        Address address = addressValue.next();
+        Assert.that("Washington".equals(address.getState()));
+        Assert.notNull(address.getNumber());
+        Assert.notNull(address.getStreet());
+        Assert.notNull(address.getCity());
+        Assert.notNull(address.getPostalCode());
+        Assert.that(address.getPostalCode().startsWith("WA-9"));
     }
 
 }
