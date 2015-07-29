@@ -15,9 +15,6 @@ public class ReferenceValue extends Constant<Object> {
     private ValuePredicate predicate;
     private ValuePredicate fieldPredicate;
 
-    private Value referencedInstance;
-    private Value referencedFieldValue;
-
     public ReferenceValue(ValuePredicate predicate) {
         this(predicate, null);
     }
@@ -54,14 +51,17 @@ public class ReferenceValue extends Constant<Object> {
     final Object resolveValue() {
         Object result = null;
         if (definition != null) {
-            if (referencedInstance == null && predicate != null) {
+            Value referencedInstance = null;
+
+            if (predicate != null) {
                 referencedInstance = definition.lookupValue(predicate);
             }
             if (referencedInstance != null) {
                 result = referencedInstance.get();
             }
             if (fieldPredicate != null) {
-                if (referencedInstance instanceof InstanceValue && referencedFieldValue == null) {
+                Value referencedFieldValue = null;
+                if (referencedInstance instanceof InstanceValue) {
                     referencedFieldValue = ((InstanceValue) referencedInstance).lookupFieldValue(fieldPredicate);
                 }
                 if (referencedFieldValue == null && definition != null) {

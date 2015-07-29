@@ -8,6 +8,7 @@ import org.spockframework.util.Assert;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.regex.Pattern;
 
 /**
  * @author Serge Pruteanu
@@ -22,6 +23,8 @@ public class DataScramblerTest {
         Assert.notNull(person.getLastName());
         Assert.notNull(person.getSex());
         Assert.notNull(person.getDob());
+        final Pattern pattern = Pattern.compile("[A-W]{2}-\\d+");
+        Assert.that(false == pattern.matcher(person.getAddress().getPostalCode()).matches());
 
         final InstanceValue<Address> addressValue = DataScrambler.instanceOf(Address.class, "/address-definition.groovy");
         Address address = addressValue.next();
@@ -29,15 +32,17 @@ public class DataScramblerTest {
         Assert.notNull(address.getStreet());
         Assert.notNull(address.getCity());
         Assert.notNull(address.getState());
+
         Assert.notNull(address.getPostalCode());
 
-        personValue.usingDefinitions(addressValue.getDefinition());
+        personValue.usingDefinitions(addressValue.getDefinition()); // and now change definitions instead of random one
         person = personValue.next();
         Assert.notNull(person.getFirstName());
         Assert.notNull(person.getLastName());
         Assert.notNull(person.getSex());
         Assert.notNull(person.getDob());
         Assert.that(person.getAddress() != null);
+        Assert.that(true == pattern.matcher(person.getAddress().getPostalCode()).matches());
     }
 
     @Test

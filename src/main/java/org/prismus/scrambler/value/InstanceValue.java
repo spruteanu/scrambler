@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Serge Pruteanu
  */
+@SuppressWarnings("unused")
 public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     private ValueDefinition definition;
@@ -25,7 +26,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     private Object type;
     private Collection<Value> constructorArguments;
-    private final Map<String, Value> fieldValueMap;
+    private final Map<InstanceFieldPredicate, Value> fieldValueMap;
 
     private Map<String, Field> fieldMap;
     private PropertyUtilsBean propertyUtils;
@@ -48,7 +49,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         this.type = type;
         this.constructorArguments = constructorArguments;
         this.constructorValues = new ArrayList<Value>();
-        fieldValueMap = new LinkedHashMap<String, Value>();
+        fieldValueMap = new LinkedHashMap<InstanceFieldPredicate, Value>();
         propertyUtils = Util.createBeanUtilsBean().getPropertyUtils();
     }
 
@@ -122,15 +123,15 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     }
 
     public InstanceValue<T> registerFieldValue(String field, Value value) {
-        fieldValueMap.put(field, value);
+        fieldValueMap.put(new InstanceFieldPredicate(field), value);
         shouldBuild.set(true);
         return this;
     }
 
     public Value lookupFieldValue(ValuePredicate fieldPredicate) {
         Value result = null;
-        for (final Map.Entry<String, Value> entry : fieldValueMap.entrySet()) {
-            final String fieldName = entry.getKey();
+        for (final Map.Entry<InstanceFieldPredicate, Value> entry : fieldValueMap.entrySet()) {
+            final String fieldName = entry.getKey().getProperty();
             final Value value = entry.getValue();
             if (fieldPredicate.apply(fieldName, value)) {
                 result = value;
@@ -150,7 +151,8 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     public InstanceValue<T> usingDefinitions(Map<Object, Object> valueDefinitions) {
         if (valueDefinitions != null && valueDefinitions.size() > 0) {
-            usingDefinitions(new ValueDefinition().of(valueDefinitions));
+            checkDefinitionCreated();
+            definition.of(valueDefinitions);
             shouldBuild.set(true);
         }
         return this;
@@ -197,7 +199,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             final ValuePredicate predicate = entry.getKey();
             for (final Field field : fieldMap.values()) {
                 final String propertyName = field.getName();
-                if (!fieldValueMap.containsKey(propertyName)) {
+                if (!fieldValueMap.containsKey(new InstanceFieldPredicate(propertyName))) {
                     if (predicate.apply(propertyName, field.getValueType())) {
                         registerFieldValue(propertyName, entry.getValue());
                         break;
@@ -205,14 +207,15 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                 }
             }
         }
-        unresolvedProps.keySet().removeAll(fieldValueMap.keySet());
+        for (InstanceFieldPredicate fieldPredicate : fieldValueMap.keySet()) {
+            unresolvedProps.remove(fieldPredicate.getProperty());
+        }
         fieldValueMap.putAll(introspectTypes(valueDefinition, unresolvedProps));
     }
 
     void checkDefinitionCreated() {
         if (definition == null) {
             definition = new ValueDefinition();
-            registerFieldValues(definition);
         }
     }
 
@@ -220,8 +223,14 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     InstanceValue<T> build(ValueDefinition parent) {
         checkDefinitionCreated();
         checkFieldMapCreated();
+
+        fieldValueMap.clear();
+        definition.clearInternals();
         definition.setParent(parent);
-        definition.of((Map) fieldValueMap); // todo Serge: this invocation might not be needed
+
+        registerFieldValues(definition);
+        definition.of((Map) fieldValueMap);
+
         if (definitionClosure != null) {
             executeDefinitionClosure();
         }
@@ -254,9 +263,9 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     }
 
     @SuppressWarnings("unchecked")
-    Map<String, Value> introspectTypes(ValueDefinition valueDefinition, Map<String, Field> unresolvedProps) {
+    Map<InstanceFieldPredicate, Value> introspectTypes(ValueDefinition valueDefinition, Map<String, Field> unresolvedProps) {
         final Set<Class> supportedTypes = getSupportedTypes();
-        final Map<String, Value> propertyValueMap = new LinkedHashMap<String, Value>();
+        final Map<InstanceFieldPredicate, Value> propertyValueMap = new LinkedHashMap<InstanceFieldPredicate, Value>();
         for (final Map.Entry<String, Field> entry : unresolvedProps.entrySet()) {
             final String propertyName = entry.getKey();
             final Field field = entry.getValue();
@@ -276,7 +285,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                 }
             }
             if (val != null) {
-                propertyValueMap.put(propertyName, val);
+                propertyValueMap.put(new InstanceFieldPredicate(propertyName), val);
             }
         }
         return propertyValueMap;
@@ -312,8 +321,8 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     void populate(Object instance) {
         final Map<String, Object> propertyObjectMap = new LinkedHashMap<String, Object>(fieldValueMap.size());
-        for (Map.Entry<String, Value> entry : fieldValueMap.entrySet()) {
-            propertyObjectMap.put(entry.getKey(), entry.getValue().next());
+        for (Map.Entry<InstanceFieldPredicate, Value> entry : fieldValueMap.entrySet()) {
+            propertyObjectMap.put(entry.getKey().getProperty(), entry.getValue().next());
         }
         populate(instance, propertyObjectMap);
     }

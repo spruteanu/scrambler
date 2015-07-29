@@ -19,6 +19,10 @@ public class SimplePropertyPredicate implements ValuePredicate {
         return this.property.equalsIgnoreCase(property);
     }
 
+    public String getProperty() {
+        return property;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

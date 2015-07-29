@@ -3,8 +3,7 @@ package org.prismus.scrambler.value;
 import org.prismus.scrambler.Value;
 import org.prismus.scrambler.ValuePredicate;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -33,6 +32,23 @@ public class ValueDefinition implements Cloneable {
 
     public Map<ValuePredicate, Value> getDefinitionMap() {
         return definitionMap;
+    }
+
+    ValueDefinition clearInternals() {
+        instanceValueMap.clear();
+        final Set<ValuePredicate> removedSet = new LinkedHashSet<ValuePredicate>();
+        for (ValuePredicate predicate : definitionMap.keySet()) {
+            if (predicate instanceof InstanceFieldPredicate) {
+                removedSet.add(predicate);
+            }
+        }
+        for (ValuePredicate predicate : removedSet) {
+            definitionMap.remove(predicate);
+        }
+        if (parent != null) {
+            parent.clearInternals();
+        }
+        return this;
     }
 
     //------------------------------------------------------------------------------------------------------------------
