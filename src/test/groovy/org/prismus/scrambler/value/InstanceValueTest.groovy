@@ -122,7 +122,7 @@ class InstanceValueTest extends Specification {
         final instanceValue = new InstanceValue<Order>(Order).usingDefinitions(new ValueDefinition(
                 'firstName': ['Andy', 'Nicole', 'Nicolas', 'Jasmine'].randomOf(),
                 'lastName': ['Smith', 'Ferrara', 'Maldini', "Shaffer"].randomOf(),
-                'sex': ['M' as char, 'F' as char].randomOf(),
+                'sex': ['M', 'F'].randomOf(),
                 'phone': ['425-452-0001', '425-452-0002', '425-452-0003', "425-452-0004"].randomOf(),
                 name: ['Candies', 'Star Wars Lego Factory', 'Star War Ninja GO'].randomOf(),
                 price: 2.0.random(10.0, 50.0),

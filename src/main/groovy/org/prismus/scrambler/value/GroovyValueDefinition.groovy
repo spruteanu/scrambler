@@ -8,7 +8,6 @@ import org.prismus.scrambler.DataScrambler
 import org.prismus.scrambler.Value
 import org.prismus.scrambler.ValuePredicate
 
-import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 
 /**
@@ -20,9 +19,6 @@ import java.util.regex.Pattern
 class GroovyValueDefinition {
     private Properties configurationProperties
     private GroovyShell shell
-
-    private Map<String, ValueDefinition> cachedDefinitionMap = new ConcurrentHashMap<>()
-    private Map<String, Value> cachedValueMap = new ConcurrentHashMap<>()
 
     GroovyValueDefinition() {
     }
@@ -36,22 +32,12 @@ class GroovyValueDefinition {
     }
 
     @CompileStatic
-    protected ValueDefinition doParseDefinition(String definitionText, Map<String, Object> context = null) {
+    ValueDefinition parseDefinitionText(String definitionText, Map<String, Object> context = null) {
         checkCreateShell()
         final script = (DelegatingScript) shell.parse(definitionText)
         final ValueDefinition definition = new ValueDefinition().usingContext(context)
         script.setDelegate(definition)
         script.run()
-        return definition
-    }
-
-    @CompileStatic
-    ValueDefinition parseDefinitionText(String definitionText, Map<String, Object> context = null) {
-        ValueDefinition definition = cachedDefinitionMap.get(definitionText)
-        if (definition == null) {
-            definition = doParseDefinition(definitionText, context)
-            cachedDefinitionMap.put(definitionText, definition.clone() as ValueDefinition)
-        }
         return definition
     }
 
@@ -66,28 +52,18 @@ class GroovyValueDefinition {
                     return parseDefinition(new File(resource))
                 }
             }
-            ValueDefinition definition = cachedDefinitionMap.get(resource)
-            if (definition == null) {
-                definition = doParseDefinition(url.text, context)
-                cachedDefinitionMap.put(resource, definition.clone() as ValueDefinition)
-            }
-            return definition
+            return parseDefinitionText(url.text, context)
         } else {
-            return parseDefinitionText(resource)
+            return parseDefinitionText(resource, context)
         }
     }
 
     ValueDefinition parseDefinition(def resource, Map<String, Object> context = null) throws IOException {
-        ValueDefinition definition = cachedDefinitionMap.get(resource.toString())
-        if (definition == null) {
-            definition = doParseDefinition(resource.text, context)
-            cachedDefinitionMap.put(resource, definition.clone() as ValueDefinition)
-        }
-        return definition
+        return parseDefinitionText(resource.text, context)
     }
 
     @CompileStatic
-    protected Value doParseValue(String definitionText, Map<String, Object> context = null) {
+    Value parseValueText(String definitionText, Map<String, Object> context = null) {
         checkCreateShell()
         final script = (DelegatingScript) shell.parse(definitionText)
         final ValueDefinition definition = new ValueDefinition().usingContext(context)
@@ -96,36 +72,16 @@ class GroovyValueDefinition {
     }
 
     @CompileStatic
-    Value parseValueText(String definitionText, Map<String, Object> context = null) {
-        Value value = cachedValueMap.get(definitionText)
-        if (value == null) {
-            value = doParseValue(definitionText, context)
-            cachedValueMap.put(definitionText, value.clone() as Value)
-        }
-        return value
-    }
-
-    @CompileStatic
     Value parseValue(String resource, Map<String, Object> context = null) throws IOException {
         final URL url = this.getClass().getResource(resource)
         if (url == null) {
             throw new IllegalArgumentException(String.format("Not found resource for: %s", resource))
         }
-        Value value = cachedValueMap.get(resource)
-        if (value == null) {
-            value = parseValueText(ResourceGroovyMethods.getText(url), context)
-            cachedValueMap.put(resource, value.clone() as Value)
-        }
-        return value
+        return parseValueText(ResourceGroovyMethods.getText(url), context)
     }
 
     Value parseValue(def resource, Map<String, Object> context = null) throws IOException {
-        Value value = cachedValueMap.get(resource)
-        if (value == null) {
-            value = parseValueText(resource.text, context)
-            cachedValueMap.put(resource, value.clone() as Value)
-        }
-        return value
+        return parseValueText(resource.text, context)
     }
 
     @CompileStatic

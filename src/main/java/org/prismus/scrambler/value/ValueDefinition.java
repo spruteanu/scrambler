@@ -246,7 +246,7 @@ public class ValueDefinition implements Cloneable {
 
     public ValueDefinition usingContext(Map<String, Object> contextMap) {
         if (contextMap != null) {
-            this.contextMap.putAll(contextMap);
+            this.contextMap = contextMap;
         }
         return this;
     }

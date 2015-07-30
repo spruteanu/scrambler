@@ -36,7 +36,7 @@ public class DataScramblerTest {
 
         Assert.notNull(address.getPostalCode());
 
-        personValue.usingDefinitions(addressValue.getDefinition()); // and now change definitions instead of random one
+        personValue.usingDefinitions(addressValue.getDefinition()); // and now change definitions instead of random ones
         person = personValue.next();
         Assert.notNull(person.getFirstName());
         Assert.notNull(person.getLastName());
@@ -52,12 +52,12 @@ public class DataScramblerTest {
             put("state", "Washington");
         }}, "/address-definition.groovy");
         Address address = addressValue.next();
-//        Assert.that("Washington".equals(address.getState())); // todo Serge: this is broken, fix it later
+        Assert.that("Washington".equals(address.getState()));
         Assert.notNull(address.getNumber());
         Assert.notNull(address.getStreet());
         Assert.notNull(address.getCity());
         Assert.notNull(address.getPostalCode());
-//        Assert.that(address.getPostalCode().startsWith("WA-9")); // todo Serge: this is broken, fix it later
+        Assert.that(address.getPostalCode().startsWith("WA-9"));
     }
 
     @Test

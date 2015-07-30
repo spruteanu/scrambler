@@ -34,24 +34,23 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     private AtomicBoolean shouldBuild = new AtomicBoolean(true);
 
     public InstanceValue() {
-        this(null, null, null);
+        this(null, null);
     }
 
     public InstanceValue(String type) {
-        this(lookupType(type, false), null, null);
+        this(lookupType(type, false), null);
     }
 
     public InstanceValue(Class type) {
-        this(type, null, null);
+        this(type, null);
     }
 
-    public InstanceValue(Class type, Collection<Value> constructorArguments, ValueDefinition parentDefinition) {
+    public InstanceValue(Class type, Collection<Value> constructorArguments) {
         this.type = type;
         this.constructorArguments = constructorArguments;
         this.constructorValues = new ArrayList<Value>();
         fieldValueMap = new LinkedHashMap<InstanceFieldPredicate, Value>();
         propertyUtils = Util.createBeanUtilsBean().getPropertyUtils();
-//        definition = parentDefinition; // todo Serge: this breaks parents relationship, review
     }
 
     public ValueDefinition getDefinition() {
@@ -282,7 +281,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                 }
                 final List<Value> ctorArgs = lookupConstructorArguments(valueDefinition, propertyType, supportedTypes);
                 if (ctorArgs != null) {
-                    val = new InstanceValue(propertyType, ctorArgs, valueDefinition);
+                    val = new InstanceValue(propertyType, ctorArgs);
                 }
             }
             if (val != null) {
