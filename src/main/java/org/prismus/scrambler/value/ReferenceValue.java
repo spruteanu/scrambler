@@ -6,7 +6,8 @@ import org.prismus.scrambler.ValuePredicate;
 import java.util.regex.Pattern;
 
 /**
- * todo: add description
+ * Represents a reference in parent definitions, referencing either an instance ({@code predicate})
+ * or reference is a field from instance ({@code fieldPredicate})
  *
  * @author Serge Pruteanu
  */

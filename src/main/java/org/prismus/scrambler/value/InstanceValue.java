@@ -7,6 +7,7 @@ import org.prismus.scrambler.ValuePredicate;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -369,14 +370,10 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return propertyDefinitionMap;
     }
 
-    void setPropertyValue(PropertyDescriptor propertyDescriptor, Object instance, Object value) throws Exception {
-        propertyDescriptor.getWriteMethod().invoke(instance, value);
-    }
-
     void setPropertyValue(Object instance, String propertyName, Object value) throws Exception {
         final Field field = fieldMap.get(propertyName);
         if (field != null) {
-            setPropertyValue(field.propertyDescriptor, instance, value);
+            field.setValue(instance, value);
         } else {
             propertyUtils.setSimpleProperty(instance, propertyName, value);
         }
@@ -462,6 +459,31 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
         public Method setter() {
             return propertyDescriptor.getWriteMethod();
+        }
+
+        public void setValue(Object instance, Object value) throws InvocationTargetException, IllegalAccessException, NoSuchFieldException {
+            final Method writeMethod = propertyDescriptor.getWriteMethod();
+            if (writeMethod != null) {
+                writeMethod.invoke(instance, value);
+            } else {
+                setValue(instance.getClass(), instance, value);
+            }
+        }
+
+        void setValue(Class<?> clazzType, Object instance, Object value) throws IllegalAccessException, NoSuchFieldException {
+            final java.lang.reflect.Field field;
+            try {
+                field = clazzType.getDeclaredField(propertyDescriptor.getName());
+                field.setAccessible(true);
+                field.set(instance, value);
+            } catch (NoSuchFieldException e) {
+                final Class<?> superclass = clazzType.getSuperclass();
+                if (superclass != Object.class) {
+                    setValue(superclass, instance, value);
+                } else {
+                    throw e;
+                }
+            }
         }
     }
 

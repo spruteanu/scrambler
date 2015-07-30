@@ -26,6 +26,19 @@ class InstanceValueTest extends Specification {
         expectedType << [School, School, School, School]
     }
 
+    void 'verify encapsulated fields generation'() {
+        given:
+        final obj = new InstanceValue<EncapsulatedExtend>(EncapsulatedExtend).next()
+
+        expect:
+        null != obj.extReadOnly
+        null != obj.extWriteOnly
+        null != obj.extPublicValue
+        null != obj.readOnly
+//        null != obj.writeOnly
+        null != obj.publicValue
+    }
+
     @SuppressWarnings("GroovyAssignabilityCheck")
     void 'instance creation with arguments'(Object value, Class instanceType,
                                             List<Value> constructorValues, Integer expectedValue) {
@@ -162,6 +175,38 @@ class InstanceValueTest extends Specification {
             Assert.assertTrue(classRoom.roomNumber.length() > 0)
             Assert.assertSame(school, classRoom.parent)
             Assert.assertEquals(classRoom.schoolId, school.schoolId)
+        }
+    }
+
+    private static class Encapsulated {
+        private String readOnly
+        private String writeOnly
+        private String immutable
+
+        String publicValue
+
+        String getReadOnly() {
+            return readOnly
+        }
+
+        void setWriteOnly(String writeOnly) {
+            this.writeOnly = writeOnly
+        }
+    }
+
+    private static class EncapsulatedExtend extends Encapsulated {
+        private String extReadOnly
+        private String extWriteOnly
+        private String extImmutable
+
+        String extPublicValue
+
+        String getExtReadOnly() {
+            return extReadOnly
+        }
+
+        void setExtWriteOnly(String extWriteOnly) {
+            this.extWriteOnly = extWriteOnly
         }
     }
 

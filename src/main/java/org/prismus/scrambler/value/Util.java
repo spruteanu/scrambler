@@ -77,7 +77,6 @@ public abstract class Util {
         final ValuePredicate propertyPredicate;
         if (propertyWildcard.equals(predicatePattern)) {
             propertyPredicate = new SimplePropertyPredicate(propertyWildcard);
-//            propertyPredicate = new PropertyPredicate(propertyWildcard);
         } else {
             propertyPredicate = new PropertyPredicate(propertyWildcard);
         }

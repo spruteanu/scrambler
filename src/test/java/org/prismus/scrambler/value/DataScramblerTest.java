@@ -24,7 +24,7 @@ public class DataScramblerTest {
         Assert.notNull(person.getLastName());
         Assert.notNull(person.getSex());
         Assert.notNull(person.getDob());
-        final Pattern pattern = Pattern.compile("[A-W]{2}-\\d+");
+        final Pattern pattern = Pattern.compile("[A-Z]{2}-\\d+");
         Assert.that(false == pattern.matcher(person.getAddress().getPostalCode()).matches());
 
         final InstanceValue<Address> addressValue = DataScrambler.instanceOf(Address.class, "/address-definition.groovy");
@@ -43,7 +43,7 @@ public class DataScramblerTest {
         Assert.notNull(person.getSex());
         Assert.notNull(person.getDob());
         Assert.that(person.getAddress() != null);
-        Assert.that(true == pattern.matcher(person.getAddress().getPostalCode()).matches());
+        Assert.that(true == pattern.matcher(person.getAddress().getPostalCode()).matches(), person.getAddress().getPostalCode());
     }
 
     @Test
