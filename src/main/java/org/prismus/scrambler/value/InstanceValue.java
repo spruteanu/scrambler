@@ -51,6 +51,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         this.constructorValues = new ArrayList<Value>();
         fieldValueMap = new LinkedHashMap<InstanceFieldPredicate, Value>();
         propertyUtils = Util.createBeanUtilsBean().getPropertyUtils();
+//        definition = parentDefinition; // todo Serge: this breaks parents relationship, review
     }
 
     public ValueDefinition getDefinition() {

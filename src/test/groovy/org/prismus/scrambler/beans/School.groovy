@@ -73,7 +73,7 @@ class Product {
 
 class OrderItem {
     int quantity
-    String details = "no name"
+    String details
     Date orderTime
     Product product
 }

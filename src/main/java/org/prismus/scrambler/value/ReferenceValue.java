@@ -15,12 +15,20 @@ public class ReferenceValue extends Constant<Object> {
     private ValuePredicate predicate;
     private ValuePredicate fieldPredicate;
 
-    public ReferenceValue(ValuePredicate predicate) {
-        this(predicate, null);
+    public ReferenceValue(String fieldPredicate) {
+        this((ValuePredicate)null, Util.createPropertyPredicate(fieldPredicate));
+    }
+
+    public ReferenceValue(ValuePredicate fieldPredicate) {
+        this((ValuePredicate) null, fieldPredicate);
     }
 
     public ReferenceValue(Pattern fieldPattern) {
         this((ValuePredicate)null, PropertyPredicate.of(fieldPattern));
+    }
+
+    public ReferenceValue(java.lang.Class type, java.lang.String fieldPredicate) {
+        this(TypePredicate.of(type), Util.createPropertyPredicate(fieldPredicate));
     }
 
     public ReferenceValue(ValuePredicate predicate, ValuePredicate fieldPredicate) {
