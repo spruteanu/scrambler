@@ -1,14 +1,10 @@
 package org.prismus.scrambler.value;
 
-import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.prismus.scrambler.DataScrambler;
 import org.prismus.scrambler.Value;
 import org.prismus.scrambler.ValuePredicate;
 
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,7 +26,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     private final Map<InstanceFieldPredicate, Value> fieldValueMap;
 
     private Map<String, Field> fieldMap;
-    private PropertyUtilsBean propertyUtils;
     private List<Value> constructorValues;
     private AtomicBoolean shouldBuild = new AtomicBoolean(true);
     private boolean generateAll = true;
@@ -52,7 +47,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         this.constructorArguments = constructorArguments;
         this.constructorValues = new ArrayList<Value>();
         fieldValueMap = new LinkedHashMap<InstanceFieldPredicate, Value>();
-        propertyUtils = Util.createBeanUtilsBean().getPropertyUtils();
     }
 
     public ValueDefinition getDefinition() {
@@ -365,17 +359,17 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         final boolean isInstance = !(instanceType instanceof Class);
         final Map<String, Field> propertyDefinitionMap = new LinkedHashMap<String, Field>();
 
-        final PropertyDescriptor[] propertyDescriptors;
+        final List<java.lang.reflect.Field> fields = new ArrayList<java.lang.reflect.Field>(100);
         if (isInstance) {
-            propertyDescriptors = propertyUtils.getPropertyDescriptors(instanceType);
+            lookupFields(instanceType.getClass(), fields);
         } else {
-            propertyDescriptors = propertyUtils.getPropertyDescriptors(((Class) instanceType));
+            lookupFields((Class<?>) instanceType, fields);
         }
-        if (propertyDescriptors != null) {
-            for (final PropertyDescriptor propertyDescriptor : propertyDescriptors) {
-                final String name = propertyDescriptor.getName();
-                final Object value = isInstance ? getPropertyValue(propertyDescriptor, instanceType) : null;
-                propertyDefinitionMap.put(name, new Field(propertyDescriptor, value));
+        if (fields.size() > 0) {
+            for (java.lang.reflect.Field field : fields) {
+                final String name = field.getName();
+                final Object value = isInstance ? getPropertyValue(field, instanceType) : null;
+                propertyDefinitionMap.put(name, new Field(field, value));
             }
             propertyDefinitionMap.remove("class");
             propertyDefinitionMap.remove("metaClass");
@@ -387,15 +381,14 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         final Field field = fieldMap.get(propertyName);
         if (field != null) {
             field.setValue(instance, value);
-        } else {
-            propertyUtils.setSimpleProperty(instance, propertyName, value);
         }
     }
 
-    Object getPropertyValue(PropertyDescriptor propertyDescriptor, Object instance) {
+    Object getPropertyValue(java.lang.reflect.Field field, Object instance) {
         Object value = null;
         try {
-            value = propertyDescriptor.getReadMethod().invoke(instance);
+            field.setAccessible(true);
+            value = field.get(instance);
         } catch (Exception ignore) { }
         return value;
     }
@@ -446,12 +439,13 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     }
 
     static class Field {
-        final PropertyDescriptor propertyDescriptor;
+        final java.lang.reflect.Field field;
         final Object value;
 
-        public Field(PropertyDescriptor propertyDescriptor, Object value) {
-            this.propertyDescriptor = propertyDescriptor;
+        public Field(java.lang.reflect.Field field, Object value) {
+            this.field = field;
             this.value = value;
+            field.setAccessible(true);
         }
 
         public Object getValueType() {
@@ -459,44 +453,29 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         }
 
         public String getName() {
-            return propertyDescriptor.getName();
+            return field.getName();
         }
 
         public Class getType() {
-            return propertyDescriptor.getPropertyType();
+            return field.getType();
         }
 
-        public Method getter() {
-            return propertyDescriptor.getReadMethod();
+        void setValue(Object instance, Object value) throws IllegalAccessException {
+            field.set(instance, value);
         }
 
-        public Method setter() {
-            return propertyDescriptor.getWriteMethod();
-        }
+    }
 
-        public void setValue(Object instance, Object value) throws InvocationTargetException, IllegalAccessException, NoSuchFieldException {
-            final Method writeMethod = propertyDescriptor.getWriteMethod();
-            if (writeMethod != null) {
-                writeMethod.invoke(instance, value);
-            } else {
-                setValue(instance.getClass(), instance, value);
+    static void lookupFields(Class<?> clazzType, List<java.lang.reflect.Field> fields) {
+        final java.lang.reflect.Field[] declaredFields = clazzType.getDeclaredFields();
+        for (java.lang.reflect.Field field : declaredFields) {
+            if (!field.isSynthetic()) {
+                fields.add(field);
             }
         }
-
-        void setValue(Class<?> clazzType, Object instance, Object value) throws IllegalAccessException, NoSuchFieldException {
-            final java.lang.reflect.Field field;
-            try {
-                field = clazzType.getDeclaredField(propertyDescriptor.getName());
-                field.setAccessible(true);
-                field.set(instance, value);
-            } catch (NoSuchFieldException e) {
-                final Class<?> superclass = clazzType.getSuperclass();
-                if (superclass != Object.class) {
-                    setValue(superclass, instance, value);
-                } else {
-                    throw e;
-                }
-            }
+        final Class<?> superclass = clazzType.getSuperclass();
+        if (superclass != Object.class) {
+            lookupFields(superclass, fields);
         }
     }
 

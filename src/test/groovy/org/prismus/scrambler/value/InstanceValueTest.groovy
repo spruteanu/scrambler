@@ -34,6 +34,7 @@ class InstanceValueTest extends Specification {
         null != obj.extReadOnly
         null != obj.extWriteOnly
         null != obj.extPublicValue
+        null != obj.extImmutable
         null != obj.readOnly
 //        null != obj.writeOnly
         null != obj.publicValue

@@ -1,9 +1,6 @@
 package org.prismus.scrambler.value;
 
-import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.ConstructorUtils;
-import org.apache.commons.beanutils.ConvertUtilsBean;
-import org.apache.commons.beanutils.converters.DateConverter;
 import org.prismus.scrambler.ValuePredicate;
 
 import java.util.*;
@@ -59,18 +56,6 @@ public abstract class Util {
         }
     }
 
-    public static void checkEmptyCollection(Collection values) {
-        if (values.size() == 0) {
-            throw new IllegalArgumentException("Values collection can't be empty");
-        }
-    }
-
-    public static void checkNullValue(Object minimum, Object maximum) {
-        if (minimum == null && maximum == null) {
-            throw new IllegalArgumentException("Either minimum or maximum should be not null");
-        }
-    }
-
     public static ValuePredicate createPropertyPredicate(String propertyWildcard) {
         checkEmpty(propertyWildcard);
         final String predicatePattern = replaceWildcards(propertyWildcard);
@@ -81,14 +66,6 @@ public abstract class Util {
             propertyPredicate = new PropertyPredicate(propertyWildcard);
         }
         return propertyPredicate;
-    }
-
-    public static BeanUtilsBean createBeanUtilsBean() {
-        final ConvertUtilsBean convertUtilsBean = new ConvertUtilsBean();
-        final DateConverter dateConverter = new DateConverter();
-        dateConverter.setPatterns(new String[]{"MM/dd/yyyy HH:mm:ss.SSS", "MM/dd/yyyy HH:mm:ss", "MM/dd/yyyy", "EEE MMM dd HH:mm:ss zzz yyyy"});
-        convertUtilsBean.register(dateConverter, Date.class);
-        return new BeanUtilsBean(convertUtilsBean);
     }
 
     public static String replaceWildcards(String wildcardPattern) {
@@ -119,4 +96,5 @@ public abstract class Util {
             throw new IllegalArgumentException(String.format("Count should be a positive number: %s", count));
         }
     }
+
 }
