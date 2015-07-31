@@ -238,7 +238,65 @@ Bellow are given examples of facade capabilities
 ```
 
 ## Groovy scripting capabilities
-Data Scrambler API is 100% implemented in Java. Itself java is a great language for coding, but there are a lot of 
-ceremonies in coding that sometimes makes it boring. New generation languages like Groovy/Scala are less verbose/have 
-require less ceremonies in coding, and DataScrambler API uses Groovy scripting capabilities to make value definitions
-process easier.
+Data Scrambler API is 100% implemented in Java. Itself Java is a great language, but there are a lot of 
+ceremonies in coding that sometimes makes it boring. New generation languages like Groovy/Scala are less verbose/makes 
+coding easier, and DataScrambler API uses Groovy capabilities to make value definitions/data generation process easier.
+
+### DataScrambler DSL
+On top of DataScrambler generation API a DSL is defined that adds generation capabilities to Java objects. 
+As result, value definitions process is less verbose, and definitions are easy for reading/writing.
+
+**DataScrambler DSL examples**:  
+```groovy
+
+    Integer.random(1, 100)
+    Long.random(1L, 100L)
+    new Date().random()
+    'some template string'.random(100)
+
+    [1, 2, 3].randomOf()
+
+    1.0.increment()
+    Integer.increment(1, 100)
+    Long.increment(1L, 100L)
+
+    new Date().increment()
+    new Date().increment(Calendar.MINUTE)
+    new Date().increment(Calendar.HOUR, 2)
+
+    'some template string'.increment('some%s%d')
+    'some template string'.increment('some%s%d', 12)
+
+    constant 1.0
+    constant 1
+    constant 1L
+    constant new Date()
+    constant 'some template string'
+    constant new Object()
+
+    new ArrayList(1024).of(new RandomInteger(1, 100))
+    new ArrayList(1024).of(new RandomString('some message', 45), 1024)
+
+    1.random(0, 100)
+    [1, 2, 3].randomOf()
+    of new Date().increment(Calendar.HOUR)
+
+    'text'.increment()
+    1.random(1, 100)
+    [1, 2, 3].randomOf()
+    new Date().increment(Calendar.HOUR, 1)
+    'some template string'.constant()
+
+    2.random(1, 100)
+    3L.random(1L, 100L)
+    new Date().random()
+    int.arrayOf(1.random())
+    'some template string'.random(100)
+
+```
+
+### Value definition script files
+TBD
+
+### IntelliJ IDEA IDE highlighting/context completion support
+TBD
