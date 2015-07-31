@@ -154,7 +154,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     public InstanceValue<T> usingDefinitions(Map<Object, Object> valueDefinitions) {
         if (valueDefinitions != null && valueDefinitions.size() > 0) {
             checkDefinitionCreated();
-            definition.of(valueDefinitions);
+            definition.definition(valueDefinitions);
             shouldBuild.set(true);
         }
         return this;
@@ -243,7 +243,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         definition.setParent(parent);
 
         registerFieldValues(definition);
-        definition.of((Map) fieldValueMap);
+        definition.definition((Map) fieldValueMap);
 
         if (definitionClosure != null) {
             executeDefinitionClosure();

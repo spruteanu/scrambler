@@ -155,7 +155,7 @@ class GroovyValueDefinition {
             return DataScrambler.randomArray(self, defaultValue, count)
         }
 
-        static <T> Value<T> of(Class clazzType, Value val, Integer count) {
+        static <T> Value<T> definition(Class clazzType, Value val, Integer count) {
             return DataScrambler.of(clazzType, val, count)
         }
 
@@ -187,11 +187,11 @@ class GroovyValueDefinition {
             return DataScrambler.instanceOf(type, fieldMap)
         }
 
-        static <T> InstanceValue<T> of(Class<T> self, Closure defCl) {
+        static <T> InstanceValue<T> definition(Class<T> self, Closure defCl) {
             return DataScrambler.of(self, new GroovyDefinitionCallable(defCl))
         }
 
-        static <T> InstanceValue<T> of(Class<T> self, Map<Object, Object> propertyValueMap, Closure defCl = null) {
+        static <T> InstanceValue<T> definition(Class<T> self, Map<Object, Object> propertyValueMap, Closure defCl = null) {
             GroovyDefinitionCallable definitionCallable = null
             if (defCl != null) {
                 definitionCallable = new GroovyDefinitionCallable(defCl)
@@ -199,15 +199,15 @@ class GroovyValueDefinition {
             return DataScrambler.of(self, propertyValueMap, definitionCallable)
         }
 
-        static <T> InstanceValue<T> of(Class<T> self, String propertyName, Closure defCl) {
+        static <T> InstanceValue<T> definition(Class<T> self, String propertyName, Closure defCl) {
             return DataScrambler.of(self, propertyName, new GroovyDefinitionCallable(defCl))
         }
 
-        static <T> InstanceValue<T> of(Class<T> self, Collection constructorArgs, Closure defCl) {
+        static <T> InstanceValue<T> definition(Class<T> self, Collection constructorArgs, Closure defCl) {
             return DataScrambler.of(self, constructorArgs, new GroovyDefinitionCallable(defCl))
         }
 
-        static <T> InstanceValue<T> of(Class<T> self, String propertyName, Collection constructorArgs, Closure defCl) {
+        static <T> InstanceValue<T> definition(Class<T> self, String propertyName, Collection constructorArgs, Closure defCl) {
             return DataScrambler.of(self, propertyName, constructorArgs, new GroovyDefinitionCallable(defCl))
         }
 
@@ -384,16 +384,16 @@ class GroovyValueDefinition {
     @CompileStatic
     static class ValueDefinitionCategory {
 
-        static ValueDefinition of(ValueDefinition self, Value value) {
-            return self.of(value)
+        static ValueDefinition definition(ValueDefinition self, Value value) {
+            return self.definition(value)
         }
 
-        static ValueDefinition of(ValueDefinition self, InstanceValue value) {
-            return self.of(value)
+        static ValueDefinition definition(ValueDefinition self, InstanceValue value) {
+            return self.definition(value)
         }
 
-        static ValueDefinition of(ValueDefinition self, Map<Object, Object> props) {
-            return self.of(props)
+        static ValueDefinition definition(ValueDefinition self, Map<Object, Object> props) {
+            return self.definition(props)
         }
 
         static ValueDefinition constant(ValueDefinition self, Object value) {
@@ -404,36 +404,36 @@ class GroovyValueDefinition {
             return self.constant(props)
         }
 
-        static ValueDefinition of(ValueDefinition self, String propertyName, Object value) {
-            return self.of(propertyName, value)
+        static ValueDefinition definition(ValueDefinition self, String propertyName, Object value) {
+            return self.definition(propertyName, value)
         }
 
-        static ValueDefinition of(ValueDefinition self, Pattern pattern, Object value) {
-            return self.of(pattern, value)
+        static ValueDefinition definition(ValueDefinition self, Pattern pattern, Object value) {
+            return self.definition(pattern, value)
         }
 
-        static ValueDefinition of(ValueDefinition self, Class type, Object value) {
-            return self.of(type, value)
+        static ValueDefinition definition(ValueDefinition self, Class type, Object value) {
+            return self.definition(type, value)
         }
 
-        static ValueDefinition of(ValueDefinition self, String propertyName, Value value) {
-            return self.of(propertyName, value)
+        static ValueDefinition definition(ValueDefinition self, String propertyName, Value value) {
+            return self.definition(propertyName, value)
         }
 
-        static ValueDefinition of(ValueDefinition self, Pattern pattern, Value value) {
-            return self.of(pattern, value)
+        static ValueDefinition definition(ValueDefinition self, Pattern pattern, Value value) {
+            return self.definition(pattern, value)
         }
 
-        static ValueDefinition of(ValueDefinition self, Class type, Value value) {
-            return self.of(type, value)
+        static ValueDefinition definition(ValueDefinition self, Class type, Value value) {
+            return self.definition(type, value)
         }
 
-        static ValueDefinition of(ValueDefinition self, ValuePredicate valuePredicate, Value value) {
-            return self.of(valuePredicate, value)
+        static ValueDefinition definition(ValueDefinition self, ValuePredicate valuePredicate, Value value) {
+            return self.definition(valuePredicate, value)
         }
 
-        static ValueDefinition of(ValueDefinition self, ValuePredicate valuePredicate, Object value) {
-            return self.of(valuePredicate, value)
+        static ValueDefinition definition(ValueDefinition self, ValuePredicate valuePredicate, Object value) {
+            return self.definition(valuePredicate, value)
         }
 
         static ValueDefinition reference(ValueDefinition self, Class type) {

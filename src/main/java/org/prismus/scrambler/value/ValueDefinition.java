@@ -23,7 +23,7 @@ public class ValueDefinition implements Cloneable {
     }
 
     public ValueDefinition(Map<Object, Value> definitionMap) {
-        of((Map) definitionMap);
+        definition((Map) definitionMap);
     }
 
     public void setParent(ValueDefinition parent) {
@@ -54,7 +54,7 @@ public class ValueDefinition implements Cloneable {
     //------------------------------------------------------------------------------------------------------------------
     // Definitions Builder Methods
     //------------------------------------------------------------------------------------------------------------------
-    public ValueDefinition of(Value value) {
+    public ValueDefinition definition(Value value) {
         Util.checkNullValue(value);
         final Object value1 = value.get();
         Util.checkNullValue(value1);
@@ -62,13 +62,13 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
-    public ValueDefinition of(InstanceValue value) {
+    public ValueDefinition definition(InstanceValue value) {
         Util.checkNullValue(value);
         registerPredicateValue(value.getPredicate(), value);
         return this;
     }
 
-    public ValueDefinition of(Map<Object, Object> props) {
+    public ValueDefinition definition(Map<Object, Object> props) {
         Util.checkNullValue(props);
         for (final Map.Entry entry : props.entrySet()) {
             final Object key = entry.getKey();
@@ -77,27 +77,27 @@ public class ValueDefinition implements Cloneable {
             final Object value = entry.getValue();
             if (String.class.isInstance(key)) {
                 if (value instanceof Value) {
-                    of((String) key, (Value) value);
+                    definition((String) key, (Value) value);
                 } else {
-                    of((String) key, value);
+                    definition((String) key, value);
                 }
             } else if (Pattern.class.isInstance(key)) {
                 if (value instanceof Value) {
-                    of(new PropertyPredicate((Pattern) key), (Value) value);
+                    definition(new PropertyPredicate((Pattern) key), (Value) value);
                 } else {
-                    of(new PropertyPredicate((Pattern) key), value);
+                    definition(new PropertyPredicate((Pattern) key), value);
                 }
             } else if (key instanceof Class) {
                 if (value instanceof Value) {
-                    of((Class) key, (Value) value);
+                    definition((Class) key, (Value) value);
                 } else {
-                    of((Class) key, value);
+                    definition((Class) key, value);
                 }
             } else if (ValuePredicate.class.isInstance(key)) {
                 if (value instanceof Value) {
-                    of((ValuePredicate) key, (Value) value);
+                    definition((ValuePredicate) key, (Value) value);
                 } else {
-                    of((ValuePredicate) key, value);
+                    definition((ValuePredicate) key, value);
                 }
             } else {
                 throw new IllegalArgumentException(String.format("Key should be of following types: [String, Class, ValuePredicate]; passed map: %s", props));
@@ -123,11 +123,11 @@ public class ValueDefinition implements Cloneable {
                 throw new IllegalArgumentException(String.format("Constant values can't be of Value type; passed map: %s", props));
             }
             if (String.class.isInstance(key)) {
-                of((String) key, new Constant(value));
+                definition((String) key, new Constant(value));
             } else if (key instanceof Class) {
-                of((Class) key, new Constant(value));
+                definition((Class) key, new Constant(value));
             } else if (ValuePredicate.class.isInstance(key)) {
-                of((ValuePredicate) key, new Constant(value));
+                definition((ValuePredicate) key, new Constant(value));
             } else {
                 throw new IllegalArgumentException(String.format("Key should be of following types: [String, Class, ValuePredicate]; passed map: %s", props));
             }
@@ -135,23 +135,23 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
-    public ValueDefinition of(String propertyName, Object value) {
+    public ValueDefinition definition(String propertyName, Object value) {
         registerPredicateValue(Util.createPropertyPredicate(propertyName), new Constant(value));
         return this;
     }
 
-    public ValueDefinition of(Pattern pattern, Object value) {
+    public ValueDefinition definition(Pattern pattern, Object value) {
         registerPredicateValue(PropertyPredicate.of(pattern), new Constant(value));
         return this;
     }
 
-    public ValueDefinition of(Class type, Object value) {
+    public ValueDefinition definition(Class type, Object value) {
         Util.checkNullValue(type);
         registerPredicateValue(new TypePredicate(type), new Constant(value));
         return this;
     }
 
-    public ValueDefinition of(String propertyName, Value value) {
+    public ValueDefinition definition(String propertyName, Value value) {
         Util.checkNullValue(value);
         if (value instanceof ReferenceValue) {
             ((ReferenceValue) value).setDefinition(this);
@@ -160,7 +160,7 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
-    public ValueDefinition of(Pattern pattern, Value value) {
+    public ValueDefinition definition(Pattern pattern, Value value) {
         Util.checkNullValue(value);
         if (value instanceof ReferenceValue) {
             ((ReferenceValue) value).setDefinition(this);
@@ -169,21 +169,21 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
-    public ValueDefinition of(Class type, Value value) {
+    public ValueDefinition definition(Class type, Value value) {
         Util.checkNullValue(type);
         Util.checkNullValue(value);
         registerPredicateValue(new TypePredicate(type), value);
         return this;
     }
 
-    public ValueDefinition of(ValuePredicate valuePredicate, Value value) {
+    public ValueDefinition definition(ValuePredicate valuePredicate, Value value) {
         Util.checkNullValue(valuePredicate);
         Util.checkNullValue(value);
         registerPredicateValue(valuePredicate, value);
         return this;
     }
 
-    public ValueDefinition of(ValuePredicate valuePredicate, Object value) {
+    public ValueDefinition definition(ValuePredicate valuePredicate, Object value) {
         Util.checkNullValue(valuePredicate);
         registerPredicateValue(valuePredicate, new Constant(value));
         return this;

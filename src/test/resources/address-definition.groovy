@@ -10,7 +10,7 @@ import java.util.zip.ZipFile
  *
  * @author Serge Pruteanu
  */
-of(~/(?i)\w*number/, new Constant<String>() {
+definition(~/(?i)\w*number/, new Constant<String>() {
     private Value<Integer> randomNumberValue = Integer.random(1, 99999)
 
     @Override
@@ -96,7 +96,7 @@ try {
     } catch (Exception ignore) { }
 }
 
-of(~/(?i)street/, new Constant<String>() {
+definition(~/(?i)street/, new Constant<String>() {
     private static Map<Integer, String> sideMap = [1: 'NE', 2: 'NW', 3: 'SE', 4: 'SW']
     private static Map<Integer, String> suffixMap = [1: 'st', 2: 'nd', 3: 'rd', ]
 
@@ -131,7 +131,7 @@ of(~/(?i)street/, new Constant<String>() {
 
 })
 
-of(~/(?i)state/, new Constant<String>() {
+definition(~/(?i)state/, new Constant<String>() {
     private Value randomState = stateInfoMap.keySet().randomOf()
     private String state = getContextProperty('state')
     @Override
@@ -142,7 +142,7 @@ of(~/(?i)state/, new Constant<String>() {
     }
 })
 
-of(~/(?i)city/, new ReferenceValue(~/(?i)state/) {
+definition(~/(?i)city/, new ReferenceValue(~/(?i)state/) {
     @Override
     Object next() {
         String state = super.next()
@@ -152,7 +152,7 @@ of(~/(?i)city/, new ReferenceValue(~/(?i)state/) {
     }
 })
 
-of(~/(?i)(?:postal\w*)|(?:zip\w*)/, new ReferenceValue(~/(?i)state/) {
+definition(~/(?i)(?:postal\w*)|(?:zip\w*)/, new ReferenceValue(~/(?i)state/) {
     private AbstractRandomRange<Integer> randomRange = Integer.random(1, 1000)
     @Override
     Object next() {

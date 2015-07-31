@@ -547,7 +547,7 @@ public class DataScrambler {
             }
             return value;
         }
-        throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s", self, self));
+        throw new UnsupportedOperationException(String.format("The method is not supported for class type: %s, default value: %s", self, self));
     }
 
     public static <T> Value<T> random(Class<T> self) {
@@ -567,7 +567,7 @@ public class DataScrambler {
                 }
             }
         }
-        throw new UnsupportedOperationException(String.format("The of method is not supported for class type: %s, default value: %s", self, defaultValue));
+        throw new UnsupportedOperationException(String.format("The method is not supported for class type: %s, default value: %s", self, defaultValue));
     }
 
     public static <T> Value<T> random(Class<T> self, T minimum, T maximum) {

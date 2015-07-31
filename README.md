@@ -1,7 +1,7 @@
 # Data Scrambler
 Data Scrambler is a project that allows data generation in various forms. 
 Project exposes an API to generate numbers, dates, strings, collections, maps, arrays in an incremental, random, 
-or custom generation logic if required. Also, it allows to generate data for interested Java classes like beans for example.
+or custom generation logic if required. Also, it allows to generate data for Java classes like beans for example.
 
 ## org.prismus.scrambler.Value interface
 
@@ -9,8 +9,6 @@ or custom generation logic if required. Also, it allows to generate data for int
 
 /**
  * An interface used to generate an object.
- *
- * @author Serge Pruteanu
  */
 public interface Value<T> extends Serializable, Cloneable {
 
@@ -27,8 +25,6 @@ public interface Value<T> extends Serializable, Cloneable {
      * @return current value instance
      */
     T get();
-
-    Object clone() throws CloneNotSupportedException;
 
 }
 
