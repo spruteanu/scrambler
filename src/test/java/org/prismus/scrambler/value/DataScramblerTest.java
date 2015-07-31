@@ -199,6 +199,21 @@ public class DataScramblerTest {
     }
 
     @Test
+    public void test_instance_all_randomly_generated() {
+        final InstanceValue<Person> personValue = DataScrambler.instanceOf(Person.class);
+        Person person = personValue.next();
+        Assert.assertNotNull(person.getFirstName());
+        Assert.assertNotNull(person.getLastName());
+        Assert.assertNotNull(person.getSex());
+        Assert.assertNotNull(person.getDob());
+        Assert.assertNotNull(person.getAddress());
+        Assert.assertNotNull(person.getAddress().getNumber());
+        Assert.assertNotNull(person.getAddress().getStreet());
+        Assert.assertNotNull(person.getAddress().getCity());
+        Assert.assertNotNull(person.getAddress().getState());
+    }
+
+    @Test
     public void test_parse_definition() throws IOException {
         final InstanceValue<Person> personValue = DataScrambler.instanceOf(Person.class, "/person-definition.groovy");
         Person person = personValue.next();

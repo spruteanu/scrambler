@@ -233,6 +233,28 @@ Bellow are given examples of facade capabilities
 
 ```
 
+## Java Bean class instance fields generation
+With all above declared generation methods, DataScrambler can generate data for almost all class types.
+`org.prismus.scrambler.DataScrambler.instanceOf(...)` methods allow to create instances either automatically or based on 
+provided definitions.
+
+**Example of automatically generated fields for Person.class**  
+```java
+
+        final InstanceValue<Person> personValue = DataScrambler.instanceOf(Person.class);
+        Person person = personValue.next();
+        Assert.assertNotNull(person.getFirstName());
+        Assert.assertNotNull(person.getLastName());
+        Assert.assertNotNull(person.getSex());
+        Assert.assertNotNull(person.getDob());
+        Assert.assertNotNull(person.getAddress());
+        Assert.assertNotNull(person.getAddress().getNumber());
+        Assert.assertNotNull(person.getAddress().getStreet());
+        Assert.assertNotNull(person.getAddress().getCity());
+        Assert.assertNotNull(person.getAddress().getState());
+
+```
+
 ## Groovy scripting capabilities
 Data Scrambler API is 100% implemented in Java. Itself Java is a great language, but there are a lot of 
 ceremonies in coding that sometimes makes it boring. New generation languages like Groovy/Scala are less verbose/makes 
@@ -291,6 +313,36 @@ As result, value definitions process is less verbose, and definitions are easy f
 
 ```
 
+### Java bean class properties generation
+
+```groovy
+
+    void 'check value definitions (tree definition) for instance'() {
+        given:
+        GroovyValueDefinition.register()
+        final instance = new InstanceValue<Order>(Order).usingDefinitions(
+                (BigDecimal): BigDecimal.ONE.random(1.0, 100.0),
+                (int[]): int.arrayOf(10.increment(10)),
+                person: Person.definition(
+                        'firstName': ['Andy', 'Nicole', 'Nicolas', 'Jasmine'].randomOf(),
+                        'lastName': ['Smith', 'Ferrara', 'Maldini', "Shaffer"].randomOf(),
+                        'sex': ['M', 'F'].randomOf(),
+                        'phone': ['425-452-0001', '425-452-0002', '425-452-0003', "425-452-0004"].randomOf()
+                ),
+                'item*': [].of(OrderItem.definition(
+                        quantity: 1.random(1, 5),
+                        details: "detail field".random(200),
+                        '*Time': new Date().random(),
+                        (Product): Product.definition(
+                                name: ['Candies', 'Star Wars Lego Factory', 'Star War Ninja GO'].randomOf(),
+                                price: 2.0.random(10.0, 50.0),
+                        )
+                ), 10),
+        )
+        final order = instance.next()
+
+```
+
 ### Value definition script files
 
 **Example of values definition**  
@@ -306,7 +358,7 @@ definition('prop2', 'some template string'.random('%s pattern %d'))
 
 ```
 
-**More complex example with defined scripts inclusion and context map properties injection**  
+**More complex script with scripts inclusion and context map properties injection**  
 ```groovy
 
 import org.prismus.scrambler.DataScrambler
@@ -364,7 +416,26 @@ definition('rooms', [].of(DataScrambler.instanceOf(ClassRoom)
 
 ```
 
+** And know how above definition can be used in Java Bean instance creation**:
+
+Bellow snippet shows how values definition script is used to create an instance of type School 
+with address generated classes related to Washington state (cities, adequate zip codes), and adequate Persons with "real" 
+names, "adequate" phone numbers, DOBs.
+
+```java
+
+    @Test
+    public void test_complex_reused_definitions() throws IOException {
+        final InstanceValue<School> schoolValue = DataScrambler.instanceOf(School.class, new HashMap<String, Object>() {{
+            put("state", "Washington");
+        }}, "/school-definition.groovy");
+        School school = schoolValue.next();
+        Assert.assertNotNull(school);
+    }
+    
+```
+
 ### IntelliJ IDEA IDE highlighting/context completion support
 DataScrambler API DSL is defined in `org.prismus.scrambler.value.ValueDefinition.gdsl` and it is included in final jar. 
-IntelliJ IDEA IDE will detect the definition automatically and will provide highlighting and methods 
-context support code and type completion.
+IntelliJ IDEA IDE will detect the definition automatically and will provide DSL methods highlighting and 
+context support code/type completion.
