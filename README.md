@@ -1,7 +1,42 @@
 # Data Scrambler
 Data Scrambler is a project that allows data generation in various forms. 
 Project exposes an API to generate numbers, dates, strings, collections, maps, arrays in an incremental, random, 
-or custom way if required. Also, it allows to generate data for interested Java classes like beans for example.
+or custom generation logic if required. Also, it allows to generate data for interested Java classes like beans for example.
+
+## org.prismus.scrambler.Value interface
+
+```java
+
+/**
+ * An interface used to generate an object.
+ *
+ * @author Serge Pruteanu
+ */
+public interface Value<T> extends Serializable, Cloneable {
+
+    /**
+     * Generates an object.
+     *
+     * @return an instance of object
+     */
+    T next();
+
+    /**
+     * Gets current instance value
+     *
+     * @return current value instance
+     */
+    T get();
+
+    Object clone() throws CloneNotSupportedException;
+
+}
+
+```
+
+## org.prismus.scrambler.DataScrambler facade class
+All generation abilities are exposed in `org.prismus.scrambler.DataScrambler` facade class.
+Bellow are given examples of facade capabilities
 
 ## DataScrambler Number generation methods
 ```java
@@ -61,3 +96,149 @@ or custom way if required. Also, it allows to generate data for interested Java 
         System.out.println(DataScrambler.random(BigInteger.valueOf(-1), BigInteger.valueOf(100)).next());
 
 ```
+
+## Generic object/array methods
+
+```java
+
+        // declare a value instance that represents constant value
+        Assert.assertEquals(1, DataScrambler.constant(1).next().longValue());
+
+        // declare a value instance that will return randomly generated array
+        final Value<Long[]> longValues = DataScrambler.randomArray(1L, 10);
+        Assert.assertEquals(10, longValues.next().length);
+
+        // declare a value instance that will return randomly generated primitives array
+        final Value<long[]> longPrimitives = DataScrambler.randomArray(new long[10]);
+        Assert.assertEquals(10, longPrimitives.next().length);
+
+        // declare a value instance that will return an element from provided array randomly
+        Assert.assertTrue(new HashSet<Integer>(Arrays.asList(1, 2, 3, 4)).contains(
+                DataScrambler.randomOf(new Integer[]{1, 2, 3, 4}).next()));
+
+        // declare a value instance that will generate an array of Long objects randomly in a specified range
+        final Value<Long[]> randomsInRange = DataScrambler.arrayOf(new Long[10], DataScrambler.random(900L, 1000L));
+        Assert.assertEquals(10, randomsInRange.next().length);
+
+        // declare a value instance that will generate an array of short primitives randomly in a specified range
+        final Value<short[]> primitivesInRange = DataScrambler.arrayOf(new short[10], DataScrambler.random((short) 900, (short) 1000));
+        Assert.assertEquals(10, primitivesInRange.next().length);
+
+```
+
+## Generate boolean methods
+
+```java
+
+        // value instance that will return boolean randomly
+        Assert.assertNotNull(DataScrambler.random(true).next());
+
+        // value instance that will return randomly generated Boolean array
+        final Value<Boolean[]> booleanValues = DataScrambler.randomArray(true, 10);
+        Assert.assertEquals(10, booleanValues.next().length);
+
+        // value instance that will return randomly generated primitives boolean array
+        final Value<boolean[]> booleanPrimitives = DataScrambler.randomArray(new boolean[10]);
+        Assert.assertEquals(10, booleanPrimitives.next().length);
+
+```
+
+## Generate java.util.Date methods
+
+```java
+
+        // generate incremented date with default step and default calendar field (DAY)
+        System.out.println(DataScrambler.increment(new Date()).next());
+        // generate incremented date with provided step and default calendar field (DAY)
+        System.out.println(DataScrambler.increment(new Date(), -1).next());
+        // generate incremented date with provided step and calendar field (Calendar.MONTH)
+        System.out.println(DataScrambler.increment(new Date(), -1, Calendar.MONTH).next());
+        // generate incremented date by several calendar fields
+        System.out.println(DataScrambler.increment(new Date()).days(-1).hours(2).minutes(15).next());
+
+        // generate an array of dates
+        System.out.println(Arrays.asList(DataScrambler.incrementArray(new Date(), 10).next()));
+        // generate an array of dates by several fields
+        System.out.println(Arrays.asList(DataScrambler.incrementArray(new Date(), new LinkedHashMap<Integer, Integer>() {{
+            put(Calendar.DATE, 2);
+            put(Calendar.MINUTE, -20);
+        }}, 5).next()));
+
+        // generate an array of dates
+        System.out.println(Arrays.asList(DataScrambler.arrayOf(DataScrambler.increment(new Date()).days(-1).hours(2).minutes(15), 5).next()));
+
+        // generate random date in a day period
+        System.out.println(DataScrambler.random(new Date()).next());
+        System.out.println(DataScrambler.random(new Date(),
+                DataScrambler.increment(new Date(), -1, Calendar.MONTH).next(),
+                DataScrambler.increment(new Date(), 1, Calendar.MONTH).next()
+        ).next());
+
+        System.out.println(Arrays.asList(DataScrambler.randomArray(new Date(),
+                DataScrambler.increment(new Date(), -1, Calendar.MONTH).next(),
+                DataScrambler.increment(new Date(), 1, Calendar.MONTH).next(),
+                5).next()));
+
+```
+
+## Generate java.lang.String methods
+
+```java
+
+        // Generate an incremental string based on provided String, pattern and index
+        System.out.println(DataScrambler.increment("test").next());
+        System.out.println(DataScrambler.increment("test", "%s Nr%d").next());
+        System.out.println(DataScrambler.increment("test", 100).next());
+        System.out.println(DataScrambler.increment("test", "%s Nr%d", 100).next());
+
+        // Generate an incremental string array based on provided String, pattern and index
+        System.out.println(Arrays.asList(DataScrambler.incrementArray("test", "%s Nr%d", 100, 10).next()));
+
+        // Generate an random string based on template String, count length
+        System.out.println(DataScrambler.random("My Random String 123").next());
+        System.out.println(DataScrambler.random("My Random String 123", 35).next());
+
+        // Generate an random string array based on template String, count length
+        System.out.println(Arrays.asList(DataScrambler.randomArray("My Random String 123", 10).next()));
+        System.out.println(Arrays.asList(DataScrambler.randomArray("My Random String 123", 35, 10).next()));
+
+```
+
+## Generate java.util.Collection methods
+
+```java
+
+        // A list of incremented integer with step 1
+        System.out.println(DataScrambler.of(new ArrayList<Integer>(), DataScrambler.increment(1)).next());
+        // A list of random double in a range 1.0-400.0
+        System.out.println(DataScrambler.of(new ArrayList<Double>(), DataScrambler.random(1.0d, 400.0d)).next());
+
+        // A random element from provided collection
+        System.out.printf("%s random element: %s%n", new HashSet<String>(Arrays.asList("aa", "bb", "cc")), DataScrambler.randomOf(new HashSet<String>(Arrays.asList("aa", "bb", "cc"))).next());
+        // A random element from provided collection
+        System.out.printf("%s random element: %s%n", new HashSet<Integer>(Arrays.asList(1, 2, 3, 4, 5)), DataScrambler.randomOf(Arrays.asList(1, 2, 3, 4, 5)).next());
+
+```
+
+## Generate java.util.Map methods
+
+```java
+
+        System.out.println(DataScrambler.mapOf(LinkedHashMap.class, new LinkedHashMap() {{
+            put("ValueSID", DataScrambler.increment(1));
+            put("SomeID", new Constant(1));
+            put("Amount", DataScrambler.increment(100.0d));
+            put("products", DataScrambler.collectionOf(ArrayList.class, DataScrambler.mapOf(LinkedHashMap.class, new LinkedHashMap() {{
+                put("ProductSID", DataScrambler.increment(1));
+                put("Name", new ListRandomElement<String>(Arrays.asList("Table Tennis Set", "Ping Pong Balls", "Table Tennis Racket")));
+                put("Price", DataScrambler.random(16.0d, 200.0d));
+            }})));
+        }}).next());
+
+```
+
+## Groovy scripting capabilities
+Data Scrambler API is 100% implemented in Java. Itself java is a great language for coding, but there are a lot of 
+ceremonies in coding that sometimes makes it boring. New generation languages like Groovy/Scala are less verbose/have 
+require less ceremonies in coding, and DataScrambler API uses Groovy scripting capabilities to make value definitions
+process easier.

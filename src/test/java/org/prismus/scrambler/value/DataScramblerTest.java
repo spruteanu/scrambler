@@ -35,9 +35,11 @@ public class DataScramblerTest {
         Assert.assertTrue(new HashSet<Integer>(Arrays.asList(1, 2, 3, 4)).contains(
                 DataScrambler.randomOf(new Integer[]{1, 2, 3, 4}).next()));
 
+        // declare a value instance that will generate an array of Long objects randomly in a specified range
         final Value<Long[]> randomsInRange = DataScrambler.arrayOf(new Long[10], DataScrambler.random(900L, 1000L));
         Assert.assertEquals(10, randomsInRange.next().length);
 
+        // declare a value instance that will generate an array of short primitives randomly in a specified range
         final Value<short[]> primitivesInRange = DataScrambler.arrayOf(new short[10], DataScrambler.random((short) 900, (short) 1000));
         Assert.assertEquals(10, primitivesInRange.next().length);
     }
