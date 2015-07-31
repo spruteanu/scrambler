@@ -167,7 +167,7 @@ class GroovyValueDefinition {
             return DataScrambler.mapOf(mapType, keyValueMap)
         }
 
-        static <V, T extends Collection<V>> CollectionValue<V, T> collectionOf(Class<V> clazzType, Value<V> value) {
+        static <V, T extends Collection<V>> CollectionValue<V, T> collectionOf(Class<T> clazzType, Value<V> value) {
             return DataScrambler.collectionOf(clazzType, value)
         }
 
@@ -279,10 +279,13 @@ class GroovyValueDefinition {
     @CompileStatic
     static class MapCategory {
 
+        public static <K> MapValue<K> of(Map<K, Value> keyValueMap) {
+            return DataScrambler.of(keyValueMap);
+        }
+
         static <K> MapValue<K> of(Map<K, Object> self, Map<K, Value> keyValueMap) {
             return DataScrambler.of(self, keyValueMap)
         }
-
     }
 
     @CompileStatic
@@ -323,6 +326,14 @@ class GroovyValueDefinition {
 
         static <T> Value<T>  randomArray(Object value, Integer count = null) {
             return DataScrambler.randomArray(value, count);
+        }
+
+        static <T> Value<T> arrayOf(Object self, Value value) {
+            return DataScrambler.arrayOf(self, value);
+        }
+
+        static <T> Value<T> arrayOf(Object self, Value value, Integer count) {
+            return DataScrambler.arrayOf(self, value, count)
         }
 
     }

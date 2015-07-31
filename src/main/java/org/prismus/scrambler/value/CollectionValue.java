@@ -12,7 +12,7 @@ import java.util.Collection;
 public class CollectionValue<V, T extends Collection<V>> extends Constant<T> {
     private Integer count;
     private Value<V> instance;
-    private Class<V> clazzType;
+    private Class<T> clazzType;
 
     public CollectionValue(T collection, Value<V> value) {
         this(collection, value, null);
@@ -24,7 +24,7 @@ public class CollectionValue<V, T extends Collection<V>> extends Constant<T> {
         this.count = count;
     }
 
-    public CollectionValue(Class<V> clazzType, Value<V> value1, Integer count) {
+    public CollectionValue(Class<T> clazzType, Value<V> value1, Integer count) {
         super(null);
         this.clazzType = clazzType;
         this.instance = value1;
@@ -61,9 +61,9 @@ public class CollectionValue<V, T extends Collection<V>> extends Constant<T> {
     @SuppressWarnings("unchecked")
     T checkCreate(int count) {
         T collection = get();
-        Class<V> clazzType = this.clazzType;
+        Class<T> clazzType = this.clazzType;
         if (clazzType == null && collection != null) {
-            clazzType = (Class<V>) collection.getClass();
+            clazzType = (Class<T>) collection.getClass();
         }
         if (clazzType == null) {
             throw new RuntimeException(String.format("Value map type is undefined, either clazzType or collection instance: %s should be provided", collection));

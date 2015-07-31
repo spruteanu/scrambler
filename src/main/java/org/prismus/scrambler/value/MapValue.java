@@ -13,7 +13,7 @@ import java.util.Map;
 public class MapValue<K> extends Constant<Map<K, Object>> {
 
     private Map<K, Value> keyValueMap = new LinkedHashMap<K, Value>();
-    private Class<Map<K, Object>> clazzType;
+    private Class<Map> clazzType;
 
     public MapValue() {
         this(new LinkedHashMap<K, Object>());
@@ -28,11 +28,11 @@ public class MapValue<K> extends Constant<Map<K, Object>> {
         this.keyValueMap = keyValueMap;
     }
 
-    public MapValue(Class<Map<K, Object>> clazzType) {
+    public MapValue(Class<Map> clazzType) {
         this(clazzType, null);
     }
 
-    public MapValue(Class<Map<K, Object>> clazzType, Map<K, Value> keyValueMap) {
+    public MapValue(Class<Map> clazzType, Map<K, Value> keyValueMap) {
         super(null);
         this.clazzType = clazzType;
         this.keyValueMap = keyValueMap;
@@ -61,9 +61,9 @@ public class MapValue<K> extends Constant<Map<K, Object>> {
     @SuppressWarnings("unchecked")
     Map<K, Object> checkCreate() {
         Map<K, Object> valueMap = get();
-        Class<Map<K, Object>> clazzType = this.clazzType;
+        Class<Map> clazzType = this.clazzType;
         if (clazzType == null && valueMap != null) {
-            clazzType = (Class<Map<K, Object>>) valueMap.getClass();
+            clazzType = (Class<Map>) valueMap.getClass();
         }
         if (clazzType == null) {
             throw new RuntimeException(String.format("Value map type is undefined, either clazzType or value map instance: %s should be provided", valueMap));

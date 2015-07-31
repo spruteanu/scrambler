@@ -104,8 +104,7 @@ public class DataScrambler {
                 } finally {
                     try {
                         inputStream.close();
-                    } catch (IOException ignore) {
-                    }
+                    } catch (IOException ignore) { }
                 }
             }
         }
@@ -142,8 +141,7 @@ public class DataScrambler {
                 } finally {
                     try {
                         reader.close();
-                    } catch (IOException ignore) {
-                    }
+                    } catch (IOException ignore) { }
                 }
             }
         }
@@ -296,6 +294,11 @@ public class DataScrambler {
     //------------------------------------------------------------------------------------------------------------------
     // Map methods
     //------------------------------------------------------------------------------------------------------------------
+    @SuppressWarnings("unchecked")
+    public static <K> MapValue<K> of(Map<K, Value> keyValueMap) {
+        return new MapValue<K>((Class<Map>) keyValueMap.getClass(), keyValueMap);
+    }
+
     public static <K> MapValue<K> of(Map<K, Object> self, Map<K, Value> keyValueMap) {
         return new MapValue<K>(self, keyValueMap);
     }
@@ -644,11 +647,12 @@ public class DataScrambler {
         return value;
     }
 
-    public static <K> MapValue<K> mapOf(Class<Map<K, Object>> mapType, Map<K, Value> keyValueMap) {
-        return new MapValue<K>(mapType, keyValueMap);
+    @SuppressWarnings("unchecked")
+    public static <K> MapValue<K> mapOf(Class<? extends Map> mapType, Map<K, Value> keyValueMap) {
+        return new MapValue<K>((Class<Map>) mapType, keyValueMap);
     }
 
-    public static <V, T extends Collection<V>> CollectionValue<V, T> collectionOf(Class<V> clazzType, Value<V> value) {
+    public static <V, T extends Collection<V>> CollectionValue<V, T> collectionOf(Class<T> clazzType, Value<V> value) {
         return new CollectionValue<V, T>(clazzType, value, null);
     }
 

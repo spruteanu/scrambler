@@ -145,7 +145,7 @@ public class DataScramblerTest {
         System.out.println(Arrays.asList(DataScrambler.randomArray(new Date(),
                 DataScrambler.increment(new Date(), -1, Calendar.MONTH).next(),
                 DataScrambler.increment(new Date(), 1, Calendar.MONTH).next(),
-        5).next()));
+                5).next()));
     }
 
     @Test
@@ -181,9 +181,19 @@ public class DataScramblerTest {
         System.out.printf("%s random element: %s%n", new HashSet<Integer>(Arrays.asList(1, 2, 3, 4, 5)), DataScrambler.randomOf(Arrays.asList(1, 2, 3, 4, 5)).next());
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
     public void test_map_methods() {
-//        public static <K> MapValue<K> of(Map<K, Object> self, Map<K, Value> keyValueMap)
-//        public static <K> MapValue<K> mapOf(Set<K> self, Map<ValuePredicate, Value> definitionMap)
+        System.out.println(DataScrambler.mapOf(LinkedHashMap.class, new LinkedHashMap() {{
+            put("ValueSID", DataScrambler.increment(1));
+            put("SomeID", new Constant(1));
+            put("Amount", DataScrambler.increment(100.0d));
+            put("products", DataScrambler.collectionOf(ArrayList.class, DataScrambler.mapOf(LinkedHashMap.class, new LinkedHashMap() {{
+                put("ProductSID", DataScrambler.increment(1));
+                put("Name", new ListRandomElement<String>(Arrays.asList("Table Tennis Set", "Ping Pong Balls", "Table Tennis Racket")));
+                put("Price", DataScrambler.random(16.0d, 200.0d));
+            }})));
+        }}).next());
     }
 
     @Test
