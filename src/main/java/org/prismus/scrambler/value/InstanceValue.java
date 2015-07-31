@@ -33,6 +33,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     private PropertyUtilsBean propertyUtils;
     private List<Value> constructorValues;
     private AtomicBoolean shouldBuild = new AtomicBoolean(true);
+    private boolean generateAll = true;
 
     public InstanceValue() {
         this(null, null);
@@ -184,6 +185,16 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return this;
     }
 
+    public InstanceValue<T> generateAll() {
+        generateAll = true;
+        return this;
+    }
+
+    public InstanceValue<T> generateKnown() {
+        generateAll = false;
+        return this;
+    }
+
     //------------------------------------------------------------------------------------------------------------------
     // Internal Methods
     //------------------------------------------------------------------------------------------------------------------
@@ -211,7 +222,9 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         for (InstanceFieldPredicate fieldPredicate : fieldValueMap.keySet()) {
             unresolvedProps.remove(fieldPredicate.getProperty());
         }
-        fieldValueMap.putAll(introspectTypes(valueDefinition, unresolvedProps));
+        if (generateAll) {
+            fieldValueMap.putAll(introspectTypes(valueDefinition, unresolvedProps));
+        }
     }
 
     void checkDefinitionCreated() {

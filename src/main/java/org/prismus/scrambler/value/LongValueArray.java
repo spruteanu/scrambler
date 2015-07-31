@@ -21,9 +21,9 @@ class LongValueArray extends Constant<long[]> {
 
     public LongValueArray(long[] array, Integer count, LongArray value1) {
         super(array);
-        this.count = count;
+        this.count = count != null ? count : array != null ? array.length : null;
         this.instance = value1;
-        useInitialArray = array != null;
+        useInitialArray = array != null && array.length == this.count;
     }
 
     @Override

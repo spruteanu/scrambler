@@ -321,6 +321,10 @@ class GroovyValueDefinition {
             return DataScrambler.randomOf(self)
         }
 
+        static <T> Value<T>  randomArray(Object value, Integer count = null) {
+            return DataScrambler.randomArray(value, count);
+        }
+
     }
 
     @CompileStatic
@@ -362,10 +366,6 @@ class GroovyValueDefinition {
 
         static Value<Boolean> random(Boolean value) {
             return DataScrambler.random(value);
-        }
-
-        static Value randomArray(Boolean value, Integer count = null, Class clazzType = null) {
-            return DataScrambler.randomArray(value, count, clazzType);
         }
 
     }

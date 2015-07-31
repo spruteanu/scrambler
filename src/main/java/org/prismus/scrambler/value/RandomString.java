@@ -27,8 +27,17 @@ public class RandomString extends Constant<String> {
     }
 
     @Override
+    public String get() {
+        return nextString();
+    }
+
+    @Override
     public String next() {
-        String value = get();
+        return nextString();
+    }
+
+    String nextString() {
+        String value = this.value;
         if (value == null) {
             value = "RandomString";
         }

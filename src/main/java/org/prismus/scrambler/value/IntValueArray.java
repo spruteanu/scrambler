@@ -18,9 +18,9 @@ class IntValueArray extends Constant<int[]> {
 
     public IntValueArray(int[] array, Integer count, IntArray value1) {
         super(array);
-        this.count = count;
+        this.count = count != null ? count : array != null ? array.length : null;
         this.instance = value1;
-        useInitialArray = array != null;
+        useInitialArray = array != null && array.length == this.count;
     }
 
     @Override

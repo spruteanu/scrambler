@@ -27,7 +27,7 @@ public class ArrayValue<T> extends Constant<T[]> {
 
     public ArrayValue(T[] array, Integer count, Value<T> value1) {
         super(array);
-        this.count = count;
+        this.count = count != null ? count : array != null ? array.length : null;
         this.instance = value1;
     }
 
@@ -53,6 +53,9 @@ public class ArrayValue<T> extends Constant<T[]> {
 
         final T[] value = checkCreate(get(), count);
         T start = instance.get();
+        if (start == null) {
+            start = instance.next();
+        }
         for (int i = 0; i < count; i++) {
             value[i] = start;
             start = instance.next();

@@ -23,7 +23,7 @@ public class Types {
         put(int.class, int[].class);
         put(long.class, long[].class);
     }};
-    public static Map<Class, Class<? extends Value>> primitivesTypeMap = lookupPrimitiveTypeMap();
+    public static Map<Class, Class<? extends Value>> primitivesArrayTypeMap = lookupPrimitiveArrayTypeMap();
     public static Map<Class, Class> primitiveWrapperMap = new LinkedHashMap<Class, Class>() {{
         put(byte.class, Byte.class);
         put(short.class, Short.class);
@@ -122,7 +122,7 @@ public class Types {
         return typeMap;
     }
 
-    private static Map<Class, Class<? extends Value>> lookupPrimitiveTypeMap() {
+    private static Map<Class, Class<? extends Value>> lookupPrimitiveArrayTypeMap() {
         final Map<Class, Class<? extends Value>> typeMap = new LinkedHashMap<Class, Class<? extends Value>>();
         typeMap.put(byte.class, ByteValueArray.class);
         typeMap.put(short.class, ShortValueArray.class);

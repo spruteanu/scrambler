@@ -65,13 +65,13 @@ class RandomTest extends Specification {
         count << [5, 3, null, 10, 20, null,]
     }
 
-    void 'verify random boolean generation'(Class type, Boolean value, Integer count) {
+    void 'verify random boolean generation'(Boolean value, Integer count) {
         expect:
         null != DataScrambler.random(value).next()
         null != DataScrambler.random(value).next()
 
         and: ''
-        final numberValues = DataScrambler.randomArray(value, count, type)
+        final numberValues = DataScrambler.randomArray(value, count)
         for (int i = 0; i < 5; i++) {
             final values = numberValues.next()
             Assert.assertNotNull(values)
@@ -82,8 +82,7 @@ class RandomTest extends Specification {
         }
 
         where:
-        type << [boolean[], null,]
-        value << [Boolean.TRUE, Boolean.FALSE,]
+        value << [Boolean.TRUE, new boolean[5],]
         count << [5, null,]
     }
 

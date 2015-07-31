@@ -3,6 +3,8 @@ package org.prismus.scrambler.value;
 import java.util.Random;
 
 /**
+ * Value instance that returns randomly an element from provided {@code values} array
+ *
  * @author Serge Pruteanu
  */
 public class ArrayRandomElement<T> extends Constant<T> {

@@ -21,9 +21,9 @@ class BooleanValueArray extends Constant<boolean[]> {
 
     public BooleanValueArray(boolean[] array, Integer count, BooleanArray value1) {
         super(array);
-        this.count = count;
+        this.count = count != null ? count : array != null ? array.length : null;
         this.instance = value1;
-        useInitialArray = array != null;
+        useInitialArray = array != null && array.length == this.count;
     }
 
     @Override

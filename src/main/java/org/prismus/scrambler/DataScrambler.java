@@ -104,7 +104,8 @@ public class DataScrambler {
                 } finally {
                     try {
                         inputStream.close();
-                    } catch (IOException ignore) { }
+                    } catch (IOException ignore) {
+                    }
                 }
             }
         }
@@ -141,7 +142,8 @@ public class DataScrambler {
                 } finally {
                     try {
                         reader.close();
-                    } catch (IOException ignore) { }
+                    } catch (IOException ignore) {
+                    }
                 }
             }
         }
@@ -218,7 +220,7 @@ public class DataScrambler {
     }
 
     public static <T> InstanceValue<T> instanceOf(Class<T> clazzType) {
-        return instanceOf(clazzType, (Map<Object, Object>)null);
+        return instanceOf(clazzType, (Map<Object, Object>) null);
     }
 
     public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<Object, Object> fieldMap) {
@@ -267,6 +269,27 @@ public class DataScrambler {
 
     public static <T> Value<T> arrayOf(Class<T> self, Value val, Integer count) {
         return of(self, val, count);
+    }
+
+    public static <T> Value<T> arrayOf(Object self, Value value) {
+        return arrayOf(self, value, null);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Value<T> arrayOf(Object self, Value value, Integer count) {
+        Util.checkNullValue(self);
+        final Class<?> selfClass = self.getClass();
+        if (!selfClass.isArray()) {
+            throw new IllegalArgumentException(String.format("An array instance must be provided; provided: %s", self));
+        }
+        final Class<?> componentType = selfClass.getComponentType();
+        if (componentType.isPrimitive()) {
+            return (Value) Util.createInstance(Types.primitivesArrayTypeMap.get(componentType),
+                    new Object[]{self, count, value}, new Class[]{selfClass, Integer.class, Object.class}
+            );
+        } else {
+            return new ArrayValue((T[]) self, count, value);
+        }
     }
 
 
@@ -379,7 +402,7 @@ public class DataScrambler {
     }
 
     public static IncrementalDate increment(Date self, Integer step, Integer calendarField) {
-        return new IncrementalDate(self, step, calendarField);
+        return new IncrementalDate(self, calendarField, step);
     }
 
     public static ArrayValue<Date> incrementArray(Date self, Integer step, Integer count) {
@@ -400,6 +423,10 @@ public class DataScrambler {
 
     public static ArrayValue<Date> incrementArray(Date self, Integer count) {
         return new ArrayValue<Date>(Date.class, count, increment(self));
+    }
+
+    public static ArrayValue<Date> arrayOf(Value<Date> value, Integer count) {
+        return new ArrayValue<Date>(Date.class, count, value);
     }
 
     public static RandomDate random(Date value) {
@@ -431,7 +458,7 @@ public class DataScrambler {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends Number> Value incrementArray(T self, T step, Integer count) {
+    public static <T> Value<T> incrementArray(Object self, Object step, Integer count) {
         return incrementArray((Class<T>) self.getClass(), self, step, count);
     }
 
@@ -469,12 +496,22 @@ public class DataScrambler {
         return new ArrayRandomElement<T>(array);
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T> Value<T> randomArray(Object value) {
+        return (Value<T>) randomArray(value.getClass(), value, null);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Value<T> randomArray(Object value, Integer count) {
+        return (Value<T>) randomArray(value.getClass(), (Object) value, count);
+    }
+
 
     //------------------------------------------------------------------------------------------------------------------
     // Class methods
     //------------------------------------------------------------------------------------------------------------------
     @SuppressWarnings({"unchecked"})
-    public static <T> Value<T> incrementArray(Class<T> self, T defaultValue, Object step, Integer count) {
+    public static <T> Value<T> incrementArray(Class<T> self, Object defaultValue, Object step, Integer count) {
         Util.checkPositiveCount(count);
         final Class<?> componentType = self.isArray() ? self.getComponentType() : self;
         final Value value;
@@ -488,8 +525,10 @@ public class DataScrambler {
                             )}, new Class[]{self, Integer.class, Object.class}
             );
         } else {
-            value = new ArrayValue(self, count, (Value) Util.createInstance(Types.incrementTypeMap.get(componentType),
-                    new Object[]{defaultValue, step}, new Class[]{componentType, componentType}));
+            value = new ArrayValue(componentType, count, (Value) Util.createInstance(
+                    Types.incrementTypeMap.get(componentType),
+                    new Object[]{componentType.isInstance(defaultValue) ? defaultValue : null, step}, new Class[]{componentType, componentType}
+            ));
         }
         return value;
     }
@@ -540,27 +579,27 @@ public class DataScrambler {
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Value<T> randomArray(Class<T> self, T defaultValue, Integer count) {
-        final Class<?> componentType = self.getComponentType();
-        Value valueType;
-        if (defaultValue != null) {
-            valueType = (Value) Util.createInstance(Types.randomTypeMap.get(componentType), new Object[]{defaultValue,}, new Class[]{componentType,});
+    public static <T> Value<T> randomArray(Class<T> self, Object defaultValue, Integer count) {
+        final Class<?> componentType = self.isArray() ? self.getComponentType() : self;
+        final Class<?> valueClassType = componentType.isPrimitive() ? Types.primitiveWrapperMap.get(componentType) : componentType;
+        final Value valueType;
+        if (defaultValue != null && !defaultValue.getClass().isArray()) {
+            valueType = (Value) Util.createInstance(Types.randomTypeMap.get(valueClassType), new Object[]{defaultValue,}, new Class[]{valueClassType,});
         } else {
-            valueType = (Value) Util.createInstance(Types.randomTypeMap.get(componentType), new Object[]{}, new Class[]{});
+            valueType = (Value) Util.createInstance(Types.randomTypeMap.get(valueClassType), new Object[]{}, new Class[]{});
         }
-        final Value<T> value;
         if (componentType.isPrimitive()) {
-            value = (Value) Util.createInstance(Types.randomTypeMap.get(self), new Object[]{defaultValue, count, valueType}, new Class[]{self, Integer.class, Object.class});
+            final Class<? extends Value> arrayValueType = Types.primitivesArrayTypeMap.get(componentType);
+            return (Value) Util.createInstance(arrayValueType, new Object[]{defaultValue, count, valueType}, new Class[]{self, Integer.class, Object.class});
         } else {
-            value = new ArrayValue(self, valueType);
+            return new ArrayValue(componentType, count, valueType);
         }
-        return value;
     }
 
     @SuppressWarnings("unchecked")
     public static <T> Value<T> of(Class clazzType, Value val, Integer count) {
         if (clazzType.isPrimitive()) {
-            final Class<? extends Value> arrayValueType = Types.primitivesTypeMap.get(clazzType);
+            final Class<? extends Value> arrayValueType = Types.primitivesArrayTypeMap.get(clazzType);
             return (Value) Util.createInstance(arrayValueType, new Object[]{null, count, val}, new Class[]{Types.arrayTypeMap.get(clazzType), Integer.class, Object.class});
         } else {
             return new ArrayValue(clazzType, count, val);
@@ -595,7 +634,7 @@ public class DataScrambler {
         );
         final Value<T> value;
         if (primitive) {
-            value = (Value<T>) Util.createInstance( Types.randomTypeMap.get(self),
+            value = (Value<T>) Util.createInstance(Types.randomTypeMap.get(self),
                     new Object[]{self.isInstance(defaultValue) ? defaultValue : null, count, instance},
                     new Class[]{self, Integer.class, Object.class}
             );
@@ -620,51 +659,8 @@ public class DataScrambler {
         return new RandomBoolean(value);
     }
 
-    public static Value randomArray(Boolean value) {
-        return randomArray(value, null, null);
-    }
-
-    public static Value randomArray(Boolean value, Integer count) {
-        return randomArray(value, count, null);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static Value randomArray(Boolean value, Integer count, Class clazzType) {
-        Util.checkPositiveCount(count);
-
-        if (clazzType == null) {
-            clazzType = value != null ? value.getClass() : null;
-        }
-        if (clazzType == null) {
-            throw new IllegalArgumentException(String.format("Either classType: %s or value: %s should be not null", null, value));
-        }
-        boolean primitive = false;
-        Class<?> componentType;
-        if (clazzType.isArray()) {
-            componentType = clazzType.getComponentType();
-            if (componentType.isPrimitive()) {
-                primitive = true;
-                componentType = Types.primitiveWrapperMap.get(componentType);
-            }
-        } else {
-            componentType = clazzType;
-        }
-
-        Value instance = (Value) Util.createInstance(Types.randomTypeMap.get(componentType), new Object[]{value}, new Class[]{componentType});
-        final Value valueArray;
-        if (primitive) {
-            valueArray = (Value) Util.createInstance(Types.randomTypeMap.get(clazzType),
-                    new Object[]{clazzType.isInstance(value) ? value : null, count, instance},
-                    new Class[]{clazzType, Integer.class, Object.class}
-            );
-        } else {
-            valueArray = new ArrayValue(clazzType, count, instance);
-        }
-        return valueArray;
-    }
-    
     private static class Holder {
         private static GroovyValueDefinition groovyValueDefinition = new GroovyValueDefinition();
     }
-    
+
 }
