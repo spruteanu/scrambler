@@ -416,7 +416,7 @@ definition('rooms', [].of(DataScrambler.instanceOf(ClassRoom)
 
 ```
 
-** And know how above definition can be used in Java Bean instance creation**:
+**And know how above definition can be used in Java Bean instance creation**:
 
 Bellow snippet shows how values definition script is used to create an instance of type School 
 with address generated classes related to Washington state (cities, adequate zip codes), and adequate Persons with "real" 
