@@ -9,7 +9,7 @@ import java.io.Reader;
 import java.util.*;
 
 /**
- * todo: add description
+ * DataScrambler is a facade class with exposed capabilities on data generation
  *
  * @author Serge Pruteanu
  */

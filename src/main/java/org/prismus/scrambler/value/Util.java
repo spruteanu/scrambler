@@ -1,6 +1,6 @@
 package org.prismus.scrambler.value;
 
-import org.apache.commons.beanutils.ConstructorUtils;
+import org.prismus.scrambler.beanutils.ConstructorUtils;
 import org.prismus.scrambler.ValuePredicate;
 
 import java.util.*;
