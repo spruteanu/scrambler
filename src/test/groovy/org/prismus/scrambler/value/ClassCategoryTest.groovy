@@ -1,6 +1,6 @@
 package org.prismus.scrambler.value
 
-import org.prismus.scrambler.DataScrambler
+import org.prismus.scrambler.InstanceScrambler
 import spock.lang.Specification
 
 /**
@@ -10,8 +10,8 @@ class ClassCategoryTest extends Specification {
 
     void 'verify categories registration'() {
         given:
-        DummyObject.metaClass.mixin DataScrambler//, ClassCategory , NumberCategory, DateCategory, MapCategory, CollectionCategory
-        DummyObject[].metaClass.mixin DataScrambler//, ClassCategory, NumberCategory, DateCategory, MapCategory, CollectionCategory
+        DummyObject.metaClass.mixin InstanceScrambler//, ClassCategory , NumberCategory, DateCategory, MapCategory, CollectionCategory
+        DummyObject[].metaClass.mixin InstanceScrambler//, ClassCategory, NumberCategory, DateCategory, MapCategory, CollectionCategory
 
         expect:
         DummyObject == new DummyObject().constant().get().getClass()

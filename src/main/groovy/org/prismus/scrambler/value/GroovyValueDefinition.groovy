@@ -22,7 +22,14 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.codehaus.groovy.runtime.ResourceGroovyMethods
-import org.prismus.scrambler.DataScrambler
+import org.prismus.scrambler.ArrayScrambler
+import org.prismus.scrambler.CollectionScrambler
+import org.prismus.scrambler.InstanceScrambler
+import org.prismus.scrambler.DateScrambler
+import org.prismus.scrambler.MapScrambler
+import org.prismus.scrambler.NumberScrambler
+import org.prismus.scrambler.ObjectScrambler
+import org.prismus.scrambler.StringScrambler
 import org.prismus.scrambler.Value
 import org.prismus.scrambler.ValuePredicate
 
@@ -150,63 +157,63 @@ class GroovyValueDefinition {
     static class ClassCategory {
 
         static <T> Value<T> incrementArray(Class<T> self, T defaultValue, T step, Integer count) {
-            return DataScrambler.incrementArray(self, defaultValue, step, count)
+            return ArrayScrambler.incrementArray(self, defaultValue, step, count)
         }
 
         static <T extends Number> Value<T> increment(Class<T> self, T defaultValue, T step) {
-            return DataScrambler.increment(self, defaultValue, step)
+            return NumberScrambler.increment(self, defaultValue, step)
         }
 
         static <T> Value<T> random(Class<T> self) {
-            return DataScrambler.random(self)
+            return ObjectScrambler.random(self)
         }
 
         static <T> Value<T> random(Class<T> self, T defaultValue) {
-            return DataScrambler.random(self, defaultValue)
+            return ObjectScrambler.random(self, defaultValue)
         }
 
         static <T> Value<T> random(Class<T> self, T minimum, T maximum) {
-            return DataScrambler.random(self, minimum, maximum)
+            return ObjectScrambler.random(self, minimum, maximum)
         }
 
         static <T> Value<T> randomArray(Class<T> self, T defaultValue, Integer count) {
-            return DataScrambler.randomArray(self, defaultValue, count)
+            return ArrayScrambler.randomArray(self, defaultValue, count)
         }
 
         static <T> Value<T> definition(Class clazzType, Value val, Integer count) {
-            return DataScrambler.of(clazzType, val, count)
+            return ArrayScrambler.of(clazzType, val, count)
         }
 
         static <T extends Number> Value<T> randomArray(Class self, T minimum, T maximum, Integer count) {
-            return DataScrambler.randomArray(self, minimum, maximum, count)
+            return NumberScrambler.randomArray(self, minimum, maximum, count)
         }
 
         static <K> MapValue<K> mapOf(Class<Map<K, Object>> mapType, Map<K, Value> keyValueMap) {
-            return DataScrambler.mapOf(mapType, keyValueMap)
+            return MapScrambler.mapOf(mapType, keyValueMap)
         }
 
         static <V, T extends Collection<V>> CollectionValue<V, T> collectionOf(Class<T> clazzType, Value<V> value) {
-            return DataScrambler.collectionOf(clazzType, value)
+            return CollectionScrambler.collectionOf(clazzType, value)
         }
 
         static <T> InstanceValue<T> instanceOf(Class<T> clazzType) {
-            return DataScrambler.instanceOf(clazzType, (Map<Object, Object>)null)
+            return InstanceScrambler.instanceOf(clazzType, (Map<Object, Object>)null)
         }
 
         static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<Object, Object> fieldMap) {
-            return DataScrambler.instanceOf(clazzType, fieldMap)
+            return InstanceScrambler.instanceOf(clazzType, fieldMap)
         }
 
         static <T> InstanceValue<T> instanceOf(String type) {
-            return DataScrambler.instanceOf(type, (Map<Object, Object>)null)
+            return InstanceScrambler.instanceOf(type, (Map<Object, Object>)null)
         }
 
         static <T> InstanceValue<T> instanceOf(String type, Map<Object, Object> fieldMap) {
-            return DataScrambler.instanceOf(type, fieldMap)
+            return InstanceScrambler.instanceOf(type, fieldMap)
         }
 
         static <T> InstanceValue<T> definition(Class<T> self, Closure defCl) {
-            return DataScrambler.of(self, new GroovyDefinitionCallable(defCl))
+            return InstanceScrambler.of(self, new GroovyDefinitionCallable(defCl))
         }
 
         static <T> InstanceValue<T> definition(Class<T> self, Map<Object, Object> propertyValueMap, Closure defCl = null) {
@@ -214,27 +221,27 @@ class GroovyValueDefinition {
             if (defCl != null) {
                 definitionCallable = new GroovyDefinitionCallable(defCl)
             }
-            return DataScrambler.of(self, propertyValueMap, definitionCallable)
+            return InstanceScrambler.of(self, propertyValueMap, definitionCallable)
         }
 
         static <T> InstanceValue<T> definition(Class<T> self, String propertyName, Closure defCl) {
-            return DataScrambler.of(self, propertyName, new GroovyDefinitionCallable(defCl))
+            return InstanceScrambler.of(self, propertyName, new GroovyDefinitionCallable(defCl))
         }
 
         static <T> InstanceValue<T> definition(Class<T> self, Collection constructorArgs, Closure defCl) {
-            return DataScrambler.of(self, constructorArgs, new GroovyDefinitionCallable(defCl))
+            return InstanceScrambler.of(self, constructorArgs, new GroovyDefinitionCallable(defCl))
         }
 
         static <T> InstanceValue<T> definition(Class<T> self, String propertyName, Collection constructorArgs, Closure defCl) {
-            return DataScrambler.of(self, propertyName, constructorArgs, new GroovyDefinitionCallable(defCl))
+            return InstanceScrambler.of(self, propertyName, constructorArgs, new GroovyDefinitionCallable(defCl))
         }
 
         static ReferenceValue reference(Class self, String propertyPredicate = null) {
-            return DataScrambler.reference(self, propertyPredicate)
+            return InstanceScrambler.reference(self, propertyPredicate)
         }
 
         static <T> Value<T> arrayOf(Class<T> self, Value val, Integer count = null) {
-            return DataScrambler.of(self, val, count)
+            return ArrayScrambler.of(self, val, count)
         }
 
     }
@@ -244,19 +251,19 @@ class GroovyValueDefinition {
 
         public
         static <V, T extends Collection<V>> CollectionValue<V, T> of(T collection, Value<V> value, Integer count = null) {
-            return DataScrambler.of(collection, value, count)
+            return CollectionScrambler.of(collection, value, count)
         }
 
         static <T> Value<T> randomOf(List<T> values) {
-            return DataScrambler.randomOf(values)
+            return CollectionScrambler.randomOf(values)
         }
 
         static <T> Value<T> randomOf(Collection<T> collection) {
-            return DataScrambler.randomOf(collection)
+            return CollectionScrambler.randomOf(collection)
         }
 
         static <K> MapValue<K> mapOf(Set<K> self, Map<ValuePredicate, Value> definitionMap) {
-            return DataScrambler.mapOf(self, definitionMap)
+            return MapScrambler.mapOf(self, definitionMap)
         }
 
     }
@@ -265,31 +272,31 @@ class GroovyValueDefinition {
     static class DateCategory {
 
         static IncrementalDate increment(Date self, Integer calendarField = null, Integer step = null) {
-            return DataScrambler.increment(self, calendarField, step)
+            return DateScrambler.increment(self, calendarField, step)
         }
 
         static IncrementalDate increment(Date self, Map<Integer, Integer> calendarFieldStepMap) {
-            return DataScrambler.increment(self, calendarFieldStepMap)
+            return DateScrambler.increment(self, calendarFieldStepMap)
         }
 
         static ArrayValue<Date> incrementArray(Date self, Integer step = null, Integer count = null) {
-            return DataScrambler.incrementArray(self, step, count)
+            return DateScrambler.incrementArray(self, step, count)
         }
 
         static ArrayValue<Date> incrementArray(Date self, Map<Integer, Integer> calendarFieldStepMap, Integer count = null) {
-            return DataScrambler.incrementArray(self, calendarFieldStepMap, count)
+            return DateScrambler.incrementArray(self, calendarFieldStepMap, count)
         }
 
         static ArrayValue<Date> incrementArray(Date self, Integer calendarField, Integer step, Integer count) {
-            return DataScrambler.incrementArray(self, calendarField, step, count)
+            return DateScrambler.incrementArray(self, calendarField, step, count)
         }
 
         static RandomDate random(Date self, Date minimum = null, Date maximum = null) {
-            return DataScrambler.random(self, minimum, maximum)
+            return DateScrambler.random(self, minimum, maximum)
         }
 
         static ArrayValue<Date> randomArray(Date self, Date minimum = null, Date maximum = null, Integer count = null) {
-            return DataScrambler.randomArray(self, minimum, maximum, count)
+            return DateScrambler.randomArray(self, minimum, maximum, count)
         }
 
     }
@@ -298,11 +305,11 @@ class GroovyValueDefinition {
     static class MapCategory {
 
         public static <K> MapValue<K> of(Map<K, Value> keyValueMap) {
-            return DataScrambler.of(keyValueMap);
+            return MapScrambler.of(keyValueMap);
         }
 
         static <K> MapValue<K> of(Map<K, Object> self, Map<K, Value> keyValueMap) {
-            return DataScrambler.of(self, keyValueMap)
+            return MapScrambler.of(self, keyValueMap)
         }
     }
 
@@ -310,23 +317,23 @@ class GroovyValueDefinition {
     static class NumberCategory {
 
         static <T extends Number> Value<T> increment(T self, T step = null) {
-            return DataScrambler.increment(self, step)
+            return NumberScrambler.increment(self, step)
         }
 
         static <T extends Number> Value incrementArray(T self, T step = null, Integer count = null) {
-            return DataScrambler.incrementArray(self, step, count)
+            return ArrayScrambler.incrementArray(self, step, count)
         }
 
         static <T extends Number> Value<T> random(T value) {
-            return DataScrambler.random(value)
+            return NumberScrambler.random(value)
         }
 
         static <T extends Number> Value<T> random(T minimum, T maximum) {
-            return DataScrambler.random(minimum, maximum)
+            return NumberScrambler.random(minimum, maximum)
         }
 
         static <T extends Number> Value<T> random(T val, T minimum, T maximum) {
-            return DataScrambler.random(val, minimum, maximum)
+            return NumberScrambler.random(val, minimum, maximum)
         }
 
     }
@@ -335,23 +342,23 @@ class GroovyValueDefinition {
     static class ObjectCategory {
 
         static <T> Value<T> constant(T self) {
-            return DataScrambler.constant(self)
+            return ObjectScrambler.constant(self)
         }
 
         static <T> Value<T> randomOf(T[] self) {
-            return DataScrambler.randomOf(self)
+            return ArrayScrambler.randomOf(self)
         }
 
         static <T> Value<T>  randomArray(Object value, Integer count = null) {
-            return DataScrambler.randomArray(value, count);
+            return ArrayScrambler.randomArray(value, count);
         }
 
         static <T> Value<T> arrayOf(Object self, Value value) {
-            return DataScrambler.arrayOf(self, value);
+            return ArrayScrambler.arrayOf(self, value);
         }
 
         static <T> Value<T> arrayOf(Object self, Value value, Integer count) {
-            return DataScrambler.arrayOf(self, value, count)
+            return ArrayScrambler.arrayOf(self, value, count)
         }
 
     }
@@ -361,31 +368,31 @@ class GroovyValueDefinition {
 
         static IncrementalString increment(String self, String pattern = null, Integer index = null) {
             // todo Serge: passed pattern must contain JUST 2 formatters: %s and %d. review to validate the pattern
-            return DataScrambler.increment(self, pattern, index)
+            return StringScrambler.increment(self, pattern, index)
         }
 
         static ArrayValue<String> incrementArray(String self, Integer count) {
-            return DataScrambler.incrementArray(self, count)
+            return StringScrambler.incrementArray(self, count)
         }
 
         static ArrayValue<String> incrementArray(String self, String pattern, Integer count) {
-            return DataScrambler.incrementArray(self, pattern, count)
+            return StringScrambler.incrementArray(self, pattern, count)
         }
 
         static ArrayValue<String> incrementArray(String value, Integer index, Integer count) {
-            return DataScrambler.incrementArray(value, index, count)
+            return StringScrambler.incrementArray(value, index, count)
         }
 
         static ArrayValue<String> incrementArray(String value, String pattern, Integer index, Integer count) {
-            return DataScrambler.incrementArray(value, pattern, index, count)
+            return StringScrambler.incrementArray(value, pattern, index, count)
         }
 
         static RandomString random(String value, Integer count = null) {
-            return DataScrambler.random(value, count)
+            return StringScrambler.random(value, count)
         }
 
         static ArrayValue<String> randomArray(String value, Integer count = null, Integer arrayCount = null) {
-            return DataScrambler.randomArray(value, count, arrayCount)
+            return StringScrambler.randomArray(value, count, arrayCount)
         }
 
     }
@@ -394,7 +401,7 @@ class GroovyValueDefinition {
     static class BooleanCategory {
 
         static Value<Boolean> random(Boolean value) {
-            return DataScrambler.random(value);
+            return ObjectScrambler.random(value);
         }
 
     }

@@ -19,7 +19,6 @@
 package org.prismus.scrambler.value;
 
 import org.prismus.scrambler.beanutils.ConstructorUtils;
-import org.prismus.scrambler.ValuePredicate;
 
 import java.util.*;
 
@@ -74,16 +73,10 @@ public abstract class Util {
         }
     }
 
-    public static ValuePredicate createPropertyPredicate(String propertyWildcard) {
-        checkEmpty(propertyWildcard);
-        final String predicatePattern = replaceWildcards(propertyWildcard);
-        final ValuePredicate propertyPredicate;
-        if (propertyWildcard.equals(predicatePattern)) {
-            propertyPredicate = new SimplePropertyPredicate(propertyWildcard);
-        } else {
-            propertyPredicate = new PropertyPredicate(propertyWildcard);
+    public static void checkPositiveCount(Integer count) {
+        if (count != null && count < 0) {
+            throw new IllegalArgumentException(String.format("Count should be a positive number: %s", count));
         }
-        return propertyPredicate;
     }
 
     public static String replaceWildcards(String wildcardPattern) {
@@ -107,12 +100,6 @@ public abstract class Util {
         }
         builder.append('$');
         return replaced ? builder.toString() : wildcardPattern;
-    }
-
-    public static void checkPositiveCount(Integer count) {
-        if (count != null && count < 0) {
-            throw new IllegalArgumentException(String.format("Count should be a positive number: %s", count));
-        }
     }
 
 }

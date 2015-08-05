@@ -20,6 +20,7 @@ package org.prismus.scrambler.value;
 
 import org.prismus.scrambler.Value;
 import org.prismus.scrambler.ValuePredicate;
+import org.prismus.scrambler.ValuePredicates;
 
 import java.util.regex.Pattern;
 
@@ -35,7 +36,7 @@ public class ReferenceValue extends Constant<Object> {
     private ValuePredicate fieldPredicate;
 
     public ReferenceValue(String fieldPredicate) {
-        this((ValuePredicate)null, Util.createPropertyPredicate(fieldPredicate));
+        this((ValuePredicate)null, ValuePredicates.predicateOf(fieldPredicate));
     }
 
     public ReferenceValue(ValuePredicate fieldPredicate) {
@@ -47,7 +48,7 @@ public class ReferenceValue extends Constant<Object> {
     }
 
     public ReferenceValue(java.lang.Class type, java.lang.String fieldPredicate) {
-        this(TypePredicate.of(type), Util.createPropertyPredicate(fieldPredicate));
+        this(ValuePredicates.predicateOf(type), ValuePredicates.predicateOf(fieldPredicate));
     }
 
     public ReferenceValue(ValuePredicate predicate, ValuePredicate fieldPredicate) {

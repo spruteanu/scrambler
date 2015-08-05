@@ -1,6 +1,7 @@
 package org.prismus.scrambler.value
 
-import org.prismus.scrambler.DataScrambler
+import org.prismus.scrambler.DateScrambler
+import org.prismus.scrambler.NumberScrambler
 import spock.lang.Specification
 
 import java.sql.Timestamp
@@ -12,7 +13,7 @@ class AbstractRandomRangeTest extends Specification {
 
     void 'test number ranges generation'() {
         given:
-        final valueInstance = DataScrambler.random(minimum, maximum)
+        final valueInstance = NumberScrambler.random(minimum, maximum)
 
         expect:
         1000.times {
@@ -56,7 +57,7 @@ class AbstractRandomRangeTest extends Specification {
         calendar.add(Calendar.SECOND, 10)
         maximum = calendar.getTime()
 
-        final valueInstance = DataScrambler.random(null, minimum, maximum)
+        final valueInstance = DateScrambler.random((Date)null, minimum, maximum)
 
         expect:
         maximum > minimum

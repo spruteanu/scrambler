@@ -76,8 +76,4 @@ public class TypePredicate implements ValuePredicate {
         return type.hashCode();
     }
 
-    public static TypePredicate of(Class type) {
-        return new TypePredicate(type);
-    }
-
 }

@@ -1,7 +1,10 @@
 package org.prismus.scrambler.value
 
 import org.junit.Assert
-import org.prismus.scrambler.DataScrambler
+import org.prismus.scrambler.ArrayScrambler
+import org.prismus.scrambler.DateScrambler
+import org.prismus.scrambler.NumberScrambler
+import org.prismus.scrambler.StringScrambler
 import org.prismus.scrambler.Value
 import spock.lang.Specification
 
@@ -12,7 +15,7 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental number generation'(Number start, Number step, Integer count) {
         given:
-        Value<Number> numberValue = DataScrambler.increment(start, step)
+        Value<Number> numberValue = NumberScrambler.increment(start, step)
 
         expect:
         numberValue.get() == start
@@ -21,7 +24,7 @@ class IncrementalTest extends Specification {
         }
 
         and: "verify array creation"
-        Value<Number[]> numberValues = DataScrambler.incrementArray(start, step, count)
+        Value<Number[]> numberValues = ArrayScrambler.incrementArray(start, step, count)
         for (int i = 0; i < 5; i++) {
             Number[] values = numberValues.next()
             Assert.assertNotNull(values)
@@ -45,7 +48,7 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental float values'(Float start, Float step, Integer count) {
         given:
-        Value<Float> numberValue = DataScrambler.increment(start, step)
+        Value<Float> numberValue = NumberScrambler.increment(start, step)
 
         expect:
         numberValue.get() == start
@@ -54,7 +57,7 @@ class IncrementalTest extends Specification {
         }
 
         and: "verify array creation"
-        Value<Float[]> numberValues = DataScrambler.incrementArray(start, step, count)
+        Value<Float[]> numberValues = ArrayScrambler.incrementArray(start, step, count)
         for (int i = 0; i < 5; i++) {
             Float[] values = numberValues.next()
             Assert.assertNotNull(values)
@@ -78,7 +81,7 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental double values'(Double start, Double step, Integer count) {
         given:
-        Value<Double> numberValue = DataScrambler.increment(start, step)
+        Value<Double> numberValue = NumberScrambler.increment(start, step)
 
         expect:
         numberValue.get() == start
@@ -87,7 +90,7 @@ class IncrementalTest extends Specification {
         }
 
         and: "verify array creation"
-        Value<Double[]> numberValues = DataScrambler.incrementArray(start, step, count)
+        Value<Double[]> numberValues = ArrayScrambler.incrementArray(start, step, count)
         for (int i = 0; i < 5; i++) {
             Double[] values = numberValues.next()
             Assert.assertNotNull(values)
@@ -111,7 +114,7 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental primitives generation'(Class type, Number start, Number step, Integer count) {
         given:
-        Value numberValues = DataScrambler.incrementArray(type, start, step, count)
+        Value numberValues = ArrayScrambler.incrementArray(type, start, step, count)
 
         expect:
         for (int i = 0; i < 5; i++) {
@@ -149,17 +152,17 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental dates'(Date date, Integer calendarField, Integer step) {
         expect:
-        date.before(DataScrambler.increment(date).next())
-        date.before(DataScrambler.increment(date, calendarField).next())
-        date.before(DataScrambler.increment(date, calendarField, Calendar.MINUTE).next())
+        date.before(DateScrambler.increment(date).next())
+        date.before(DateScrambler.increment(date, calendarField).next())
+        date.before(DateScrambler.increment(date, calendarField, Calendar.MINUTE).next())
 
         and: "Increment by several criteria: seconds/minutes/hours/weeks/month/years"
         date.before(new IncrementalDate().seconds(5).minutes(1).hours(2).days(3).years(1).next())
 
-        5 == DataScrambler.incrementArray(new Date(), [(Calendar.MINUTE): 2, (Calendar.HOUR): 1], 5).next().length
+        5 == DateScrambler.incrementArray(new Date(), [(Calendar.MINUTE): 2, (Calendar.HOUR): 1], 5).next().length
 
         and: "verify in a loop"
-        final Value<Date> incrementalDate = DataScrambler.increment(date, calendarField, step)
+        final Value<Date> incrementalDate = DateScrambler.increment(date, calendarField, step)
         for (int i = 0; i < 5; i++) {
             final nextDate = incrementalDate.next()
             Assert.assertTrue(date.before(nextDate))
@@ -173,16 +176,16 @@ class IncrementalTest extends Specification {
 
     void 'verify string incremental'(String defaultValue, String pattern, Integer index) {
         expect:
-        defaultValue != DataScrambler.increment(defaultValue).next()
-        defaultValue != DataScrambler.increment(defaultValue, pattern).next()
-        defaultValue != DataScrambler.increment(defaultValue, pattern, index).next()
+        defaultValue != StringScrambler.increment(defaultValue).next()
+        defaultValue != StringScrambler.increment(defaultValue, pattern).next()
+        defaultValue != StringScrambler.increment(defaultValue, pattern, index).next()
 
-        5 == DataScrambler.incrementArray(defaultValue, 5).next().length
-        5 == DataScrambler.incrementArray(defaultValue, pattern, 5).next().length
-        5 == DataScrambler.incrementArray(defaultValue, pattern, index, 5).next().length
+        5 == StringScrambler.incrementArray(defaultValue, 5).next().length
+        5 == StringScrambler.incrementArray(defaultValue, pattern, 5).next().length
+        5 == StringScrambler.incrementArray(defaultValue, pattern, index, 5).next().length
 
         and: "verify in a loop"
-        final incrementalString = DataScrambler.increment(defaultValue, pattern, index)
+        final incrementalString = StringScrambler.increment(defaultValue, pattern, index)
         for (int i = 0; i < 5; i++) {
             Assert.assertNotEquals(defaultValue, incrementalString.next())
         }

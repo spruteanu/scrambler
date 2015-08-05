@@ -1,4 +1,4 @@
-import org.prismus.scrambler.DataScrambler
+import org.prismus.scrambler.InstanceScrambler
 import org.prismus.scrambler.beans.Address
 import org.prismus.scrambler.beans.ClassRoom
 import org.prismus.scrambler.beans.Person
@@ -13,13 +13,13 @@ import org.prismus.scrambler.value.ReferenceValue
 definition('*Id', 1.increment())
 definition('name', ['Enatai', 'Medina', 'Value Crest', 'Newport', 'Cherry Crest', 'Eastgate Elementary'].randomOf())
 
-final personDefinition = DataScrambler.parseDefinition('/person-definition.groovy')
-final addressDefinition = DataScrambler.parseDefinition('/address-definition.groovy')
+final personDefinition = InstanceScrambler.parseDefinition('/person-definition.groovy')
+final addressDefinition = InstanceScrambler.parseDefinition('/address-definition.groovy')
 usingDefinition(personDefinition)
 
-definition('address', DataScrambler.instanceOf(Address).usingDefinitions(addressDefinition))
+definition('address', InstanceScrambler.instanceOf(Address).usingDefinitions(addressDefinition))
 
-definition('staff', [].of(DataScrambler.instanceOf(Person)
+definition('staff', [].of(InstanceScrambler.instanceOf(Person)
         .usingDefinitions(personDefinition).usingDefinitions(addressDefinition)))
 
 definition('principle', new ReferenceValue('staff') {
@@ -32,7 +32,7 @@ definition('principle', new ReferenceValue('staff') {
     }
 })
 
-definition('rooms', [].of(DataScrambler.instanceOf(ClassRoom)
+definition('rooms', [].of(InstanceScrambler.instanceOf(ClassRoom)
         .usingDefinitions(personDefinition).usingDefinitions(addressDefinition)
         .usingDefinitions(
             parent: School.reference(), schoolId: School.reference('schoolId'),
@@ -46,7 +46,7 @@ definition('rooms', [].of(DataScrambler.instanceOf(ClassRoom)
                     return principle
                 }
             },
-            students: [].of(DataScrambler.instanceOf(Person)
+            students: [].of(InstanceScrambler.instanceOf(Person)
                     .usingDefinitions(personDefinition).usingDefinitions(addressDefinition))
         )
 ))

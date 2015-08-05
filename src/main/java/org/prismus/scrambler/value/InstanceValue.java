@@ -18,9 +18,7 @@
 
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.DataScrambler;
-import org.prismus.scrambler.Value;
-import org.prismus.scrambler.ValuePredicate;
+import org.prismus.scrambler.*;
 
 import java.lang.reflect.Constructor;
 import java.util.*;
@@ -97,7 +95,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             build(null);
             final Object valueType = lookupType();
             if (valueType instanceof Class) {
-                definition.registerPredicateValue(new TypePredicate((Class) valueType), this);
+                definition.registerPredicateValue(ValuePredicates.predicateOf((Class) valueType), this);
             }
         }
         final T instance = checkCreateInstance();
@@ -298,9 +296,9 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             final Class propertyType = field.getType();
             Value val = null;
             if (supportedTypes.contains(propertyType)) {
-                val = DataScrambler.random(propertyType);
+                val = ObjectScrambler.random(propertyType);
             } else if (propertyType.isArray() && supportedTypes.contains(propertyType.getComponentType())) {
-                val = DataScrambler.random(propertyType, null);
+                val = ObjectScrambler.random(propertyType, null);
             } else {
                 if (Iterable.class.isAssignableFrom(propertyType) || Map.class.isAssignableFrom(propertyType)) {
                     continue;
@@ -328,9 +326,9 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                 }
                 final List<Value> values = new ArrayList<Value>();
                 for (final Class argType : types) {
-                    Value val = typeValueMap.get(new TypePredicate(argType));
+                    Value val = typeValueMap.get(ValuePredicates.predicateOf(argType));
                     if (val == null && supportedTypes.contains(argType)) {
-                        val = DataScrambler.random(argType);
+                        val = ObjectScrambler.random(argType);
                     }
                     if (val != null) {
                         values.add(val);
