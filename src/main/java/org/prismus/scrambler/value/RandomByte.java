@@ -70,10 +70,8 @@ class RandomByte extends AbstractRandomRange<Byte> implements ByteArray {
     }
 
     @Override
-    public Byte next() {
-        final Byte newValue = nextValue();
-        setValue(newValue);
-        return newValue;
+    protected Byte doNext() {
+        return nextValue();
     }
 
     public void next(byte[] values) {

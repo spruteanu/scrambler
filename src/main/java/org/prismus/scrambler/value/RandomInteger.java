@@ -71,10 +71,8 @@ class RandomInteger extends AbstractRandomRange<Integer> implements IntArray {
     }
 
     @Override
-    public Integer next() {
-        final Integer result = nextValue(value == null ? random.nextInt() : value);
-        setValue(result);
-        return result;
+    protected Integer doNext() {
+        return nextValue(value == null ? random.nextInt() : value);
     }
 
     public void next(int[] values) {

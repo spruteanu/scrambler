@@ -44,8 +44,7 @@ class BooleanValueArray extends Constant<boolean[]> {
         useInitialArray = array != null && array.length == this.count;
     }
 
-    @Override
-    public boolean[] next() {
+    protected boolean[] doNext() {
         Integer count = this.count;
         if (count == null) {
             count = new RandomInteger(1).between(1, 20).next();
@@ -54,7 +53,6 @@ class BooleanValueArray extends Constant<boolean[]> {
         boolean[] value = useInitialArray ? this.value : new boolean[count];
         instance.next(value);
 
-        setValue(value);
         useInitialArray = false;
         return value;
     }

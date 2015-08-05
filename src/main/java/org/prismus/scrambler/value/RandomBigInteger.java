@@ -72,10 +72,8 @@ class RandomBigInteger extends AbstractRandomRange<BigInteger> {
     }
 
     @Override
-    public BigInteger next() {
-        final BigInteger newValue = nextValue();
-        setValue(newValue);
-        return newValue;
+    protected BigInteger doNext() {
+        return nextValue();
     }
 
 }

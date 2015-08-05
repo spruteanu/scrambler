@@ -67,12 +67,11 @@ public class MapValue<K> extends Constant<Map<K, Object>> {
     }
 
     @Override
-    public Map<K, Object> next() {
+    protected Map<K, Object> doNext() {
         final Map<K, Object> kvMap = checkCreate();
         for (Map.Entry<K, Value> entry : keyValueMap.entrySet()) {
             kvMap.put(entry.getKey(), entry.getValue().next());
         }
-        setValue(kvMap);
         return kvMap;
     }
 

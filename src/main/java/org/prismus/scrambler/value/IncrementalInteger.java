@@ -47,11 +47,9 @@ class IncrementalInteger extends Constant<Integer> implements IntArray {
     }
 
     @Override
-    public Integer next() {
+    protected Integer doNext() {
         Integer value = get();
-        value = value != null ? nextValue(value) : 0;
-        setValue(value);
-        return value;
+        return value != null ? nextValue(value) : 0;
     }
 
     public void next(int[] values) {

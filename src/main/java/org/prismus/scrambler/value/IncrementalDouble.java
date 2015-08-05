@@ -42,12 +42,9 @@ class IncrementalDouble extends Constant<Double> implements DoubleArray {
         this.step = step;
     }
 
-    @Override
-    public Double next() {
+    protected Double doNext() {
         Double value = get();
-        value = value != null ? value + step : 0.0;
-        setValue(value);
-        return value;
+        return value != null ? value + step : 0.0;
     }
 
     public void next(double[] values) {

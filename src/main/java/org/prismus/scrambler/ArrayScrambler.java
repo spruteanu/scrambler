@@ -24,7 +24,7 @@ import org.prismus.scrambler.value.Types;
 import org.prismus.scrambler.value.Util;
 
 /**
- * todo: add description
+ * Facade class that exposes generation of arrays in various forms
  *
  * @author Serge Pruteanu
  */
@@ -127,5 +127,7 @@ public class ArrayScrambler {
             return new ArrayValue(clazzType, count, val);
         }
     }
+
+    // todo Serge: there is no way to select a random element from primitive array. Also, most probably it will be better to expose array creation of primitive arrays
 
 }

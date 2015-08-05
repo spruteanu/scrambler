@@ -41,8 +41,7 @@ class IntValueArray extends Constant<int[]> {
         useInitialArray = array != null && array.length == this.count;
     }
 
-    @Override
-    public int[] next() {
+    protected int[] doNext() {
         Integer count = this.count;
         if (count == null) {
             count = new RandomInteger(1).between(1, 20).next();
@@ -51,7 +50,6 @@ class IntValueArray extends Constant<int[]> {
         int[] value = useInitialArray ? this.value : new int[count];
         instance.next(value);
 
-        setValue(value);
         useInitialArray = false;
         return value;
     }

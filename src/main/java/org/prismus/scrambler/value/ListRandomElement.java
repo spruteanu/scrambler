@@ -39,10 +39,8 @@ public class ListRandomElement<T> extends Constant<T> {
         this.values = values;
     }
 
-    public T next() {
-        final T value = values.get(random.nextInt(values.size()));
-        setValue(value);
-        return value;
+    protected T doNext() {
+        return values.get(random.nextInt(values.size()));
     }
 
 }

@@ -68,9 +68,8 @@ class RandomBigDecimal extends AbstractRandomRange<BigDecimal> {
     }
 
     @Override
-    public BigDecimal next() {
-        final BigDecimal newValue = nextValue();
-        setValue(newValue);
-        return newValue;
+    protected BigDecimal doNext() {
+        return nextValue();
     }
+
 }

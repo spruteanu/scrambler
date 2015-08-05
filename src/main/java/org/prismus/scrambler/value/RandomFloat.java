@@ -71,10 +71,8 @@ class RandomFloat extends AbstractRandomRange<Float> implements FloatArray {
     }
 
     @Override
-    public Float next() {
-        final Float result = nextValue();
-        setValue(result);
-        return result;
+    protected Float doNext() {
+        return nextValue();
     }
 
     public void next(float[] values) {

@@ -45,7 +45,7 @@ class ShortValueArray extends Constant<short[]> {
     }
 
     @Override
-    public short[] next() {
+    protected short[] doNext() {
         Integer count = this.count;
         if (count == null) {
             count = new RandomInteger(1).between(1, 20).next();
@@ -54,7 +54,6 @@ class ShortValueArray extends Constant<short[]> {
         short[] value = useInitialArray ? this.value : new short[count];
         instance.next(value);
 
-        setValue(value);
         useInitialArray = false;
         return value;
     }

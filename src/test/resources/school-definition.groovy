@@ -24,10 +24,9 @@ definition('staff', [].of(InstanceScrambler.instanceOf(Person)
 
 definition('principle', new ReferenceValue('staff') {
     @Override
-    Object next() {
-        final staffList = super.next()
+    protected Object doNext() {
+        final staffList = super.doNext()
         final principle = staffList[0]
-        setValue(principle)
         return principle
     }
 })
@@ -39,10 +38,9 @@ definition('rooms', [].of(InstanceScrambler.instanceOf(ClassRoom)
             roomNumber: "101A".random(4),
             teacher: new ReferenceValue(School, 'staff') {
                 @Override
-                Object next() {
-                    final staffList = super.next()
+                protected Object doNext() {
+                    final staffList = super.doNext()
                     final principle = staffList[0]
-                    setValue(principle)
                     return principle
                 }
             },

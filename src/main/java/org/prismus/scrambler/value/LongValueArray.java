@@ -45,7 +45,7 @@ class LongValueArray extends Constant<long[]> {
     }
 
     @Override
-    public long[] next() {
+    protected long[] doNext() {
         Integer count = this.count;
         if (count == null) {
             count = new RandomInteger(1).between(1, 20).next();
@@ -54,7 +54,6 @@ class LongValueArray extends Constant<long[]> {
         long[] value = useInitialArray ? this.value : new long[count];
         instance.next(value);
 
-        setValue(value);
         useInitialArray = false;
         return value;
     }

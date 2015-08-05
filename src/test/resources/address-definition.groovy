@@ -14,7 +14,7 @@ definition(~/(?i)\w*number/, new Constant<String>() {
     private Value<Integer> randomNumberValue = Integer.random(1, 99999)
 
     @Override
-    String next() {
+    protected String doNext() {
         return randomNumberValue.next().toString()
     }
 })
@@ -104,7 +104,7 @@ definition(~/(?i)street/, new Constant<String>() {
     private Value<Integer> randomStreetNumber = Integer.random(1, 270)
 
     @Override
-    String next() {
+    protected String doNext() {
         final Integer streetId = randomNumber.next()
         final Integer sideIndex = streetId / 5 + 1
         final Integer streetNumber = randomStreetNumber.next()
@@ -120,7 +120,6 @@ definition(~/(?i)street/, new Constant<String>() {
         } else {
             street = streetNumber + streetNumberSuffix + ' Main St'
         }
-        setValue(street)
         return street
     }
 
@@ -135,28 +134,24 @@ definition(~/(?i)state/, new Constant<String>() {
     private Value randomState = stateInfoMap.keySet().randomOf()
     private String state = getContextProperty('state')
     @Override
-    String next() {
-        String state = this.state == null ? randomState.next() : this.state
-        setValue(state)
-        return state
+    protected String doNext() {
+        return this.state == null ? randomState.next() : this.state
     }
 })
 
 definition(~/(?i)city/, new ReferenceValue(~/(?i)state/) {
     @Override
-    Object next() {
-        String state = super.next()
-        String city = stateCitiesMap.get(state).randomOf().next()
-        setValue(city)
-        return city
+    protected Object doNext() {
+        String state = super.doNext()
+        return stateCitiesMap.get(state).randomOf().next()
     }
 })
 
 definition(~/(?i)(?:postal\w*)|(?:zip\w*)/, new ReferenceValue(~/(?i)state/) {
     private AbstractRandomRange<Integer> randomRange = Integer.random(1, 1000)
     @Override
-    Object next() {
-        final String state = super.next()
+    protected Object doNext() {
+        final String state = super.doNext()
         final stateInfo = stateInfoMap.get(state)
         String code = stateInfo.get('zipRange')
         if (code) {
@@ -169,7 +164,6 @@ definition(~/(?i)(?:postal\w*)|(?:zip\w*)/, new ReferenceValue(~/(?i)state/) {
                 code = stateInfo.get('state') + '-' + range[0]
             }
         }
-        setValue(code)
         return code
     }
 })

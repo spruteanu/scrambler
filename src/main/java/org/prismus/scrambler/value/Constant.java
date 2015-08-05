@@ -21,7 +21,9 @@ package org.prismus.scrambler.value;
 import org.prismus.scrambler.Value;
 
 /**
- * Value instance that represents a constant. Methods get/next will return same value
+ * Value instance that represents a constant. Methods get/next will return same value. Also, class can be
+ * used for developing custom implementations by overriding method {@link Constant#doNext()},
+ * as next will store generated value
  * 
  * @author Serge Pruteanu
  */
@@ -49,6 +51,12 @@ public class Constant<T> implements Value<T> {
     }
 
     public T next() {
+        final T value = doNext();
+        setValue(value);
+        return value;
+    }
+
+    protected T doNext() {
         return value;
     }
 

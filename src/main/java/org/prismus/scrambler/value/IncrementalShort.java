@@ -47,11 +47,9 @@ class IncrementalShort extends Constant<Short> implements ShortArray {
     }
 
     @Override
-    public Short next() {
+    protected Short doNext() {
         Short value = get();
-        value = value != null ? next(value) : 0;
-        setValue(value);
-        return value;
+        return value != null ? next(value) : 0;
     }
 
     public void next(short[] values) {

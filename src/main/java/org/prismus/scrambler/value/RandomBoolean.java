@@ -46,10 +46,8 @@ public class RandomBoolean extends Constant<Boolean> implements BooleanArray {
     }
 
     @Override
-    public Boolean next() {
-        final boolean newValue = nextValue();
-        setValue(newValue);
-        return newValue;
+    protected Boolean doNext() {
+        return nextValue();
     }
 
     public void next(boolean[] values) {

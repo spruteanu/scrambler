@@ -43,11 +43,9 @@ public class IncrementalLong extends Constant<Long> implements LongArray {
     }
 
     @Override
-    public Long next() {
+    protected Long doNext() {
         Long value = get();
-        value = value != null ? value + step : 0;
-        setValue(value);
-        return value;
+        return value != null ? value + step : 0;
     }
 
     public void next(long[] values) {

@@ -44,8 +44,7 @@ class DoubleValueArray extends Constant<double[]> {
         useInitialArray = array != null && array.length == this.count;
     }
 
-    @Override
-    public double[] next() {
+    protected double[] doNext() {
         Integer count = this.count;
         if (count == null) {
             count = new RandomInteger(1).between(1, 20).next();
@@ -54,7 +53,6 @@ class DoubleValueArray extends Constant<double[]> {
         double[] value = useInitialArray ? this.value : new double[count];
         instance.next(value);
 
-        setValue(value);
         useInitialArray = false;
         return value;
     }

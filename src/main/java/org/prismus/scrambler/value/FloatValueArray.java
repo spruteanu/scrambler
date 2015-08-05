@@ -44,8 +44,7 @@ class FloatValueArray extends Constant<float[]> {
         useInitialArray = array != null && array.length == this.count;
     }
 
-    @Override
-    public float[] next() {
+    protected float[] doNext() {
         Integer count = this.count;
         if (count == null) {
             count = new RandomInteger(1).between(1, 20).next();
@@ -53,8 +52,6 @@ class FloatValueArray extends Constant<float[]> {
 
         float[] value = useInitialArray ? this.value : new float[count];
         instance.next(value);
-
-        setValue(value);
         useInitialArray = false;
         return value;
     }

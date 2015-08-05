@@ -64,7 +64,7 @@ public class RandomDate extends AbstractRandomRange<Date> {
         return val1 != null ? val2 != null ? val1.compareTo(val2) > 0 ? val1 : val2 : val1 : val2;
     }
 
-    public Date next() {
+    protected Date doNext() {
         Date value = get();
         if (minimum != null && maximum != null) {
             value = nextValue(minimum, maximum);
@@ -80,7 +80,6 @@ public class RandomDate extends AbstractRandomRange<Date> {
             }
             value = nextValue(value, dateValue.next());
         }
-        setValue(value);
         return value;
     }
 

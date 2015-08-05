@@ -124,7 +124,7 @@ public class IncrementalDate extends Constant<Date> {
     }
 
     @SuppressWarnings("MagicConstant")
-    public Date next() {
+    protected Date doNext() {
         Date value = get();
         if (value == null) {
             value = new Timestamp(System.currentTimeMillis());
@@ -135,8 +135,6 @@ public class IncrementalDate extends Constant<Date> {
             calendar.add(entry.getKey(), entry.getValue());
         }
         value = calendar.getTime();
-
-        setValue(value);
         return value;
     }
 

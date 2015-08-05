@@ -70,13 +70,7 @@ public class ReferenceValue extends Constant<Object> {
     }
 
     @Override
-    public Object next() {
-        Object result = resolveValue();
-        setValue(result);
-        return result;
-    }
-
-    final Object resolveValue() {
+    protected Object doNext() {
         Object result = null;
         if (definition != null) {
             Value referencedInstance = null;

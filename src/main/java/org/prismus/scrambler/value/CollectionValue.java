@@ -62,8 +62,7 @@ public class CollectionValue<V, T extends Collection<V>> extends Constant<T> {
         return instance;
     }
 
-    @Override
-    public T next() {
+    protected T doNext() {
         Integer count = this.count;
         if (count == null) {
             count = new RandomInteger(1).between(1, 20).next();
@@ -72,7 +71,6 @@ public class CollectionValue<V, T extends Collection<V>> extends Constant<T> {
         for (int i = 0; i < count; i++) {
             value.add(instance.next());
         }
-        setValue(value);
         return value;
     }
 

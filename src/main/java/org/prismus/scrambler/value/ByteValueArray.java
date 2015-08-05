@@ -44,8 +44,7 @@ class ByteValueArray extends Constant<byte[]> {
         useInitialArray = array != null && array.length == this.count;
     }
 
-    @Override
-    public byte[] next() {
+    protected byte[] doNext() {
         Integer count = this.count;
         if (count == null) {
             count = new RandomInteger(1).between(1, 20).next();
@@ -54,7 +53,6 @@ class ByteValueArray extends Constant<byte[]> {
         byte[] value = useInitialArray ? this.value : new byte[count];
         instance.next(value);
 
-        setValue(value);
         useInitialArray = false;
         return value;
     }

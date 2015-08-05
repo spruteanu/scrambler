@@ -39,11 +39,9 @@ class IncrementalFloat extends Constant<Float> implements FloatArray{
     }
 
     @Override
-    public Float next() {
+    protected Float doNext() {
         Float value = get();
-        value = value != null ? value + step : 0.0f;
-        setValue(value);
-        return value;
+        return value != null ? value + step : 0.0f;
     }
 
     public void next(float[] values) {

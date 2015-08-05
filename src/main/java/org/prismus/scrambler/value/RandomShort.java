@@ -72,10 +72,8 @@ class RandomShort extends AbstractRandomRange<Short> implements ShortArray {
     }
 
     @Override
-    public Short next() {
-        final Short newValue = nextValue();
-        setValue(newValue);
-        return newValue;
+    protected Short doNext() {
+        return nextValue();
     }
 
     public void next(short[] values) {

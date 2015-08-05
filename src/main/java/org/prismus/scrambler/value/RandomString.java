@@ -46,15 +46,11 @@ public class RandomString extends Constant<String> {
 
     @Override
     public String get() {
-        return nextString();
+        return doNext();
     }
 
     @Override
-    public String next() {
-        return nextString();
-    }
-
-    String nextString() {
+    protected String doNext() {
         String value = this.value;
         if (value == null) {
             value = "RandomString";

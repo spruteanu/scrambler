@@ -28,13 +28,12 @@ definition(~/(?i)middle\w*/, new ReferenceValue(firstNamePattern) {
     Value randomMiddle = allFirstNames.randomOf()
 
     @Override
-    Object next() {
+    protected Object doNext() {
         String value = null
         final middleRandomRange = randomRange.next()
         if (50 <= middleRandomRange && 61 > middleRandomRange) {
             value = randomMiddle.next()
         }
-        setValue(value)
         return value
     }
 })
@@ -48,8 +47,8 @@ definition(~/(?i)(?:last\s*Name)|(?:last)/, lastNames.randomOf())
 //sex
 definition(~/(?i)sex/, new ReferenceValue(firstNamePattern) {
     @Override
-    Object next() {
-        final firstName = super.next()
+    protected Object doNext() {
+        final firstName = super.doNext()
         return femaleFirstNames.contains(firstName) ? 'Female' : 'Male'
     }
 })
@@ -61,10 +60,8 @@ definition(~/(?i)(?:\w*dob)|(?:\w*birth)/, new Constant() {
     Value group3 = Integer.random(1920, 2015)
 
     @Override
-    Object next() {
-        String value = String.format('%s/%s/%s', group1.next(), group2.next(), group3.next());
-        setValue(value)
-        return value
+    protected Object doNext() {
+        return String.format('%s/%s/%s', group1.next(), group2.next(), group3.next())
     }
 })
 
@@ -75,9 +72,7 @@ definition(~/(?i)\w*phone/, new Constant() {
     Value group3 = Integer.random(1000, 9999)
 
     @Override
-    Object next() {
-        String value = String.format('(%s)-%s-%s', group1.next(), group2.next(), group3.next());
-        setValue(value)
-        return value
+    protected Object doNext() {
+        return String.format('(%s)-%s-%s', group1.next(), group2.next(), group3.next())
     }
 })

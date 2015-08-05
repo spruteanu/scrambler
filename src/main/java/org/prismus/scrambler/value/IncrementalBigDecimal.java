@@ -45,10 +45,9 @@ class IncrementalBigDecimal extends Constant<BigDecimal> {
     }
 
     @Override
-    public BigDecimal next() {
+    protected BigDecimal doNext() {
         BigDecimal value = get();
-        value = value != null ? value.add(step) : BigDecimal.ZERO;
-        setValue(value);
-        return value;
+        return value != null ? value.add(step) : BigDecimal.ZERO;
     }
+
 }

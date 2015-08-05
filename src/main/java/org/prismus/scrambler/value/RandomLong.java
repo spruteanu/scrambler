@@ -71,10 +71,8 @@ class RandomLong extends AbstractRandomRange<Long> implements LongArray {
     }
 
     @Override
-    public Long next() {
-        final long result = nextValue();
-        setValue(result);
-        return result;
+    protected Long doNext() {
+        return nextValue();
     }
 
     public void next(long[] values) {

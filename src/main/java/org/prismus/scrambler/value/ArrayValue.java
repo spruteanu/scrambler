@@ -62,8 +62,7 @@ public class ArrayValue<T> extends Constant<T[]> {
         return this;
     }
 
-    @Override
-    public T[] next() {
+    protected T[] doNext() {
         Integer count = this.count;
         if (count == null) {
             count = new RandomInteger(1).between(1, 20).next();
@@ -78,7 +77,6 @@ public class ArrayValue<T> extends Constant<T[]> {
             value[i] = start;
             start = instance.next();
         }
-        setValue(value);
         return value;
     }
 
