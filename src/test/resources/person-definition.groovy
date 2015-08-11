@@ -44,8 +44,8 @@ final lastNames = 'http://deron.meranda.us/data/popular-last.txt'.toURL().readLi
 } as Set<String>
 definition(~/(?i)(?:last\s*Name)|(?:last)/, lastNames.randomOf())
 
-//sex
-definition(~/(?i)sex/, new ReferenceValue(firstNamePattern) {
+//gender
+definition(~/(?i)gender/, new ReferenceValue(firstNamePattern) {
     @Override
     protected Object doNext() {
         final firstName = super.doNext()

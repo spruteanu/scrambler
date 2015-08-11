@@ -97,7 +97,7 @@ class InstanceValueTest extends Specification {
                 person: Person.definition(
                         'firstName': ['Andy', 'Nicole', 'Nicolas', 'Jasmine'].randomOf(),
                         'lastName': ['Smith', 'Ferrara', 'Maldini', "Shaffer"].randomOf(),
-                        'sex': ['M', 'F'].randomOf(),
+                        'gender': ['M', 'F'].randomOf(),
                         'phone': ['425-452-0001', '425-452-0002', '425-452-0003', "425-452-0004"].randomOf()
                 ),
                 'item*': [].of(OrderItem.definition(
@@ -120,7 +120,7 @@ class InstanceValueTest extends Specification {
         order.person.firstName != null
         order.person.lastName != null
         order.person.phone != null
-        ['M', 'F'].contains(order.person.sex)
+        ['M', 'F'].contains(order.person.gender)
         order.items.size() > 0
         order.items[0].quantity > 0
         order.items[0].details.length() > 0
@@ -136,7 +136,7 @@ class InstanceValueTest extends Specification {
         final instanceValue = new InstanceValue<Order>(Order).usingDefinitions(new ValueDefinition(
                 'firstName': ['Andy', 'Nicole', 'Nicolas', 'Jasmine'].randomOf(),
                 'lastName': ['Smith', 'Ferrara', 'Maldini', "Shaffer"].randomOf(),
-                'sex': ['M', 'F'].randomOf(),
+                'gender': ['M', 'F'].randomOf(),
                 'phone': ['425-452-0001', '425-452-0002', '425-452-0003', "425-452-0004"].randomOf(),
                 name: ['Candies', 'Star Wars Lego Factory', 'Star War Ninja GO'].randomOf(),
                 price: 2.0.random(10.0, 50.0),

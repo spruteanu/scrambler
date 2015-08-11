@@ -203,7 +203,7 @@ public class DataScramblerTest {
         Person person = personValue.next();
         Assert.assertNotNull(person.getFirstName());
         Assert.assertNotNull(person.getLastName());
-        Assert.assertNotNull(person.getSex());
+        Assert.assertNotNull(person.getGender());
         Assert.assertNotNull(person.getDob());
         Assert.assertNotNull(person.getAddress());
         Assert.assertNotNull(person.getAddress().getNumber());
@@ -218,7 +218,7 @@ public class DataScramblerTest {
         Person person = personValue.next();
         Assert.assertNotNull(person.getFirstName());
         Assert.assertNotNull(person.getLastName());
-        Assert.assertNotNull(person.getSex());
+        Assert.assertNotNull(person.getGender());
         Assert.assertNotNull(person.getDob());
         final Pattern pattern = Pattern.compile("[A-Z]{2}-\\d+");
         Assert.assertTrue(false == pattern.matcher(person.getAddress().getPostalCode()).matches());
@@ -236,7 +236,7 @@ public class DataScramblerTest {
         person = personValue.next();
         Assert.assertNotNull(person.getFirstName());
         Assert.assertNotNull(person.getLastName());
-        Assert.assertNotNull(person.getSex());
+        Assert.assertNotNull(person.getGender());
         Assert.assertNotNull(person.getDob());
         Assert.assertTrue(person.getAddress() != null);
         Assert.assertTrue(person.getAddress().getPostalCode(), true == pattern.matcher(person.getAddress().getPostalCode()).matches());

@@ -44,7 +44,7 @@ class Person {
     String lastName
     String dob
 
-    String sex
+    String gender
     String phone
 
     Address address

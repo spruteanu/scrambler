@@ -123,7 +123,7 @@ definition('prop2', 'some template string'.random('%s pattern %d'))
 
 ```
 
-**More complex script with scripts inclusion and context map properties injection**  
+**More complex example with scripts inclusion and context map properties injection**  
 ```groovy
 
 import org.prismus.scrambler.InstanceScrambler
@@ -152,10 +152,9 @@ definition('staff', [].of(InstanceScrambler.instanceOf(Person)
 
 definition('principle', new ReferenceValue('staff') {
     @Override
-    Object next() {
-        final staffList = super.next()
+    protected Object doNext() {
+        final staffList = super.doNext()
         final principle = staffList[0]
-        setValue(principle)
         return principle
     }
 })
@@ -167,10 +166,9 @@ definition('rooms', [].of(InstanceScrambler.instanceOf(ClassRoom)
             roomNumber: "101A".random(4),
             teacher: new ReferenceValue(School, 'staff') {
                 @Override
-                Object next() {
-                    final staffList = super.next()
+                protected Object doNext() {
+                    final staffList = super.doNext()
                     final principle = staffList[0]
-                    setValue(principle)
                     return principle
                 }
             },
