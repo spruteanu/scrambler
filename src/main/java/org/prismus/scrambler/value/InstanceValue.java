@@ -69,14 +69,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return definition;
     }
 
-    public void setPredicate(ValuePredicate predicate) {
-        this.predicate = predicate;
-    }
-
-    public ValuePredicate getPredicate() {
-        return predicate;
-    }
-
     public void setType(Class type) {
         this.type = type;
     }
@@ -124,11 +116,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return this;
     }
 
-    public InstanceValue<T> withPredicate(ValuePredicate predicate) {
-        this.predicate = predicate;
-        return this;
-    }
-
     public InstanceValue<T> withDefinitionClosure(AbstractDefinitionCallable definitionClosure) {
         this.definitionClosure = definitionClosure;
         return this;
@@ -140,7 +127,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return this;
     }
 
-    public Value lookupFieldValue(ValuePredicate fieldPredicate) {
+    public Value lookupValue(ValuePredicate fieldPredicate) {
         Value result = null;
         for (final Map.Entry<InstanceFieldPredicate, Value> entry : fieldValueMap.entrySet()) {
             final String fieldName = entry.getKey().getProperty();
@@ -151,6 +138,39 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             }
         }
         return result;
+    }
+
+    public List<Value> lookupValues(Collection<ValuePredicate> predicates) {
+        if (predicates == null || predicates.size() == 0) {
+            throw new IllegalArgumentException("Predicates can't be null or empty");
+        }
+        final List<Value> values = new ArrayList<Value>(predicates.size());
+        for (final ValuePredicate valuePredicate : predicates) {
+            values.add(lookupValue(valuePredicate));
+        }
+        return values;
+    }
+
+    public Value[] lookupValues(ValuePredicate... predicates) {
+        if (predicates == null || predicates.length == 0) {
+            throw new IllegalArgumentException("Predicates can't be null or empty");
+        }
+        final Value[] values = new Value[predicates.length];
+        for (int i = 0; i < predicates.length; i++) {
+            values[i] = lookupValue(predicates[i]);
+        }
+        return values;
+    }
+
+    public Value[] lookupValues(Class... clazzTypes) {
+        if (clazzTypes == null || clazzTypes.length == 0) {
+            throw new IllegalArgumentException("Class types can't be null or empty");
+        }
+        final Value[] values = new Value[clazzTypes.length];
+        for (int i = 0; i < clazzTypes.length; i++) {
+            values[i] = lookupValue(new TypePredicate(clazzTypes[i]));
+        }
+        return values;
     }
 
     public InstanceValue<T> usingDefinitions(ValueDefinition valueDefinition) {
@@ -291,9 +311,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         final Set<Class> supportedTypes = getSupportedTypes();
         final Map<InstanceFieldPredicate, Value> propertyValueMap = new LinkedHashMap<InstanceFieldPredicate, Value>();
         for (final Map.Entry<String, Field> entry : unresolvedProps.entrySet()) {
-            final String propertyName = entry.getKey();
-            final Field field = entry.getValue();
-            final Class propertyType = field.getType();
+            final Class propertyType = entry.getValue().getType();
             Value val = null;
             if (supportedTypes.contains(propertyType)) {
                 val = ObjectScrambler.random(propertyType);
@@ -309,7 +327,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                 }
             }
             if (val != null) {
-                propertyValueMap.put(new InstanceFieldPredicate(propertyName), val);
+                propertyValueMap.put(new InstanceFieldPredicate(entry.getKey()), val);
             }
         }
         return propertyValueMap;

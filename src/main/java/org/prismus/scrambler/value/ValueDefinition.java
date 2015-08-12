@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * todo: add description
+ * Value definitions dictionary/builder class. Responsible for building predicates/values key/value pairs
  *
  * @author Serge Pruteanu
  */
@@ -83,7 +83,7 @@ public class ValueDefinition implements Cloneable {
 
     public ValueDefinition definition(InstanceValue value) {
         Util.checkNullValue(value);
-        registerPredicateValue(value.getPredicate(), value);
+        registerPredicateValue(new TypePredicate((Class) value.lookupType()), value);
         return this;
     }
 

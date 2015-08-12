@@ -249,23 +249,15 @@ public class InstanceScrambler {
     }
 
     public static <T> InstanceValue<T> instanceOf(Class<T> self, AbstractDefinitionCallable defCl) {
-        return new InstanceValue<T>(self).withPredicate(ValuePredicates.predicateOf(self)).withDefinitionClosure(defCl);
+        return new InstanceValue<T>(self).withDefinitionClosure(defCl);
     }
 
     public static <T> InstanceValue<T> instanceOf(Class<T> self, Map<Object, Object> propertyValueMap, AbstractDefinitionCallable defCl) {
-        return new InstanceValue<T>(self).withPredicate(ValuePredicates.predicateOf(self)).withDefinitionClosure(defCl).usingDefinitions(propertyValueMap);
-    }
-
-    public static <T> InstanceValue<T> instanceOf(Class<T> self, String propertyName, AbstractDefinitionCallable defCl) {
-        return new InstanceValue<T>(self).withPredicate(ValuePredicates.predicateOf(propertyName)).withDefinitionClosure(defCl);
+        return new InstanceValue<T>(self).withDefinitionClosure(defCl).usingDefinitions(propertyValueMap);
     }
 
     public static <T> InstanceValue<T> instanceOf(Class<T> self, Collection constructorArgs, AbstractDefinitionCallable defCl) {
-        return new InstanceValue<T>(self).withPredicate(ValuePredicates.predicateOf(self)).withDefinitionClosure(defCl).withConstructorArguments(constructorArgs);
-    }
-
-    public static <T> InstanceValue<T> instanceOf(Class<T> self, String propertyName, Collection constructorArgs, AbstractDefinitionCallable defCl) {
-        return new InstanceValue<T>(self).withPredicate(ValuePredicates.predicateOf(propertyName)).withDefinitionClosure(defCl).withConstructorArguments(constructorArgs);
+        return new InstanceValue<T>(self).withDefinitionClosure(defCl).withConstructorArguments(constructorArgs);
     }
 
     public static ReferenceValue reference(Class self) {

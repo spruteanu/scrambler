@@ -225,7 +225,7 @@ class GroovyValueDefinition {
         }
 
         static <T> InstanceValue<T> definition(Class<T> self, String propertyName, Closure defCl) {
-            return InstanceScrambler.instanceOf(self, propertyName, new GroovyDefinitionCallable(defCl))
+            return InstanceScrambler.instanceOf(self, new GroovyDefinitionCallable(defCl))
         }
 
         static <T> InstanceValue<T> definition(Class<T> self, Collection constructorArgs, Closure defCl) {
@@ -233,7 +233,7 @@ class GroovyValueDefinition {
         }
 
         static <T> InstanceValue<T> definition(Class<T> self, String propertyName, Collection constructorArgs, Closure defCl) {
-            return InstanceScrambler.instanceOf(self, propertyName, constructorArgs, new GroovyDefinitionCallable(defCl))
+            return InstanceScrambler.instanceOf(self, constructorArgs, new GroovyDefinitionCallable(defCl))
         }
 
         static ReferenceValue reference(Class self, String propertyPredicate = null) {

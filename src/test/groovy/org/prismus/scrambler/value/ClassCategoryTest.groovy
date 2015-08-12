@@ -10,6 +10,7 @@ class ClassCategoryTest extends Specification {
 
     void 'verify categories registration'() {
         given:
+        GroovyValueDefinition.register()
         DummyObject.metaClass.mixin InstanceScrambler//, ClassCategory , NumberCategory, DateCategory, MapCategory, CollectionCategory
         DummyObject[].metaClass.mixin InstanceScrambler//, ClassCategory, NumberCategory, DateCategory, MapCategory, CollectionCategory
 

@@ -84,7 +84,7 @@ public class ReferenceValue extends Constant<Object> {
             if (fieldPredicate != null) {
                 Value referencedFieldValue = null;
                 if (referencedInstance instanceof InstanceValue) {
-                    referencedFieldValue = ((InstanceValue) referencedInstance).lookupFieldValue(fieldPredicate);
+                    referencedFieldValue = ((InstanceValue) referencedInstance).lookupValue(fieldPredicate);
                 }
                 if (referencedFieldValue == null && definition != null) {
                     referencedFieldValue = definition.lookupValue(fieldPredicate);
