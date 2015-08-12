@@ -213,7 +213,7 @@ class GroovyValueDefinition {
         }
 
         static <T> InstanceValue<T> definition(Class<T> self, Closure defCl) {
-            return InstanceScrambler.of(self, new GroovyDefinitionCallable(defCl))
+            return InstanceScrambler.instanceOf(self, new GroovyDefinitionCallable(defCl))
         }
 
         static <T> InstanceValue<T> definition(Class<T> self, Map<Object, Object> propertyValueMap, Closure defCl = null) {
@@ -221,19 +221,19 @@ class GroovyValueDefinition {
             if (defCl != null) {
                 definitionCallable = new GroovyDefinitionCallable(defCl)
             }
-            return InstanceScrambler.of(self, propertyValueMap, definitionCallable)
+            return InstanceScrambler.instanceOf(self, propertyValueMap, definitionCallable)
         }
 
         static <T> InstanceValue<T> definition(Class<T> self, String propertyName, Closure defCl) {
-            return InstanceScrambler.of(self, propertyName, new GroovyDefinitionCallable(defCl))
+            return InstanceScrambler.instanceOf(self, propertyName, new GroovyDefinitionCallable(defCl))
         }
 
         static <T> InstanceValue<T> definition(Class<T> self, Collection constructorArgs, Closure defCl) {
-            return InstanceScrambler.of(self, constructorArgs, new GroovyDefinitionCallable(defCl))
+            return InstanceScrambler.instanceOf(self, constructorArgs, new GroovyDefinitionCallable(defCl))
         }
 
         static <T> InstanceValue<T> definition(Class<T> self, String propertyName, Collection constructorArgs, Closure defCl) {
-            return InstanceScrambler.of(self, propertyName, constructorArgs, new GroovyDefinitionCallable(defCl))
+            return InstanceScrambler.instanceOf(self, propertyName, constructorArgs, new GroovyDefinitionCallable(defCl))
         }
 
         static ReferenceValue reference(Class self, String propertyPredicate = null) {

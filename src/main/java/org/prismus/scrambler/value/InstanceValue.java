@@ -431,7 +431,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return result;
     }
 
-    Object lookupType() {
+    public Object lookupType() {
         Object valueType = type;
         if (valueType == null) {
             valueType = value;

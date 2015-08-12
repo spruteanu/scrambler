@@ -248,27 +248,23 @@ public class InstanceScrambler {
         return new InstanceValue<T>(type).usingDefinitions(fieldMap);
     }
 
-    public static <T> InstanceValue<T> of(Class<T> self, AbstractDefinitionCallable defCl) {
+    public static <T> InstanceValue<T> instanceOf(Class<T> self, AbstractDefinitionCallable defCl) {
         return new InstanceValue<T>(self).withPredicate(ValuePredicates.predicateOf(self)).withDefinitionClosure(defCl);
     }
 
-    public static <T> InstanceValue<T> of(Class<T> self, Map<Object, Object> propertyValueMap) {
-        return of(self, propertyValueMap, null);
-    }
-
-    public static <T> InstanceValue<T> of(Class<T> self, Map<Object, Object> propertyValueMap, AbstractDefinitionCallable defCl) {
+    public static <T> InstanceValue<T> instanceOf(Class<T> self, Map<Object, Object> propertyValueMap, AbstractDefinitionCallable defCl) {
         return new InstanceValue<T>(self).withPredicate(ValuePredicates.predicateOf(self)).withDefinitionClosure(defCl).usingDefinitions(propertyValueMap);
     }
 
-    public static <T> InstanceValue<T> of(Class<T> self, String propertyName, AbstractDefinitionCallable defCl) {
+    public static <T> InstanceValue<T> instanceOf(Class<T> self, String propertyName, AbstractDefinitionCallable defCl) {
         return new InstanceValue<T>(self).withPredicate(ValuePredicates.predicateOf(propertyName)).withDefinitionClosure(defCl);
     }
 
-    public static <T> InstanceValue<T> of(Class<T> self, Collection constructorArgs, AbstractDefinitionCallable defCl) {
+    public static <T> InstanceValue<T> instanceOf(Class<T> self, Collection constructorArgs, AbstractDefinitionCallable defCl) {
         return new InstanceValue<T>(self).withPredicate(ValuePredicates.predicateOf(self)).withDefinitionClosure(defCl).withConstructorArguments(constructorArgs);
     }
 
-    public static <T> InstanceValue<T> of(Class<T> self, String propertyName, Collection constructorArgs, AbstractDefinitionCallable defCl) {
+    public static <T> InstanceValue<T> instanceOf(Class<T> self, String propertyName, Collection constructorArgs, AbstractDefinitionCallable defCl) {
         return new InstanceValue<T>(self).withPredicate(ValuePredicates.predicateOf(propertyName)).withDefinitionClosure(defCl).withConstructorArguments(constructorArgs);
     }
 

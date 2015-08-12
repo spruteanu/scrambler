@@ -18,11 +18,29 @@
 
 package org.prismus.scrambler.value;
 
+import org.prismus.scrambler.Value;
+
+import java.util.List;
+
 /**
- * todo: add description, implement me
+ * Container of values, that will generate an array of provided values
  *
  * @author Serge Pruteanu
  */
-public class MethodArgumentsValue extends Constant<Object[]> {
+public class ArrayContainerValue extends Constant<Object[]> {
+    private List<Value> argumentTypes;
+
+    public ArrayContainerValue(List<Value> argumentTypes) {
+        this.argumentTypes = argumentTypes;
+    }
+
+    @Override
+    protected Object[] doNext() {
+        final Object[] results = new Object[argumentTypes.size()];
+        for (int i = 0; i < argumentTypes.size(); i++) {
+            results[i] = argumentTypes.get(i).next();
+        }
+        return results;
+    }
 
 }
