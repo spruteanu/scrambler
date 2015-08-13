@@ -379,6 +379,10 @@ class GroovyValueDefinition {
             return ArrayScrambler.arrayOf(self, value, count)
         }
 
+        static ArrayContainerValue arrayOf(Object[] self, Value... values) {
+            return new ArrayContainerValue(Arrays.asList(values))
+        }
+
     }
 
     @CompileStatic
