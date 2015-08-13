@@ -18,9 +18,12 @@
 
 package org.prismus.scrambler.value
 
+import groovy.transform.CompileStatic
+
 /**
  * @author Serge Pruteanu
  */
+@CompileStatic
 class GroovyDefinitionCallable extends AbstractDefinitionCallable {
     Closure closure
     ValueDefinition definition

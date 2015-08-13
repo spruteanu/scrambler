@@ -505,6 +505,10 @@ class GroovyValueDefinition {
             return self.usingDefinition(valueDefinition)
         }
 
+        static ValueDefinition usingDefinition(ValueDefinition self, String definition) {
+            return self.usingDefinition(InstanceScrambler.parseDefinition(definition))
+        }
+
     }
 
     //------------------------------------------------------------------------------------------------------------------
