@@ -130,8 +130,8 @@ definition 'some template string'.constant()
         parser.parseDefinitionText("definition new Date().increment(Calendar.HOUR)").definitionMap.size() > 0
         parser.parseDefinitionText("definition new Date().increment(Calendar.HOUR, 1)").definitionMap.size() > 0
 
-        parser.parseDefinitionText("definition '*prop13', 'some template string'.increment('some%d')").definitionMap.size() > 0
-        parser.parseDefinitionText("definition '*prop14', 'some template string'.increment('some%d', 12)").definitionMap.size() > 0
+        parser.parseDefinitionText("definition '*prop13', 'some template string'.increment('%s;some%d')").definitionMap.size() > 0
+        parser.parseDefinitionText("definition '*prop14', 'some template string'.increment('%s;some%d', 12)").definitionMap.size() > 0
 
         parser.parseDefinitionText("definition '*prop15', 1.0.constant()").definitionMap.size() > 0
         parser.parseDefinitionText("definition '*prop16', 1.constant()").definitionMap.size() > 0
@@ -192,13 +192,13 @@ definition org.prismus.scrambler.beans.School.definition {
         final parser = new GroovyValueDefinition()
 
         and:
-        def valueDefinition = parser.parseDefinitionText("definition 'mumu', [:].of(prop1: 'param'.increment(null, 1), prop2: 1.increment(1))")
+        def valueDefinition = parser.parseDefinitionText("definition 'mumu', [:].of(prop1: 'param'.increment('%s%d', 1), prop2: 1.increment(1))")
 
         expect:
         valueDefinition.definitionMap.size() > 0
 
         and:
-        0 < parser.parseDefinitionText("definition 'cucu*', [:].of(prop1: 'param'.increment(null, 1), prop2: 1.increment(1))").definitionMap.size()
+        0 < parser.parseDefinitionText("definition 'cucu*', [:].of(prop1: 'param'.increment('%s%d', 1), prop2: 1.increment(1))").definitionMap.size()
         0 < parser.parseDefinitionText("definition 'cucu*', [].of('param'.random(10))").definitionMap.size()
     }
 
@@ -207,7 +207,7 @@ definition org.prismus.scrambler.beans.School.definition {
         GroovyValueDefinition.register()
 
         expect:
-        null != 'text'.increment()
+        null != 'text'.increment('%s%d')
         null != 1.random(1, 100)
         null != [1, 2, 3].randomOf()
         null != new Date().increment(Calendar.HOUR, 1)

@@ -21,6 +21,7 @@ package org.prismus.scrambler;
 import org.prismus.scrambler.value.ArrayValue;
 import org.prismus.scrambler.value.IncrementalString;
 import org.prismus.scrambler.value.RandomString;
+import org.prismus.scrambler.value.RandomUuid;
 
 /**
  * {@link String} value methods, exposes all possible ways to generate {@link String} objects
@@ -70,6 +71,10 @@ public class StringScrambler {
 
     public static RandomString random(String value, Integer count) {
         return new RandomString(value, count);
+    }
+
+    public static RandomUuid randomUuid() {
+        return new RandomUuid();
     }
 
     public static ArrayValue<String> randomArray(String value, Integer arrayCount) {

@@ -19,6 +19,7 @@
 package org.prismus.scrambler.value
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.codehaus.groovy.runtime.ResourceGroovyMethods
@@ -36,12 +37,16 @@ import org.prismus.scrambler.ValuePredicate
 import java.util.regex.Pattern
 
 /**
- * todo: add description
+ * Class responsible for registering Data Scrambler DSL capabilities.
+ * Also the class is responsible for parsing DSL definitions scripts.
+ * Groovy compiler properties can be customized by defining in class path
+ * {@link GroovyValueDefinition#GROOVY_COMPILER_PROPERTIES} properties file
  *
  * @author Serge Pruteanu
  */
-@SuppressWarnings(["GroovyAssignabilityCheck", "UnnecessaryQualifiedReference"])
 class GroovyValueDefinition {
+    static final String GROOVY_COMPILER_PROPERTIES = '/groovy-compiler.properties'
+
     private Properties configurationProperties
     private GroovyShell shell
 
@@ -58,9 +63,13 @@ class GroovyValueDefinition {
 
     @CompileStatic
     ValueDefinition parseDefinitionText(String definitionText, Map<String, Object> context = null) {
+        return doParseDefinitionText(new ValueDefinition().usingContext(context), definitionText)
+    }
+
+    @CompileStatic
+    protected ValueDefinition doParseDefinitionText(ValueDefinition definition, String definitionText) {
         checkCreateShell()
         final script = (DelegatingScript) shell.parse(definitionText)
-        final ValueDefinition definition = new ValueDefinition().usingContext(context)
         script.setDelegate(definition)
         script.run()
         return definition
@@ -77,14 +86,14 @@ class GroovyValueDefinition {
                     return parseDefinition(new File(resource))
                 }
             }
-            return parseDefinitionText(url.text, context)
+            return doParseDefinitionText(new ValueDefinition().usingContext(context), url.text)
         } else {
-            return parseDefinitionText(resource, context)
+            return doParseDefinitionText(new ValueDefinition().usingContext(context), resource)
         }
     }
 
     ValueDefinition parseDefinition(def resource, Map<String, Object> context = null) throws IOException {
-        return parseDefinitionText(resource.text, context)
+        return doParseDefinitionText(new ValueDefinition().usingContext(context), resource.text)
     }
 
     @CompileStatic
@@ -111,7 +120,7 @@ class GroovyValueDefinition {
 
     @CompileStatic
     protected GroovyShell createGroovyShell() {
-        final compilerConfiguration = new CompilerConfiguration()
+        final compilerConfiguration = (configurationProperties != null && configurationProperties.size() > 0) ? new CompilerConfiguration(configurationProperties) : new CompilerConfiguration()
         compilerConfiguration.setScriptBaseClass(DelegatingScript.name)
 
         final importCustomizer = new ImportCustomizer()
@@ -151,6 +160,16 @@ class GroovyValueDefinition {
                 } catch (IOException ignore) { }
             }
         }
+    }
+
+    @CompileStatic
+    @PackageScope
+    GroovyValueDefinition lookupDefaultConfig() {
+        final resource = getClass().getResource(GROOVY_COMPILER_PROPERTIES)
+        if (resource != null) {
+            setConfigurationProperties(resource.openStream())
+        }
+        return this
     }
 
     @CompileStatic
@@ -249,7 +268,6 @@ class GroovyValueDefinition {
     @CompileStatic
     static class CollectionCategory {
 
-        public
         static <V, T extends Collection<V>> CollectionValue<V, T> of(T collection, Value<V> value, Integer count = null) {
             return CollectionScrambler.of(collection, value, count)
         }
@@ -304,7 +322,7 @@ class GroovyValueDefinition {
     @CompileStatic
     static class MapCategory {
 
-        public static <K> MapValue<K> of(Map<K, Value> keyValueMap) {
+        static <K> MapValue<K> of(Map<K, Value> keyValueMap) {
             return MapScrambler.of(keyValueMap);
         }
 
@@ -367,7 +385,6 @@ class GroovyValueDefinition {
     static class StringCategory {
 
         static IncrementalString increment(String self, String pattern = null, Integer index = null) {
-            // todo Serge: passed pattern must contain JUST 2 formatters: %s and %d. review to validate the pattern
             return StringScrambler.increment(self, pattern, index)
         }
 
@@ -393,6 +410,10 @@ class GroovyValueDefinition {
 
         static ArrayValue<String> randomArray(String value, Integer count = null, Integer arrayCount = null) {
             return StringScrambler.randomArray(value, count, arrayCount)
+        }
+
+        static RandomUuid randomUuid() {
+            return StringScrambler.randomUuid()
         }
 
     }
@@ -505,8 +526,24 @@ class GroovyValueDefinition {
             return self.usingDefinition(valueDefinition)
         }
 
-        static ValueDefinition usingDefinition(ValueDefinition self, String definition) {
-            return self.usingDefinition(InstanceScrambler.parseDefinition(definition))
+        static ValueDefinition usingDefinition(ValueDefinition self, String resource) {
+            final String text
+            if (resource.endsWith('groovy')) {
+                final URL url = self.getClass().getResource(resource)
+                if (url == null) {
+                    final file = new File(resource)
+                    if (!file.exists()) {
+                        throw new IllegalArgumentException(String.format("Not found resource for: %s", resource))
+                    } else {
+                        text = file.text
+                    }
+                } else {
+                    text = url.text
+                }
+            } else {
+                text = resource
+            }
+            return Holder.instance.doParseDefinitionText(self, text)
         }
 
     }
@@ -528,6 +565,10 @@ class GroovyValueDefinition {
 
     static {
         register()
+    }
+
+    static interface Holder {
+        static GroovyValueDefinition instance = new GroovyValueDefinition().lookupDefaultConfig()
     }
 
 }

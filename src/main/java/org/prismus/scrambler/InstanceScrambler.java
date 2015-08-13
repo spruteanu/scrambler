@@ -27,7 +27,7 @@ import java.io.Reader;
 import java.util.*;
 
 /**
- * DataScrambler is a facade class with exposed capabilities on data generation
+ * InstanceScrambler is a facade class that exposes generation capabilities for instances/classes
  *
  * @author Serge Pruteanu
  */
@@ -37,11 +37,11 @@ public class InstanceScrambler {
     // Parse definition methods
     //------------------------------------------------------------------------------------------------------------------
     public static ValueDefinition parseDefinition(String definition) throws IOException {
-        return Holder.groovyValueDefinition.parseDefinition(definition);
+        return GroovyValueDefinition.Holder.instance.parseDefinition(definition);
     }
 
     public static ValueDefinition parseDefinition(String definition, Map<String, Object> contextMap) throws IOException {
-        return Holder.groovyValueDefinition.parseDefinition(definition, contextMap);
+        return GroovyValueDefinition.Holder.instance.parseDefinition(definition, contextMap);
     }
 
     static <T> InstanceValue<T> parseDefinitions(InstanceValue<T> instanceValue, Map<String, Object> contextMap, String... definitions) throws IOException {
@@ -54,11 +54,11 @@ public class InstanceScrambler {
     }
 
     public static ValueDefinition parseDefinition(File definition) throws IOException {
-        return Holder.groovyValueDefinition.parseDefinition(definition);
+        return GroovyValueDefinition.Holder.instance.parseDefinition(definition);
     }
 
     public static ValueDefinition parseDefinition(File definition, Map<String, Object> contextMap) throws IOException {
-        return Holder.groovyValueDefinition.parseDefinition(definition, contextMap);
+        return GroovyValueDefinition.Holder.instance.parseDefinition(definition, contextMap);
     }
 
     static <T> InstanceValue<T> parseDefinitions(InstanceValue<T> instanceValue, Map<String, Object> contextMap, File... definitions) throws IOException {
@@ -71,11 +71,11 @@ public class InstanceScrambler {
     }
 
     public static ValueDefinition parseDefinition(InputStream inputStream) throws IOException {
-        return Holder.groovyValueDefinition.parseDefinition(inputStream);
+        return GroovyValueDefinition.Holder.instance.parseDefinition(inputStream);
     }
 
     public static ValueDefinition parseDefinition(InputStream inputStream, Map<String, Object> contextMap) throws IOException {
-        return Holder.groovyValueDefinition.parseDefinition(inputStream, contextMap);
+        return GroovyValueDefinition.Holder.instance.parseDefinition(inputStream, contextMap);
     }
 
     static <T> InstanceValue<T> parseDefinitions(InstanceValue<T> instanceValue, Map<String, Object> contextMap, InputStream... inputStreams) throws IOException {
@@ -94,7 +94,7 @@ public class InstanceScrambler {
     }
 
     public static ValueDefinition parseDefinition(Reader reader, Map<String, Object> contextMap) throws IOException {
-        return Holder.groovyValueDefinition.parseDefinition(reader, contextMap);
+        return GroovyValueDefinition.Holder.instance.parseDefinition(reader, contextMap);
     }
 
     static <T> InstanceValue<T> parseDefinitions(InstanceValue<T> instanceValue, Map<String, Object> contextMap, Reader... readers) throws IOException {
@@ -118,42 +118,42 @@ public class InstanceScrambler {
     //------------------------------------------------------------------------------------------------------------------
     @SuppressWarnings("unchecked")
     public static <T> Value<T> valueOf(Class<T> clazzType, String definitionResource) throws IOException {
-        return Holder.groovyValueDefinition.parseValue(definitionResource);
+        return GroovyValueDefinition.Holder.instance.parseValue(definitionResource);
     }
 
     @SuppressWarnings("unchecked")
     public static <T> Value<T> valueOf(String clazzType, String definitionResource) throws IOException {
-        return Holder.groovyValueDefinition.parseValue(definitionResource);
+        return GroovyValueDefinition.Holder.instance.parseValue(definitionResource);
     }
 
     @SuppressWarnings("unchecked")
     public static <T> Value<T> valueOf(Class<T> clazzType, File definition) throws IOException {
-        return Holder.groovyValueDefinition.parseValue(definition);
+        return GroovyValueDefinition.Holder.instance.parseValue(definition);
     }
 
     @SuppressWarnings("unchecked")
     public static <T> Value<T> valueOf(String clazzType, File definition) throws IOException {
-        return Holder.groovyValueDefinition.parseValue(definition);
+        return GroovyValueDefinition.Holder.instance.parseValue(definition);
     }
 
     @SuppressWarnings("unchecked")
     public static <T> Value<T> valueOf(Class<T> clazzType, InputStream inputStream) throws IOException {
-        return Holder.groovyValueDefinition.parseValue(inputStream);
+        return GroovyValueDefinition.Holder.instance.parseValue(inputStream);
     }
 
     @SuppressWarnings("unchecked")
     public static <T> Value<T> valueOf(String clazzType, InputStream inputStream) throws IOException {
-        return Holder.groovyValueDefinition.parseValue(inputStream);
+        return GroovyValueDefinition.Holder.instance.parseValue(inputStream);
     }
 
     @SuppressWarnings("unchecked")
     public static <T> Value<T> valueOf(Class<T> clazzType, Reader reader) throws IOException {
-        return Holder.groovyValueDefinition.parseValue(reader);
+        return GroovyValueDefinition.Holder.instance.parseValue(reader);
     }
 
     @SuppressWarnings("unchecked")
     public static <T> Value<T> valueOf(Reader reader) throws IOException {
-        return Holder.groovyValueDefinition.parseValue(reader);
+        return GroovyValueDefinition.Holder.instance.parseValue(reader);
     }
 
 
@@ -266,10 +266,6 @@ public class InstanceScrambler {
 
     public static ReferenceValue reference(Class self, String propertyPredicate) {
         return new ReferenceValue(ValuePredicates.predicateOf(self), propertyPredicate != null ? ValuePredicates.predicateOf(propertyPredicate) : null);
-    }
-
-    private static class Holder {
-        private static GroovyValueDefinition groovyValueDefinition = new GroovyValueDefinition();
     }
 
 }

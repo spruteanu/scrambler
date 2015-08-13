@@ -46,8 +46,20 @@ public class IncrementalString extends Constant<String> {
 
     public IncrementalString(String value, String pattern, Integer index) {
         super(value);
+        validatePattern(pattern);
         this.pattern = pattern;
         this.index = index != null ? index : DEFAULT_STEP;
+    }
+
+    void validatePattern(String pattern) {
+        int i = pattern.indexOf('%');
+        if (i >= 0) {
+            i = pattern.indexOf('%', i + 1);
+            if (i > 0) {
+                return;
+            }
+        }
+        throw new IllegalArgumentException(String.format("Invalid pattern provided: %s; It must contain 2 formatter characters.", pattern));
     }
 
     public void setIndex(Integer index) {

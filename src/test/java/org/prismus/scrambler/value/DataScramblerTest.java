@@ -164,6 +164,9 @@ public class DataScramblerTest {
         System.out.println(StringScrambler.random("My Random String 123").next());
         System.out.println(StringScrambler.random("My Random String 123", 35).next());
 
+        // Generate random identifier
+        System.out.println(StringScrambler.randomUuid().next());
+
         // Generate an random string array based on template String, count length
         System.out.println(Arrays.asList(StringScrambler.randomArray("My Random String 123", 10).next()));
         System.out.println(Arrays.asList(StringScrambler.randomArray("My Random String 123", 35, 10).next()));
