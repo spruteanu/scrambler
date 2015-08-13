@@ -30,12 +30,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Serge Pruteanu
  */
-@SuppressWarnings("unused")
 public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     private ValueDefinition definition;
     private Callable<ValueDefinition> definitionClosure;
-    private ValuePredicate predicate;
 
     private Object type;
     private Collection<Value> constructorArguments;
@@ -228,11 +226,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     //------------------------------------------------------------------------------------------------------------------
     // Internal Methods
     //------------------------------------------------------------------------------------------------------------------
-    void setDefinitionClosure(Callable<ValueDefinition> definitionClosure) {
-        this.definitionClosure = definitionClosure;
-        shouldBuild.set(true);
-    }
-
     void registerFieldValues(ValueDefinition valueDefinition) {
         checkFieldMapCreated();
 

@@ -18,9 +18,11 @@
 
 package org.prismus.scrambler;
 
+import org.prismus.scrambler.value.ArrayContainerValue;
 import org.prismus.scrambler.value.InstanceValue;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 
 /**
@@ -56,13 +58,11 @@ public class MethodScrambler {
 
     public static Value<Object[]> inspectMethod(InstanceValue instanceValue, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
         lookupMethod((Class<?>) instanceValue.lookupType(), method, args);
-        // todo Serge: implement me
-        return null;
+        return new ArrayContainerValue(Arrays.asList(instanceValue.lookupValues(args)));
     }
 
     public static Value<Object[]> inspectMethod(Class clazzType, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
-        lookupMethod(clazzType, method, args);
-        return null;
+        return inspectMethod(InstanceScrambler.instanceOf(clazzType), method, args);
     }
 
     @SuppressWarnings("unchecked")

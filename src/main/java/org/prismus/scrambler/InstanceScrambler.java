@@ -53,24 +53,6 @@ public class InstanceScrambler {
         return instanceValue;
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, String... definitions) throws IOException {
-        return parseDefinitions(instanceOf(clazzType), null, definitions);
-    }
-
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<String, Object> contextMap, String... definitions) throws IOException {
-        return parseDefinitions(instanceOf(clazzType), contextMap, definitions);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, String... definitions) throws IOException {
-        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), null, definitions);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, Map<String, Object> contextMap, String... definitions) throws IOException {
-        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), contextMap, definitions);
-    }
-
     public static ValueDefinition parseDefinition(File definition) throws IOException {
         return Holder.groovyValueDefinition.parseDefinition(definition);
     }
@@ -86,24 +68,6 @@ public class InstanceScrambler {
             }
         }
         return instanceValue;
-    }
-
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, File... definitions) throws IOException {
-        return parseDefinitions(instanceOf(clazzType), null, definitions);
-    }
-
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<String, Object> contextMap, File... definitions) throws IOException {
-        return parseDefinitions(instanceOf(clazzType), contextMap, definitions);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, File... definitions) throws IOException {
-        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), null, definitions);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, Map<String, Object> contextMap, File... definitions) throws IOException {
-        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), contextMap, definitions);
     }
 
     public static ValueDefinition parseDefinition(InputStream inputStream) throws IOException {
@@ -129,24 +93,6 @@ public class InstanceScrambler {
         return instanceValue;
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, InputStream... inputStreams) throws IOException {
-        return parseDefinitions(instanceOf(clazzType), null, inputStreams);
-    }
-
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<String, Object> contextMap, InputStream... inputStreams) throws IOException {
-        return parseDefinitions(instanceOf(clazzType), contextMap, inputStreams);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, InputStream... inputStreams) throws IOException {
-        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), null, inputStreams);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, Map<String, Object> contextMap, InputStream... inputStreams) throws IOException {
-        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), contextMap, inputStreams);
-    }
-
     public static ValueDefinition parseDefinition(Reader reader, Map<String, Object> contextMap) throws IOException {
         return Holder.groovyValueDefinition.parseDefinition(reader, contextMap);
     }
@@ -164,24 +110,6 @@ public class InstanceScrambler {
             }
         }
         return instanceValue;
-    }
-
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Reader... readers) throws IOException {
-        return parseDefinitions(instanceOf(clazzType), null, readers);
-    }
-
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<String, Object> contextMap, Reader... readers) throws IOException {
-        return parseDefinitions(instanceOf(clazzType), contextMap, readers);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, Reader... readers) throws IOException {
-        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), null, readers);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, Map<String, Object> contextMap, Reader... readers) throws IOException {
-        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), contextMap, readers);
     }
 
 
@@ -232,6 +160,78 @@ public class InstanceScrambler {
     //------------------------------------------------------------------------------------------------------------------
     // InstanceValue methods
     //------------------------------------------------------------------------------------------------------------------
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, String... definitions) throws IOException {
+        return parseDefinitions(instanceOf(clazzType), null, definitions);
+    }
+
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<String, Object> contextMap, String... definitions) throws IOException {
+        return parseDefinitions(instanceOf(clazzType), contextMap, definitions);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> InstanceValue<T> instanceOf(String clazzType, String... definitions) throws IOException {
+        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), null, definitions);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> InstanceValue<T> instanceOf(String clazzType, Map<String, Object> contextMap, String... definitions) throws IOException {
+        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), contextMap, definitions);
+    }
+
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, File... definitions) throws IOException {
+        return parseDefinitions(instanceOf(clazzType), null, definitions);
+    }
+
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<String, Object> contextMap, File... definitions) throws IOException {
+        return parseDefinitions(instanceOf(clazzType), contextMap, definitions);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> InstanceValue<T> instanceOf(String clazzType, File... definitions) throws IOException {
+        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), null, definitions);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> InstanceValue<T> instanceOf(String clazzType, Map<String, Object> contextMap, File... definitions) throws IOException {
+        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), contextMap, definitions);
+    }
+
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, InputStream... inputStreams) throws IOException {
+        return parseDefinitions(instanceOf(clazzType), null, inputStreams);
+    }
+
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<String, Object> contextMap, InputStream... inputStreams) throws IOException {
+        return parseDefinitions(instanceOf(clazzType), contextMap, inputStreams);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> InstanceValue<T> instanceOf(String clazzType, InputStream... inputStreams) throws IOException {
+        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), null, inputStreams);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> InstanceValue<T> instanceOf(String clazzType, Map<String, Object> contextMap, InputStream... inputStreams) throws IOException {
+        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), contextMap, inputStreams);
+    }
+
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Reader... readers) throws IOException {
+        return parseDefinitions(instanceOf(clazzType), null, readers);
+    }
+
+    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<String, Object> contextMap, Reader... readers) throws IOException {
+        return parseDefinitions(instanceOf(clazzType), contextMap, readers);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> InstanceValue<T> instanceOf(String clazzType, Reader... readers) throws IOException {
+        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), null, readers);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> InstanceValue<T> instanceOf(String clazzType, Map<String, Object> contextMap, Reader... readers) throws IOException {
+        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), contextMap, readers);
+    }
+
     public static <T> InstanceValue<T> instanceOf(String type) {
         return instanceOf(type, (Map<Object, Object>) null);
     }

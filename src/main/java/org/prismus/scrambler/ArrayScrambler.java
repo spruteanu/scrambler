@@ -18,10 +18,9 @@
 
 package org.prismus.scrambler;
 
-import org.prismus.scrambler.value.ArrayRandomElement;
-import org.prismus.scrambler.value.ArrayValue;
-import org.prismus.scrambler.value.Types;
-import org.prismus.scrambler.value.Util;
+import org.prismus.scrambler.value.*;
+
+import java.util.Arrays;
 
 /**
  * Facade class that exposes generation of arrays in various forms
@@ -126,6 +125,10 @@ public class ArrayScrambler {
         } else {
             return new ArrayValue(clazzType, count, val);
         }
+    }
+
+    public static ArrayContainerValue of(Value... values) {
+        return new ArrayContainerValue(Arrays.asList(values));
     }
 
     // todo Serge: there is no way to select a random element from primitive array. Also, most probably it will be better to expose array creation of primitive arrays
