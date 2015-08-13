@@ -75,6 +75,33 @@ class GroovyValueDefinition {
         return definition
     }
 
+    @CompileStatic @PackageScope
+    static String loadResourceText(ValueDefinition self, String resource) {
+        final String text
+        if (resource.endsWith('groovy')) {
+            final URL url = self.getClass().getResource(resource)
+            if (url == null) {
+                final file = new File(resource)
+                if (!file.exists()) {
+                    throw new IllegalArgumentException(String.format("Not found resource for: %s", resource))
+                } else {
+                    text = file.text
+                }
+            } else {
+                text = url.text
+            }
+        } else {
+            text = resource
+        }
+        return text
+    }
+
+    @CompileStatic
+    protected ValueDefinition parseDefinition(ValueDefinition definition, String resource) {
+        doParseDefinitionText(definition, loadResourceText(definition, resource))
+        return definition
+    }
+
     @CompileStatic
     ValueDefinition parseDefinition(String resource, Map<String, Object> context = null) throws IOException {
         if (resource.endsWith('groovy')) {
@@ -531,23 +558,7 @@ class GroovyValueDefinition {
         }
 
         static ValueDefinition usingDefinition(ValueDefinition self, String resource) {
-            final String text
-            if (resource.endsWith('groovy')) {
-                final URL url = self.getClass().getResource(resource)
-                if (url == null) {
-                    final file = new File(resource)
-                    if (!file.exists()) {
-                        throw new IllegalArgumentException(String.format("Not found resource for: %s", resource))
-                    } else {
-                        text = file.text
-                    }
-                } else {
-                    text = url.text
-                }
-            } else {
-                text = resource
-            }
-            return Holder.instance.doParseDefinitionText(self, text)
+            return Holder.instance.doParseDefinitionText(self, loadResourceText(self, resource))
         }
 
     }

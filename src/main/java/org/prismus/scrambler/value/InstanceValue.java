@@ -21,6 +21,7 @@ package org.prismus.scrambler.value;
 import org.prismus.scrambler.*;
 
 import java.lang.reflect.Constructor;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -57,7 +58,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     }
 
     public InstanceValue(Class type, Collection<Value> constructorArguments) {
-        this.type = type;
+        ofType(type);
         this.constructorArguments = constructorArguments;
         this.constructorValues = new ArrayList<Value>();
         fieldValueMap = new LinkedHashMap<InstanceFieldPredicate, Value>();
@@ -188,6 +189,12 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return this;
     }
 
+    public InstanceValue<T> usingDefinitions(String resource) {
+        checkDefinitionCreated();
+        GroovyValueDefinition.Holder.instance.parseDefinition(definition, resource);
+        return this;
+    }
+
     public InstanceValue<T> using(List<Value> constructorValues) {
         this.constructorValues = constructorValues;
         return this;
@@ -200,17 +207,30 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     public InstanceValue<T> usingValue(T value) {
         this.value = value;
+        if (value != null) {
+            final Object type = lookupType();
+            if (type instanceof Class) {
+                ofType((Class) type);
+            }
+        }
         return this;
     }
 
-    public InstanceValue<T> usingType(Class valueType) {
-        this.type = valueType;
+    public InstanceValue<T> ofType(Class clazzType) {
+        this.type = clazzType;
+        if (clazzType != null && generateAll) {
+            final String classDefinitionResource = clazzType.getName() + ".groovy";
+            final URL resource = clazzType.getResource(classDefinitionResource);
+            if (resource != null) {
+                checkDefinitionCreated();
+                GroovyValueDefinition.Holder.instance.parseDefinition(definition, classDefinitionResource);
+            }
+        }
         return this;
     }
 
-    public InstanceValue<T> usingType(String valueType) {
-        this.type = valueType;
-        return this;
+    public InstanceValue<T> ofType(String valueType) {
+        return ofType(lookupType(valueType, true));
     }
 
     public InstanceValue<T> generateAll() {
