@@ -329,7 +329,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             if (supportedTypes.contains(propertyType)) {
                 val = ObjectScrambler.random(propertyType);
             } else if (propertyType.isArray() && supportedTypes.contains(propertyType.getComponentType())) {
-                val = ObjectScrambler.random(propertyType, null);
+                val = ObjectScrambler.random(propertyType);
             } else {
                 if (Iterable.class.isAssignableFrom(propertyType) || Map.class.isAssignableFrom(propertyType)) {
                     continue;
@@ -344,7 +344,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             }
         }
         return propertyValueMap;
-    }
+    } // todo Serge: implement defaults injection, provide defaults shipped with scrambler jar
 
     List<Value> lookupConstructorArguments(ValueDefinition valueDefinition, Class type, Set<Class> supportedTypes) {
         List<Value> result = null;
