@@ -8,6 +8,12 @@ import spock.lang.Specification
  */
 class GroovyValueDefinitionTest extends Specification {
 
+    void 'test scan value definitions'() {
+        new ValueDefinition().scanDefinitions("test")
+        expect: // todo Serge: implement me
+        true
+    }
+
     void 'test parse type text definitions'() {
         given:
         final parser = new GroovyValueDefinition()

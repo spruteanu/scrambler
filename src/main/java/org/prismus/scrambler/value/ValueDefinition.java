@@ -22,6 +22,8 @@ import org.prismus.scrambler.Value;
 import org.prismus.scrambler.ValuePredicate;
 import org.prismus.scrambler.ValuePredicates;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -317,6 +319,18 @@ public class ValueDefinition implements Cloneable {
                 GroovyValueDefinition.Holder.instance.parseDefinition(this, definition);
             }
         }
+        return this;
+    }
+
+    public ValueDefinition scanDefinitions(String definitionMatcher) {
+        // todo Serge: implement me
+        try {
+            final Enumeration<URL> enumeration = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
+            while (enumeration.hasMoreElements()) {
+                URL url = enumeration.nextElement();
+                System.out.println(url);
+            }
+        } catch (IOException ignore) { }
         return this;
     }
 

@@ -105,7 +105,7 @@ public class RandomUuid extends Constant<String> {
 ### Default definitions
 
 ### Reference Value
-*TBD*
+**TBD**
 
 ## DataScrambler DSL
 
@@ -119,3 +119,6 @@ public class RandomUuid extends Constant<String> {
 ### Testing extension
 
 ### Definitions dictionary extensions
+
+## Best Practices
+**TBD**

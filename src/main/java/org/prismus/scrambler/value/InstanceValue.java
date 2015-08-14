@@ -110,16 +110,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         }
     }
 
-    public InstanceValue<T> usingDefaultDefinitions(ValueDefinition defaultDefinition) {
-        this.defaultDefinition = defaultDefinition;
-        return this;
-    }
-
-    public InstanceValue<T> usingDefaultDefinitions(String... definitions) {
-        this.defaultDefinition = new ValueDefinition().usingDefinitions(definitions);
-        return this;
-    }
-
     public InstanceValue<T> withConstructorArguments(Collection constructorArguments) {
         this.constructorArguments = new ArrayList<Value>();
         setConstructorArguments(constructorArguments);
@@ -148,28 +138,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             }
         }
         return result;
-    }
-
-    public List<Value> lookupValues(Collection<ValuePredicate> predicates) {
-        if (predicates == null || predicates.size() == 0) {
-            throw new IllegalArgumentException("Predicates can't be null or empty");
-        }
-        final List<Value> values = new ArrayList<Value>(predicates.size());
-        for (final ValuePredicate valuePredicate : predicates) {
-            values.add(lookupValue(valuePredicate));
-        }
-        return values;
-    }
-
-    public Value[] lookupValues(ValuePredicate... predicates) {
-        if (predicates == null || predicates.length == 0) {
-            throw new IllegalArgumentException("Predicates can't be null or empty");
-        }
-        final Value[] values = new Value[predicates.length];
-        for (int i = 0; i < predicates.length; i++) {
-            values[i] = lookupValue(predicates[i]);
-        }
-        return values;
     }
 
     public Value[] lookupValues(Class... clazzTypes) {
@@ -203,6 +171,16 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     public InstanceValue<T> usingDefinitions(String resource) {
         checkDefinitionCreated();
         GroovyValueDefinition.Holder.instance.parseDefinition(definition, resource);
+        return this;
+    }
+
+    public InstanceValue<T> usingDefaultDefinitions(ValueDefinition defaultDefinition) {
+        this.defaultDefinition = defaultDefinition;
+        return this;
+    }
+
+    public InstanceValue<T> usingDefaultDefinitions(String... definitions) {
+        this.defaultDefinition = new ValueDefinition().usingDefinitions(definitions);
         return this;
     }
 
@@ -323,18 +301,15 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         }
     }
 
-    Set<Class> getSupportedTypes() {
-        final Set<Class> knownTypes = new HashSet<Class>();
-        knownTypes.addAll(Types.getSupportedIncrementTypes());
-        knownTypes.addAll(Types.getSupportedRandomTypes());
-        return knownTypes;
+    void checkDefaultDefinitionCreated() {
+        if (defaultDefinition == null) {
+            usingDefaultDefinitions(ValueDefinition.DEFAULT_DEFINITIONS_RESOURCE);
+        }
     }
 
     @SuppressWarnings("unchecked")
     Map<InstanceFieldPredicate, Value> lookupUnresolved(ValueDefinition valueDefinition, Map<String, Field> unresolvedProps) {
-        if (defaultDefinition == null) {
-            usingDefaultDefinitions(ValueDefinition.DEFAULT_DEFINITIONS_RESOURCE);
-        }
+        checkDefaultDefinitionCreated();
         final Map<InstanceFieldPredicate, Value> propertyValueMap = new LinkedHashMap<InstanceFieldPredicate, Value>();
         for (final Map.Entry<String, Field> entry : unresolvedProps.entrySet()) {
             final String fieldName = entry.getKey();
