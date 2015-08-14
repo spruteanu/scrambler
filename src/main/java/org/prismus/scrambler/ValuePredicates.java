@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
  */
 public class ValuePredicates {
 
-    public static TypePredicate predicateOf(Class clazzType) {
+    public static TypePredicate typePredicate(Class clazzType) {
         return new TypePredicate(clazzType);
     }
 
@@ -59,6 +59,10 @@ public class ValuePredicates {
             propertyPredicate = new PropertyPredicate(propertyWildcard);
         }
         return propertyPredicate;
+    }
+
+    public static ValuePredicate typeFilterOf(Pattern pattern) {
+        return new TypeFilterPredicate(pattern);
     }
 
 }

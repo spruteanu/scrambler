@@ -561,6 +561,10 @@ class GroovyValueDefinition {
             return Holder.instance.doParseDefinitionText(self, loadResourceText(self, resource))
         }
 
+        static ValueDefinition usingDefinitions(ValueDefinition self, String... definitions) {
+            return self.usingDefinitions(definitions)
+        }
+
     }
 
     //------------------------------------------------------------------------------------------------------------------

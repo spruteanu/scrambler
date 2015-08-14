@@ -265,7 +265,7 @@ public class InstanceScrambler {
     }
 
     public static ReferenceValue reference(Class self, String propertyPredicate) {
-        return new ReferenceValue(ValuePredicates.predicateOf(self), propertyPredicate != null ? ValuePredicates.predicateOf(propertyPredicate) : null);
+        return new ReferenceValue(ValuePredicates.typePredicate(self), propertyPredicate != null ? ValuePredicates.predicateOf(propertyPredicate) : null);
     }
 
 }

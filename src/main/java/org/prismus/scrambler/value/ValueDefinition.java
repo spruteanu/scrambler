@@ -32,6 +32,8 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings("unchecked")
 public class ValueDefinition implements Cloneable {
+    public static final String DEFAULT_DEFINITIONS_RESOURCE = "/org.prismus.scrambler.value.default-value-definition.groovy";
+
     private ValueDefinition parent;
 
     private Map<ValuePredicate, Value> definitionMap = new LinkedHashMap<ValuePredicate, Value>();
@@ -77,7 +79,7 @@ public class ValueDefinition implements Cloneable {
         Util.checkNullValue(value);
         final Object value1 = value.get();
         Util.checkNullValue(value1);
-        registerPredicateValue(ValuePredicates.predicateOf(value1.getClass()), value);
+        registerPredicateValue(ValuePredicates.typePredicate(value1.getClass()), value);
         return this;
     }
 
@@ -127,7 +129,7 @@ public class ValueDefinition implements Cloneable {
 
     public ValueDefinition constant(Object value) {
         Util.checkNullValue(value);
-        registerPredicateValue(ValuePredicates.predicateOf(value.getClass()), new Constant(value));
+        registerPredicateValue(ValuePredicates.typePredicate(value.getClass()), new Constant(value));
         return this;
     }
 
@@ -166,7 +168,7 @@ public class ValueDefinition implements Cloneable {
 
     public ValueDefinition definition(Class type, Object value) {
         Util.checkNullValue(type);
-        registerPredicateValue(ValuePredicates.predicateOf(type), new Constant(value));
+        registerPredicateValue(ValuePredicates.typePredicate(type), new Constant(value));
         return this;
     }
 
@@ -191,7 +193,7 @@ public class ValueDefinition implements Cloneable {
     public ValueDefinition definition(Class type, Value value) {
         Util.checkNullValue(type);
         Util.checkNullValue(value);
-        registerPredicateValue(ValuePredicates.predicateOf(type), value);
+        registerPredicateValue(ValuePredicates.typePredicate(type), value);
         return this;
     }
 
@@ -210,7 +212,7 @@ public class ValueDefinition implements Cloneable {
 
     public ValueDefinition reference(Class type) {
         Util.checkNullValue(type);
-        final ValuePredicate predicate = ValuePredicates.predicateOf(type);
+        final ValuePredicate predicate = ValuePredicates.typePredicate(type);
         registerPredicateValue(predicate, new ReferenceValue(this, predicate));
         return this;
     }
@@ -222,26 +224,26 @@ public class ValueDefinition implements Cloneable {
 
     public ValueDefinition reference(Class type, Class parentPredicate) {
         Util.checkNullValue(parentPredicate);
-        reference(type, ValuePredicates.predicateOf(parentPredicate));
+        reference(type, ValuePredicates.typePredicate(parentPredicate));
         return this;
     }
 
     public ValueDefinition reference(Class type, ValuePredicate parentPredicate) {
         Util.checkNullValue(type);
-        final ValuePredicate predicate = ValuePredicates.predicateOf(type);
+        final ValuePredicate predicate = ValuePredicates.typePredicate(type);
         registerPredicateValue(predicate, new ReferenceValue(this, parentPredicate));
         return this;
     }
 
     public ValueDefinition reference(String propertyName, Class parentPredicate) {
         Util.checkNullValue(parentPredicate);
-        reference(ValuePredicates.predicateOf(propertyName), ValuePredicates.predicateOf(parentPredicate));
+        reference(ValuePredicates.predicateOf(propertyName), ValuePredicates.typePredicate(parentPredicate));
         return this;
     }
 
     public ValueDefinition reference(Pattern pattern, Class parentPredicate) {
         Util.checkNullValue(parentPredicate);
-        reference(PropertyPredicate.of(pattern), ValuePredicates.predicateOf(parentPredicate));
+        reference(PropertyPredicate.of(pattern), ValuePredicates.typePredicate(parentPredicate));
         return this;
     }
 
@@ -309,12 +311,43 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
+    public ValueDefinition usingDefinitions(String... definitions) {
+        if (definitions != null) {
+            for (String definition : definitions) {
+                GroovyValueDefinition.Holder.instance.parseDefinition(this, definition);
+            }
+        }
+        return this;
+    }
+
     public Value lookupValue(ValuePredicate predicate) {
         Value result = definitionMap.get(predicate);
         if (result == null && parent != null) {
             result = parent.lookupValue(predicate);
         }
         return result;
+    }
+
+    public Value lookupValue(String property, Class type) {
+        Value value = null;
+        for (Map.Entry<ValuePredicate, Value> entry : definitionMap.entrySet()) {
+            if (!isIterableOrMap(type) && entry.getKey().apply(property, type)) {
+                value = entry.getValue();
+                break;
+            }
+        }
+        if (value instanceof InstanceTypeValue) {
+            value = ((InstanceTypeValue) value).next(type);
+        } else if (value instanceof RandomTypeValue) {
+            value = ((RandomTypeValue) value).next(type);
+        } else if (value instanceof IncrementalTypeValue) {
+            value = ((IncrementalTypeValue) value).next(type);
+        }
+        return value;
+    }
+
+    boolean isIterableOrMap(Class type) {
+        return Iterable.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type);
     }
 
     public Object getContextProperty(String property) {

@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     private ValueDefinition definition;
+    private ValueDefinition defaultDefinition;
     private Callable<ValueDefinition> definitionClosure;
 
     private Object type;
@@ -86,7 +87,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             build(null);
             final Object valueType = lookupType();
             if (valueType instanceof Class) {
-                definition.registerPredicateValue(ValuePredicates.predicateOf((Class) valueType), this);
+                definition.registerPredicateValue(ValuePredicates.typePredicate((Class) valueType), this);
             }
         }
         final T instance = checkCreateInstance();
@@ -107,6 +108,16 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                 }
             }
         }
+    }
+
+    public InstanceValue<T> usingDefaultDefinitions(ValueDefinition defaultDefinition) {
+        this.defaultDefinition = defaultDefinition;
+        return this;
+    }
+
+    public InstanceValue<T> usingDefaultDefinitions(String... definitions) {
+        this.defaultDefinition = new ValueDefinition().usingDefinitions(definitions);
+        return this;
     }
 
     public InstanceValue<T> withConstructorArguments(Collection constructorArguments) {
@@ -266,7 +277,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             unresolvedProps.remove(fieldPredicate.getProperty());
         }
         if (generateAll) {
-            fieldValueMap.putAll(introspectTypes(valueDefinition, unresolvedProps));
+            fieldValueMap.putAll(lookupUnresolved(valueDefinition, unresolvedProps));
         }
     }
 
@@ -320,31 +331,21 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     }
 
     @SuppressWarnings("unchecked")
-    Map<InstanceFieldPredicate, Value> introspectTypes(ValueDefinition valueDefinition, Map<String, Field> unresolvedProps) {
-        final Set<Class> supportedTypes = getSupportedTypes();
+    Map<InstanceFieldPredicate, Value> lookupUnresolved(ValueDefinition valueDefinition, Map<String, Field> unresolvedProps) {
+        if (defaultDefinition == null) {
+            usingDefaultDefinitions(ValueDefinition.DEFAULT_DEFINITIONS_RESOURCE);
+        }
         final Map<InstanceFieldPredicate, Value> propertyValueMap = new LinkedHashMap<InstanceFieldPredicate, Value>();
         for (final Map.Entry<String, Field> entry : unresolvedProps.entrySet()) {
-            final Class propertyType = entry.getValue().getType();
-            Value val = null;
-            if (supportedTypes.contains(propertyType)) {
-                val = ObjectScrambler.random(propertyType);
-            } else if (propertyType.isArray() && supportedTypes.contains(propertyType.getComponentType())) {
-                val = ObjectScrambler.random(propertyType);
-            } else {
-                if (Iterable.class.isAssignableFrom(propertyType) || Map.class.isAssignableFrom(propertyType)) {
-                    continue;
-                }
-                final List<Value> ctorArgs = lookupConstructorArguments(valueDefinition, propertyType, supportedTypes);
-                if (ctorArgs != null) {
-                    val = new InstanceValue(propertyType, ctorArgs);
-                }
-            }
+            final String fieldName = entry.getKey();
+            final Class fieldType = entry.getValue().getType();
+            Value val = defaultDefinition.lookupValue(fieldName, fieldType);
             if (val != null) {
-                propertyValueMap.put(new InstanceFieldPredicate(entry.getKey()), val);
+                propertyValueMap.put(new InstanceFieldPredicate(fieldName), val);
             }
         }
         return propertyValueMap;
-    } // todo Serge: implement defaults injection, provide defaults shipped with scrambler jar
+    }
 
     List<Value> lookupConstructorArguments(ValueDefinition valueDefinition, Class type, Set<Class> supportedTypes) {
         List<Value> result = null;
@@ -357,7 +358,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                 }
                 final List<Value> values = new ArrayList<Value>();
                 for (final Class argType : types) {
-                    Value val = typeValueMap.get(ValuePredicates.predicateOf(argType));
+                    Value val = typeValueMap.get(ValuePredicates.typePredicate(argType));
                     if (val == null && supportedTypes.contains(argType)) {
                         val = ObjectScrambler.random(argType);
                     }

@@ -48,7 +48,7 @@ public class ReferenceValue extends Constant<Object> {
     }
 
     public ReferenceValue(java.lang.Class type, java.lang.String fieldPredicate) {
-        this(ValuePredicates.predicateOf(type), ValuePredicates.predicateOf(fieldPredicate));
+        this(ValuePredicates.typePredicate(type), ValuePredicates.predicateOf(fieldPredicate));
     }
 
     public ReferenceValue(ValuePredicate predicate, ValuePredicate fieldPredicate) {
