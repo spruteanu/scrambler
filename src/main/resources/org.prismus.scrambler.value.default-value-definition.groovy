@@ -32,7 +32,7 @@ import org.prismus.scrambler.value.RandomUuid
 
 // if property name contains 'created' and type is java.util.Date generate date in a range of 5 years till current date
 definition(ValuePredicates.predicateOf(~/(?i).*created.*/, Date), new IncrementalTypeValue(
-        new IncrementalDate(new Date()).months(-5).next(), new Date()
+        new IncrementalDate(new Date()).years(-5).next(), new Date()
 ))
 
 // if property name contains 'modified' and type is java.util.Date generate date in a range of one month till current date
