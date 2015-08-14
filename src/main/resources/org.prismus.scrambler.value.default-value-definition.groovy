@@ -1,11 +1,3 @@
-import org.prismus.scrambler.ValuePredicates
-import org.prismus.scrambler.value.IncrementalDate
-import org.prismus.scrambler.value.IncrementalTypeValue
-import org.prismus.scrambler.value.InstanceTypeValue
-import org.prismus.scrambler.value.InstanceValueTypePredicate
-import org.prismus.scrambler.value.RandomTypeValue
-import org.prismus.scrambler.value.RandomUuid
-
 /*
  * Data Scrambler, Data Generation API
  * Copyright (c) 2015, Sergiu Prutean. All rights reserved.
@@ -23,6 +15,14 @@ import org.prismus.scrambler.value.RandomUuid
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
+
+import org.prismus.scrambler.ValuePredicates
+import org.prismus.scrambler.value.IncrementalDate
+import org.prismus.scrambler.value.IncrementalTypeValue
+import org.prismus.scrambler.value.InstanceTypeValue
+import org.prismus.scrambler.value.InstanceValueTypePredicate
+import org.prismus.scrambler.value.RandomTypeValue
+import org.prismus.scrambler.value.RandomUuid
 
 /**
  * Default value definitions shipped with data scrambler project, used when no matches found in context
