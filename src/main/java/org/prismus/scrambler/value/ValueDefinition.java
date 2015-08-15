@@ -25,6 +25,8 @@ import org.prismus.scrambler.ValuePredicates;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 
 /**
@@ -35,6 +37,7 @@ import java.util.regex.Pattern;
 @SuppressWarnings("unchecked")
 public class ValueDefinition implements Cloneable {
     public static final String DEFAULT_DEFINITIONS_RESOURCE = "/org.prismus.scrambler.value.default-value-definition.groovy";
+    public static final String META_INF_ANCHOR = "META-INF/MANIFEST.MF";
 
     private ValueDefinition parent;
 
@@ -325,13 +328,37 @@ public class ValueDefinition implements Cloneable {
     public ValueDefinition scanDefinitions(String definitionMatcher) {
         // todo Serge: implement me
         try {
-            final Enumeration<URL> enumeration = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
+            final Enumeration<URL> enumeration = getClass().getClassLoader().getResources(META_INF_ANCHOR);
             while (enumeration.hasMoreElements()) {
-                URL url = enumeration.nextElement();
-                System.out.println(url);
+                final String jarName = getParentFileName(enumeration.nextElement());
+                System.out.println(jarName);
+                final JarFile jarFile = new JarFile(jarName);
+                try {
+                    final Enumeration<JarEntry> entries = jarFile.entries();
+                    while (entries.hasMoreElements()) {
+                        JarEntry jarEntry = entries.nextElement();
+                        System.out.println("\t" + jarEntry.getName());
+                    }
+                } finally {
+                    jarFile.close();
+                }
             }
-        } catch (IOException ignore) { }
+        } catch (IOException ignore) {
+            ignore.printStackTrace();
+        }
         return this;
+    }
+
+    String getParentFileName(URL url) {
+        String file = url.getFile();
+        file = file.substring(0, file.length() - META_INF_ANCHOR.length());
+        if (file.endsWith("/")) {
+            file = file.substring(0, file.length() -1);
+            if (file.endsWith("!")) {
+                file = file.substring(0, file.length() -1);
+            }
+        }
+        return file;
     }
 
     public Value lookupValue(ValuePredicate predicate) {
