@@ -131,6 +131,67 @@ public class ArrayScrambler {
         return new ArrayContainerValue(Arrays.asList(values));
     }
 
-    // todo Serge: there is no way to select a random element from primitive array. Also, most probably it will be better to expose array creation of primitive arrays
+    public static Value<Boolean> randomOf(final boolean[] values) {
+        return new RandomElementValue<Boolean>() {
+            @Override
+            protected Boolean doNext() {
+                return values[random.nextInt(values.length)];
+            }
+        };
+    }
+
+    public static Value<Byte> randomOf(final byte[] values) {
+        return new RandomElementValue<Byte>() {
+            @Override
+            protected Byte doNext() {
+                return values[random.nextInt(values.length)];
+            }
+        };
+    }
+
+    public static Value<Short> randomOf(final short[] values) {
+        return new RandomElementValue<Short>() {
+            @Override
+            protected Short doNext() {
+                return values[random.nextInt(values.length)];
+            }
+        };
+    }
+
+    public static Value<Integer> randomOf(final int[] values) {
+        return new RandomElementValue<Integer>() {
+            @Override
+            protected Integer doNext() {
+                return values[random.nextInt(values.length)];
+            }
+        };
+    }
+
+    public static Value<Long> randomOf(final long[] values) {
+        return new RandomElementValue<Long>() {
+            @Override
+            protected Long doNext() {
+                return values[random.nextInt(values.length)];
+            }
+        };
+    }
+
+    public static Value<Float> randomOf(final float[] values) {
+        return new RandomElementValue<Float>() {
+            @Override
+            protected Float doNext() {
+                return values[random.nextInt(values.length)];
+            }
+        };
+    }
+
+    public static Value<Double> randomOf(final double[] values) {
+        return new RandomElementValue<Double>() {
+            @Override
+            protected Double doNext() {
+                return values[random.nextInt(values.length)];
+            }
+        };
+    }
 
 }

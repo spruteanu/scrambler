@@ -389,29 +389,38 @@ class GroovyValueDefinition {
 
     }
 
-    @CompileStatic
     static class ObjectCategory {
 
+        @CompileStatic
         static <T> Value<T> constant(T self) {
             return ObjectScrambler.constant(self)
         }
 
+        @CompileStatic
         static <T> Value<T> randomOf(T[] self) {
             return ArrayScrambler.randomOf(self)
         }
 
-        static <T> Value<T>  randomArray(Object value, Integer count = null) {
+        static <T> Value<T> randomOf(def self) {
+            return ArrayScrambler.randomOf(self)
+        }
+
+        @CompileStatic
+        static <T> Value<T> randomArray(Object value, Integer count = null) {
             return ArrayScrambler.randomArray(value, count);
         }
 
+        @CompileStatic
         static <T> Value<T> arrayOf(Object self, Value value) {
             return ArrayScrambler.arrayOf(self, value);
         }
 
+        @CompileStatic
         static <T> Value<T> arrayOf(Object self, Value value, Integer count) {
             return ArrayScrambler.arrayOf(self, value, count)
         }
 
+        @CompileStatic
         static ArrayContainerValue arrayOf(Object[] self, Value... values) {
             return new ArrayContainerValue(Arrays.asList(values))
         }

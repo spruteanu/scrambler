@@ -18,30 +18,18 @@
 
 package org.prismus.scrambler.value;
 
+import java.util.Random;
+
 /**
  * Value instance that returns randomly an element from provided {@code values} array
  *
  * @author Serge Pruteanu
  */
-public class ArrayRandomElement<T> extends RandomElementValue<T> {
-    private T[] values;
+public class RandomElementValue<T> extends Constant<T> {
+    protected final Random random;
 
-    public ArrayRandomElement(T[] values) {
+    public RandomElementValue() {
         super();
-        this.values = values;
-        setValue(values[0]);
+        random = new Random();
     }
-
-    public void setValues(T[] values) {
-        this.values = values;
-    }
-
-    protected T doNext() {
-        return values[random.nextInt(values.length)];
-    }
-
-    public T[] getValues() {
-        return values;
-    }
-
 }
