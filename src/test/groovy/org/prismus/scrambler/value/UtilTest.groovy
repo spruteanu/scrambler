@@ -12,8 +12,8 @@ class UtilTest extends Specification {
         expected == Util.replaceWildcards(property)
 
         where:
-        property << ['test*', 'account*Party*sid', 'va?ue', '*Sid', 'myProperty', 'org.prismus.scrambler.*']
-        expected << ['^test.*$', '^account.*Party.*sid$', '^va.ue$', '^.*Sid$', 'myProperty', '^org\\.prismus\\.scrambler\\..*$']
+        property << ['*', 'test*', 'account*Party*sid', 'va?ue', '*Sid', 'myProperty', 'org.prismus.scrambler.*']
+        expected << ['^.*$', '^test.*$', '^account.*Party.*sid$', '^va.ue$', '^.*Sid$', 'myProperty', '^org\\.prismus\\.scrambler\\..*$']
     }
 
 }

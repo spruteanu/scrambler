@@ -22,10 +22,8 @@ import org.prismus.scrambler.Value;
 import org.prismus.scrambler.ValuePredicate;
 import org.prismus.scrambler.ValuePredicates;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
@@ -331,7 +329,11 @@ public class ValueDefinition implements Cloneable {
     }
 
     public ValueDefinition scanDefinitions(String definitionMatcher) {
-        final List<String> matchedResources = matchValueDefinitions(definitionMatcher);
+        return scanDefinitions(definitionMatcher, Holder.resourceDefinitionsCache);
+    }
+
+    ValueDefinition scanDefinitions(String definitionMatcher, Set<String> foundResources) {
+        final List<String> matchedResources = matchValueDefinitions(definitionMatcher, foundResources);
         String jarFileName = null;
         JarFile jarFile = null;
         for (String matchedResource : matchedResources) {
@@ -358,7 +360,7 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
-    static List<String> matchValueDefinitions(String definitionMatcher) {
+    static List<String> matchValueDefinitions(String definitionMatcher, Set<String> definitionsCache) {
         String wildcardPattern = "*";
         if (definitionMatcher != null) {
             wildcardPattern += definitionMatcher;
@@ -368,7 +370,7 @@ public class ValueDefinition implements Cloneable {
         }
         final Pattern pattern = Pattern.compile(Util.replaceWildcards(wildcardPattern));
         final List<String> matchedResources = new ArrayList<String>();
-        for (String definitionResource : Holder.resourceDefinitionsCache) {
+        for (String definitionResource : definitionsCache) {
             if (pattern.matcher(definitionResource).matches()) {
                 matchedResources.add(definitionResource);
             }
@@ -380,16 +382,16 @@ public class ValueDefinition implements Cloneable {
         return fullEntryPath.substring(jarFile.length() + 1, fullEntryPath.length());
     }
 
-    static String getJarFileName(String file) throws URISyntaxException {
+    static String getJarFileName(String file) {
         final int index = file.indexOf(".jar");
         if (index > 0) {
             file = file.substring(0, index + 4);
         }
-        return new URI(file).getPath();
+        return file;
     }
 
     static String getJarFileName(URL url) throws URISyntaxException {
-        return getJarFileName(url.getFile());
+        return getJarFileName(url.toURI().getPath());
     }
 
     public Value lookupValue(ValuePredicate predicate) {
@@ -439,30 +441,34 @@ public class ValueDefinition implements Cloneable {
         return super.clone();
     }
 
+
     static class Holder {
         private static final Set<String> resourceDefinitionsCache = lookupDefinitionResources();
 
-        private static LinkedHashSet<String> lookupDefinitionResources() {
-            final LinkedHashSet<String> results = new LinkedHashSet<String>();
+        static Set<String> lookupDefinitionResources() {
+            final LinkedHashSet<String> results = new LinkedHashSet<String>(1000);
             try {
                 final Enumeration<URL> enumeration = Holder.class.getClassLoader().getResources(META_INF_ANCHOR);
                 while (enumeration.hasMoreElements()) {
-                    final File file = new File(getJarFileName(enumeration.nextElement()));
-                    final JarFile jarFile = new JarFile(file);
-                    try {
-                        final Enumeration<JarEntry> entries = jarFile.entries();
-                        while (entries.hasMoreElements()) {
-                            final String resourceName = entries.nextElement().getName();
-                            if (resourceName.endsWith("value-definition.groovy")) {
-                                results.add(file.getAbsolutePath() + "/" + resourceName);
-                            }
-                        }
-                    } finally {
-                        jarFile.close();
-                    }
+                    lookupDefinitionResources(getJarFileName(enumeration.nextElement()), results);
                 }
             } catch (Exception ignore) { }
             return results;
+        }
+
+        static void lookupDefinitionResources(String file, Set<String> results) throws IOException {
+            final JarFile jarFile = new JarFile(file);
+            try {
+                final Enumeration<JarEntry> entries = jarFile.entries();
+                while (entries.hasMoreElements()) {
+                    final String resourceName = entries.nextElement().getName();
+                    if (resourceName.endsWith("definition.groovy")) {
+                        results.add(file + "/" + resourceName);
+                    }
+                }
+            } finally {
+                jarFile.close();
+            }
         }
     }
 }

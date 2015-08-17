@@ -2,22 +2,47 @@ import org.prismus.scrambler.Value
 import org.prismus.scrambler.value.Constant
 import org.prismus.scrambler.value.ReferenceValue
 
+import java.util.zip.ZipFile
+
 /**
  * A script that defines person entity for generation
  *
  * @author Serge Pruteanu
  */
-//first name    //http://deron.meranda.us/data/census-dist-female-first.txt
+
+Set<String> femaleFirstNames
+Set<String> lastNames
+Set<String> allFirstNames = new LinkedHashSet<>(6000)
+
+ZipFile zip = null
+try {
+    zip = new ZipFile(new File(this.class.getResource('/census-names.zip').toURI()))
+//http://deron.meranda.us/data/census-dist-female-first.txt
+    final parseClosure = { String line ->
+        return line.split('\\s')[0].toLowerCase().capitalize()
+    }
+    InputStream inputStream = zip.getInputStream(zip.getEntry('census-dist-female-first.txt'))
+    femaleFirstNames = inputStream.readLines().collect(parseClosure) as Set<String>
+    try { inputStream?.close() } catch (Exception ignore) { }
+
 //http://deron.meranda.us/data/census-dist-male-first.txt
-final femaleFirstNames = 'http://deron.meranda.us/data/census-dist-female-first.txt'.toURL().readLines().collect { String line ->
-    return line.split('\\s')[0].toLowerCase().capitalize()
-} as Set<String>
+    inputStream = zip.getInputStream(zip.getEntry('census-dist-male-first.txt'))
+    final maleFirstNames = inputStream.readLines().collect(parseClosure) as Set<String>
+    try { inputStream?.close() } catch (Exception ignore) { }
 
-final maleFirstNames = 'http://deron.meranda.us/data/census-dist-male-first.txt'.toURL().readLines().collect { String line ->
-    return line.split('\\s')[0].toLowerCase().capitalize()
-} as Set<String>
+    allFirstNames += femaleFirstNames
+    allFirstNames += maleFirstNames
 
-final allFirstNames = femaleFirstNames + maleFirstNames
+//http://deron.meranda.us/data/census-dist-2500-last.txt
+    inputStream = zip.getInputStream(zip.getEntry('census-dist-2500-last.txt'))
+    lastNames = inputStream.readLines().collect(parseClosure) as Set<String>
+    try { inputStream?.close() } catch (Exception ignore) { }
+} finally {
+    try {
+        zip?.close()
+    } catch (Exception ignore) { }
+}
+
 
 final firstNamePattern = ~/(?i)(?:first\s*Name)|(?:first)/
 definition(firstNamePattern, allFirstNames.randomOf())
@@ -38,10 +63,6 @@ definition(~/(?i)middle\w*/, new ReferenceValue(firstNamePattern) {
     }
 })
 
-//last name     //http://deron.meranda.us/data/popular-last.txt
-final lastNames = 'http://deron.meranda.us/data/popular-last.txt'.toURL().readLines().collect { String line ->
-    return line.toLowerCase().capitalize()
-} as Set<String>
 definition(~/(?i)(?:last\s*Name)|(?:last)/, lastNames.randomOf())
 
 //gender

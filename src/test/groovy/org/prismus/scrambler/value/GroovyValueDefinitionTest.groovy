@@ -9,9 +9,18 @@ import spock.lang.Specification
 class GroovyValueDefinitionTest extends Specification {
 
     void 'test scan value definitions'() {
-        new ValueDefinition().scanDefinitions("test")
-        expect: // todo Serge: implement me
-        true
+        final foundResources = new LinkedHashSet<String>()
+        ValueDefinition.Holder.lookupDefinitionResources(getClass().getResource('/test-scan-value-definition.jar').toURI().path, foundResources)
+        expect:
+        1 == foundResources.size()
+        1 == ValueDefinition.matchValueDefinitions('test-scan*', foundResources).size()
+        1 == ValueDefinition.matchValueDefinitions(null, foundResources).size()
+        0 == ValueDefinition.matchValueDefinitions('resource', foundResources).size()
+
+        and:'check scan definitions'
+        final definition = new ValueDefinition()
+        definition.scanDefinitions('test-scan*', foundResources)
+        definition.getDefinitionMap().size() > 0
     }
 
     void 'test parse type text definitions'() {
