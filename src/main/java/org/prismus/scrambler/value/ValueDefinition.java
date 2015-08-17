@@ -22,12 +22,17 @@ import org.prismus.scrambler.Value;
 import org.prismus.scrambler.ValuePredicate;
 import org.prismus.scrambler.ValuePredicates;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
 
 /**
  * Value definitions dictionary/builder class. Responsible for building predicates/values key/value pairs
@@ -326,39 +331,65 @@ public class ValueDefinition implements Cloneable {
     }
 
     public ValueDefinition scanDefinitions(String definitionMatcher) {
-        // todo Serge: implement me
-        try {
-            final Enumeration<URL> enumeration = getClass().getClassLoader().getResources(META_INF_ANCHOR);
-            while (enumeration.hasMoreElements()) {
-                final String jarName = getParentFileName(enumeration.nextElement());
-                System.out.println(jarName);
-                final JarFile jarFile = new JarFile(jarName);
-                try {
-                    final Enumeration<JarEntry> entries = jarFile.entries();
-                    while (entries.hasMoreElements()) {
-                        JarEntry jarEntry = entries.nextElement();
-                        System.out.println("\t" + jarEntry.getName());
-                    }
-                } finally {
-                    jarFile.close();
+        final List<String> matchedResources = matchValueDefinitions(definitionMatcher);
+        String jarFileName = null;
+        JarFile jarFile = null;
+        for (String matchedResource : matchedResources) {
+            try {
+                final String matchedJar = getJarFileName(matchedResource);
+                if (!matchedJar.equals(jarFileName)) {
+                    jarFile = new JarFile(matchedJar);
+                    jarFileName = matchedJar;
                 }
-            }
-        } catch (IOException ignore) {
-            ignore.printStackTrace();
+                final ZipEntry jarFileEntry = jarFile.getEntry(getJarFileEntry(jarFileName, matchedResource));
+                if (jarFileEntry == null) {
+                    continue;
+                }
+                final InputStream inputStream = jarFile.getInputStream(jarFileEntry);
+                try {
+                    GroovyValueDefinition.Holder.instance.parseDefinition(this, inputStream);
+                } finally {
+                    try {
+                        inputStream.close();
+                    } catch (IOException ignore) { }
+                }
+            } catch (Exception ignore) { }
         }
         return this;
     }
 
-    String getParentFileName(URL url) {
-        String file = url.getFile();
-        file = file.substring(0, file.length() - META_INF_ANCHOR.length());
-        if (file.endsWith("/")) {
-            file = file.substring(0, file.length() -1);
-            if (file.endsWith("!")) {
-                file = file.substring(0, file.length() -1);
+    static List<String> matchValueDefinitions(String definitionMatcher) {
+        String wildcardPattern = "*";
+        if (definitionMatcher != null) {
+            wildcardPattern += definitionMatcher;
+        }
+        if (!wildcardPattern.endsWith(".groovy")) {
+            wildcardPattern += ".groovy";
+        }
+        final Pattern pattern = Pattern.compile(Util.replaceWildcards(wildcardPattern));
+        final List<String> matchedResources = new ArrayList<String>();
+        for (String definitionResource : Holder.resourceDefinitionsCache) {
+            if (pattern.matcher(definitionResource).matches()) {
+                matchedResources.add(definitionResource);
             }
         }
-        return file;
+        return matchedResources;
+    }
+
+    static String getJarFileEntry(String jarFile, String fullEntryPath)  {
+        return fullEntryPath.substring(jarFile.length() + 1, fullEntryPath.length());
+    }
+
+    static String getJarFileName(String file) throws URISyntaxException {
+        final int index = file.indexOf(".jar");
+        if (index > 0) {
+            file = file.substring(0, index + 4);
+        }
+        return new URI(file).getPath();
+    }
+
+    static String getJarFileName(URL url) throws URISyntaxException {
+        return getJarFileName(url.getFile());
     }
 
     public Value lookupValue(ValuePredicate predicate) {
@@ -408,4 +439,30 @@ public class ValueDefinition implements Cloneable {
         return super.clone();
     }
 
+    static class Holder {
+        private static final Set<String> resourceDefinitionsCache = lookupDefinitionResources();
+
+        private static LinkedHashSet<String> lookupDefinitionResources() {
+            final LinkedHashSet<String> results = new LinkedHashSet<String>();
+            try {
+                final Enumeration<URL> enumeration = Holder.class.getClassLoader().getResources(META_INF_ANCHOR);
+                while (enumeration.hasMoreElements()) {
+                    final File file = new File(getJarFileName(enumeration.nextElement()));
+                    final JarFile jarFile = new JarFile(file);
+                    try {
+                        final Enumeration<JarEntry> entries = jarFile.entries();
+                        while (entries.hasMoreElements()) {
+                            final String resourceName = entries.nextElement().getName();
+                            if (resourceName.endsWith("value-definition.groovy")) {
+                                results.add(file.getAbsolutePath() + "/" + resourceName);
+                            }
+                        }
+                    } finally {
+                        jarFile.close();
+                    }
+                }
+            } catch (Exception ignore) { }
+            return results;
+        }
+    }
 }

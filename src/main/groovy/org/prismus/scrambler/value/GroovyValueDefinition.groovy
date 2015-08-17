@@ -103,6 +103,12 @@ class GroovyValueDefinition {
     }
 
     @CompileStatic
+    protected ValueDefinition parseDefinition(ValueDefinition definition, InputStream resourceStream) {
+        doParseDefinitionText(definition, resourceStream.text)
+        return definition
+    }
+
+    @CompileStatic
     ValueDefinition parseDefinition(String resource, Map<String, Object> context = null) throws IOException {
         if (resource.endsWith('groovy')) {
             final URL url = this.getClass().getResource(resource)
