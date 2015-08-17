@@ -22,6 +22,7 @@ import org.prismus.scrambler.Value;
 import org.prismus.scrambler.ValuePredicate;
 import org.prismus.scrambler.ValuePredicates;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -328,11 +329,34 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
-    public ValueDefinition scanDefinitions(String definitionMatcher) {
-        return scanDefinitions(definitionMatcher, Holder.resourceDefinitionsCache);
+    public ValueDefinition scanDefinitions(List<String> definitions) {
+        for (String definition : definitions) {
+            final URL url = getClass().getResource(definition);
+            if (url == null) {
+                if (!new File(definition).exists()) {
+                    continue;
+                }
+            } // not found resources filtered, parse definition
+            GroovyValueDefinition.Holder.instance.parseDefinition(this, definition);
+        }
+        return this;
     }
 
-    ValueDefinition scanDefinitions(String definitionMatcher, Set<String> foundResources) {
+    public ValueDefinition scanDefinitions(String resource, String... resources) {
+        final ArrayList<String> resourceList = new ArrayList<String>();
+        resourceList.add(resource);
+        if (resources != null) {
+            resourceList.addAll(Arrays.asList(resources));
+        }
+        scanDefinitions(resourceList);
+        return this;
+    }
+
+    public ValueDefinition scanLibraryDefinitions(String definitionMatcher) {
+        return scanLibraryDefinitions(definitionMatcher, Holder.libraryDefinitionsCache);
+    }
+
+    ValueDefinition scanLibraryDefinitions(String definitionMatcher, Set<String> foundResources) {
         final List<String> matchedResources = matchValueDefinitions(definitionMatcher, foundResources);
         String jarFileName = null;
         JarFile jarFile = null;
@@ -402,6 +426,23 @@ public class ValueDefinition implements Cloneable {
         return result;
     }
 
+    public List<Value> lookupValues(Class type, Class... types) {
+        final ArrayList<Class> list = new ArrayList<Class>();
+        list.add(type);
+        if (types != null) {
+            list.addAll(Arrays.asList(types));
+        }
+        return lookupValues(list);
+    }
+
+    public List<Value> lookupValues(List<Class> types) {
+        final ArrayList<Value> results = new ArrayList<Value>(types.size());
+        for (Class type : types) {
+            results.add(lookupValue(null, type));
+        }
+        return results;
+    }
+
     public Value lookupValue(String property, Class type) {
         Value value = null;
         for (Map.Entry<ValuePredicate, Value> entry : definitionMap.entrySet()) {
@@ -416,6 +457,9 @@ public class ValueDefinition implements Cloneable {
             value = ((RandomTypeValue) value).next(type);
         } else if (value instanceof IncrementalTypeValue) {
             value = ((IncrementalTypeValue) value).next(type);
+        }
+        if (value == null && parent != null) {
+            parent.lookupValue(property, type);
         }
         return value;
     }
@@ -443,7 +487,7 @@ public class ValueDefinition implements Cloneable {
 
 
     static class Holder {
-        private static final Set<String> resourceDefinitionsCache = lookupDefinitionResources();
+        private static final Set<String> libraryDefinitionsCache = lookupDefinitionResources();
 
         static Set<String> lookupDefinitionResources() {
             final LinkedHashSet<String> results = new LinkedHashSet<String>(1000);

@@ -50,7 +50,7 @@ public class PropertyPredicate implements ValuePredicate {
 
     @Override
     public boolean apply(String property, Object value) {
-        return (pattern != null && pattern.matcher(property).matches()) || wildcardPattern.equalsIgnoreCase(property);
+        return (pattern != null && property != null && pattern.matcher(property).matches()) || wildcardPattern.equalsIgnoreCase(property);
     }
 
     public void setPattern(Pattern pattern) {

@@ -20,13 +20,15 @@ package org.prismus.scrambler;
 
 import org.prismus.scrambler.value.ArrayContainerValue;
 import org.prismus.scrambler.value.InstanceValue;
+import org.prismus.scrambler.value.ValueDefinition;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 /**
- * todo: add description
+ * Facade class helping to generate values for inquired method
  *
  * @author Serge Pruteanu
  */
@@ -58,11 +60,17 @@ public class MethodScrambler {
 
     public static Value<Object[]> inspectMethod(InstanceValue instanceValue, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
         lookupMethod((Class<?>) instanceValue.lookupType(), method, args);
+        instanceValue.scanDefinitions(instanceValue.lookupType().toString() + "#" + method);
         return new ArrayContainerValue(Arrays.asList(instanceValue.lookupValues(args)));
     }
 
     public static Value<Object[]> inspectMethod(Class clazzType, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
         return inspectMethod(InstanceScrambler.instanceOf(clazzType), method, args);
+    }
+
+    public static Value<Object[]> inspectMethod(List<String> definitions, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
+        final ValueDefinition valueDefinition = new ValueDefinition().scanDefinitions(definitions);
+        return new ArrayContainerValue(valueDefinition.lookupValues(Arrays.asList(args)));
     }
 
     @SuppressWarnings("unchecked")

@@ -168,9 +168,20 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return this;
     }
 
-    public InstanceValue<T> usingDefinitions(String resource) {
+    public InstanceValue<T> usingDefinitions(String resource, String... resources) {
         checkDefinitionCreated();
         GroovyValueDefinition.Holder.instance.parseDefinition(definition, resource);
+        if (resources != null) {
+            for (String defResource : resources) {
+                GroovyValueDefinition.Holder.instance.parseDefinition(definition, defResource);
+            }
+        }
+        return this;
+    }
+
+    public InstanceValue<T> scanDefinitions(String resource, String... resources) {
+        checkDefinitionCreated();
+        definition.scanDefinitions(resource, resources);
         return this;
     }
 
