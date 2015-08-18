@@ -32,7 +32,7 @@ import java.util.List;
  *
  * @author Serge Pruteanu
  */
-public class MethodScrambler {
+public class BoxTestScrambler {
 
     static Method lookupMethod(Class<?> clazzType, String methodName, Class... args) throws NoSuchMethodException {
         final Method method;
@@ -58,25 +58,25 @@ public class MethodScrambler {
         return method;
     }
 
-    public static Value<Object[]> inspectMethod(InstanceValue instanceValue, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
+    public static Value<Object[]> methodValues(InstanceValue instanceValue, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
         lookupMethod((Class<?>) instanceValue.lookupType(), method, args);
         instanceValue.scanDefinitions(instanceValue.lookupType().toString() + "#" + method);
         return new ArrayContainerValue(Arrays.asList(instanceValue.lookupValues(args)));
     }
 
-    public static Value<Object[]> inspectMethod(Class clazzType, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
-        return inspectMethod(InstanceScrambler.instanceOf(clazzType), method, args);
+    public static Value<Object[]> methodValues(Class clazzType, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
+        return methodValues(InstanceScrambler.instanceOf(clazzType), method, args);
     }
 
-    public static Value<Object[]> inspectMethod(List<String> definitions, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
+    public static Value<Object[]> methodValues(List<String> definitions, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
         final ValueDefinition valueDefinition = new ValueDefinition().scanDefinitions(definitions);
         return new ArrayContainerValue(valueDefinition.lookupValues(Arrays.asList(args)));
     }
 
     @SuppressWarnings("unchecked")
-    public static Value<Object[]> inspectMethod(Object instance, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
+    public static Value<Object[]> methodValues(Object instance, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
         final Class clazzType = instance.getClass();
-        return inspectMethod(InstanceScrambler.instanceOf(clazzType).usingValue(instance), method, args);
+        return methodValues(InstanceScrambler.instanceOf(clazzType).usingValue(instance), method, args);
     }
 
 }
