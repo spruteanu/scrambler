@@ -16,15 +16,15 @@
  * License along with this library.
  */
 
-package org.prismus.scrambler;
+package org.prismus.scrambler.test;
 
+import org.prismus.scrambler.InstanceScrambler;
+import org.prismus.scrambler.Value;
 import org.prismus.scrambler.value.ArrayContainerValue;
 import org.prismus.scrambler.value.InstanceValue;
 import org.prismus.scrambler.value.ValueDefinition;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -34,32 +34,8 @@ import java.util.List;
  */
 public class BoxTestScrambler {
 
-    static Method lookupMethod(Class<?> clazzType, String methodName, Class... args) throws NoSuchMethodException {
-        final Method method;
-        if (args == null) {
-            final LinkedHashSet<Method> methods = new LinkedHashSet<Method>();
-            for (final Method m : clazzType.getMethods()) {
-                if (m.getName().equalsIgnoreCase(methodName)) {
-                    methods.add(m);
-                }
-            }
-            final int size = methods.size();
-            if (size > 1) {
-                throw new IllegalArgumentException(String.format("More than one methods: %s found for class: %s", methodName, clazzType));
-            } else {
-                if (size == 0) {
-                    throw new NoSuchMethodException(String.format("Not found method: %s for class: %s", methodName, clazzType));
-                }
-            }
-            method = methods.iterator().next();
-        } else {
-            method = clazzType.getMethod(methodName, args);
-        }
-        return method;
-    }
-
     public static Value<Object[]> methodValues(InstanceValue instanceValue, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
-        lookupMethod((Class<?>) instanceValue.lookupType(), method, args);
+        BoxTestSuite.lookupMethod((Class<?>) instanceValue.lookupType(), method, args);
         instanceValue.scanDefinitions(instanceValue.lookupType().toString() + "#" + method);
         return new ArrayContainerValue(Arrays.asList(instanceValue.lookupValues(args)));
     }
