@@ -1,14 +1,12 @@
 package org.prismus.scrambler.test;
 
 import org.prismus.scrambler.Value;
-import org.prismus.scrambler.ValuePredicate;
-import org.prismus.scrambler.ValuePredicates;
 import org.prismus.scrambler.value.Constant;
 import org.prismus.scrambler.value.ValueDefinition;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * todo: add description
@@ -19,7 +17,8 @@ public class BoxTestSuite {
     private Value<Object> inspected;
     private Class inspectedType;
 
-    private final Map<Expectations, ExecutionContext> expectationsMap = new LinkedHashMap<Expectations, ExecutionContext>();
+    private final Map<Expectations, ExecutionContext> fieldExpectationMap = new LinkedHashMap<Expectations, ExecutionContext>();
+    private final List<MethodSuite> methodSuites = new ArrayList<MethodSuite>();
 
     public BoxTestSuite() {
     }
@@ -44,29 +43,42 @@ public class BoxTestSuite {
     }
 
     public BoxTestSuite of(String method, Class... args) throws NoSuchMethodException {
-        // todo: implement me
-        lookupMethod(inspectedType, method, args);
+        methodSuites.add(new MethodSuite(lookupMethod(inspectedType, method, args), args));
         return this;
     }
 
     public BoxTestSuite of(String method, Value... args) throws NoSuchMethodException {
-        // todo: implement me
-//        lookupMethod(inspectedType, method, args);
+        methodSuites.add(new MethodSuite(method, args));
         return this;
     }
 
     public BoxTestSuite of(String method, Object... args) throws NoSuchMethodException {
-        // todo: implement me
-//        lookupMethod(inspectedType, method, args);
+        methodSuites.add(new MethodSuite(method, args));
         return this;
     }
 
-    public BoxTestSuite expectField(String field, ValuePredicate valuePredicate) {
+    public BoxTestSuite expectField(String field, Expectations expectations) throws NoSuchFieldException {
+        fieldExpectationMap.put(expectations, new FieldContext(inspected, inspectedType.getDeclaredField(field)));
         return this;
     }
 
-    public BoxTestSuite expectField(String message, String field, ValuePredicate valuePredicate) {
+    public BoxTestSuite expectField(String message, String field, Expectations expectations) throws NoSuchFieldException {
+        fieldExpectationMap.put(expectations, new FieldContext(inspected, inspectedType.getDeclaredField(field), message));
         return this;
+    }
+
+    void verifyContext(ExecutionContext context, Map<Expectations, ExecutionContext> expectationMap) {
+        boolean passed = true;
+        for (Map.Entry<Expectations, ExecutionContext> entry : expectationMap.entrySet()) {
+            final Expectations expectations = entry.getKey();
+            final ExecutionContext executionContext = entry.getValue();
+            final boolean result = expectations.verify(executionContext);
+            if (context != executionContext) {
+                executionContext.setPassed(result);
+            }
+            passed &= result;
+        }
+        context.setPassed(passed);
     }
 
     public static BoxTestSuite of(Object inspected) {
@@ -98,41 +110,70 @@ public class BoxTestSuite {
     }
 
     public class MethodSuite {
-        protected Method method;
-        protected List<Value> args;
+        private final String methodName;
+        private Method method;
+        private final List<Object> args;
 
-        private final ExecutionContext context = new ExecutionContext(inspected);
-        protected final ValueDefinition valueDefinition = new ValueDefinition();
+        private final ValueDefinition valueDefinition = new ValueDefinition();
+        private ExecutionContext context;
+        private final Map<Expectations, ExecutionContext> expectationMap = new LinkedHashMap<Expectations, ExecutionContext>();
+
+        public MethodSuite(Method method, Object... args) {
+            this(method, args != null ? Arrays.asList(args) : null);
+        }
+
+        public MethodSuite(String method, Object... args) {
+            this(method, args != null ? Arrays.asList(args) : null);
+        }
+
+        public MethodSuite(Method method, List<Object> args) {
+            this.method = method;
+            this.methodName = method.getName();
+            this.args = args;
+            context = new ExecutionContext();
+        }
+
+        public MethodSuite(String method, List<Object> args) {
+            this.methodName = method;
+            this.args = args;
+            context = new ExecutionContext();
+        }
+
+        void setContext(ExecutionContext context) {
+            this.context = context;
+        }
 
         public MethodSuite scanDefinitions(String... definitions) {
+            if (definitions != null) {
+                valueDefinition.scanDefinitions(Arrays.asList(definitions));
+            } else {
+                valueDefinition.scanLibraryDefinitions(null);
+            }
             return this;
         }
 
-        public MethodSuite usingDefinitions(String definition, String... definitions) {
+        public MethodSuite usingDefinitions(String... definitions) {
+            valueDefinition.usingDefinitions(definitions);
             return this;
         }
 
         public MethodSuite thrown(Exception expected) {
+            expectationMap.put(new Expectations().typePredicate(expected.getClass()), context);
             return this;
         }
 
-        public MethodSuite thrown(ValuePredicate expected) {
+        public MethodSuite thrown(Expectations expectations) {
+            expectationMap.put(expectations, context);
             return this;
         }
 
-        public MethodSuite thrown(String message, Exception expected) {
+        public MethodSuite expectField(String field, Expectations expectations) throws NoSuchFieldException {
+            expectationMap.put(expectations, new FieldContext(inspected, inspectedType.getDeclaredField(field)));
             return this;
         }
 
-        public MethodSuite thrown(String message, ValuePredicate expected) {
-            return this;
-        }
-
-        public MethodSuite expectField(String field, ValuePredicate valuePredicate) {
-            return this;
-        }
-
-        public MethodSuite expectField(String message, String field, ValuePredicate valuePredicate) {
+        public MethodSuite expectReturn(Expectations expectations) {
+            expectationMap.put(expectations, context);
             return this;
         }
 
@@ -140,192 +181,60 @@ public class BoxTestSuite {
             return BoxTestSuite.this;
         }
 
-        public MethodSuite expectReturn(ValuePredicate valuePredicate) {
-            return this;
-        }
-
-        public MethodSuite expectReturn(String message, ValuePredicate valuePredicate) {
-            return this;
-        }
-
         ExecutionContext execute() {
-            return null;
-        }
-
-    }
-
-    class Expectations {
-        private final Map<ValuePredicate, String> predicateMessageMap;
-
-        public Expectations() {
-            this(new LinkedHashMap<ValuePredicate, String>());
-        }
-
-        public Expectations(Map<ValuePredicate, String> predicateMessageMap) {
-            this.predicateMessageMap = predicateMessageMap;
-        }
-
-        public boolean verify(ExecutionContext context) {
-            boolean result = true;
-            for (Map.Entry<ValuePredicate, String> entry : predicateMessageMap.entrySet()) {
-                final ValuePredicate predicate = entry.getKey();
-                Object value = context;
-                final boolean passed = predicate.apply(null, value);
-                // todo Serge: implement context verification
-                result &= passed;
-            }
-            context.setPassed(result);
-            return result;
-        }
-
-        public Expectations typePredicate(String message, Class clazzType) {
-            predicateMessageMap.put(ValuePredicates.typePredicate(clazzType), message);
-            return this;
-        }
-
-        public Expectations typePredicate(Class clazzType) {
-            return typePredicate(null, clazzType);
-        }
-
-        public Expectations typePredicate(String message, String clazzType) throws ClassNotFoundException {
-            predicateMessageMap.put(ValuePredicates.typePredicate(clazzType), message);
-            return this;
-        }
-
-        public Expectations typePredicate(String clazzType) throws ClassNotFoundException {
-            return typePredicate(null, clazzType);
-        }
-
-        public Expectations predicateOf(String message, String propertyWildcard, Class clazzType) {
-            predicateMessageMap.put(ValuePredicates.predicateOf(propertyWildcard, clazzType), message);
-            return this;
-        }
-
-        public Expectations predicateOf(String propertyWildcard, Class clazzType) {
-            return predicateOf(null, propertyWildcard, clazzType);
-        }
-
-        public Expectations predicateOf(String message, Pattern pattern, Class clazzType) {
-            predicateMessageMap.put(ValuePredicates.predicateOf(pattern, clazzType), message);
-            return this;
-        }
-
-        public Expectations predicateOf(Pattern pattern, Class clazzType) {
-            return predicateOf(null, pattern, clazzType);
-        }
-
-        public Expectations predicateOf(String message, Pattern pattern) {
-            predicateMessageMap.put(ValuePredicates.predicateOf(pattern), message);
-            return this;
-        }
-
-        public Expectations predicateOf(Pattern pattern) {
-            return predicateOf(null, pattern);
-        }
-
-        public Expectations predicateOf(String message, String propertyWildcard) {
-            predicateMessageMap.put(ValuePredicates.predicateOf(propertyWildcard), message);
-            return this;
-        }
-
-        public Expectations predicateOf(String propertyWildcard) {
-            return predicateOf(null, propertyWildcard);
-        }
-
-        public Expectations typeFilterOf(String message, Pattern pattern) {
-            predicateMessageMap.put(ValuePredicates.typeFilterOf(pattern), message);
-            return this;
-        }
-
-        public Expectations typeFilterOf(Pattern pattern) {
-            return typeFilterOf(null, pattern);
-        }
-
-        public Expectations isNull(String message) {
-            predicateMessageMap.put(ValuePredicates.isNull(), message);
-            return this;
-        }
-
-        public Expectations isNull() {
-            return isNull(null);
-        }
-
-        public Expectations isNotNull(String message) {
-            predicateMessageMap.put(ValuePredicates.isNotNull(), message);
-            return this;
-        }
-
-        public Expectations isNotNull() {
-            return isNotNull(null);
-        }
-
-        public Expectations equalsTo(String message, Object object) {
-            predicateMessageMap.put(ValuePredicates.equalsTo(object), message);
-            return this;
-        }
-
-        public Expectations equalsTo(Object object) {
-            return equalsTo(null, object);
-        }
-
-        public Expectations isSame(String message, Object object) {
-            predicateMessageMap.put(ValuePredicates.isSame(object), message);
-            return this;
-        }
-
-        public Expectations isSame(Object object) {
-            return isSame(null, object);
-        }
-
-        public Expectations any(String message, Set<Object> values) {
-            predicateMessageMap.put(ValuePredicates.any(values), message);
-            return this;
-        }
-
-        public Expectations any(Set<Object> values) {
-            return any(null, values);
-        }
-
-        public Expectations any(String message, Object... values) {
-            return any(message, new LinkedHashSet<Object>(Arrays.asList(values)));
-        }
-
-        public Expectations any(Object... values) {
-            return any(null, new LinkedHashSet<Object>(Arrays.asList(values)));
-        }
-
-        public Expectations any(String message, Collection<Object> values) {
-            return any(message, new LinkedHashSet<Object>(values));
-        }
-
-        public Expectations any(final Collection<Object> values) {
-            return any(null, new LinkedHashSet<Object>(values));
-        }
-
-        public <N extends Comparable> Expectations between(String message, final N min, final N max) {
-            predicateMessageMap.put(ValuePredicates.between(min, max), message);
-            return this;
-        }
-
-        public <N extends Comparable> Expectations between(final N min, final N max) {
-            return between(null, min, max);
-        }
-
-        public Expectations inTime(String message, final long expectedTime) {
-            predicateMessageMap.put(new ValuePredicate() {
-                @Override
-                public boolean apply(String property, Object value) {
-                    ExecutionContext executionContext = (ExecutionContext) value;
-                    final long inspected = (Long) executionContext.getInspected();
-                    return expectedTime <= inspected;
+            Method executedMethod = this.method;
+            Object[] methodArgs = lookupMethodArguments();
+            try {
+                if (executedMethod == null) {
+                    executedMethod = lookupMethod(methodArgs);
                 }
-            }, message);
-            return this;
+                final Object result = executedMethod.invoke(inspected, methodArgs);
+                context.setInspected(result);
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(String.format("Not found method: %s for instance: %s", methodName, inspected), e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(String.format("Failed execute method: %s for instance: %s with arguments: (%s)",
+                        executedMethod, inspected, methodArgs == null ? "Void": Arrays.asList(methodArgs)), e);
+            } catch (InvocationTargetException e) {
+                context.setInspected(e.getTargetException());
+            }
+
+            verifyContext(context, expectationMap);
+            return context;
         }
 
-        public Expectations inTime(long expectedTime) {
-            return inTime(null, expectedTime);
+
+        @SuppressWarnings("unchecked")
+        Method lookupMethod(Object[] methodArgs) throws NoSuchMethodException {
+            Class[] methodArgTypes = null;
+            if (methodArgs != null) {
+                methodArgTypes = new Class[methodArgs.length];
+                for (int i = 0; i < methodArgs.length; i++) {
+                    methodArgTypes[i] = methodArgs[i].getClass();
+                }
+            }
+            return inspectedType.getDeclaredMethod(methodName, methodArgTypes);
+        }
+
+        Object[] lookupMethodArguments() {
+            Object[] methodArgs = null;
+            if (args != null) {
+                methodArgs = new Object[args.size()];
+                for (int i = 0; i < methodArgs.length; i++) {
+                    Object arg = args.get(i);
+                    if (arg instanceof Class) {
+//            valueDefinition.build(); // todo Serge: ensure that definitions are built before lookup
+                        arg = valueDefinition.lookupValue(null, (Class)arg);
+                    }
+                    if (arg instanceof Value) {
+                        arg = ((Value) arg).next();
+                    }
+                    methodArgs[i] =  arg;
+                }
+            }
+            return methodArgs;
         }
 
     }
+
 }

@@ -6,9 +6,9 @@ package org.prismus.scrambler.test;
  * @author Serge Pruteanu
  */
 public class ExecutionContext {
-    private Object inspected;
+    protected Object inspected;
     private boolean passed;
-    private String message;
+    protected String message;
 
     public ExecutionContext() {
     }
