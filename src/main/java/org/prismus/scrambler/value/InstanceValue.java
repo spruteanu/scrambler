@@ -87,7 +87,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             build(null);
             final Object valueType = lookupType();
             if (valueType instanceof Class) {
-                definition.registerPredicateValue(ValuePredicates.typePredicate((Class) valueType), this);
+                definition.registerPredicateValue(ValuePredicates.isTypeOf((Class) valueType), this);
             }
         }
         final T instance = checkCreateInstance();
@@ -344,7 +344,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                 }
                 final List<Value> values = new ArrayList<Value>();
                 for (final Class argType : types) {
-                    Value val = typeValueMap.get(ValuePredicates.typePredicate(argType));
+                    Value val = typeValueMap.get(ValuePredicates.isTypeOf(argType));
                     if (val == null && supportedTypes.contains(argType)) {
                         val = ObjectScrambler.random(argType);
                     }

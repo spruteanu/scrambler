@@ -57,6 +57,6 @@ public class SimplePropertyPredicate implements ValuePredicate {
 
     @Override
     public String toString() {
-        return property;
+        return String.format("Matches property: '%s'", property);
     }
 }

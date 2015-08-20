@@ -25,7 +25,7 @@ public class FieldContext extends TestContext {
 
     @Override
     Object getInspected() {
-        final Object value = ((Value)inspected).get();
+        final Object value = ((Value) inspected).get();
         try {
             return field.get(value);
         } catch (IllegalAccessException e) {
@@ -33,4 +33,12 @@ public class FieldContext extends TestContext {
         }
     }
 
+    public Field getField() {
+        return field;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("'%s'; %s", super.toString(), field.getName());
+    }
 }

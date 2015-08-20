@@ -33,27 +33,27 @@ import java.util.regex.Pattern;
  */
 public class ValuePredicates {
 
-    public static TypePredicate typePredicate(Class clazzType) {
+    public static TypePredicate isTypeOf(Class clazzType) {
         return new TypePredicate(clazzType);
     }
 
-    public static TypePredicate typePredicate(String clazzType) throws ClassNotFoundException {
+    public static TypePredicate isTypeOf(String clazzType) throws ClassNotFoundException {
         return new TypePredicate(Class.forName(clazzType));
     }
 
-    public static TypePropertyPredicate predicateOf(String propertyWildcard, Class clazzType) {
+    public static TypePropertyPredicate matches(String propertyWildcard, Class clazzType) {
         return new TypePropertyPredicate(propertyWildcard, clazzType);
     }
 
-    public static TypePropertyPredicate predicateOf(Pattern pattern, Class clazzType) {
+    public static TypePropertyPredicate matches(Pattern pattern, Class clazzType) {
         return new TypePropertyPredicate(pattern, clazzType);
     }
 
-    public static PropertyPredicate predicateOf(Pattern pattern) {
+    public static PropertyPredicate matchProperty(Pattern pattern) {
         return new PropertyPredicate(pattern);
     }
 
-    public static ValuePredicate predicateOf(String propertyWildcard) {
+    public static ValuePredicate matchProperty(String propertyWildcard) {
         Util.checkEmpty(propertyWildcard);
         final String predicatePattern = Util.replaceWildcards(propertyWildcard);
         final ValuePredicate propertyPredicate;
@@ -65,7 +65,7 @@ public class ValuePredicates {
         return propertyPredicate;
     }
 
-    public static ValuePredicate typeFilterOf(Pattern pattern) {
+    public static ValuePredicate matchesTypes(Pattern pattern) {
         return new TypeFilterPredicate(pattern);
     }
 
@@ -74,6 +74,11 @@ public class ValuePredicates {
             @Override
             public boolean apply(String property, Object value) {
                 return null == value;
+            }
+
+            @Override
+            public String toString() {
+                return "Value is NULL";
             }
         };
     }
@@ -84,6 +89,11 @@ public class ValuePredicates {
             public boolean apply(String property, Object value) {
                 return null != value;
             }
+
+            @Override
+            public String toString() {
+                return "Value is NOT NULL";
+            }
         };
     }
 
@@ -92,6 +102,11 @@ public class ValuePredicates {
             @Override
             public boolean apply(String property, Object value) {
                 return object.equals(value);
+            }
+
+            @Override
+            public String toString() {
+                return String.format("Value equals to: '%s'", object);
             }
         };
     }
@@ -102,24 +117,34 @@ public class ValuePredicates {
             public boolean apply(String property, Object value) {
                 return object == value;
             }
+
+            @Override
+            public String toString() {
+                return String.format("Value is same to: '%s'", object);
+            }
         };
     }
 
-    public static ValuePredicate any(final Set<Object> values) {
+    public static ValuePredicate isAny(final Set<Object> values) {
         return new ValuePredicate() {
             @Override
             public boolean apply(String property, Object value) {
                 return values.contains(value);
             }
+
+            @Override
+            public String toString() {
+                return String.format("Value is any of: '%s'", values);
+            }
         };
     }
 
-    public static ValuePredicate any(final Object... values) {
-        return any(new LinkedHashSet<Object>(Arrays.asList(values)));
+    public static ValuePredicate isAny(final Object... values) {
+        return isAny(new LinkedHashSet<Object>(Arrays.asList(values)));
     }
 
-    public static ValuePredicate any(final Collection<Object> values) {
-        return any(new LinkedHashSet<Object>(values));
+    public static ValuePredicate isAny(final Collection<Object> values) {
+        return isAny(new LinkedHashSet<Object>(values));
     }
 
     public static <N extends Comparable> ValuePredicate between(final N min, final N max) {
@@ -129,6 +154,11 @@ public class ValuePredicates {
             public boolean apply(String property, Object value) {
                 Comparable comparedValue = (Comparable) value;
                 return (min == null || min.compareTo(comparedValue) >= 0) && (max == null || max.compareTo(comparedValue) >= 0);
+            }
+
+            @Override
+            public String toString() {
+                return String.format("Value is between: '%s and %s'", min, max);
             }
         };
     }

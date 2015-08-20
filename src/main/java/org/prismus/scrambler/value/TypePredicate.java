@@ -56,7 +56,7 @@ public class TypePredicate implements ValuePredicate {
 
     @Override
     public String toString() {
-        return type.toString();
+        return String.format("Is type of '%s'", type.toString());
     }
 
     @Override

@@ -6,7 +6,11 @@ import org.prismus.scrambler.value.ValueDefinition;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * todo: add description
@@ -17,7 +21,7 @@ public class BoxTestSuite {
     private Value<Object> inspected;
     private Class inspectedType;
 
-    private final List<Expectations> expectationsList = new ArrayList<Expectations>();
+    private final List<Callable<TestContext>> executionsList = new ArrayList<Callable<TestContext>>();
 
     public BoxTestSuite() {
     }
@@ -36,49 +40,49 @@ public class BoxTestSuite {
         return this;
     }
 
-    public TestContext verify() {
-        // todo: implement me
-        return null;
+    public TestResultContext verify() {
+        final TestResultContext resultContext = new TestResultContext();
+        resultContext.setInspected(inspected.next());
+        for (final Callable<TestContext> testContextCallable : executionsList) {
+            TestContext testContext;
+            try {
+                testContext = testContextCallable.call();
+            } catch (Exception e) {
+                testContext = new TestContext(e, String.format("Failed execute test context: '%s'", testContextCallable)).verified(false);
+            }
+            resultContext.add(testContext);
+        }
+        return resultContext;
     }
 
     public MethodSuite of(String method, Class... args) throws NoSuchMethodException {
         final MethodSuite methodSuite = new MethodSuite(lookupMethod(inspectedType, method, args), args);
-//        methodSuites.add(methodSuite);
-        return methodSuite;
-    }
-
-    public MethodSuite of(String method, Value... args) throws NoSuchMethodException {
-        final MethodSuite methodSuite = new MethodSuite(method, args);
-//        methodSuites.add(methodSuite);
+        executionsList.add(new MethodExecutionCallable(methodSuite));
         return methodSuite;
     }
 
     public MethodSuite of(String method, Object... args) throws NoSuchMethodException {
         final MethodSuite methodSuite = new MethodSuite(method, args);
-//        methodSuites.add(methodSuite);
+        executionsList.add(new MethodExecutionCallable(methodSuite));
         return methodSuite;
     }
 
-    public BoxTestSuite expectField(String field, Expectations expectations) throws NoSuchFieldException {
-        expectationsList.add(expectations.forContext(new FieldContext(inspected, inspectedType.getDeclaredField(field))));
+    public MethodSuite of(String method, Value... args) throws NoSuchMethodException {
+        final MethodSuite methodSuite = new MethodSuite(method, args);
+        executionsList.add(new MethodExecutionCallable(methodSuite));
+        return methodSuite;
+    }
+
+    public BoxTestSuite expectField(String field, Expect expect) throws NoSuchFieldException {
+        executionsList.add(new ExpectationsCallable(expect.forContext(
+                new FieldContext(inspected, inspectedType.getDeclaredField(field)))));
         return this;
     }
 
-    public BoxTestSuite expectField(String message, String field, Expectations expectations) throws NoSuchFieldException {
-        expectationsList.add(expectations.forContext(new FieldContext(inspected, inspectedType.getDeclaredField(field), message)));
+    public BoxTestSuite expectField(String message, String field, Expect expect) throws NoSuchFieldException {
+        executionsList.add(new ExpectationsCallable(expect.forContext(
+                new FieldContext(inspected, inspectedType.getDeclaredField(field), message))));
         return this;
-    }
-
-    void verifyContext(List<Expectations> expectationsList) {
-        boolean passed = true;
-        for (Expectations expectations : expectationsList) {
-            final TestContext testContext = expectations.verify();
-//            if (context != testContext) {
-//                testContext.setPassed(result);
-//            }
-            passed &= testContext.passed();
-        }
-//        context.setPassed(passed);
     }
 
     public static BoxTestSuite of(Object inspected) {
@@ -116,7 +120,7 @@ public class BoxTestSuite {
 
         private final ValueDefinition valueDefinition = new ValueDefinition();
         private MethodTestContext context;
-        private final List<Expectations> expectationsList = new ArrayList<Expectations>();
+        private final List<Expect> expectList = new ArrayList<Expect>();
 
         public MethodSuite(Method method, Object... args) {
             this(method, args != null ? Arrays.asList(args) : null);
@@ -139,10 +143,6 @@ public class BoxTestSuite {
             context = new MethodTestContext();
         }
 
-        void setContext(MethodTestContext context) {
-            this.context = context;
-        }
-
         public MethodSuite scanDefinitions(String... definitions) {
             if (definitions != null) {
                 valueDefinition.scanDefinitions(Arrays.asList(definitions));
@@ -158,30 +158,30 @@ public class BoxTestSuite {
         }
 
         public MethodSuite thrown(Exception expected) {
-            expectationsList.add(new Expectations().typePredicate(expected.getClass()).forContext(context));
+            expectList.add(new Expect().isTypeOf(expected.getClass()).forContext(context));
             return this;
         }
 
-        public MethodSuite thrown(Expectations expectations) {
-            expectationsList.add(expectations.forContext(context));
+        public MethodSuite thrown(Expect expect) {
+            expectList.add(expect.forContext(context));
             return this;
         }
 
-        public MethodSuite expectField(String field, Expectations expectations) throws NoSuchFieldException {
-            expectationsList.add(expectations.forContext(new FieldContext(inspected, inspectedType.getDeclaredField(field))));
+        public MethodSuite expectField(String field, Expect expect) throws NoSuchFieldException {
+            expectList.add(expect.forContext(new FieldContext(inspected, inspectedType.getDeclaredField(field))));
             return this;
         }
 
-        public MethodSuite expectReturn(Expectations expectations) {
-            expectationsList.add(expectations.forContext(context));
+        public MethodSuite expectReturn(Expect expect) {
+            expectList.add(expect.forContext(context));
             return this;
         }
 
-        public BoxTestSuite finished() {
+        public BoxTestSuite build() {
             return BoxTestSuite.this;
         }
 
-        TestContext execute() {
+        TestContext execute() throws CloneNotSupportedException {
             Method executedMethod = this.method;
             Object[] methodArgs = lookupMethodArguments();
             long start = 0;
@@ -190,7 +190,7 @@ public class BoxTestSuite {
                     executedMethod = lookupMethod(methodArgs);
                 }
 
-                context.withArguments(methodArgs);
+                context.forMethod(executedMethod.getName()).withArguments(methodArgs);
                 start = System.currentTimeMillis();
 
                 final Object result = executedMethod.invoke(inspected, methodArgs);
@@ -199,13 +199,27 @@ public class BoxTestSuite {
                 throw new RuntimeException(String.format("Not found method: %s; arguments: %s; for instance: %s", methodName, Arrays.asList(methodArgs), inspected), e);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(String.format("Failed execute method: %s for instance: %s with arguments: (%s)",
-                        executedMethod, inspected, methodArgs == null ? "Void": Arrays.asList(methodArgs)), e);
+                        executedMethod, inspected, methodArgs == null ? "" : Arrays.asList(methodArgs)), e);
             } catch (InvocationTargetException e) {
                 context.reportResults(System.currentTimeMillis() - start, e.getTargetException());
             }
+            return verifyExpectations((MethodTestContext) context.clone());
+        }
 
-            verifyContext(expectationsList);
-            return context;
+        TestContext verifyExpectations(MethodTestContext context) {
+            if (expectList.size() == 0) {
+                return context;
+            }
+            final TestResultContext resultContext = new TestResultContext().add(context);
+            boolean passed = true;
+            for (Expect expect : expectList) {
+                final TestContext testContext = expect.verify();
+                resultContext.add(testContext);
+                passed &= testContext.passed();
+            }
+            context.verified(passed);
+            resultContext.verified(passed);
+            return resultContext;
         }
 
         @SuppressWarnings("unchecked")
@@ -227,18 +241,57 @@ public class BoxTestSuite {
                 for (int i = 0; i < methodArgs.length; i++) {
                     Object arg = args.get(i);
                     if (arg instanceof Class) {
-//            valueDefinition.build(); // todo Serge: ensure that definitions are built before lookup
-                        arg = valueDefinition.lookupValue(null, (Class)arg);
+                        arg = valueDefinition.lookupValue(null, (Class) arg);
                     }
                     if (arg instanceof Value) {
                         arg = ((Value) arg).next();
                     }
-                    methodArgs[i] =  arg;
+                    methodArgs[i] = arg;
                 }
             }
             return methodArgs;
         }
 
+        @Override
+        public String toString() {
+            return String.format("Method: %s(%s)", methodName, args != null ? args.toString() : "");
+        }
+    }
+
+    private static class ExpectationsCallable implements Callable<TestContext> {
+        private final Expect expect;
+
+        private ExpectationsCallable(Expect expect) {
+            this.expect = expect;
+        }
+
+        @Override
+        public TestContext call() throws Exception {
+            return expect.verify();
+        }
+
+        @Override
+        public String toString() {
+            return expect.toString();
+        }
+    }
+
+    private static class MethodExecutionCallable implements Callable<TestContext> {
+        private final MethodSuite methodSuite;
+
+        private MethodExecutionCallable(MethodSuite methodSuite) {
+            this.methodSuite = methodSuite;
+        }
+
+        @Override
+        public TestContext call() throws Exception {
+            return methodSuite.execute();
+        }
+
+        @Override
+        public String toString() {
+            return methodSuite.toString();
+        }
     }
 
 }

@@ -5,10 +5,10 @@ package org.prismus.scrambler.test;
  *
  * @author Serge Pruteanu
  */
-public class TestContext {
+public class TestContext implements Cloneable {
     protected Object inspected;
     private boolean passed;
-    protected String message;
+    protected String message = "";
 
     public TestContext() {
     }
@@ -38,12 +38,22 @@ public class TestContext {
         this.inspected = inspected;
     }
 
-    void setPassed(boolean passed) {
-        this.passed = passed;
-    }
-
     void setMessage(String message) {
         this.message = message;
     }
 
+    public TestContext verified(boolean passed) {
+        this.passed = passed;
+        return this;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+
+    @Override
+    public String toString() {
+        return message;
+    }
 }

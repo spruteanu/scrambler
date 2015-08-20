@@ -88,7 +88,7 @@ public class ValueDefinition implements Cloneable {
         Util.checkNullValue(value);
         final Object value1 = value.get();
         Util.checkNullValue(value1);
-        registerPredicateValue(ValuePredicates.typePredicate(value1.getClass()), value);
+        registerPredicateValue(ValuePredicates.isTypeOf(value1.getClass()), value);
         return this;
     }
 
@@ -138,7 +138,7 @@ public class ValueDefinition implements Cloneable {
 
     public ValueDefinition constant(Object value) {
         Util.checkNullValue(value);
-        registerPredicateValue(ValuePredicates.typePredicate(value.getClass()), new Constant(value));
+        registerPredicateValue(ValuePredicates.isTypeOf(value.getClass()), new Constant(value));
         return this;
     }
 
@@ -166,7 +166,7 @@ public class ValueDefinition implements Cloneable {
     }
 
     public ValueDefinition definition(String propertyName, Object value) {
-        registerPredicateValue(ValuePredicates.predicateOf(propertyName), new Constant(value));
+        registerPredicateValue(ValuePredicates.matchProperty(propertyName), new Constant(value));
         return this;
     }
 
@@ -177,7 +177,7 @@ public class ValueDefinition implements Cloneable {
 
     public ValueDefinition definition(Class type, Object value) {
         Util.checkNullValue(type);
-        registerPredicateValue(ValuePredicates.typePredicate(type), new Constant(value));
+        registerPredicateValue(ValuePredicates.isTypeOf(type), new Constant(value));
         return this;
     }
 
@@ -186,7 +186,7 @@ public class ValueDefinition implements Cloneable {
         if (value instanceof ReferenceValue) {
             ((ReferenceValue) value).setDefinition(this);
         }
-        registerPredicateValue(ValuePredicates.predicateOf(propertyName), value);
+        registerPredicateValue(ValuePredicates.matchProperty(propertyName), value);
         return this;
     }
 
@@ -202,7 +202,7 @@ public class ValueDefinition implements Cloneable {
     public ValueDefinition definition(Class type, Value value) {
         Util.checkNullValue(type);
         Util.checkNullValue(value);
-        registerPredicateValue(ValuePredicates.typePredicate(type), value);
+        registerPredicateValue(ValuePredicates.isTypeOf(type), value);
         return this;
     }
 
@@ -221,43 +221,43 @@ public class ValueDefinition implements Cloneable {
 
     public ValueDefinition reference(Class type) {
         Util.checkNullValue(type);
-        final ValuePredicate predicate = ValuePredicates.typePredicate(type);
+        final ValuePredicate predicate = ValuePredicates.isTypeOf(type);
         registerPredicateValue(predicate, new ReferenceValue(this, predicate));
         return this;
     }
 
     public ValueDefinition reference(Class type, String parentPredicate) {
-        reference(type, ValuePredicates.predicateOf(parentPredicate));
+        reference(type, ValuePredicates.matchProperty(parentPredicate));
         return this;
     }
 
     public ValueDefinition reference(Class type, Class parentPredicate) {
         Util.checkNullValue(parentPredicate);
-        reference(type, ValuePredicates.typePredicate(parentPredicate));
+        reference(type, ValuePredicates.isTypeOf(parentPredicate));
         return this;
     }
 
     public ValueDefinition reference(Class type, ValuePredicate parentPredicate) {
         Util.checkNullValue(type);
-        final ValuePredicate predicate = ValuePredicates.typePredicate(type);
+        final ValuePredicate predicate = ValuePredicates.isTypeOf(type);
         registerPredicateValue(predicate, new ReferenceValue(this, parentPredicate));
         return this;
     }
 
     public ValueDefinition reference(String propertyName, Class parentPredicate) {
         Util.checkNullValue(parentPredicate);
-        reference(ValuePredicates.predicateOf(propertyName), ValuePredicates.typePredicate(parentPredicate));
+        reference(ValuePredicates.matchProperty(propertyName), ValuePredicates.isTypeOf(parentPredicate));
         return this;
     }
 
     public ValueDefinition reference(Pattern pattern, Class parentPredicate) {
         Util.checkNullValue(parentPredicate);
-        reference(PropertyPredicate.of(pattern), ValuePredicates.typePredicate(parentPredicate));
+        reference(PropertyPredicate.of(pattern), ValuePredicates.isTypeOf(parentPredicate));
         return this;
     }
 
     public ValueDefinition reference(String propertyName) {
-        final ValuePredicate predicate = ValuePredicates.predicateOf(propertyName);
+        final ValuePredicate predicate = ValuePredicates.matchProperty(propertyName);
         registerPredicateValue(predicate, new ReferenceValue(this, predicate));
         return this;
     }
@@ -325,6 +325,7 @@ public class ValueDefinition implements Cloneable {
             for (String definition : definitions) {
                 GroovyValueDefinition.Holder.instance.parseDefinition(this, definition);
             }
+            build();
         }
         return this;
     }
@@ -338,6 +339,9 @@ public class ValueDefinition implements Cloneable {
                 }
             } // not found resources filtered, parse definition
             GroovyValueDefinition.Holder.instance.parseDefinition(this, definition);
+        }
+        if (definitions.size() > 0) {
+            build();
         }
         return this;
     }
@@ -380,6 +384,9 @@ public class ValueDefinition implements Cloneable {
                     } catch (IOException ignore) { }
                 }
             } catch (Exception ignore) { }
+        }
+        if (matchedResources.size() > 0) {
+            build();
         }
         return this;
     }

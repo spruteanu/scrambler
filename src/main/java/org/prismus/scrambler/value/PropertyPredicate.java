@@ -79,7 +79,7 @@ public class PropertyPredicate implements ValuePredicate {
 
     @Override
     public String toString() {
-        return wildcardPattern;
+        return String.format("Matches property(es): '%s'", wildcardPattern);
     }
 
     @Override
