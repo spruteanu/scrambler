@@ -17,7 +17,7 @@ public class BoxTestSuite {
     private Value<Object> inspected;
     private Class inspectedType;
 
-    private final Map<Expectations, ExecutionContext> fieldExpectationMap = new LinkedHashMap<Expectations, ExecutionContext>();
+    private final Map<Expectations, ExecutionContext> expectationMap = new LinkedHashMap<Expectations, ExecutionContext>();
     private final List<MethodSuite> methodSuites = new ArrayList<MethodSuite>();
 
     public BoxTestSuite() {
@@ -58,12 +58,12 @@ public class BoxTestSuite {
     }
 
     public BoxTestSuite expectField(String field, Expectations expectations) throws NoSuchFieldException {
-        fieldExpectationMap.put(expectations, new FieldContext(inspected, inspectedType.getDeclaredField(field)));
+        expectationMap.put(expectations, new FieldContext(inspected, inspectedType.getDeclaredField(field)));
         return this;
     }
 
     public BoxTestSuite expectField(String message, String field, Expectations expectations) throws NoSuchFieldException {
-        fieldExpectationMap.put(expectations, new FieldContext(inspected, inspectedType.getDeclaredField(field), message));
+        expectationMap.put(expectations, new FieldContext(inspected, inspectedType.getDeclaredField(field), message));
         return this;
     }
 
@@ -115,7 +115,7 @@ public class BoxTestSuite {
         private final List<Object> args;
 
         private final ValueDefinition valueDefinition = new ValueDefinition();
-        private ExecutionContext context;
+        private MethodExecutionContext context;
         private final Map<Expectations, ExecutionContext> expectationMap = new LinkedHashMap<Expectations, ExecutionContext>();
 
         public MethodSuite(Method method, Object... args) {
@@ -130,16 +130,16 @@ public class BoxTestSuite {
             this.method = method;
             this.methodName = method.getName();
             this.args = args;
-            context = new ExecutionContext();
+            context = new MethodExecutionContext();
         }
 
         public MethodSuite(String method, List<Object> args) {
             this.methodName = method;
             this.args = args;
-            context = new ExecutionContext();
+            context = new MethodExecutionContext();
         }
 
-        void setContext(ExecutionContext context) {
+        void setContext(MethodExecutionContext context) {
             this.context = context;
         }
 
@@ -184,19 +184,24 @@ public class BoxTestSuite {
         ExecutionContext execute() {
             Method executedMethod = this.method;
             Object[] methodArgs = lookupMethodArguments();
+            long start = 0;
             try {
                 if (executedMethod == null) {
                     executedMethod = lookupMethod(methodArgs);
                 }
+
+                context.withArguments(methodArgs);
+                start = System.currentTimeMillis();
+
                 final Object result = executedMethod.invoke(inspected, methodArgs);
-                context.setInspected(result);
+                context.reportResults(System.currentTimeMillis() - start, result);
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException(String.format("Not found method: %s for instance: %s", methodName, inspected), e);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(String.format("Failed execute method: %s for instance: %s with arguments: (%s)",
                         executedMethod, inspected, methodArgs == null ? "Void": Arrays.asList(methodArgs)), e);
             } catch (InvocationTargetException e) {
-                context.setInspected(e.getTargetException());
+                context.reportResults(System.currentTimeMillis() - start, e.getTargetException());
             }
 
             verifyContext(context, expectationMap);
