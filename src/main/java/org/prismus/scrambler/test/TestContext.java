@@ -5,24 +5,24 @@ package org.prismus.scrambler.test;
  *
  * @author Serge Pruteanu
  */
-public class ExecutionContext {
+public class TestContext {
     protected Object inspected;
     private boolean passed;
     protected String message;
 
-    public ExecutionContext() {
+    public TestContext() {
     }
 
-    public ExecutionContext(Object inspected) {
+    public TestContext(Object inspected) {
         this.inspected = inspected;
     }
 
-    public ExecutionContext(Object inspected, String message) {
+    public TestContext(Object inspected, String message) {
         this.inspected = inspected;
         this.message = message;
     }
 
-    public Object getInspected() {
+    Object getInspected() {
         return inspected;
     }
 

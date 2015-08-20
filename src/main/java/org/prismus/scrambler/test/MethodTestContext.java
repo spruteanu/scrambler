@@ -5,23 +5,23 @@ package org.prismus.scrambler.test;
  *
  * @author Serge Pruteanu
  */
-public class MethodExecutionContext extends ExecutionContext {
+public class MethodTestContext extends TestContext {
     private Object[] args;
     private long executionTime;
 
-    public MethodExecutionContext() {
+    MethodTestContext() {
     }
 
-    public MethodExecutionContext(Object[] args) {
+    public MethodTestContext(Object[] args) {
         this.args = args;
     }
 
-    public MethodExecutionContext(Object inspected, Object[] args) {
+    public MethodTestContext(Object inspected, Object[] args) {
         super(inspected);
         this.args = args;
     }
 
-    public MethodExecutionContext(Object inspected, String message, Object[] args) {
+    public MethodTestContext(Object inspected, String message, Object[] args) {
         super(inspected, message);
         this.args = args;
     }
@@ -30,7 +30,7 @@ public class MethodExecutionContext extends ExecutionContext {
         return args;
     }
 
-    public MethodExecutionContext withArguments(Object[] args) {
+    public MethodTestContext withArguments(Object[] args) {
         this.args = args;
         return this;
     }
@@ -39,7 +39,7 @@ public class MethodExecutionContext extends ExecutionContext {
         return executionTime;
     }
 
-    MethodExecutionContext reportResults(long executionTime, Object inspected) {
+    MethodTestContext reportResults(long executionTime, Object inspected) {
         this.executionTime = executionTime;
         setInspected(inspected);
         return this;

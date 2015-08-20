@@ -9,7 +9,7 @@ import java.lang.reflect.Field;
  *
  * @author Serge Pruteanu
  */
-public class FieldContext extends ExecutionContext {
+public class FieldContext extends TestContext {
     private final Field field;
 
     FieldContext(Object inspected, Field field) {
@@ -24,7 +24,7 @@ public class FieldContext extends ExecutionContext {
     }
 
     @Override
-    public Object getInspected() {
+    Object getInspected() {
         final Object value = ((Value)inspected).get();
         try {
             return field.get(value);
