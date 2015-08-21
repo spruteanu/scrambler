@@ -40,6 +40,9 @@ public abstract class Combinations<T> extends Constant<T> {
     protected int count;
 
     Combinations(int count) {
+        if (count < 2) {
+            throw new IllegalArgumentException(String.format("Combinations can be generated for count more than 1; provided count: %d", count));
+        }
         this.count = count;
         permutations = new int[count];
         inverse = new int[count];
@@ -104,12 +107,12 @@ public abstract class Combinations<T> extends Constant<T> {
         return new ValueArrayCombinations<T>(original, valueType);
     }
 
-    public static <T> Value<List<T>> of(List<T> original, int count) {
-        return new ListCombinations<T>(original, count);
+    public static <T> Value<List<T>> of(List<T> original) {
+        return new ListCombinations<T>(original, original.size());
     }
 
-    public static <T> Value<List<T>> valuesOf(List<Value<T>> original, int count) {
-        return new ValueListCombinations<T>(original, count);
+    public static <T> Value<List<T>> valuesOf(List<Value<T>> original) {
+        return new ValueListCombinations<T>(original, original.size());
     }
 
     public static Value<boolean[]> of(boolean... original) {
@@ -196,6 +199,11 @@ public abstract class Combinations<T> extends Constant<T> {
         }
 
         void populate(List<T> result, int i, int permIdx) {
+            if (result.size() == 0) {
+                for (int j = 0; j < count; j++) {
+                    result.add(null);
+                }
+            }
             result.set(i, original.get(permIdx));
         }
     }
@@ -215,6 +223,11 @@ public abstract class Combinations<T> extends Constant<T> {
         }
 
         void populate(List<T> result, int i, int permIdx) {
+            if (result.size() == 0) {
+                for (int j = 0; j < count; j++) {
+                    result.add(null);
+                }
+            }
             result.set(i, original.get(permIdx).next());
         }
     }

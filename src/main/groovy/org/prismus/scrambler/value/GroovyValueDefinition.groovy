@@ -301,12 +301,12 @@ class GroovyValueDefinition {
             return CollectionScrambler.randomOf(self)
         }
 
-        static <T> Value<List<T>> combinationsOf(List<T> self, int count) {
-            return CollectionScrambler.combinationsOf(self, count)
+        static <T> Value<List<T>> combinationsOf(List<T> self) {
+            return CollectionScrambler.combinationsOf(self)
         }
 
-        static <T> Value<List<T>> combinationValues(List<Value<T>> self, int count) {
-            return CollectionScrambler.combinationValues(self, count)
+        static <T> Value<List<T>> combinationValues(List<Value<T>> self) {
+            return CollectionScrambler.combinationValues(self)
         }
 
         static <T> Value<T> randomOf(Collection<T> self) {

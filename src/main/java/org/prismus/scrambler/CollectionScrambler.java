@@ -56,12 +56,12 @@ public class CollectionScrambler {
         return new CollectionValue<V, T>(clazzType, value, null);
     }
 
-    public static <T> Value<List<T>> combinationsOf(List<T> values, int count) {
-        return Combinations.of(values, count);
+    public static <T> Value<List<T>> combinationsOf(List<T> values) {
+        return Combinations.of(values);
     }
 
-    public static <T> Value<List<T>> combinationValues(List<Value<T>> values, int count) {
-        return Combinations.valuesOf(values, count);
+    public static <T> Value<List<T>> combinationValues(List<Value<T>> values) {
+        return Combinations.valuesOf(values);
     }
 
 }
