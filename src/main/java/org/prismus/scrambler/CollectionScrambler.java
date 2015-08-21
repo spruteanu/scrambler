@@ -19,6 +19,7 @@
 package org.prismus.scrambler;
 
 import org.prismus.scrambler.value.CollectionValue;
+import org.prismus.scrambler.value.Combinations;
 import org.prismus.scrambler.value.ListRandomElement;
 
 import java.util.ArrayList;
@@ -53,6 +54,14 @@ public class CollectionScrambler {
 
     public static <V, T extends Collection<V>> CollectionValue<V, T> collectionOf(Class<T> clazzType, Value<V> value) {
         return new CollectionValue<V, T>(clazzType, value, null);
+    }
+
+    public static <T> Value<List<T>> combinationsOf(List<T> values, int count) {
+        return Combinations.of(values, count);
+    }
+
+    public static <T> Value<List<T>> combinationValues(List<Value<T>> values, int count) {
+        return Combinations.valuesOf(values, count);
     }
 
 }

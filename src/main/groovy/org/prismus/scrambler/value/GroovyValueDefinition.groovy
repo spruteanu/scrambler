@@ -276,15 +276,7 @@ class GroovyValueDefinition {
             return InstanceScrambler.instanceOf(self, propertyValueMap, definitionCallable)
         }
 
-        static <T> InstanceValue<T> definition(Class<T> self, String propertyName, Closure defCl) {
-            return InstanceScrambler.instanceOf(self, new GroovyDefinitionCallable(defCl))
-        }
-
         static <T> InstanceValue<T> definition(Class<T> self, Collection constructorArgs, Closure defCl) {
-            return InstanceScrambler.instanceOf(self, constructorArgs, new GroovyDefinitionCallable(defCl))
-        }
-
-        static <T> InstanceValue<T> definition(Class<T> self, String propertyName, Collection constructorArgs, Closure defCl) {
             return InstanceScrambler.instanceOf(self, constructorArgs, new GroovyDefinitionCallable(defCl))
         }
 
@@ -301,16 +293,24 @@ class GroovyValueDefinition {
     @CompileStatic
     static class CollectionCategory {
 
-        static <V, T extends Collection<V>> CollectionValue<V, T> of(T collection, Value<V> value, Integer count = null) {
-            return CollectionScrambler.of(collection, value, count)
+        static <V, T extends Collection<V>> CollectionValue<V, T> of(T self, Value<V> value, Integer count = null) {
+            return CollectionScrambler.of(self, value, count)
         }
 
-        static <T> Value<T> randomOf(List<T> values) {
-            return CollectionScrambler.randomOf(values)
+        static <T> Value<T> randomOf(List<T> self) {
+            return CollectionScrambler.randomOf(self)
         }
 
-        static <T> Value<T> randomOf(Collection<T> collection) {
-            return CollectionScrambler.randomOf(collection)
+        static <T> Value<List<T>> combinationsOf(List<T> self, int count) {
+            return CollectionScrambler.combinationsOf(self, count)
+        }
+
+        static <T> Value<List<T>> combinationValues(List<Value<T>> self, int count) {
+            return CollectionScrambler.combinationValues(self, count)
+        }
+
+        static <T> Value<T> randomOf(Collection<T> self) {
+            return CollectionScrambler.randomOf(self)
         }
 
         static <K> MapValue<K> mapOf(Set<K> self, Map<ValuePredicate, Value> definitionMap) {
@@ -399,6 +399,20 @@ class GroovyValueDefinition {
         @CompileStatic
         static <T> Value<T> randomOf(T[] self) {
             return ArrayScrambler.randomOf(self)
+        }
+
+        @CompileStatic
+        static <T> Value<T[]> combinationsOf(T[] self) {
+            return ArrayScrambler.combinationsOf(self)
+        }
+
+        @CompileStatic
+        static <T> Value<T[]> combinationValues(Value<T>[] self, Class<T> valueType) {
+            return ArrayScrambler.combinationsOf(valueType, self)
+        }
+
+        static <T> Value<T> combinationsOf(def self) {
+            return ArrayScrambler.combinationsOf(self)
         }
 
         static <T> Value<T> randomOf(def self) {

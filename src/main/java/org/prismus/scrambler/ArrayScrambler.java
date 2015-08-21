@@ -194,4 +194,39 @@ public class ArrayScrambler {
         };
     }
 
+    public static <T> Value<T[]> combinationsOf(T... values) {
+        return Combinations.of(values);
+    }
+
+    public static <T> Value<T[]> combinationsOf(Class<T> valueType, Value<T>... values) {
+        return Combinations.valuesOf(valueType, values);
+    }
+
+    public static Value<boolean[]> combinationsOf(final boolean... values) {
+        return Combinations.of(values);
+    }
+
+    public static Value<byte[]> combinationsOf(final byte... values) {
+        return Combinations.of(values);
+    }
+
+    public static Value<short[]> combinationsOf(final short... values) {
+        return Combinations.of(values);
+    }
+
+    public static Value<int[]> combinationsOf(final int... values) {
+        return Combinations.of(values);
+    }
+
+    public static Value<long[]> combinationsOf(final long... values) {
+        return Combinations.of(values);
+    }
+
+    public static Value<float[]> combinationsOf(final float... values) {
+        return Combinations.of(values);
+    }
+
+    public static Value<double[]> combinationsOf(final double... values) {
+        return Combinations.of(values);
+    }
 }
