@@ -18,112 +18,143 @@
 
 package org.prismus.scrambler.value;
 
+import org.prismus.scrambler.Value;
+
 import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * todo: add description, implement me
- * Combinations are generated using JohnsonTrotter, adopted algorithm from
+ * Combinations are generated using Johnson Trotter algorithm, adopted algorithm from
+ * <a href="http://introcs.cs.princeton.edu/java/23recursion/JohnsonTrotter.java.html">Princeton Educational cources</a>
  *
  * @author Serge Pruteanu
- * @see <a href="http://introcs.cs.princeton.edu/java/23recursion/JohnsonTrotter.java.html">Princeton Educational cources</a>
  */
-public class CombinationValue<T> extends Constant<T[]> {
-    private T[] original;
-
-    private final int[] permutations;
-    private final int[] inverse;
-    private final int[] direction;
+public abstract class CombinationValue<T> extends Constant<T> {
+    private int[] permutations;
+    private int[] inverse;
+    private int[] directions;
+    private int[] iSwap;
     private int index;
+    protected int count;
 
-    private Integer count;
-    private Class<T> valueType;
-
-    public CombinationValue(T[] value) {
-        super(value);
-        original = value;
-
-        final int count = value.length;
+    CombinationValue(int count) {
+        this.count = count;
         permutations = new int[count];
         inverse = new int[count];
-        direction = new int[count];
-
-        for (int i = 0; i < count; i++) {
-            direction[i] = -1;
-            permutations[i] = i;
-            inverse[i] = i;
-        }
+        directions = new int[count];
+        iSwap = new int[count];
+        initialize();
     }
 
-    void nextCombination() {
-        if (index >= permutations.length) {
-            displayCombination(permutations); // combination is ready
-            return;
+    void initialize() {
+        for (int i = 0; i < count; i++) {
+            directions[i] = -1;
+            permutations[i] = i;
+            inverse[i] = i;
+            iSwap[i] = i;
         }
+        index = count;
+    }
 
-        combination(index + 1, permutations, inverse, direction);
-        for (int i = 0; i <= index - 1; i++) {
-            int z = permutations[inverse[index] + direction[index]];
-            permutations[inverse[index]] = z;
-            permutations[inverse[index] + direction[index]] = index;
-            inverse[z] = inverse[index];
-            inverse[index] = inverse[index] + direction[index];
-
-            combination(index + 1, permutations, inverse, direction);
-        }
-        direction[index] = -direction[index];
+    int[] nextCombination() {
+        do {
+            if (index == count) {
+                index--;
+                return permutations;
+            } else if (iSwap[index] > 0) {
+                int swapPermutation = permutations[inverse[index] + directions[index]];
+                permutations[inverse[index]] = swapPermutation;
+                permutations[inverse[index] + directions[index]] = index;
+                inverse[swapPermutation] = inverse[index];
+                inverse[index] = inverse[index] + directions[index];
+                iSwap[index]--;
+                index = count;
+            } else {
+                iSwap[index] = index;
+                directions[index] = -directions[index];
+                index--;
+            }
+        } while (index > 0);
+        initialize();
+        return permutations;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    protected T[] doNext() {
-        nextCombination();
-        final T[] result = (T[]) Array.newInstance(valueType, count);
-        for (int i = 0; i < result.length; i++) {
-            result[i] = original[permutations[i]];
+    protected final T doNext() {
+        final int[] combinations = nextCombination();
+        final T result = (T) create();
+        for (int i = 0; i < count; i++) {
+            populate(result, i, combinations[i]);
         }
         return result;
     }
 
-    static void combination(int number) {
-        int[] permutations = new int[number];
-        int[] inverse = new int[number];
-        int[] direction = new int[number];
-        for (int i = 0; i < number; i++) {
-            direction[i] = -1;
-            permutations[i] = i;
-            inverse[i] = i;
+    abstract Object create();
+
+    abstract void populate(T result, int i, int permIdx);
+
+    static class ArrayCombinationValue<T> extends CombinationValue<T[]> {
+        private T[] original;
+        private Class<T> valueType;
+
+        @SuppressWarnings("unchecked")
+        ArrayCombinationValue(T[] original) {
+            super(original.length);
+            this.original = original;
+            this.valueType = (Class<T>) original.getClass().getComponentType();
         }
-        combination(0, permutations, inverse, direction);
+
+        Object create() {
+            return Array.newInstance(valueType, count);
+        }
+
+        void populate(T[] result, int i, int permIdx) {
+            result[i] = original[permIdx];
+        }
+
     }
 
-    private static void displayCombination(int[] permutations) {
-        for (int index : permutations) {
-            System.out.printf(" %d", index);
+    static class ValueCombinations<T> extends CombinationValue<Value<T>[]> {
+        private Value<T>[] original;
+        private Class<T> valueType;
+
+        ValueCombinations(Value<T>[] original, Class<T> valueType) {
+            super(original.length);
+            this.original = original;
+            this.valueType = valueType;
         }
-        System.out.println();
+
+        Object create() {
+            return Array.newInstance(valueType, count);
+        }
+
+        void populate(T[] result, int i, int permIdx) {
+            result[i] = original[permIdx].next();
+        }
+
     }
 
-    static void combination(int index, int[] permutations, int[] inverse, int[] direction) {
-        if (index >= permutations.length) {
-            displayCombination(permutations);
-            return;
-        }
-        combination(index + 1, permutations, inverse, direction);
-        for (int i = 0; i <= index - 1; i++) {
-//             System.out.printf("   (%d %d)\n", inverse[index], inverse[index] + direction[index]);
-            int z = permutations[inverse[index] + direction[index]];
-            permutations[inverse[index]] = z;
-            permutations[inverse[index] + direction[index]] = index;
-            inverse[z] = inverse[index];
-            inverse[index] = inverse[index] + direction[index];
+    static class ListCombinationValue<T> extends CombinationValue<List<T>> {
+        private List<T> original;
 
-            combination(index + 1, permutations, inverse, direction);
+        @SuppressWarnings("unchecked")
+        ListCombinationValue(List<T> original, int count) {
+            super(count);
+            this.original = original;
         }
-        direction[index] = -direction[index];
-    }
 
-    public static void main(String[] args) {
-        combination(5);
+        @SuppressWarnings("unchecked")
+        List<T> create() {
+            return new ArrayList<T>(count);
+        }
+
+        void populate(List<T> result, int i, int permIdx) {
+            result.set(i, original.get(permIdx));
+        }
+
     }
 
 }
