@@ -68,7 +68,7 @@ public class ArrayValue<T> extends Constant<T[]> {
             count = new RandomInteger(1).between(1, 20).next();
         }
 
-        final T[] value = checkCreate(get(), count);
+        final T[] value = checkCreate(get(), count, valueType);
         T start = instance.get();
         if (start == null) {
             start = instance.next();
@@ -81,8 +81,7 @@ public class ArrayValue<T> extends Constant<T[]> {
     }
 
     @SuppressWarnings("unchecked")
-    public T[] checkCreate(T[] array, int count) {
-        Class type = valueType;
+    static <T> T[] checkCreate(T[] array, int count, Class type) {
         if (type == null) {
             if (array.length != count || (array.length > 0 && array[0] != null)) {
                 type = array.getClass();
@@ -111,10 +110,6 @@ public class ArrayValue<T> extends Constant<T[]> {
 
     public void setInstance(Value<T> instance) {
         this.instance = instance;
-    }
-
-    public void setValueType(Class<T> valueType) {
-        this.valueType = valueType;
     }
 
 }
