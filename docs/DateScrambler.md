@@ -33,3 +33,5 @@ System.out.println(Arrays.asList(DateScrambler.randomArray(new Date(),
         5).next()));
 
 ```
+
+![Date generation classes](date-value-class-dgm.png)

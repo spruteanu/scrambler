@@ -55,3 +55,5 @@ System.out.println(NumberScrambler.random(300.0d, 500.0d).next());
 System.out.println(NumberScrambler.random(BigInteger.valueOf(-1), BigInteger.valueOf(100)).next());
 
 ```
+
+![Number generation classes](number-value-class-dgm.png)

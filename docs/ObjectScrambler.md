@@ -27,6 +27,8 @@ Assert.assertEquals(10, primitivesInRange.next().length);
 
 ```
 
+![Generic object classes](generic-object-value-class-dgm.png)
+
 ## Generate boolean methods
 
 ```java

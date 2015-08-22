@@ -11,3 +11,5 @@ System.out.printf("%s random element: %s%n", new HashSet<String>(Arrays.asList("
 System.out.printf("%s random element: %s%n", new HashSet<Integer>(Arrays.asList(1, 2, 3, 4, 5)), CollectionScrambler.randomOf(Arrays.asList(1, 2, 3, 4, 5)).next());
 
 ```
+
+![Collection generation classes](collection-value-class-dgm.png)

@@ -32,6 +32,7 @@ import java.util.List;
  * @author Serge Pruteanu
  */
 public class CollectionScrambler {
+// todo: incremental/random collection???
 
     //------------------------------------------------------------------------------------------------------------------
     // Collection methods

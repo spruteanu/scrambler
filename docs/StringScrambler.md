@@ -18,3 +18,5 @@ System.out.println(Arrays.asList(StringScrambler.randomArray("My Random String 1
 System.out.println(Arrays.asList(StringScrambler.randomArray("My Random String 123", 35, 10).next()));
 
 ```
+
+![String generation classes](string-value-class-dgm.png)
