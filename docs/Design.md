@@ -25,20 +25,20 @@ public interface Value<T> extends Serializable, Cloneable {
 ```
 
 It consists of 2 methods: 
+
 1. ``T next()``
-  Generated a value. Each call to it will generate a new value.
+  Generates a value. Each call will produce a new value.
 2. ``T get()``
   Method is used to get the value from prior execution of ``next()`` method.
   
-## Creating implementations of org.prismus.scrambler.Value 
+## Custom org.prismus.scrambler.Value implementation 
 It is recommended to create custom Value implementations by extending **org.prismus.scrambler.value.Constant** class.
-This class offers default implementation for get value method and performs value setting for newly generated object.
+This class is a template one that allows to get value and performs value setting for newly generated object.
 Your implementation has only to extend method **org.prismus.scrambler.value.Constant#doNext()** for object generation logic.
 
 ```java
 public class Constant<T> implements Value<T> {
 ...
-
     public T get() {
         return value;
     }
@@ -52,11 +52,8 @@ public class Constant<T> implements Value<T> {
     protected T doNext() {
         return value;
     }
-
 ...
-
 }
-
 ```
 
 **Example**
