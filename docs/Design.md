@@ -1,34 +1,35 @@
-## Overview
-*TBD*
-
 ## org.prismus.scrambler.Value interface
+Value interface defines data generation capabilities. 
+
 ![Value interface](value-class-dgm.png)
 
 ```java
-
 /**
- * An interface used to generate an object.
+ * An interface used to generate data.
  */
 public interface Value<T> extends Serializable, Cloneable {
-
     /**
-     * Generates an object.
+     * Generates value.
      *
      * @return an instance of object
      */
     T next();
 
     /**
-     * Gets current instance value
+     * Gets current generated value
      *
-     * @return current value instance
+     * @return current value
      */
     T get();
-
 }
-
 ```
 
+It consists of 2 methods: 
+1. ``T next()``
+  Generated a value. Each call to it will generate a new value.
+2. ``T get()``
+  Method is used to get the value from prior execution of ``next()`` method.
+  
 ## Creating implementations of org.prismus.scrambler.Value 
 It is recommended to create custom Value implementations by extending **org.prismus.scrambler.value.Constant** class.
 This class offers default implementation for get value method and performs value setting for newly generated object.

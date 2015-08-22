@@ -17,7 +17,7 @@ mechanism to define rules that can be easily changed (in the most of the cases t
 
 * API offers a large variety of data generation classes for basic/generic data types.
 * Simple and flexible way to 'link' data type with property using regular expression
-* Simple and easy way to define rules using Groovy DSL
+* Simple and easy way to define rules using Groovy DSL or using Scrambler' builders
 
 Having simply defined, atomic in concept rules for generation as well as a native/simple way to define them,
 it is easy to build more complex types.

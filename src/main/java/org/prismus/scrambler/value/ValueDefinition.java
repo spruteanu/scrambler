@@ -451,6 +451,9 @@ public class ValueDefinition implements Cloneable {
     }
 
     public Value lookupValue(String property, Class type) {
+        if (definitionMap.isEmpty()) {
+            scanDefinitions(DEFAULT_DEFINITIONS_RESOURCE);
+        }
         Value value = null;
         for (Map.Entry<ValuePredicate, Value> entry : definitionMap.entrySet()) {
             if (!isIterableOrMap(type) && entry.getKey().apply(property, type)) {
