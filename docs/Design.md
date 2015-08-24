@@ -99,6 +99,7 @@ System.out.println(NumberScrambler.random(900L, 1000L).next());
 
 ## java.util.Date generation facade and classes
 Dates generation can be done in following way:
+
 1. Incrementally by calendar step(s)
    * Steps can be defined either using ``java.util.Calendar`` constants or using builder methods (verbose instead of magic constants)
 1. Randomly simple or in a range
@@ -256,12 +257,38 @@ System.out.println(MapScrambler.mapOf(LinkedHashMap.class, new LinkedHashMap() {
 
 ![Map generation classes](map-value-class-dgm.png)
 
-## org.prismus.scrambler.ValuePredicate interface
+## org.prismus.scrambler.ValuePredicate
+Value predicates are defined to match java classes fields with data generation rules.
+Fields can be matched by name and/or type. In order to have matching process more flexible, 
+fields can be matched by name, wildcard or regular expression. 
+
+```java
+/**
+ * Interface that matches either {@code property} and/or {@code value}.
+ * The predicate is mostly used as a Map.key for value definitions, to match instance fields
+ */
+public interface ValuePredicate {
+    /**
+     * Match either property and/or value, used to identify if {@link Value} is applicable for provided arguments
+     *
+     * @param property property name to be matched
+     * @param value value to be matched
+     * @return true if it should be applicable
+     */
+    boolean apply(String property, Object value);
+}
+```
+
+``org.prismus.scrambler.ValuePredicates`` exposes variety of available predicates.
+
 ![Value Predicate interface](value-predicate-dgm.png)
 ![Value Predicate interface](value-predicate-class-dgm.png)
-**TBD**
 
-## Java instances facade and classes
+## org.prismus.scrambler.value.ValueDefinition
+ValueDefinition is a builder that represents a registry of value generation rules matched by predicates.
+
+## Java instances generation
+
 ![Instance value classes](instance-value-class-dgm.png)
 
 ### Instance type definition' detection convention

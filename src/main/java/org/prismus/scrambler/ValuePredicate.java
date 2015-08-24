@@ -20,12 +20,19 @@ package org.prismus.scrambler;
 
 /**
  * Interface that matches either {@code property} and/or {@code value}.
- * The predicate is mostly used as a Map.key for value definitions
+ * The predicate is mostly used as a Map.key for value definitions, to match instance fields
  *
  * @author Serge Pruteanu
  */
 public interface ValuePredicate {
 
+    /**
+     * Match either property and/or value, used to identify if {@link Value} is applicable for provided arguments
+     *
+     * @param property property name to be matched
+     * @param value value to be matched
+     * @return true if it should be applicable
+     */
     boolean apply(String property, Object value);
 
 }

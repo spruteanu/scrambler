@@ -11,6 +11,7 @@ Usually it ends up with some trivial data sets that are limited in number as wel
 they are 'rigid':
 1. Datasets are 'specific' to project and can't be reused.
 2. It is not easy to change data if a model is modified/changed.
+3. Usually, developed code that generated datasets can't be reused in unit tests
 
 DataScrambler API addresses data generation needs by offering API for basic/generic java objects and an easy 
 mechanism to define rules that can be easily changed (in the most of the cases that won't be needed) and can be reused.
