@@ -44,8 +44,7 @@ class InstanceValueTest extends Specification {
     void 'instance creation with arguments'(Object value, Class instanceType,
                                             List<Value> constructorValues, Integer expectedValue) {
         given:
-        final instance = new InstanceValue().usingValue(value)
-        instance.constructorValues = constructorValues
+        final instance = new InstanceValue().usingValue(value).withConstructorValues(constructorValues)
 
         and:
         final instanceValue = instance.checkCreateInstance()

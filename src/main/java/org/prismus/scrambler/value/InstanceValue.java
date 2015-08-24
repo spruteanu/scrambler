@@ -38,11 +38,11 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     private Callable<ValueDefinition> definitionClosure;
 
     private Object type;
-    private Collection<Value> constructorArguments;
+    private List<Value> constructorValues;
+
     private final Map<InstanceFieldPredicate, Value> fieldValueMap;
 
     private Map<String, Field> fieldMap;
-    private List<Value> constructorValues;
     private AtomicBoolean shouldBuild = new AtomicBoolean(true);
     private boolean generateAll = true;
 
@@ -60,21 +60,14 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     public InstanceValue(Class type, Collection<Value> constructorArguments) {
         ofType(type);
-        this.constructorArguments = constructorArguments;
-        this.constructorValues = new ArrayList<Value>();
+        if (constructorArguments != null) {
+            this.constructorValues = new ArrayList<Value>(constructorArguments);
+        }
         fieldValueMap = new LinkedHashMap<InstanceFieldPredicate, Value>();
     }
 
     public ValueDefinition getDefinition() {
         return definition;
-    }
-
-    public void setType(Class type) {
-        this.type = type;
-    }
-
-    public void setConstructorValues(List<Value> constructorValues) {
-        this.constructorValues = constructorValues;
     }
 
     boolean shouldBuildInstance() {
@@ -96,23 +89,23 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return instance;
     }
 
+    public InstanceValue<T> withConstructorValues(List<Value> constructorValues) {
+        this.constructorValues = constructorValues;
+        return this;
+    }
+
     @SuppressWarnings("unchecked")
-    public void setConstructorArguments(Collection constructorArguments) {
-        this.constructorArguments = new ArrayList<Value>();
+    public InstanceValue<T> withConstructorArguments(Collection constructorArguments) {
+        this.constructorValues = new ArrayList<Value>();
         if (constructorArguments != null) {
             for (final Object value : constructorArguments) {
                 if (Value.class.isInstance(value)) {
-                    this.constructorArguments.add((Value) value);
+                    this.constructorValues.add((Value) value);
                 } else {
-                    this.constructorArguments.add(new Constant(value));
+                    this.constructorValues.add(new Constant(value));
                 }
             }
         }
-    }
-
-    public InstanceValue<T> withConstructorArguments(Collection constructorArguments) {
-        this.constructorArguments = new ArrayList<Value>();
-        setConstructorArguments(constructorArguments);
         return this;
     }
 
@@ -121,7 +114,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return this;
     }
 
-    public InstanceValue<T> registerFieldValue(String field, Value value) {
+    public InstanceValue<T> definition(String field, Value value) {
         fieldValueMap.put(new InstanceFieldPredicate(field), value);
         shouldBuild.set(true);
         return this;
@@ -195,16 +188,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return this;
     }
 
-    public InstanceValue<T> using(List<Value> constructorValues) {
-        this.constructorValues = constructorValues;
-        return this;
-    }
-
-    public InstanceValue<T> addConstructorValue(Value value) {
-        constructorValues.add(value);
-        return this;
-    }
-
     public InstanceValue<T> usingValue(T value) {
         this.value = value;
         if (value != null) {
@@ -256,7 +239,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                 final String propertyName = field.getName();
                 if (!fieldValueMap.containsKey(new InstanceFieldPredicate(propertyName))) {
                     if (predicate.apply(propertyName, field.getValueType())) {
-                        registerFieldValue(propertyName, entry.getValue());
+                        definition(propertyName, entry.getValue());
                         break;
                     }
                 }

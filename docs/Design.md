@@ -193,7 +193,7 @@ Assert.assertEquals(10, primitivesInRange.next().length);
 1. Incremental array with a step
 1. Random simple or in a range
 1. Random element from provided array
-1. Generate an combinations array using provided array template
+1. Generate combinations array using provided array template
 
 **Examples:**
 
@@ -287,21 +287,19 @@ public interface ValuePredicate {
 ## org.prismus.scrambler.value.ValueDefinition
 ValueDefinition is a builder that represents a registry of value generation rules matched by predicates.
 Following functionality is offered by ``org.prismus.scrambler.value.ValueDefinition``:
+
 1. Register value for provided predicate through ``definition(...), constant(...), reference(...)`` methods
-1. Load definitions from external sources
-
-  * ``usingDefinitions``        - load existing definitions. If provided resource/file is not found, an exception will be thrown
-  * ``scanDefinitions``         - load definitions if exists.
-  * ``scanLibraryDefinitions``  - scan classpath for definition sources and load if any matched. Scanning matches all ``*value-definition.groovy`` sources once and caches them internally.
-
+1. Load definitions from external sources<br/>
+  1. ``usingDefinitions``        - load existing definitions. If provided resource/file is not found, an exception will be thrown
+  1. ``scanDefinitions``         - load definitions if exists.
+  1. ``scanLibraryDefinitions``  - scan classpath for definition sources and load if any matched. Scanning matches all ``*value-definition.groovy`` scripts once and caches them internally.
 1. ``lookupValue``             - lookup a registered definition for provided arguments. Methods are used from reference and instance value
-1. Context properties.
+1. Context properties.<br/>
+  In order to make definition' resources more generic, it is possible to register a map of properties from 
+``org.prismus.scrambler.InstanceScrambler`` methods and those properties will be available/injected from/to script definitions 
+using ``getContextProperty(...)``. More details will be given in DSL definitions section.
 
-  In order to make definition' resources more generic, is is possible to register a map of properties from 
-``org.prismus.scrambler.InstanceScrambler`` methods and those properties will be available when definitions are built 
-using ``getContextProperty(...)``. More details will ve given bellow.
-
-All ``org.prismus.scrambler.value.ValueDefinition`` methods are available from definition scripts.
+All ``org.prismus.scrambler.value.ValueDefinition`` methods are accessible from definition scripts.
 
 ## Java instances generation
 
