@@ -142,6 +142,12 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
+    public ValueDefinition constant(String propertyName, Object value) {
+        Util.checkNullValue(value);
+        registerPredicateValue(ValuePredicates.matchProperty(propertyName), new Constant(value));
+        return this;
+    }
+
     public ValueDefinition constant(Map<Object, Object> props) {
         Util.checkNullValue(props);
         for (final Map.Entry entry : props.entrySet()) {
@@ -204,6 +210,24 @@ public class ValueDefinition implements Cloneable {
         Util.checkNullValue(value);
         registerPredicateValue(ValuePredicates.isTypeOf(type), value);
         return this;
+    }
+
+    void lookupRegisterInstanceValue(ValuePredicate valuePredicate, Value value) {
+        if (InstanceValue.class.isInstance(value)) {
+            final InstanceValue instanceValue = (InstanceValue) value;
+            if (instanceValue.getDefinition() != this) {
+                instanceValueMap.put(valuePredicate, instanceValue);
+            }
+        } else if (CollectionValue.class.isInstance(value)) {
+            lookupRegisterInstanceValue(valuePredicate, ((CollectionValue) value).getInstance());
+        } else if (value instanceof ArrayValue) {
+            lookupRegisterInstanceValue(valuePredicate, ((ArrayValue) value).getInstance());
+        }
+    }
+
+    void registerPredicateValue(ValuePredicate valuePredicate, Value value) {
+        lookupRegisterInstanceValue(valuePredicate, value);
+        definitionMap.put(valuePredicate, value);
     }
 
     public ValueDefinition definition(ValuePredicate valuePredicate, Value value) {
@@ -274,42 +298,6 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
-    public ValueDefinition usingContext(Map<String, Object> contextMap) {
-        if (contextMap != null) {
-            this.contextMap = contextMap;
-        }
-        return this;
-    }
-
-    //------------------------------------------------------------------------------------------------------------------
-    // Internal Methods
-    //------------------------------------------------------------------------------------------------------------------
-    ValueDefinition build() {
-        for (final InstanceValue value : instanceValueMap.values()) {
-            value.build(this);
-        }
-        return this;
-    }
-
-    void lookupRegisterInstanceValue(ValuePredicate valuePredicate, Value value) {
-        if (InstanceValue.class.isInstance(value)) {
-            final InstanceValue instanceValue = (InstanceValue) value;
-            if (instanceValue.getDefinition() != this) {
-                instanceValueMap.put(valuePredicate, instanceValue);
-            }
-        } else if (CollectionValue.class.isInstance(value)) {
-            lookupRegisterInstanceValue(valuePredicate, ((CollectionValue) value).getInstance());
-        } else if (value instanceof ArrayValue) {
-            lookupRegisterInstanceValue(valuePredicate, ((ArrayValue) value).getInstance());
-        }
-    }
-
-    public ValueDefinition registerPredicateValue(ValuePredicate valuePredicate, Value value) {
-        lookupRegisterInstanceValue(valuePredicate, value);
-        definitionMap.put(valuePredicate, value);
-        return this;
-    }
-
     public ValueDefinition usingDefinition(ValueDefinition definition) {
         contextMap.putAll(definition.contextMap);
         return usingDefinitions(definition.getDefinitionMap());
@@ -358,6 +346,84 @@ public class ValueDefinition implements Cloneable {
 
     public ValueDefinition scanLibraryDefinitions(String definitionMatcher) {
         return scanLibraryDefinitions(definitionMatcher, Holder.libraryDefinitionsCache);
+    }
+
+    public ValueDefinition usingContext(Map<String, Object> contextMap) {
+        if (contextMap != null) {
+            this.contextMap = contextMap;
+        }
+        return this;
+    }
+
+    public Object getContextProperty(String property) {
+        return contextMap.get(property);
+    }
+
+    public Object getContextProperty(String property, Object defaultValue) {
+        Object result = contextMap.get(property);
+        if (result == null) {
+            result = defaultValue;
+        }
+        return result;
+    }
+
+    public Value lookupValue(ValuePredicate predicate) {
+        Value result = definitionMap.get(predicate);
+        if (result == null && parent != null) {
+            result = parent.lookupValue(predicate);
+        }
+        return result;
+    }
+
+    public List<Value> lookupValues(Class type, Class... types) {
+        final ArrayList<Class> list = new ArrayList<Class>();
+        list.add(type);
+        if (types != null) {
+            list.addAll(Arrays.asList(types));
+        }
+        return lookupValues(list);
+    }
+
+    public List<Value> lookupValues(List<Class> types) {
+        final ArrayList<Value> results = new ArrayList<Value>(types.size());
+        for (Class type : types) {
+            results.add(lookupValue(null, type));
+        }
+        return results;
+    }
+
+    public Value lookupValue(String property, Class type) {
+        if (definitionMap.isEmpty()) {
+            scanDefinitions(DEFAULT_DEFINITIONS_RESOURCE);
+        }
+        Value value = null;
+        for (Map.Entry<ValuePredicate, Value> entry : definitionMap.entrySet()) {
+            if (!isIterableOrMap(type) && entry.getKey().apply(property, type)) {
+                value = entry.getValue();
+                break;
+            }
+        }
+        if (value instanceof InstanceTypeValue) {
+            value = ((InstanceTypeValue) value).next(type);
+        } else if (value instanceof RandomTypeValue) {
+            value = ((RandomTypeValue) value).next(type);
+        } else if (value instanceof IncrementalTypeValue) {
+            value = ((IncrementalTypeValue) value).next(type);
+        }
+        if (value == null && parent != null) {
+            parent.lookupValue(property, type);
+        }
+        return value;
+    }
+
+    //------------------------------------------------------------------------------------------------------------------
+    // Internal Methods
+    //------------------------------------------------------------------------------------------------------------------
+    ValueDefinition build() {
+        for (final InstanceValue value : instanceValueMap.values()) {
+            value.build(this);
+        }
+        return this;
     }
 
     ValueDefinition scanLibraryDefinitions(String definitionMatcher, Set<String> foundResources) {
@@ -425,69 +491,8 @@ public class ValueDefinition implements Cloneable {
         return getJarFileName(url.toURI().getPath());
     }
 
-    public Value lookupValue(ValuePredicate predicate) {
-        Value result = definitionMap.get(predicate);
-        if (result == null && parent != null) {
-            result = parent.lookupValue(predicate);
-        }
-        return result;
-    }
-
-    public List<Value> lookupValues(Class type, Class... types) {
-        final ArrayList<Class> list = new ArrayList<Class>();
-        list.add(type);
-        if (types != null) {
-            list.addAll(Arrays.asList(types));
-        }
-        return lookupValues(list);
-    }
-
-    public List<Value> lookupValues(List<Class> types) {
-        final ArrayList<Value> results = new ArrayList<Value>(types.size());
-        for (Class type : types) {
-            results.add(lookupValue(null, type));
-        }
-        return results;
-    }
-
-    public Value lookupValue(String property, Class type) {
-        if (definitionMap.isEmpty()) {
-            scanDefinitions(DEFAULT_DEFINITIONS_RESOURCE);
-        }
-        Value value = null;
-        for (Map.Entry<ValuePredicate, Value> entry : definitionMap.entrySet()) {
-            if (!isIterableOrMap(type) && entry.getKey().apply(property, type)) {
-                value = entry.getValue();
-                break;
-            }
-        }
-        if (value instanceof InstanceTypeValue) {
-            value = ((InstanceTypeValue) value).next(type);
-        } else if (value instanceof RandomTypeValue) {
-            value = ((RandomTypeValue) value).next(type);
-        } else if (value instanceof IncrementalTypeValue) {
-            value = ((IncrementalTypeValue) value).next(type);
-        }
-        if (value == null && parent != null) {
-            parent.lookupValue(property, type);
-        }
-        return value;
-    }
-
     boolean isIterableOrMap(Class type) {
         return Iterable.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type);
-    }
-
-    public Object getContextProperty(String property) {
-        return contextMap.get(property);
-    }
-
-    public Object getContextProperty(String property, Object defaultValue) {
-        Object result = contextMap.get(property);
-        if (result == null) {
-            result = defaultValue;
-        }
-        return result;
     }
 
     @Override

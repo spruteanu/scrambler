@@ -114,50 +114,6 @@ public class InstanceScrambler {
 
 
     //------------------------------------------------------------------------------------------------------------------
-    // Value definition parse methods
-    //------------------------------------------------------------------------------------------------------------------
-    @SuppressWarnings("unchecked")
-    public static <T> Value<T> valueOf(Class<T> clazzType, String definitionResource) throws IOException {
-        return GroovyValueDefinition.Holder.instance.parseValue(definitionResource);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> Value<T> valueOf(String clazzType, String definitionResource) throws IOException {
-        return GroovyValueDefinition.Holder.instance.parseValue(definitionResource);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> Value<T> valueOf(Class<T> clazzType, File definition) throws IOException {
-        return GroovyValueDefinition.Holder.instance.parseValue(definition);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> Value<T> valueOf(String clazzType, File definition) throws IOException {
-        return GroovyValueDefinition.Holder.instance.parseValue(definition);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> Value<T> valueOf(Class<T> clazzType, InputStream inputStream) throws IOException {
-        return GroovyValueDefinition.Holder.instance.parseValue(inputStream);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> Value<T> valueOf(String clazzType, InputStream inputStream) throws IOException {
-        return GroovyValueDefinition.Holder.instance.parseValue(inputStream);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> Value<T> valueOf(Class<T> clazzType, Reader reader) throws IOException {
-        return GroovyValueDefinition.Holder.instance.parseValue(reader);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> Value<T> valueOf(Reader reader) throws IOException {
-        return GroovyValueDefinition.Holder.instance.parseValue(reader);
-    }
-
-
-    //------------------------------------------------------------------------------------------------------------------
     // InstanceValue methods
     //------------------------------------------------------------------------------------------------------------------
     public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, String... definitions) throws IOException {

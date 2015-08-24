@@ -87,7 +87,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             build(null);
             final Object valueType = lookupType();
             if (valueType instanceof Class) {
-                definition.registerPredicateValue(ValuePredicates.isTypeOf((Class) valueType), this);
+                definition.definition(ValuePredicates.isTypeOf((Class) valueType), this);
             }
         }
         final T instance = checkCreateInstance();
