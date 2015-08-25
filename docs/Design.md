@@ -303,10 +303,21 @@ All ``org.prismus.scrambler.value.ValueDefinition`` methods are accessible from 
 
 ## Java instances generation
 ``org.prismus.scrambler.value.InstanceValue`` is a builder to generate java class with field's data for it.
-Following operations are available:<br/>
+Following operations are available:
+
 1. Create an instance from defaults
 1. Create an instance from a map of definitions
 1. Create an instance using predefined definitions or by scanning classpath on ``*-definition.groovy`` resources
+
+**Notes:**
+
+* If no fields are defined or a field doesn't have a match, field will be attempted to be generated using default 
+definitions. DataScrambler API is shipped with ``/org.prismus.scrambler.value.default-definition.groovy`` 
+and it can be changed by ``usingDefaultDefinitions(...)`` methods
+* If no fields are defined, classpath will be scanned for class definition resource using following naming convention:<br/>
+``"Class name" + "-definition.groovy"``, that for ``Person.class`` will match ``Person-definition.groovy``
+* Often it is needed to populate a field based on some field' values of created class. 
+DataScrambler API allows that using ``org.prismus.scrambler.value.ReferenceValue`` rule. See bellow more details. 
 
 **Examples:**</br>
 ```groovy

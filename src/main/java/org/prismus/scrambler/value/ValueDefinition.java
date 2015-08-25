@@ -41,7 +41,7 @@ import java.util.zip.ZipEntry;
 @SuppressWarnings("unchecked")
 public class ValueDefinition implements Cloneable {
     public static final String DEFINITION_SCRIPT_SUFFIX = "-definition.groovy";
-    public static final String DEFAULT_DEFINITIONS_RESOURCE = "/org.prismus.scrambler.value.default-value-definition.groovy";
+    public static final String DEFAULT_DEFINITIONS_RESOURCE = "/org.prismus.scrambler.value.default-definition.groovy";
     public static final String META_INF_ANCHOR = "META-INF/MANIFEST.MF";
 
     private ValueDefinition parent;
