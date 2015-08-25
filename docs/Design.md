@@ -420,9 +420,41 @@ definition(~/(?i)gender/, new ReferenceValue(firstNamePattern) {
 * References can be defined either in script using ``ValueDefinition.reference(...)`` methods or explicitly using ``ReferenceValue.class`` object
 
 ## DataScrambler DSL
+Java is a neat programming language, but it is too verbose in the cases when you need to configure/define values for a class.
+Also, modern languages like Groovy and Scala comes with more capabilities that makes code even more succinct.
+DataScrambler uses Groovy as a mechanism to define generation rules easier. Also, Groovy offers a possibility to create 
+DSL, so, on top of DataScrambler API an according data generation DSL is created.
 
-### Overview
+DataScrambler is created using Groovy metaclass DSL capabilities and mixin declarations 
+(see [Groovy dynamic stateless mixins](https://groovyland.wordpress.com/2008/06/07/groovy-dynamic-stateless-mixins/) for example)
+Scrambler generation facades' methods are added dynamically to groovy expando metaclass in 
+``org.prismus.scrambler.value.GroovyValueDefinition`` static block.
+
+**DSL Examples:**<br/>
+```groovy
+// define a random value in a range 1..100 of integer type 
+Integer.random(1, 100)
+
+// define a value that chooses a random element from the list
+[1, 2, 3].randomOf()
+
+// definition for an incremental Date, with 1 hour step 
+new Date().increment(1, Calendar.HOUR)
+
+// a value to generate a random count java.util.HashSet() with incremental step 100 starting from 100
+new HashSet().of(4.increment(10), 100)
+
+// random range 1..100 integer value
+2.random(1, 100)
+
+// random string value
+'some template string'.random('pattern')
+```
+
 ![DSL classes](groovy-definition-class-dgm.png)
+
+### DataScrambler definition scripts
+In addition to DSL definition, ``org.prismus.scrambler.value.GroovyValueDefinition`` contains definition scripts parsing.
 
 ### Groovy compiler properties
 
