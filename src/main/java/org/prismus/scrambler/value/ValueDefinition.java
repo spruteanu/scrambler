@@ -40,6 +40,7 @@ import java.util.zip.ZipEntry;
  */
 @SuppressWarnings("unchecked")
 public class ValueDefinition implements Cloneable {
+    public static final String DEFINITION_SCRIPT_SUFFIX = "-definition.groovy";
     public static final String DEFAULT_DEFINITIONS_RESOURCE = "/org.prismus.scrambler.value.default-value-definition.groovy";
     public static final String META_INF_ANCHOR = "META-INF/MANIFEST.MF";
 
@@ -319,6 +320,7 @@ public class ValueDefinition implements Cloneable {
     }
 
     public ValueDefinition scanDefinitions(List<String> definitions) {
+        int foundCount = 0;
         for (String definition : definitions) {
             final URL url = getClass().getResource(definition);
             if (url == null) {
@@ -327,8 +329,9 @@ public class ValueDefinition implements Cloneable {
                 }
             } // not found resources filtered, parse definition
             GroovyValueDefinition.Holder.instance.parseDefinition(this, definition);
+            foundCount++;
         }
-        if (definitions.size() > 0) {
+        if (foundCount > 0) {
             build();
         }
         return this;
@@ -521,7 +524,7 @@ public class ValueDefinition implements Cloneable {
                 final Enumeration<JarEntry> entries = jarFile.entries();
                 while (entries.hasMoreElements()) {
                     final String resourceName = entries.nextElement().getName();
-                    if (resourceName.endsWith("definition.groovy")) {
+                    if (resourceName.endsWith(DEFINITION_SCRIPT_SUFFIX)) {
                         results.add(file + "/" + resourceName);
                     }
                 }

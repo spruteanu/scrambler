@@ -302,15 +302,52 @@ using ``getContextProperty(...)``. More details will be given in DSL definitions
 All ``org.prismus.scrambler.value.ValueDefinition`` methods are accessible from definition scripts.
 
 ## Java instances generation
+``org.prismus.scrambler.value.InstanceValue`` is a builder to generate java class with field's data for it.
+Following operations are available:<br/>
+1. Create an instance from defaults
+1. Create an instance from a map of definitions
+1. Create an instance using predefined definitions or by scanning classpath on ``*-definition.groovy`` resources
 
-![Instance value classes](instance-value-class-dgm.png)
+**Examples:**</br>
+```groovy
+// create an instance of School.class that has a list of rooms
+final instance = new InstanceValue<School>(School).usingDefinitions(
+        '*Id': 1.increment(1),
+        'name': ['Enatai', 'Medina', 'Value Crest', 'Newport'].randomOf(),
+        (List): [].of(ClassRoom.definition(
+                parent: School.reference(),
+                schoolId: School.reference('schoolId'),
+                roomNumber: "101A".random(4),
+        ), 10),
+)
+final school = instance.next()
+```
 
-### Instance type definition' detection convention
+```java
+// create an instance of Person.class with fields default generation rules. If in classpath there is a ``Person-definition.groovy`` script,
+// fields will be generated using definitions from it
+final InstanceValue<Person> personValue = InstanceScrambler.instanceOf(Person.class);
+Person person = personValue.next();
 
-### Default definitions
+//...
+// create an instance of Person.class using /person-definition.groovy definitions script
+final InstanceValue<Person> personValue = InstanceScrambler.instanceOf(Person.class, "/person-definition.groovy");
+Person person = personValue.next();
+
+//...
+// Create an instance of Address.class using /address-definition.groovy and injected into script context properties
+final InstanceValue<Address> addressValue = InstanceScrambler.instanceOf(Address.class, new HashMap<String, Object>() {{
+    put("state", "Washington");
+}}, "/address-definition.groovy");
+Address address = addressValue.next();
+Assert.assertTrue("Washington".equals(address.getState()));
+
+```
 
 ### Reference Value
 **TBD**
+
+![Instance value classes](instance-value-class-dgm.png)
 
 ## DataScrambler DSL
 

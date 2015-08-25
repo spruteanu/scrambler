@@ -38,7 +38,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     private Callable<ValueDefinition> definitionClosure;
 
     private Object type;
-    private List<Value> constructorValues;
+    private List constructorArguments;
 
     private final Map<InstanceFieldPredicate, Value> fieldValueMap;
 
@@ -61,7 +61,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     public InstanceValue(Class type, Collection<Value> constructorArguments) {
         ofType(type);
         if (constructorArguments != null) {
-            this.constructorValues = new ArrayList<Value>(constructorArguments);
+            this.constructorArguments = new ArrayList<Value>(constructorArguments);
         }
         fieldValueMap = new LinkedHashMap<InstanceFieldPredicate, Value>();
     }
@@ -74,11 +74,18 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return shouldBuild.get();
     }
 
+    boolean hasFieldsDefined() {
+        return fieldValueMap != null && fieldValueMap.size() > 0;
+    }
+
     @Override
     public T next() {
+        if (!hasFieldsDefined() && generateAll) {
+            scanDefinitions(lookupType().toString() + ValueDefinition.DEFINITION_SCRIPT_SUFFIX);
+        }
         if (shouldBuildInstance()) {
-            build(null);
             final Object valueType = lookupType();
+            build(null);
             if (valueType instanceof Class) {
                 definition.definition(ValuePredicates.isTypeOf((Class) valueType), this);
             }
@@ -90,19 +97,19 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     }
 
     public InstanceValue<T> withConstructorValues(List<Value> constructorValues) {
-        this.constructorValues = constructorValues;
+        this.constructorArguments = constructorValues;
         return this;
     }
 
     @SuppressWarnings("unchecked")
     public InstanceValue<T> withConstructorArguments(Collection constructorArguments) {
-        this.constructorValues = new ArrayList<Value>();
+        this.constructorArguments = new ArrayList<Value>();
         if (constructorArguments != null) {
             for (final Object value : constructorArguments) {
                 if (Value.class.isInstance(value)) {
-                    this.constructorValues.add((Value) value);
+                    this.constructorArguments.add((Value) value);
                 } else {
-                    this.constructorValues.add(new Constant(value));
+                    this.constructorArguments.add(new Constant(value));
                 }
             }
         }
@@ -118,30 +125,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         fieldValueMap.put(new InstanceFieldPredicate(field), value);
         shouldBuild.set(true);
         return this;
-    }
-
-    public Value lookupValue(ValuePredicate fieldPredicate) {
-        Value result = null;
-        for (final Map.Entry<InstanceFieldPredicate, Value> entry : fieldValueMap.entrySet()) {
-            final String fieldName = entry.getKey().getProperty();
-            final Value value = entry.getValue();
-            if (fieldPredicate.apply(fieldName, value)) {
-                result = value;
-                break;
-            }
-        }
-        return result;
-    }
-
-    public Value[] lookupValues(Class... clazzTypes) {
-        if (clazzTypes == null || clazzTypes.length == 0) {
-            throw new IllegalArgumentException("Class types can't be null or empty");
-        }
-        final Value[] values = new Value[clazzTypes.length];
-        for (int i = 0; i < clazzTypes.length; i++) {
-            values[i] = lookupValue(new TypePredicate(clazzTypes[i]));
-        }
-        return values;
     }
 
     public InstanceValue<T> usingDefinitions(ValueDefinition valueDefinition) {
@@ -175,6 +158,9 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     public InstanceValue<T> scanDefinitions(String resource, String... resources) {
         checkDefinitionCreated();
         definition.scanDefinitions(resource, resources);
+        if (hasFieldsDefined()) {
+            shouldBuild.set(true);
+        }
         return this;
     }
 
@@ -224,6 +210,30 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     public InstanceValue<T> generateKnown() {
         generateAll = false;
         return this;
+    }
+
+    public Value lookupValue(ValuePredicate fieldPredicate) {
+        Value result = null;
+        for (final Map.Entry<InstanceFieldPredicate, Value> entry : fieldValueMap.entrySet()) {
+            final String fieldName = entry.getKey().getProperty();
+            final Value value = entry.getValue();
+            if (fieldPredicate.apply(fieldName, value)) {
+                result = value;
+                break;
+            }
+        }
+        return result;
+    }
+
+    public Value[] lookupValues(Class... clazzTypes) {
+        if (clazzTypes == null || clazzTypes.length == 0) {
+            throw new IllegalArgumentException("Class types can't be null or empty");
+        }
+        final Value[] values = new Value[clazzTypes.length];
+        for (int i = 0; i < clazzTypes.length; i++) {
+            values[i] = lookupValue(new TypePredicate(clazzTypes[i]));
+        }
+        return values;
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -316,34 +326,6 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return propertyValueMap;
     }
 
-    List<Value> lookupConstructorArguments(ValueDefinition valueDefinition, Class type, Set<Class> supportedTypes) {
-        List<Value> result = null;
-        try {
-            final Map<ValuePredicate, Value> typeValueMap = valueDefinition.getDefinitionMap();
-            for (final Constructor ctor : type.getConstructors()) {
-                final Class[] types = ctor.getParameterTypes();
-                if (types == null) {
-                    return new ArrayList<Value>();
-                }
-                final List<Value> values = new ArrayList<Value>();
-                for (final Class argType : types) {
-                    Value val = typeValueMap.get(ValuePredicates.isTypeOf(argType));
-                    if (val == null && supportedTypes.contains(argType)) {
-                        val = ObjectScrambler.random(argType);
-                    }
-                    if (val != null) {
-                        values.add(val);
-                    }
-                }
-                if (values.size() == types.length) {
-                    result = values;
-                    break;
-                }
-            }
-        } catch (Exception ignore) { }
-        return result;
-    }
-
     void populate(Object instance) {
         final Map<String, Object> propertyObjectMap = new LinkedHashMap<String, Object>(fieldValueMap.size());
         for (Map.Entry<InstanceFieldPredicate, Value> entry : fieldValueMap.entrySet()) {
@@ -410,11 +392,68 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return value;
     }
 
+    @SuppressWarnings("unchecked")
+    List<Value> lookupConstructorArguments() {
+        final List<Value> result = new ArrayList<Value>(constructorArguments.size());
+        for (Object argument : constructorArguments) {
+            if (argument instanceof Value) {
+                result.add((Value) argument);
+            } else {
+                result.add(new Constant(argument));
+            }
+        }
+        return result;
+    }
+
+    List<Value> lookupConstructorArguments(Class type) {
+        List<Value> result = null;
+        for (final Constructor ctor : type.getConstructors()) {
+            final Class[] types = ctor.getParameterTypes();
+            if (types == null) {
+                return new ArrayList<Value>();
+            }
+            final List<Value> values = new ArrayList<Value>();
+            for (final Class argType : types) {
+                Value val = definition.lookupValue(null, argType);
+                if (val == null) {
+                    val = defaultDefinition.lookupValue(null, argType);
+                }
+                if (val != null) {
+                    values.add(val);
+                }
+            }
+            if (values.size() == types.length) {
+                result = values;
+                break;
+            }
+        }
+        return result;
+    }
+
+    @SuppressWarnings({"unchecked"})
+    List<Value> lookupConstructorValues(Class clazzType) {
+        List<Value> constructorValues = null;
+        if (constructorArguments != null && constructorArguments.size() > 0) {
+            constructorValues = lookupConstructorArguments();
+        } else {
+            Constructor constructor = null;
+            try {
+                constructor = clazzType.getConstructor();
+            } catch (NoSuchMethodException ignore) { }
+            if (constructor == null) {
+                constructorValues = lookupConstructorArguments(clazzType);
+            }
+        }
+        return constructorValues;
+    }
+
     @SuppressWarnings({"unchecked"})
     T checkCreateInstance() {
         T result = this.value;
         Object valueType = lookupType();
         if (valueType instanceof Class) {
+            final Class clazzType = (Class) valueType;
+            final List<Value> constructorValues = lookupConstructorValues(clazzType);
             Object[] arguments = null;
             Class[] types = null;
             if (constructorValues != null && constructorValues.size() > 0) {
@@ -427,7 +466,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
                     types[i] = valueObject.getClass();
                 }
             }
-            result = (T) Util.createInstance((Class) valueType, arguments, types);
+            result = (T) Util.createInstance(clazzType, arguments, types);
         }
         return result;
     }
