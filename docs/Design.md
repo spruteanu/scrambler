@@ -319,8 +319,11 @@ and it can be changed by ``usingDefaultDefinitions(...)`` methods
 * Often it is needed to populate a field based on some field' values of created class. 
 DataScrambler API allows that using ``org.prismus.scrambler.value.ReferenceValue`` rule. See bellow more details. 
 
+![Instance value classes](instance-value-class-dgm.png)
+
 **Examples:**</br>
-Groovy script example: ```groovy
+Groovy script example<br/> 
+```groovy
 // create an instance of School.class that has a list of rooms
 final instance = new InstanceValue<School>(School).usingDefinitions(
         '*Id': 1.increment(1),
@@ -354,8 +357,6 @@ Address address = addressValue.next();
 Assert.assertTrue("Washington".equals(address.getState()));
 
 ```
-
-![Instance value classes](instance-value-class-dgm.png)
 
 ### Reference Value
 Reference value is an implementation of value that allows to generate/create a field value by 'referencing' inquired 
