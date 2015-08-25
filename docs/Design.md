@@ -454,7 +454,8 @@ new HashSet().of(4.increment(10), 100)
 ![DSL classes](groovy-definition-class-dgm.png)
 
 ### DataScrambler definition scripts
-In addition to DSL definition, ``org.prismus.scrambler.value.GroovyValueDefinition`` contains definition scripts parsing.
+In addition to DSL definition, ``org.prismus.scrambler.value.GroovyValueDefinition`` is responsible for DataScrambler 
+definition scripts parsing.
 
 ### Groovy compiler properties
 
