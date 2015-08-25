@@ -16,6 +16,7 @@
     <modules>
         <module>api</module>
         <module>box-test-ext</module>
+        <module>dictionary-ext</module>
     </modules>
 
     <developers>
