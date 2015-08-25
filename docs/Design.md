@@ -307,7 +307,7 @@ Following operations are available:
 
 1. Create an instance from defaults
 1. Create an instance from a map of definitions
-1. Create an instance using predefined definitions or by scanning classpath on ``*-definition.groovy`` resources
+1. Create an instance using predefined rules or by scanning classpath on ``*-definition.groovy`` resources
 
 **Notes:**
 
@@ -320,7 +320,7 @@ and it can be changed by ``usingDefaultDefinitions(...)`` methods
 DataScrambler API allows that using ``org.prismus.scrambler.value.ReferenceValue`` rule. See bellow more details. 
 
 **Examples:**</br>
-```groovy
+Groovy script example: ```groovy
 // create an instance of School.class that has a list of rooms
 final instance = new InstanceValue<School>(School).usingDefinitions(
         '*Id': 1.increment(1),
@@ -356,7 +356,60 @@ Assert.assertTrue("Washington".equals(address.getState()));
 ```
 
 ### Reference Value
-**TBD**
+Reference value is an implementation of value that allows to generate/create a field value by 'referencing' inquired 
+class in defined rules. For more clarity, let's examine two examples:
+
+#### Parent/Child relationship
+There is a Database one-to-many relationship between School and Room, for which data are generated. Room.schoolId references
+SID property from 'parent'. In order to resolve this value, a reference to ``School.class`` is defined for 'School.schoolId' field.
+DataScrambler API parser will detect this declaration and will resolve the context for declared School.class reference value, thus, 
+``Room.schoolId`` will get the value from already generated field ``School.schoolId``.
+
+**Example from test: org.prismus.scrambler.value.InstanceValueTest.test if parent is set properly**<br/>
+```groovy
+final instance = new InstanceValue<School>(School).usingDefinitions(
+        '*Id': 1.increment(1),
+        'name': ['Enatai', 'Medina', 'Value Crest', 'Newport'].randomOf(),
+        (List): [].of(ClassRoom.definition(
+                parent: School.reference(),
+                schoolId: School.reference('schoolId'),
+                roomNumber: "101A".random(4),
+        ), 10),
+)
+final school = instance.next()
+
+expect:
+school != null
+school.rooms != null
+school.rooms.size() > 0
+for (ClassRoom classRoom : school.rooms) {
+    Assert.assertTrue(classRoom.roomNumber.length() > 0)
+    Assert.assertSame(school, classRoom.parent)
+    Assert.assertEquals(classRoom.schoolId, school.schoolId)
+}
+```
+
+#### Generate field value based on other fields
+Example where rules are defined for person definitions. There is a list of male and female names, and based on chosen 
+name, an according gender should be set.
+
+**An example snippet from person-definition.groovy:**<br/>
+```groovy
+final firstNamePattern = ~/(?i)(?:first\s*Name)|(?:first)/
+definition(firstNamePattern, allFirstNames.randomOf())
+
+... some logic here
+
+//gender, reference the field on first name, and set according gender from generated first name field/value
+definition(~/(?i)gender/, new ReferenceValue(firstNamePattern) {
+    @Override
+    protected Object doNext() {
+        final firstName = super.doNext()
+        return femaleFirstNames.contains(firstName) ? 'Female' : 'Male'
+    }
+})
+
+```
 
 ![Instance value classes](instance-value-class-dgm.png)
 
