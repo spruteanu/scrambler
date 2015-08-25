@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>data-scrambler-api</artifactId>
+    <artifactId>box-test-ext</artifactId>
     <packaging>jar</packaging>
-    <name>Data Scrambler API</name>
+    <name>Data Scrambler Box Testing Extension</name>
 
     <parent>
         <groupId>org.prismus.scrambler</groupId>
@@ -14,10 +14,9 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
-            <version>${groovy.version}</version>
-            <scope>provided</scope>
+            <groupId>org.prismus.scrambler</groupId>
+            <artifactId>data-scrambler-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
