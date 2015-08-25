@@ -411,6 +411,11 @@ definition(~/(?i)gender/, new ReferenceValue(firstNamePattern) {
 
 ```
 
+#### Notes
+* Referenced types and fields MUST be defined/declared first
+* Fields/types/Classes can be referenced by predicates
+* References can be defined either in script using ``ValueDefinition.reference(...)`` methods or explicitly using ``ReferenceValue.class`` object
+
 ![Instance value classes](instance-value-class-dgm.png)
 
 ## DataScrambler DSL
