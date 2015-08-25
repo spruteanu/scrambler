@@ -23,10 +23,10 @@ mechanism to define rules that can be easily changed (in the most of the cases t
 Having simply defined, atomic in concept rules for generation as well as a native/simple way to define them,
 it is easy to build more complex types.
 
-[API overview](docs/Design.md)
+[DataScrambler API explained](docs/Design.md)
 
 # Features
-All generation abilities are exposed in `org.prismus.scrambler.*Scrambler` facade classes.
+All generation capabilities are exposed in `org.prismus.scrambler.*Scrambler` facade classes.
 
 * [Number generation](docs/NumberScrambler.md)
 * [java.util.Date generation](docs/DateScrambler.md)
@@ -34,7 +34,8 @@ All generation abilities are exposed in `org.prismus.scrambler.*Scrambler` facad
 * [Generic object/array](docs/ObjectScrambler.md)
 * [java.util.Collection generation](docs/CollectionScrambler.md)
 * [java.util.Map generation](docs/MapScrambler.md)
+* [DataScrambler DSL](docs/Dsl.md)
 * [Instance generation](docs/InstanceScrambler.md)
-* [DataScrambler DSL](docs/dsl.md)
-  * [Definitions Library Plugins](docs/BoxTesting.md)
-* [Box testing (Experimental)](docs/BoxTesting.md)
+* DataScrambler Extensions
+  * [Definitions Dictionaries](docs/Dictionaries.md)
+  * [Box testing (Experimental)](docs/BoxTesting.md)

@@ -40,14 +40,14 @@ import java.util.regex.Pattern
  * Class responsible for registering Data Scrambler DSL capabilities.
  * Also the class is responsible for parsing DSL definitions scripts.
  * Groovy compiler properties can be customized by defining in class path
- * {@link GroovyValueDefinition#GROOVY_COMPILER_PROPERTIES} properties file
+ * {@link GroovyValueDefinition#DEFINITIONS_PARSER_PROPERTIES} properties file
  *
  * @author Serge Pruteanu
  */
 class GroovyValueDefinition {
-    static final String GROOVY_COMPILER_PROPERTIES = '/groovy-compiler.properties'
+    static final String DEFINITIONS_PARSER_PROPERTIES = '/definitions-parser.properties'
 
-    private Properties configurationProperties
+    private Properties parserProperties
     private GroovyShell shell
 
     GroovyValueDefinition() {
@@ -153,7 +153,7 @@ class GroovyValueDefinition {
 
     @CompileStatic
     protected GroovyShell createGroovyShell() {
-        final compilerConfiguration = (configurationProperties != null && configurationProperties.size() > 0) ? new CompilerConfiguration(configurationProperties) : new CompilerConfiguration()
+        final compilerConfiguration = (parserProperties != null && parserProperties.size() > 0) ? new CompilerConfiguration(parserProperties) : new CompilerConfiguration()
         compilerConfiguration.setScriptBaseClass(DelegatingScript.name)
 
         final importCustomizer = new ImportCustomizer()
@@ -166,41 +166,38 @@ class GroovyValueDefinition {
     }
 
     @CompileStatic
-    Properties getConfigurationProperties() {
-        return configurationProperties
+    GroovyValueDefinition withParserProperties(Properties configurationProperties) {
+        this.parserProperties = configurationProperties
+        shell = null
+        return this
     }
 
     @CompileStatic
-    void setConfigurationProperties(Properties configurationProperties) {
-        this.configurationProperties = configurationProperties
+    GroovyValueDefinition withParserProperties(String configurationResource) throws IOException {
+        return withParserProperties(getClass().getResourceAsStream(configurationResource))
     }
 
     @CompileStatic
-    void setConfigurationProperties(String configurationResource) throws IOException {
-        setConfigurationProperties(getClass().getResourceAsStream(configurationResource))
-    }
-
-    @CompileStatic
-    protected void setConfigurationProperties(InputStream inputStream) throws IOException {
+    protected GroovyValueDefinition withParserProperties(InputStream inputStream) throws IOException {
         if (inputStream != null) {
             final Properties properties = new Properties()
             try {
                 properties.load(inputStream)
-                this.configurationProperties = properties
+                withParserProperties(properties)
             } finally {
                 try {
                     inputStream.close()
                 } catch (IOException ignore) { }
             }
         }
+        return this
     }
 
-    @CompileStatic
-    @PackageScope
+    @CompileStatic @PackageScope
     GroovyValueDefinition lookupDefaultConfig() {
-        final resource = getClass().getResource(GROOVY_COMPILER_PROPERTIES)
+        final resource = getClass().getResource(DEFINITIONS_PARSER_PROPERTIES)
         if (resource != null) {
-            setConfigurationProperties(resource.openStream())
+            withParserProperties(resource.openStream())
         }
         return this
     }

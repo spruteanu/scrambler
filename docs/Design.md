@@ -441,7 +441,7 @@ Integer.random(1, 100)
 // definition for an incremental Date, with 1 hour step 
 new Date().increment(1, Calendar.HOUR)
 
-// a value to generate a random count java.util.HashSet() with incremental step 100 starting from 100
+// a value to generate java.util.HashSet() 100 count with incremental step 10
 new HashSet().of(4.increment(10), 100)
 
 // random range 1..100 integer value
@@ -455,15 +455,29 @@ new HashSet().of(4.increment(10), 100)
 
 ### DataScrambler definition scripts
 In addition to DSL definition, ``org.prismus.scrambler.value.GroovyValueDefinition`` is responsible for DataScrambler 
-definition scripts parsing.
+definition scripts parsing (``org.prismus.scrambler.value.GroovyValueDefinition#parseDefinitions(...)`` methods) 
+from various sources (classpath resource, File, InputStream, Reader or even simple text with definitions).
 
-### Groovy compiler properties
+**NOTE:**<br/>
+Groovy Shell can be configured by defining in classpath ``/definitions-parser.properties`` file that will configure 
+``org.codehaus.groovy.control.CompilerConfiguration`` properties.
 
-## Data Scrambler extension
+Along with DataScrambler API DSL extension, methods from ``org.prismus.scrambler.value.ValueDefinition`` are accessible 
+from definitions script. This is implemented by setting the ``org.prismus.scrambler.value.ValueDefinition`` instance 
+to ``groovy.util.DelegatingScript`` that evaluates definitions script.
 
-### Testing extension
+#### IDE support
+Currently DataScrambler has support for highlighting and completion only for IntelliJ IDEA by 
+``org.prismus.scrambler.value.ValueDefinition.gdsl`` file shipped with library. 
+Eclipse support will be added in near future.
 
-### Definitions dictionary extensions
+## DataScrambler Extensions
+
+### Definitions dictionaries
+**TBD**
+
+### Box Testing
+**TBD**
 
 ## Best Practices
 **TBD**
