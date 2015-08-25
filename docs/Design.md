@@ -319,6 +319,8 @@ and it can be changed by ``usingDefaultDefinitions(...)`` methods
 * Often it is needed to populate a field based on some field' values of created class. 
 DataScrambler API allows that using ``org.prismus.scrambler.value.ReferenceValue`` rule. See bellow more details. 
 
+![Instance value classes](instance-value-class-dgm.png)
+
 **Examples:**</br>
 Groovy script example: ```groovy
 // create an instance of School.class that has a list of rooms
@@ -415,8 +417,6 @@ definition(~/(?i)gender/, new ReferenceValue(firstNamePattern) {
 * Referenced types and fields MUST be defined/declared first
 * Fields/types/Classes can be referenced by predicates
 * References can be defined either in script using ``ValueDefinition.reference(...)`` methods or explicitly using ``ReferenceValue.class`` object
-
-![Instance value classes](instance-value-class-dgm.png)
 
 ## DataScrambler DSL
 
