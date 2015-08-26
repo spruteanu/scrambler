@@ -104,25 +104,25 @@ class GenderValue extends ReferenceValue {
 }
 
 @CompileStatic
-class DobValue extends Constant {
-    Value group1 = NumberScrambler.random(1, 12)
-    Value group2 = NumberScrambler.random(1, 31)
-    Value group3 = NumberScrambler.random(1920, 2015)
+class DobValue extends Constant<String> {
+    private Value group1 = NumberScrambler.random(1, 12)
+    private Value group2 = NumberScrambler.random(1, 31)
+    private Value group3 = NumberScrambler.random(1920, 2015)
 
     @Override
-    protected Object doNext() {
+    protected String doNext() {
         return String.format('%s/%s/%s', group1.next(), group2.next(), group3.next())
     }
 }
 
 @CompileStatic
-class PhoneValue extends Constant {
-    Value group1 = NumberScrambler.random(100, 999)
-    Value group2 = NumberScrambler.random(100, 999)
-    Value group3 = NumberScrambler.random(1000, 9999)
+class PhoneValue extends Constant<String> {
+    private Value group1 = NumberScrambler.random(100, 999)
+    private Value group2 = NumberScrambler.random(100, 999)
+    private Value group3 = NumberScrambler.random(1000, 9999)
 
     @Override
-    protected Object doNext() {
+    protected String doNext() {
         return String.format('(%s)-%s-%s', group1.next(), group2.next(), group3.next())
     }
 }

@@ -10,7 +10,7 @@ class GroovyValueDefinitionTest extends Specification {
 
     void 'test scan value definitions'() {
         final foundResources = new LinkedHashSet<String>()
-        ValueDefinition.Holder.lookupDefinitionResources(getClass().getResource('/test-scan-value-definition.jar').toURI().path, foundResources)
+        ValueDefinition.Holder.lookupJarDefinitions(getClass().getResource('/test-scan-value-definition.jar').toURI().path, foundResources)
         expect:
         1 == foundResources.size()
         1 == ValueDefinition.matchValueDefinitions('test-scan*', foundResources).size()

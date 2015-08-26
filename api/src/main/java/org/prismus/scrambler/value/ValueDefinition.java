@@ -22,10 +22,7 @@ import org.prismus.scrambler.Value;
 import org.prismus.scrambler.ValuePredicate;
 import org.prismus.scrambler.ValuePredicates;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
+import java.io.*;
 import java.net.URL;
 import java.util.*;
 import java.util.jar.JarEntry;
@@ -40,9 +37,10 @@ import java.util.zip.ZipEntry;
  */
 @SuppressWarnings("unchecked")
 public class ValueDefinition implements Cloneable {
+    private static final String JAR_SUFFIX = ".jar";
     public static final String DEFINITION_SCRIPT_SUFFIX = "-definition.groovy";
     public static final String DEFAULT_DEFINITIONS_RESOURCE = "/org.prismus.scrambler.value.default-definition.groovy";
-    public static final String META_INF_ANCHOR = "META-INF/MANIFEST.MF";
+    public static final String META_INF_ANCHOR = "META-INF/dictionary.desc";
 
     private ValueDefinition parent;
 
@@ -347,6 +345,10 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
+    public ValueDefinition scanLibraryDefinitions() {
+        return scanLibraryDefinitions(null, Holder.libraryDefinitionsCache);
+    }
+
     public ValueDefinition scanLibraryDefinitions(String definitionMatcher) {
         return scanLibraryDefinitions(definitionMatcher, Holder.libraryDefinitionsCache);
     }
@@ -419,7 +421,7 @@ public class ValueDefinition implements Cloneable {
         return value;
     }
 
-    public ValueDefinition definitions() {
+    public ValueDefinition getValueDefinition() {
         return this;
     }
 
@@ -439,22 +441,25 @@ public class ValueDefinition implements Cloneable {
         JarFile jarFile = null;
         for (String matchedResource : matchedResources) {
             try {
-                final String matchedJar = getJarFileName(matchedResource);
-                if (!matchedJar.equals(jarFileName)) {
-                    jarFile = new JarFile(matchedJar);
-                    jarFileName = matchedJar;
+                final String definitionSource = getDefinitionsSource(matchedResource);
+                final InputStream inputStream;
+                if (definitionSource.endsWith(JAR_SUFFIX)) {
+                    if (!definitionSource.equals(jarFileName)) {
+                        jarFile = new JarFile(definitionSource);
+                        jarFileName = definitionSource;
+                    }
+                    final ZipEntry jarFileEntry = jarFile.getEntry(getJarFileEntry(jarFileName, matchedResource));
+                    if (jarFileEntry == null) {
+                        continue;
+                    }
+                    inputStream = jarFile.getInputStream(jarFileEntry);
+                } else {
+                    inputStream = new FileInputStream(definitionSource);
                 }
-                final ZipEntry jarFileEntry = jarFile.getEntry(getJarFileEntry(jarFileName, matchedResource));
-                if (jarFileEntry == null) {
-                    continue;
-                }
-                final InputStream inputStream = jarFile.getInputStream(jarFileEntry);
                 try {
                     GroovyValueDefinition.Holder.instance.parseDefinition(this, inputStream);
                 } finally {
-                    try {
-                        inputStream.close();
-                    } catch (IOException ignore) { }
+                    try { inputStream.close(); } catch (IOException ignore) { }
                 }
             } catch (Exception ignore) { }
         }
@@ -486,16 +491,15 @@ public class ValueDefinition implements Cloneable {
         return fullEntryPath.substring(jarFile.length() + 1, fullEntryPath.length());
     }
 
-    static String getJarFileName(String file) {
-        final int index = file.indexOf(".jar");
+    static String getDefinitionsSource(String file) {
+        int index = file.indexOf(JAR_SUFFIX);
         if (index > 0) {
             file = file.substring(0, index + 4);
         }
+        if (file.startsWith("file:")) {
+            file = file.substring(5, file.length());
+        }
         return file;
-    }
-
-    static String getJarFileName(URL url) throws URISyntaxException {
-        return getJarFileName(url.toURI().getPath());
     }
 
     boolean isIterableOrMap(Class type) {
@@ -512,17 +516,22 @@ public class ValueDefinition implements Cloneable {
         private static final Set<String> libraryDefinitionsCache = lookupDefinitionResources();
 
         static Set<String> lookupDefinitionResources() {
-            final LinkedHashSet<String> results = new LinkedHashSet<String>(1000);
+            final Set<String> results = new LinkedHashSet<String>(1000);
             try {
                 final Enumeration<URL> enumeration = Holder.class.getClassLoader().getResources(META_INF_ANCHOR);
                 while (enumeration.hasMoreElements()) {
-                    lookupDefinitionResources(getJarFileName(enumeration.nextElement()), results);
+                    final String definitionsSource = enumeration.nextElement().toURI().getSchemeSpecificPart();
+                    if (definitionsSource.contains(JAR_SUFFIX)) {
+                        lookupJarDefinitions(definitionsSource, results);
+                    } else {
+                        lookupFolderDefinitions(definitionsSource.substring(0, definitionsSource.length() - META_INF_ANCHOR.length()), results);
+                    }
                 }
             } catch (Exception ignore) { }
             return results;
         }
 
-        static void lookupDefinitionResources(String file, Set<String> results) throws IOException {
+        static void lookupJarDefinitions(String file, Set<String> results) throws IOException {
             final JarFile jarFile = new JarFile(file);
             try {
                 final Enumeration<JarEntry> entries = jarFile.entries();
@@ -535,6 +544,23 @@ public class ValueDefinition implements Cloneable {
             } finally {
                 jarFile.close();
             }
+        }
+
+        @SuppressWarnings("ResultOfMethodCallIgnored")
+        static void lookupFolderDefinitions(String folder, final Set<String> results) {
+            final File defFolder = new File(folder);
+            defFolder.listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File file) {
+                    final String resourceName = file.getAbsolutePath();
+                    if (file.isDirectory()) {
+                        lookupFolderDefinitions(resourceName, results);
+                    } else if (resourceName.endsWith(DEFINITION_SCRIPT_SUFFIX)) {
+                        results.add(resourceName);
+                    }
+                    return false;
+                }
+            });
         }
     }
 }
