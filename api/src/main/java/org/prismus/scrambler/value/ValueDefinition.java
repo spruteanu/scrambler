@@ -419,6 +419,10 @@ public class ValueDefinition implements Cloneable {
         return value;
     }
 
+    public ValueDefinition definitions() {
+        return this;
+    }
+
     //------------------------------------------------------------------------------------------------------------------
     // Internal Methods
     //------------------------------------------------------------------------------------------------------------------
@@ -495,7 +499,7 @@ public class ValueDefinition implements Cloneable {
     }
 
     boolean isIterableOrMap(Class type) {
-        return Iterable.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type);
+        return type != null && (Iterable.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type));
     }
 
     @Override

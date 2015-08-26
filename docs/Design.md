@@ -476,8 +476,8 @@ Eclipse support will be added in near future.
 ### Definitions dictionaries
 **TBD**
 
-### Box Testing
+#### Best Practices
 **TBD**
 
-## Best Practices
+### Box Testing
 **TBD**

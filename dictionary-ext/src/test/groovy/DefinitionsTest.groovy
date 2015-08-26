@@ -1,3 +1,4 @@
+import org.prismus.scrambler.MapScrambler
 import org.prismus.scrambler.value.GroovyValueDefinition
 import org.prismus.scrambler.value.ValueDefinition
 import spock.lang.Specification
@@ -14,6 +15,8 @@ class DefinitionsTest extends Specification {
         GroovyValueDefinition.Holder.instance.parseDefinition(definition, '/person-definition.groovy')
         expect:
         definition.definitionMap.size() > 0
+        // todo: fix me
+//        0 < MapScrambler.mapOf(['firstName', 'lastName', 'middleName', 'gender', 'dateOfBirth', 'phoneNumber']).next().size()
     }
 
     void 'verify address definitions'() {
