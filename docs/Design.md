@@ -505,7 +505,8 @@ and: 'verify address generation for Washington state'
   Keep in mind that fields are matched in the order how definitions are declared.
 1. Keep custom generation rules simple<br/>
   It is not recommended to create inner rules in definition under groovy script. Such constructions may have performance 
-  issues, as they are compiled dynamically. Instead, define the value class bellow and mark to compile statically.
+  issues, as they are compiled dynamically. Instead, define the value class bellow and mark to compile statically 
+  or define it as java class.
 1. Declare definitions independent of usage context<br/>
   For better re-usage, keep definitions detached of usage context (do not use specific classes). 
   Verify how re-usable are definitions by generating data as a map and on java bean objects for example.
