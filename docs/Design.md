@@ -441,7 +441,7 @@ Integer.random(1, 100)
 // definition for an incremental Date, with 1 hour step 
 new Date().increment(1, Calendar.HOUR)
 
-// a value to generate java.util.HashSet() 100 count with incremental step 10
+// generate java.util.HashSet() 100 count with incremental step 10
 new HashSet().of(4.increment(10), 100)
 
 // random range 1..100 integer value
@@ -466,18 +466,36 @@ Along with DataScrambler API DSL extension, methods from ``org.prismus.scrambler
 from definitions script. This is implemented by setting the ``org.prismus.scrambler.value.ValueDefinition`` instance 
 to ``groovy.util.DelegatingScript`` that evaluates definitions script.
 
+#### Performance
+Groovy scripting features are used only at data generation rules definitions. Once fields are resolved with 
+predicates matching, time is spent only on invoking data generation and fields population.
+
 #### IDE support
 Currently DataScrambler has support for highlighting and completion only for IntelliJ IDEA by 
 ``org.prismus.scrambler.value.ValueDefinition.gdsl`` file shipped with library. 
 Eclipse support will be added in near future.
 
-## DataScrambler Extensions
+## DataScrambler extensions
 
 ### Definitions library extension
 In order to make definitions scripts re-usage an easy process, as well as to write less code for data generation, 
 DataScrambler API has a capability of definitions scanning in the classpath. Definitions are scanned by listing 
-all resources of ``META-INF/dictionary.desc``.
-**TBD**
+all resources of ``META-INF/dictionary.desc``. Library definitions methods are available under definitions script scope
+(``org.prismus.scrambler.value.ValueDefinition#usingLibraryDefinitions(...)``) as well as at 
+``org.prismus.scrambler.value.InstanceValue#usingLibraryDefinitions(...)``.
+
+**Examples**<br/>
+```groovy
+final definition = new ValueDefinition().usingLibraryDefinitions('person*')
+expect: 'verify definitions loaded'
+definition.definitionMap.size() > 0
+
+and: 'verify person names generation'
+0 < MapScrambler.mapOf(['firstName', 'lastName', 'middleName', 'gender', 'dateOfBirth', 'phone']).next().size()
+
+and: 'verify address generation for Washington state'
+0 < MapScrambler.mapOf(['Building Number', 'Street', 'State', 'City', 'Postal Code'], [state: 'Washington']).next().size()
+```
 
 #### Best Practices
 1. Keep field definitions together<br/>
@@ -494,7 +512,7 @@ all resources of ``META-INF/dictionary.desc``.
 
 As a reference of definition scripts, see ``dictionary-ext`` module ones.
 
-### Box Testing
+### Box Testing extension
 **TBD, not finished yet**
 
 ### JDBC extension

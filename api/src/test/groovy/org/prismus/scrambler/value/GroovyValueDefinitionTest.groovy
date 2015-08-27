@@ -19,7 +19,7 @@ class GroovyValueDefinitionTest extends Specification {
 
         and:'check scan definitions'
         final definition = new ValueDefinition()
-        definition.scanLibraryDefinitions('test-scan*', foundResources)
+        definition.usingLibraryDefinitions('test-scan*', foundResources)
         definition.getDefinitionMap().size() > 0
     }
 

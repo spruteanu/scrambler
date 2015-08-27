@@ -164,6 +164,32 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return this;
     }
 
+    /**
+     * Scans and parses ALL library definitions
+     */
+    public InstanceValue<T> usingLibraryDefinitions() {
+        checkDefinitionCreated();
+        definition.usingLibraryDefinitions();
+        if (hasFieldsDefined()) {
+            shouldBuild.set(true);
+        }
+        return this;
+    }
+
+    /**
+     * Scans library definitions using provided {@code definitionMatcher} pattern and parses matched definition resources
+     *
+     * @param definitionMatcher    wildcard or reg-ex to match library definitions for parsing
+     */
+    public InstanceValue<T> usingLibraryDefinitions(String definitionMatcher) {
+        checkDefinitionCreated();
+        definition.usingLibraryDefinitions(definitionMatcher);
+        if (hasFieldsDefined()) {
+            shouldBuild.set(true);
+        }
+        return this;
+    }
+
     public InstanceValue<T> usingDefaultDefinitions(ValueDefinition defaultDefinition) {
         this.defaultDefinition = defaultDefinition;
         return this;

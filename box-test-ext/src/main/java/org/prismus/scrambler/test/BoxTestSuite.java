@@ -147,7 +147,7 @@ public class BoxTestSuite {
             if (definitions != null) {
                 valueDefinition.scanDefinitions(Arrays.asList(definitions));
             } else {
-                valueDefinition.scanLibraryDefinitions();
+                valueDefinition.usingLibraryDefinitions();
             }
             return this;
         }

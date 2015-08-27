@@ -20,7 +20,7 @@ class DefinitionsTest extends Specification {
     }
 
     void 'verify definitions scanning'() {
-        final definition = new ValueDefinition().scanLibraryDefinitions()
+        final definition = new ValueDefinition().usingLibraryDefinitions()
         expect: 'verify definitions loaded'
         definition.definitionMap.size() > 0
 

@@ -345,12 +345,20 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
-    public ValueDefinition scanLibraryDefinitions() {
-        return scanLibraryDefinitions(null, Holder.libraryDefinitionsCache);
+    /**
+     * Scans and parses ALL library definitions
+     */
+    public ValueDefinition usingLibraryDefinitions() {
+        return usingLibraryDefinitions(null, Holder.libraryDefinitionsCache);
     }
 
-    public ValueDefinition scanLibraryDefinitions(String definitionMatcher) {
-        return scanLibraryDefinitions(definitionMatcher, Holder.libraryDefinitionsCache);
+    /**
+     * Scans library definitions using provided {@code definitionMatcher} pattern and parses matched definition resources
+     *
+     * @param definitionMatcher    wildcard or reg-ex to match library definitions for parsing
+     */
+    public ValueDefinition usingLibraryDefinitions(String definitionMatcher) {
+        return usingLibraryDefinitions(definitionMatcher, Holder.libraryDefinitionsCache);
     }
 
     public ValueDefinition usingContext(Map<String, Object> contextMap) {
@@ -435,7 +443,7 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
-    ValueDefinition scanLibraryDefinitions(String definitionMatcher, Set<String> foundResources) {
+    ValueDefinition usingLibraryDefinitions(String definitionMatcher, Set<String> foundResources) {
         final List<String> matchedResources = matchValueDefinitions(definitionMatcher, foundResources);
         String jarFileName = null;
         JarFile jarFile = null;

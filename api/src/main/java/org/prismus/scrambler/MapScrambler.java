@@ -105,7 +105,7 @@ public class MapScrambler {
         if (definitions != null && definitions.length > 0) {
             definition.scanDefinitions(Arrays.asList(definitions));
         } else {
-            definition.scanLibraryDefinitions(null);
+            definition.usingLibraryDefinitions(null);
         }
         final Map<K, Value> keyValueMap = new LinkedHashMap<K, Value>(self.size());
         for (Map.Entry<K, Object> entry : self.entrySet()) {
