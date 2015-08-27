@@ -21,9 +21,14 @@ class DefinitionsTest extends Specification {
 
     void 'verify definitions scanning'() {
         final definition = new ValueDefinition().scanLibraryDefinitions()
-        expect:
+        expect: 'verify definitions loaded'
         definition.definitionMap.size() > 0
+
+        and: 'verify person names generation'
         0 < MapScrambler.mapOf(['firstName', 'lastName', 'middleName', 'gender', 'dateOfBirth', 'phone']).next().size()
+
+        and: 'verify address generation for Washington state'
+        0 < MapScrambler.mapOf(['Building Number', 'Street', 'State', 'City', 'Postal Code'], [state: 'Washington']).next().size()
     }
 
 }

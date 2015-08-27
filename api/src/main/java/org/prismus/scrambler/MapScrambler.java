@@ -42,14 +42,72 @@ public class MapScrambler {
         return new MapValue<K>(self, keyValueMap);
     }
 
-    public static <K> MapValue<K> of(Map<K, Object> self, String... definitions) {
-        final Map<K, Value> keyValueMap = new LinkedHashMap<K, Value>(self.size());
-        final ValueDefinition definition = new ValueDefinition();
+    @SuppressWarnings("unchecked")
+    public static <K> MapValue<K> of(Class<? extends Map> mapType, Map<K, Value> keyValueMap) {
+        return new MapValue<K>((Class<Map>) mapType, keyValueMap);
+    }
+
+    public static <K> MapValue<K> of(Collection<K> self, Map<ValuePredicate, Value> definitionMap) {
+        final Map<K, Object> valueMap = new LinkedHashMap<K, Object>();
+        final Map<K, Value> keyValueMap = matchKeyValueMap(self, definitionMap, valueMap);
+        return new MapValue<K>(valueMap, keyValueMap);
+    }
+
+    public static <K> MapValue<K> mapOf(Map<K, Object> self, Map<String, Object> contextMap, String... definitions) {
+        final Map<K, Value> keyValueMap = lookupKeValueMap(self, contextMap, definitions);
+        return of(self, keyValueMap);
+    }
+
+    public static <K> MapValue<K> mapOf(Class<Map> mapType, Collection<K> self, String... definitions) {
+        return mapOf(mapType, self, null, definitions);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <K> MapValue<K> mapOf(Class<Map> self, Collection<K> keys, Map<String, Object> contextMap, String... definitions) {
+        final Map<K, Value> keValueMap = lookupKeValueMap(keys, contextMap, definitions);
+        return new MapValue<K>(self, keValueMap);
+    }
+
+    public static <K> MapValue<K> mapOf(Collection<K> self, String... definitions) {
+        return mapOf(self, null, definitions);
+    }
+
+    public static <K> MapValue<K> mapOf(Collection<K> self, Map<String, Object> contextMap, String... definitions) {
+        return of(lookupKeValueMap(self, contextMap, definitions));
+    }
+
+    static <K> Map<K, Value> matchKeyValueMap(Collection<K> self, Map<ValuePredicate, Value> definitionMap, Map<K, Object> valueMap) {
+        final Map<K, Value> keyValueMap = new LinkedHashMap<K, Value>();
+        for (Map.Entry<ValuePredicate, Value> entry : definitionMap.entrySet()) {
+            for (K key : self) {
+                final ValuePredicate predicate = entry.getKey();
+                final Value value = entry.getValue();
+                if (predicate.apply(key.toString(), value.get())) {
+                    keyValueMap.put(key, value);
+                    valueMap.put(key, value.get());
+                    break;
+                }
+            }
+        }
+        return keyValueMap;
+    }
+
+    static <K> Map<K, Value> lookupKeValueMap(Collection<K> self, Map<String, Object> contextMap, String... definitions) {
+        final Map<K, Object> map = new LinkedHashMap<K, Object>();
+        for (K k : self) {
+            map.put(k, null);
+        }
+        return lookupKeValueMap(map, contextMap, definitions);
+    }
+
+    static <K> Map<K, Value> lookupKeValueMap(Map<K, Object> self, Map<String, Object> contextMap, String... definitions) {
+        final ValueDefinition definition = new ValueDefinition().usingContext(contextMap);
         if (definitions != null && definitions.length > 0) {
             definition.scanDefinitions(Arrays.asList(definitions));
         } else {
             definition.scanLibraryDefinitions(null);
         }
+        final Map<K, Value> keyValueMap = new LinkedHashMap<K, Value>(self.size());
         for (Map.Entry<K, Object> entry : self.entrySet()) {
             Value value = null;
             final K k = entry.getKey();
@@ -65,58 +123,7 @@ public class MapScrambler {
                 keyValueMap.put(k, value);
             }
         }
-        return of(self, keyValueMap);
-    }
-
-    public static <K> MapValue<K> mapOf(Collection<K> self, Map<ValuePredicate, Value> definitionMap) {
-        final Map<K, Object> valueMap = new LinkedHashMap<K, Object>();
-        final Map<K, Value> keyValueMap = new LinkedHashMap<K, Value>();
-        for (Map.Entry<ValuePredicate, Value> entry : definitionMap.entrySet()) {
-            for (K key : self) {
-                final ValuePredicate predicate = entry.getKey();
-                final Value value = entry.getValue();
-                if (predicate.apply(key.toString(), value.get())) {
-                    keyValueMap.put(key, value);
-                    valueMap.put(key, value.get());
-                    break;
-                }
-            }
-        }
-        return new MapValue<K>(valueMap, keyValueMap);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <K> MapValue<K> mapOf(Class<? extends Map> mapType, Map<K, Value> keyValueMap) {
-        return new MapValue<K>((Class<Map>) mapType, keyValueMap);
-    }
-
-    public static <K> MapValue<K> mapOf(Collection<K> self, String... definitions) {
-        final ValueDefinition definition = new ValueDefinition();
-        if (definitions != null && definitions.length > 0) {
-            definition.scanDefinitions(Arrays.asList(definitions));
-        } else {
-            definition.scanLibraryDefinitions(null);
-        }
-        final Map<ValuePredicate, Value> predicateValueMap = new LinkedHashMap<ValuePredicate, Value>(self.size());
-        for (K k : self) {
-            ValuePredicate predicate = null;
-            Value value = null;
-            if (k instanceof ValuePredicate) {
-                predicate = (ValuePredicate) k;
-                value = definition.lookupValue(predicate);
-            } else if (k instanceof String){
-                final String property = (String) k;
-                predicate = ValuePredicates.matchProperty(property);
-                value = definition.lookupValue(property, null);
-            } else if (k instanceof Pattern) {
-                predicate = ValuePredicates.matchProperty((Pattern) k);
-                value = definition.lookupValue(predicate);
-            }
-            if (value != null && predicate != null) {
-                predicateValueMap.put(predicate, value);
-            }
-        }
-        return mapOf(self, predicateValueMap);
+        return keyValueMap;
     }
 
 }

@@ -20,16 +20,16 @@ class MapValueTest extends Specification {
 
         expect:
         generatedMap.keySet().containsAll(keyValueMap.keySet())
-        generatedMap == MapScrambler.mapOf(HashMap,
+        generatedMap == MapScrambler.of(HashMap,
                 ['ValueSID': NumberScrambler.increment(1), 'SomeID': new Constant(1), 'Amount': NumberScrambler.increment(100.0d)]
         ).next()
 
         and: 'verify case where a map of map is generated'
-        MapScrambler.mapOf(Hashtable,
+        MapScrambler.of(Hashtable,
                 ['ValueSID': NumberScrambler.increment(1), 'SomeID': new Constant(1), 'Amount': NumberScrambler.increment(100.0d),
                  'products': CollectionScrambler.collectionOf(
                          ArrayList,
-                         MapScrambler.mapOf(LinkedHashMap, [
+                         MapScrambler.of(LinkedHashMap, [
                                  'ProductSID': NumberScrambler.increment(1),
                                  'Name': new ListRandomElement<String>(Arrays.asList('Table Tennis Set', 'Ping Pong Balls', 'Table Tennis Racket')),
                                  'Price': NumberScrambler.random(16.0d, 200.0d),

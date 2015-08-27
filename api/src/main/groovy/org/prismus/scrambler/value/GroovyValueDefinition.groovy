@@ -238,7 +238,11 @@ class GroovyValueDefinition {
         }
 
         static <K> MapValue<K> mapOf(Class<Map<K, Object>> mapType, Map<K, Value> keyValueMap) {
-            return MapScrambler.mapOf(mapType, keyValueMap)
+            return MapScrambler.of(mapType, keyValueMap)
+        }
+
+        static <K> MapValue<K> mapOf(Class<Map<K, Object>> mapType, Collection<K> keys, Map<String, Object> context = null, String... definitions) {
+            return MapScrambler.mapOf(mapType, keys, context, definitions)
         }
 
         static <V, T extends Collection<V>> CollectionValue<V, T> collectionOf(Class<T> clazzType, Value<V> value) {
@@ -311,7 +315,11 @@ class GroovyValueDefinition {
         }
 
         static <K> MapValue<K> mapOf(Set<K> self, Map<ValuePredicate, Value> definitionMap) {
-            return MapScrambler.mapOf(self, definitionMap)
+            return MapScrambler.of(self, definitionMap)
+        }
+
+        static <K> MapValue<K> mapOf(Set<K> self, Map<String, Object> contextMap = null, String... definitions) {
+            return MapScrambler.mapOf(self, contextMap, definitions)
         }
 
     }

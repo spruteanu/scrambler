@@ -16,11 +16,11 @@ import java.util.zip.ZipFile
 final Map<String, Map<String, String>> stateInfoMap = loadStateInfoMap()
 final Map<String, List<String>> stateCitiesMap = loadStateCitiesMap()
 
-definition(~/(?i)\w*number/, new BuildingNumberValue())
+definition(~/(?i)[\w\s]*number/, new BuildingNumberValue())
 definition(~/(?i)street/, new StreetValue())
 definition(~/(?i)state/, new StateValue(stateInfoMap, getContextProperty('state')))
 definition(~/(?i)city/, new CityCodeValue(stateCitiesMap))
-definition(~/(?i)(?:postal\w*)|(?:zip\w*)/, new PostalCodeValue(stateInfoMap))
+definition(~/(?i)(?:postal[\w\s]*)|(?:zip[\w\s]*)/, new PostalCodeValue(stateInfoMap))
 
 @CompileStatic
 private static Map<String, Map<String, String>> loadStateInfoMap() {
