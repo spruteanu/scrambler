@@ -42,8 +42,8 @@ public class Expect {
         return message;
     }
 
-    TestResultContext verify() {
-        final TestResultContext resultContext = new TestResultContext();
+    ResultContext verify() {
+        final ResultContext resultContext = new ResultContext();
         boolean result = true;
         final Object inspected = expectationContext.getInspected();
         for (final ValuePredicate predicate : predicates) {
@@ -137,7 +137,7 @@ public class Expect {
         predicates.add(new ValuePredicate() {
             @Override
             public boolean apply(String property, Object value) {
-                final MethodTestContext executionContext = (MethodTestContext) value;
+                final MethodContext executionContext = (MethodContext) value;
                 final long inspected = executionContext.getExecutionTime();
                 return expectedTime <= inspected;
             }

@@ -6,10 +6,7 @@ import org.prismus.scrambler.value.ValueDefinition;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 /**
@@ -40,8 +37,8 @@ public class BoxTestSuite {
         return this;
     }
 
-    public TestResultContext verify() {
-        final TestResultContext resultContext = new TestResultContext();
+    public ResultContext verify() {
+        final ResultContext resultContext = new ResultContext();
         resultContext.setInspected(inspected.next());
         for (final Callable<TestContext> testContextCallable : executionsList) {
             TestContext testContext;
@@ -92,7 +89,7 @@ public class BoxTestSuite {
     static Method lookupMethod(Class<?> clazzType, String methodName, Class... args) throws NoSuchMethodException {
         final Method method;
         if (args == null) {
-            final LinkedHashSet<Method> methods = new LinkedHashSet<Method>();
+            final Set<Method> methods = new LinkedHashSet<Method>();
             for (final Method m : clazzType.getMethods()) {
                 if (m.getName().equalsIgnoreCase(methodName)) {
                     methods.add(m);
@@ -119,7 +116,7 @@ public class BoxTestSuite {
         private final List<Object> args;
 
         private final ValueDefinition valueDefinition = new ValueDefinition();
-        private MethodTestContext context;
+        private MethodContext context;
         private final List<Expect> expectList = new ArrayList<Expect>();
 
         public MethodSuite(Method method, Object... args) {
@@ -134,13 +131,13 @@ public class BoxTestSuite {
             this.method = method;
             this.methodName = method.getName();
             this.args = args;
-            context = new MethodTestContext();
+            context = new MethodContext();
         }
 
         public MethodSuite(String method, List<Object> args) {
             this.methodName = method;
             this.args = args;
-            context = new MethodTestContext();
+            context = new MethodContext();
         }
 
         public MethodSuite scanDefinitions(String... definitions) {
@@ -203,14 +200,14 @@ public class BoxTestSuite {
             } catch (InvocationTargetException e) {
                 context.reportResults(System.currentTimeMillis() - start, e.getTargetException());
             }
-            return verifyExpectations((MethodTestContext) context.clone());
+            return verifyExpectations((MethodContext) context.clone());
         }
 
-        TestContext verifyExpectations(MethodTestContext context) {
+        TestContext verifyExpectations(MethodContext context) {
             if (expectList.size() == 0) {
                 return context;
             }
-            final TestResultContext resultContext = new TestResultContext().add(context);
+            final ResultContext resultContext = new ResultContext().add(context);
             boolean passed = true;
             for (Expect expect : expectList) {
                 final TestContext testContext = expect.verify();
