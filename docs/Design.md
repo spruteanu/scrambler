@@ -473,11 +473,29 @@ Eclipse support will be added in near future.
 
 ## DataScrambler Extensions
 
-### Definitions dictionaries
+### Definitions library extension
+In order to make definitions scripts re-usage an easy process, as well as to write less code for data generation, 
+DataScrambler API has a capability of definitions scanning in the classpath. Definitions are scanned by listing 
+all resources of ``META-INF/dictionary.desc``.
 **TBD**
 
 #### Best Practices
-**TBD**
+1. Keep field definitions together<br/>
+  With grouped definitions, if data will be generated not in the way how it is expected, it will be more easy to find the issue.
+1. Define predicates accurately<br/>
+  Define precise reg-exes if you have similar fields match, or filter those cases by type as well. 
+  Keep in mind that fields are matched in the order how definitions are declared.
+1. Keep custom generation rules simple<br/>
+  It is not recommended to create inner rules in definition under groovy script. Such constructions may have performance 
+  issues, as they are compiled dynamically. Instead, define the value class bellow and mark to compile statically.
+1. Declare definitions independent of usage context<br/>
+  For better re-usage, keep definitions detached of usage context (do not use specific classes). 
+  Verify how re-usable are definitions by generating data as a map and on java bean objects for example.
+
+As a reference of definition scripts, see ``dictionary-ext`` module ones.
 
 ### Box Testing
-**TBD**
+**TBD, not finished yet**
+
+### JDBC extension
+**TBD, not implemented yet. Idea is to define rules that will populate database tables with data**
