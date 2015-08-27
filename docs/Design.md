@@ -425,7 +425,7 @@ Also, modern languages like Groovy and Scala comes with more capabilities that m
 DataScrambler uses Groovy as a mechanism to define generation rules easier. Also, Groovy offers a possibility to create 
 DSL, so, on top of DataScrambler API an according data generation DSL is created.
 
-DataScrambler is created using Groovy metaclass DSL capabilities and mixin declarations 
+DataScrambler is implemented using Groovy metaclass DSL capabilities and mixin declarations 
 (see [Groovy dynamic stateless mixins](https://groovyland.wordpress.com/2008/06/07/groovy-dynamic-stateless-mixins/) for example)
 Scrambler generation facades' methods are added dynamically to groovy expando metaclass in 
 ``org.prismus.scrambler.value.GroovyValueDefinition`` static block.
@@ -454,7 +454,7 @@ new HashSet().of(4.increment(10), 100)
 ![DSL classes](groovy-definition-class-dgm.png)
 
 ### DataScrambler definition scripts
-In addition to DSL definition, ``org.prismus.scrambler.value.GroovyValueDefinition`` is responsible for DataScrambler 
+In addition to DSL registration, ``org.prismus.scrambler.value.GroovyValueDefinition`` is responsible for DataScrambler 
 definition scripts parsing (``org.prismus.scrambler.value.GroovyValueDefinition#parseDefinitions(...)`` methods) 
 from various sources (classpath resource, File, InputStream, Reader or even simple text with definitions).
 
