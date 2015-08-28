@@ -405,8 +405,12 @@ public class ValueDefinition implements Cloneable {
         return results;
     }
 
+    public boolean hasDefinitions() {
+        return definitionMap.isEmpty();
+    }
+
     public Value lookupValue(String property, Class type) {
-        if (definitionMap.isEmpty()) {
+        if (hasDefinitions()) {
             scanDefinitions(DEFAULT_DEFINITIONS_RESOURCE);
         }
         Value value = null;

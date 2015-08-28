@@ -18,14 +18,11 @@
 
 package org.prismus.scrambler.test;
 
-import org.prismus.scrambler.InstanceScrambler;
 import org.prismus.scrambler.Value;
 import org.prismus.scrambler.value.ArrayContainerValue;
-import org.prismus.scrambler.value.InstanceValue;
 import org.prismus.scrambler.value.ValueDefinition;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Facade class helping to generate values for inquired method
@@ -34,25 +31,21 @@ import java.util.List;
  */
 public class BoxTestScrambler {
 
-    public static Value<Object[]> methodValues(InstanceValue instanceValue, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
-        BoxTestSuite.lookupMethod((Class<?>) instanceValue.lookupType(), method, args);
-        instanceValue.scanDefinitions(instanceValue.lookupType().toString() + "#" + method);
-        return new ArrayContainerValue(Arrays.asList(instanceValue.lookupValues(args)));
-    }
-
     public static Value<Object[]> methodValues(Class clazzType, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
-        return methodValues(InstanceScrambler.instanceOf(clazzType), method, args);
+        return BoxTestSuite.of(clazzType).methodValues(method, args);
     }
 
-    public static Value<Object[]> methodValues(List<String> definitions, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
-        final ValueDefinition valueDefinition = new ValueDefinition().scanDefinitions(definitions);
+    public static Value<Object[]> methodValues(String method, Class[] args, String... definitions) throws NoSuchMethodException, IllegalArgumentException {
+        final ValueDefinition valueDefinition = new ValueDefinition().scanDefinitions(Arrays.asList(definitions));
         return new ArrayContainerValue(valueDefinition.lookupValues(Arrays.asList(args)));
     }
 
-    @SuppressWarnings("unchecked")
     public static Value<Object[]> methodValues(Object instance, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
-        final Class clazzType = instance.getClass();
-        return methodValues(InstanceScrambler.instanceOf(clazzType).usingValue(instance), method, args);
+        return BoxTestSuite.of(instance).methodValues(method, args);
+    }
+
+    public static BoxTestSuite inspect(Object inspected) {
+        return BoxTestSuite.of(inspected);
     }
 
 }

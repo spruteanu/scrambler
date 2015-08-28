@@ -84,11 +84,9 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             scanDefinitions(lookupType().toString() + ValueDefinition.DEFINITION_SCRIPT_SUFFIX);
         }
         if (shouldBuildInstance()) {
-            final Object valueType = lookupType();
+            final Class valueType = lookupType();
             build(null);
-            if (valueType instanceof Class) {
-                definition.definition(ValuePredicates.isTypeOf((Class) valueType), this);
-            }
+            definition.definition(ValuePredicates.isTypeOf(valueType), this);
         }
         final T instance = checkCreateInstance();
         setValue(instance);
@@ -107,7 +105,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         if (constructorArguments != null) {
             for (final Object value : constructorArguments) {
                 if (Value.class.isInstance(value)) {
-                    this.constructorArguments.add((Value) value);
+                    this.constructorArguments.add(value);
                 } else {
                     this.constructorArguments.add(new Constant(value));
                 }
@@ -155,9 +153,13 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return this;
     }
 
-    public InstanceValue<T> scanDefinitions(String resource, String... resources) {
+    public InstanceValue<T> scanDefinitions(String... resources) {
         checkDefinitionCreated();
-        definition.scanDefinitions(resource, resources);
+        if (resources != null) {
+            definition.scanDefinitions(Arrays.asList(resources));
+        } else {
+            definition.usingLibraryDefinitions();
+        }
         if (hasFieldsDefined()) {
             shouldBuild.set(true);
         }
@@ -203,10 +205,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     public InstanceValue<T> usingValue(T value) {
         this.value = value;
         if (value != null) {
-            final Object type = lookupType();
-            if (type instanceof Class) {
-                ofType((Class) type);
-            }
+            ofType(lookupType());
         }
         return this;
     }
@@ -475,37 +474,36 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     @SuppressWarnings({"unchecked"})
     T checkCreateInstance() {
-        T result = this.value;
-        Object valueType = lookupType();
-        if (valueType instanceof Class) {
-            final Class clazzType = (Class) valueType;
-            final List<Value> constructorValues = lookupConstructorValues(clazzType);
-            Object[] arguments = null;
-            Class[] types = null;
-            if (constructorValues != null && constructorValues.size() > 0) {
-                arguments = new Object[constructorValues.size()];
-                types = new Class[constructorValues.size()];
-                for (int i = 0; i < constructorValues.size(); i++) {
-                    final Value value = constructorValues.get(i);
-                    final Object valueObject = value.next();
-                    arguments[i] = valueObject;
-                    types[i] = valueObject.getClass();
-                }
+        final Class clazzType = lookupType();
+        final List<Value> constructorValues = lookupConstructorValues(clazzType);
+        Object[] arguments = null;
+        Class[] types = null;
+        if (constructorValues != null && constructorValues.size() > 0) {
+            arguments = new Object[constructorValues.size()];
+            types = new Class[constructorValues.size()];
+            for (int i = 0; i < constructorValues.size(); i++) {
+                final Value value = constructorValues.get(i);
+                final Object valueObject = value.next();
+                arguments[i] = valueObject;
+                types[i] = valueObject.getClass();
             }
-            result = (T) Util.createInstance(clazzType, arguments, types);
         }
-        return result;
+        return (T) Util.createInstance(clazzType, arguments, types);
     }
 
-    public Object lookupType() {
+    public Class lookupType() {
         Object valueType = type;
         if (valueType == null) {
             valueType = value;
         }
         if (valueType instanceof String) {
             valueType = lookupType((String) valueType, true);
+        } else {
+            if (valueType != null && !(valueType instanceof Class)) {
+                valueType = valueType.getClass();
+            }
         }
-        return valueType;
+        return (Class)valueType;
     }
 
     static Class lookupType(String classType, boolean throwError) {

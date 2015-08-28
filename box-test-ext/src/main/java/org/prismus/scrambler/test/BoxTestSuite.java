@@ -1,7 +1,9 @@
 package org.prismus.scrambler.test;
 
+import org.prismus.scrambler.InstanceScrambler;
 import org.prismus.scrambler.Value;
-import org.prismus.scrambler.value.Constant;
+import org.prismus.scrambler.value.ArrayContainerValue;
+import org.prismus.scrambler.value.InstanceValue;
 import org.prismus.scrambler.value.ValueDefinition;
 
 import java.lang.reflect.InvocationTargetException;
@@ -15,7 +17,7 @@ import java.util.concurrent.Callable;
  * @author Serge Pruteanu
  */
 public class BoxTestSuite {
-    private Value<Object> inspected;
+    private InstanceValue inspected;
     private Class inspectedType;
 
     private final List<Callable<TestContext>> executionsList = new ArrayList<Callable<TestContext>>();
@@ -27,29 +29,37 @@ public class BoxTestSuite {
         inspect(inspected);
     }
 
+    @SuppressWarnings("unchecked")
     public BoxTestSuite inspect(Object inspected) {
-        return inspect(new Constant<Object>(inspected));
-    }
-
-    public BoxTestSuite inspect(Value<Object> inspected) {
-        this.inspected = inspected;
-        inspectedType = inspected.get().getClass();
+        if (inspected instanceof InstanceValue) {
+            this.inspected = (InstanceValue) inspected;
+        } else if (inspected instanceof Class) {
+            this.inspected = InstanceScrambler.instanceOf((Class) inspected);
+        } else if (inspected instanceof String) {
+            this.inspected = InstanceScrambler.instanceOf((String) inspected);
+        } else {
+            this.inspected = new InstanceValue().usingValue(inspected);
+        }
+        inspectedType = this.inspected.lookupType();
         return this;
     }
 
-    public ResultContext verify() {
-        final ResultContext resultContext = new ResultContext();
-        resultContext.setInspected(inspected.next());
-        for (final Callable<TestContext> testContextCallable : executionsList) {
-            TestContext testContext;
-            try {
-                testContext = testContextCallable.call();
-            } catch (Exception e) {
-                testContext = new TestContext(e, String.format("Failed execute test context: '%s'", testContextCallable)).verified(false);
-            }
-            resultContext.add(testContext);
+    Value<Object[]> methodValues(String methodName, Class... args) {
+        final ValueDefinition definition = inspected.getDefinition();
+        if (!definition.hasDefinitions()) {
+            definition.scanDefinitions(inspectedType.getName() + "." + methodName);
         }
-        return resultContext;
+        return new ArrayContainerValue(definition.lookupValues(Arrays.asList(args)));
+    }
+
+    public BoxTestSuite scanDefinitions(String... definitions) {
+        inspected.scanDefinitions(definitions);
+        return this;
+    }
+
+    public BoxTestSuite usingDefinitions(String definition, String... definitions) {
+        inspected.usingDefinitions(definition, definitions);
+        return this;
     }
 
     public MethodSuite of(String method, Class... args) throws NoSuchMethodException {
@@ -80,6 +90,21 @@ public class BoxTestSuite {
         executionsList.add(new ExpectationsCallable(expect.forContext(
                 new FieldContext(inspected, inspectedType.getDeclaredField(field), message))));
         return this;
+    }
+
+    public ResultContext verify() {
+        final ResultContext resultContext = new ResultContext();
+        resultContext.setInspected(inspected.next());
+        for (final Callable<TestContext> testContextCallable : executionsList) {
+            TestContext testContext;
+            try {
+                testContext = testContextCallable.call();
+            } catch (Exception e) {
+                testContext = new TestContext(e, String.format("Failed execute test context: '%s'", testContextCallable)).verified(false);
+            }
+            resultContext.add(testContext);
+        }
+        return resultContext;
     }
 
     public static BoxTestSuite of(Object inspected) {
@@ -115,7 +140,7 @@ public class BoxTestSuite {
         private Method method;
         private final List<Object> args;
 
-        private final ValueDefinition valueDefinition = new ValueDefinition();
+        private final ValueDefinition definition = new ValueDefinition();
         private MethodContext context;
         private final List<Expect> expectList = new ArrayList<Expect>();
 
@@ -142,15 +167,15 @@ public class BoxTestSuite {
 
         public MethodSuite scanDefinitions(String... definitions) {
             if (definitions != null) {
-                valueDefinition.scanDefinitions(Arrays.asList(definitions));
+                definition.scanDefinitions(Arrays.asList(definitions));
             } else {
-                valueDefinition.usingLibraryDefinitions();
+                definition.usingLibraryDefinitions();
             }
             return this;
         }
 
         public MethodSuite usingDefinitions(String... definitions) {
-            valueDefinition.usingDefinitions(definitions);
+            definition.usingDefinitions(definitions);
             return this;
         }
 
@@ -238,7 +263,7 @@ public class BoxTestSuite {
                 for (int i = 0; i < methodArgs.length; i++) {
                     Object arg = args.get(i);
                     if (arg instanceof Class) {
-                        arg = valueDefinition.lookupValue(null, (Class) arg);
+                        arg = definition.lookupValue(null, (Class) arg);
                     }
                     if (arg instanceof Value) {
                         arg = ((Value) arg).next();
