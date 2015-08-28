@@ -481,7 +481,7 @@ Eclipse support will be added in near future.
 In order to make definitions scripts re-usage an easy process, as well as to write less code for data generation, 
 DataScrambler API has a capability of definitions scanning in the classpath. Definitions are scanned by listing 
 all resources of ``META-INF/dictionary.desc``. Library definitions methods are available under definitions script scope
-(``org.prismus.scrambler.value.ValueDefinition#usingLibraryDefinitions(...)``) as well as at 
+``org.prismus.scrambler.value.ValueDefinition#usingLibraryDefinitions(...)`` as well as at 
 ``org.prismus.scrambler.value.InstanceValue#usingLibraryDefinitions(...)``.
 
 **Examples**<br/>
@@ -518,3 +518,4 @@ As a reference of definition scripts, see ``dictionary-ext`` module ones.
 
 ### JDBC extension
 **TBD, not implemented yet. Idea is to define rules that will populate database tables with data**
+ 

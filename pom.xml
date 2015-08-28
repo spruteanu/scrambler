@@ -16,6 +16,7 @@
     <modules>
         <module>api</module>
         <module>dictionary-ext</module>
+        <module>jdbc-ext</module>
         <module>box-test-ext</module>
     </modules>
 
