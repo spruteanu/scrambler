@@ -11,6 +11,7 @@ import org.prismus.scrambler.value.ValueDefinition
 import javax.sql.DataSource
 import java.sql.Connection
 import java.sql.ResultSet
+import java.sql.ResultSetMetaData
 
 /**
  * todo: add description
@@ -21,10 +22,16 @@ import java.sql.ResultSet
 class DatabaseValue implements Value {
     private final DataSource dataSource
     private ValueDefinition definition
+    private String schema
 
     DatabaseValue(DataSource dataSource) {
         this.dataSource = dataSource
         this.definition = new ValueDefinition()
+    }
+
+    DatabaseValue usingSchema(String schema) {
+        this.schema = schema
+        return this
     }
 
     DatabaseValue usingDefinition(ValueDefinition definition) {
@@ -57,27 +64,105 @@ class DatabaseValue implements Value {
         throw new RuntimeException('Implement me')
     }
 
-    protected List<String> getMssqlDbTables(DataSource dataSource) {
+    protected List<String> listMssqlTables() {
         return new Sql(dataSource)
                 .rows("SELECT table_name FROM information_schema.tables WHERE table_type = 'base table'")
                 .collect { GroovyRowResult it -> it.getAt(0) } as List<String>
     }
 
-    protected List<String> getDbTables(DataSource dataSource) {
+    protected Map<String, Table> listTableMap() {
+        final List<String> tables = listTables()
+        final tableMap = new LinkedHashMap<String, Table>(tables.size())
+        for (final String table : tables) {
+            tableMap.put(table, getTableMeta(table))
+        }
+        return tableMap
+    }
+
+    protected Table getTableMeta(String table) {
         Connection connection = null
         ResultSet rs = null
-        final result = new ArrayList<String>()
+        final result = new Table()
+        try {
+            connection = dataSource.connection
+            final databaseMetaData = connection.metaData
+            rs = databaseMetaData.getColumns(connection.catalog, schema, table, null)
+            while (rs.next()) {
+                final String columnName = rs.getString(4)
+                final int columnType = rs.getInt(5)
+                result.columnMap.put(columnName, new Column(name: columnName, type: columnType,
+                        columnProperties: listProperties(rs)))
+            }
+            result.idFields = getPrimaryKeys(table)
+            result.fkMap = getForeignKeys(table)
+        } finally {
+            closeQuietly(rs)
+            closeQuietly(connection)
+        }
+        return result
+    }
+
+    protected List<String> getPrimaryKeys(String table) {
+        Connection connection = null
+        ResultSet rs = null
+        final List<String> result = new ArrayList<String>()
+        try {
+            connection = dataSource.connection
+            rs = connection.metaData.getPrimaryKeys(connection.catalog, schema, table)
+            while (rs.next()) {
+                result.add(rs.getString(4))
+            }
+        } finally {
+            closeQuietly(rs)
+            closeQuietly(connection)
+        }
+        return result
+    }
+
+    protected Map<String, Map<String, Object>> getForeignKeys(String table) {
+        Connection connection = null
+        ResultSet rs = null
+        final result = [:]
+        try {
+            connection = dataSource.connection
+            rs = connection.metaData.getExportedKeys(connection.getCatalog(), null, table)
+            while (rs.next()) {
+                final String columnName = rs.getString("FK_NAME")
+                result.put(columnName, listProperties(rs))
+            }
+        } finally {
+            closeQuietly(rs)
+            closeQuietly(connection)
+        }
+        return result
+    }
+
+    protected Map<String, Object> listProperties(ResultSet rs) {
+        final props = [:]
+        final ResultSetMetaData rsmd = rs.getMetaData()
+        final int columnCount = rsmd.getColumnCount()
+        for (int i = 0; i < columnCount; i++) {
+            props.put(rsmd.getColumnName(i), rs.getObject(i))
+        }
+        return props
+    }
+
+    protected List<String> listTables() {
+        Connection connection = null
+        ResultSet rs = null
+        List<String> result = new ArrayList<String>()
         try {
             connection = dataSource.connection
             final databaseMetaData = connection.metaData
             final databaseProductName = connection.metaData.databaseProductName
             if (databaseProductName.contains('Microsoft')) {
-                return getMssqlDbTables(dataSource)
-            }
-            final String[] types = { 'TABLE' }
-            rs = databaseMetaData.getTables(connection.catalog, null, null, types)
-            while (rs.next()) {
-                result.add(rs.getString("TABLE_NAME"))
+                result = listMssqlTables()
+            } else {
+                final String[] types = { 'TABLE' }
+                rs = databaseMetaData.getTables(connection.catalog, schema, null, types)
+                while (rs.next()) {
+                    result.add(rs.getString("TABLE_NAME"))
+                }
             }
         } finally {
             closeQuietly(rs)
@@ -129,6 +214,25 @@ class DatabaseValue implements Value {
         try {
             rs?.close()
         } catch (Exception ignore) { }
+    }
+
+    private static class Table {
+        private String name
+        private List<String> idFields
+        private Map<String, Column> columnMap = [:]
+        private Map<String, Map<String, Object>> fkMap = [:]
+    }
+
+    private static class Column {
+        private String name
+        private int type
+
+        private boolean nullable
+        private boolean increment
+
+        private Class clazzType
+        private Map<String, Object> columnProperties
+
     }
 
 }
