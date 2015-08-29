@@ -21,16 +21,34 @@ import java.sql.ResultSetMetaData
 @CompileStatic
 class DatabaseValue implements Value {
     private final DataSource dataSource
+    private final Map<String, Table> tableMap
+    private boolean generateNullable = true
+
+    private List<Table> tables = new ArrayList<Table>()
+
     private ValueDefinition definition
-    private String schema
 
     DatabaseValue(DataSource dataSource) {
         this.dataSource = dataSource
         this.definition = new ValueDefinition()
+        this.tableMap = listTableMap()
     }
 
-    DatabaseValue usingSchema(String schema) {
-        this.schema = schema
+    DatabaseValue generateAll() {
+        this.generateNullable = true
+        return this
+    }
+
+    DatabaseValue generateStrict() {
+        this.generateNullable = false
+        return this
+    }
+
+    DatabaseValue forTable(String table) {
+        if (!tableMap.containsKey(table)) {
+            throw new IllegalArgumentException("'$table' is not found in provided datasource")
+        }
+        tables.add(tableMap.get(table))
         return this
     }
 
@@ -64,6 +82,27 @@ class DatabaseValue implements Value {
         throw new RuntimeException('Implement me')
     }
 
+    protected void insertData(String table, Collection<String> sortedKeys, List<Map> rows) {
+        final String insertStatement = buildInsertStatement(table, sortedKeys)
+        final sql = new Sql(dataSource)
+        try {
+            sql.withTransaction {
+                final counts = sql.withBatch(rows.size(), insertStatement) {
+                    final BatchingPreparedStatementWrapper statement ->
+                        for (final rowMap : rows) {
+                            statement.addBatch(new LinkedHashMap(rowMap))
+                        }
+                }
+                sql.commit()
+                if (counts == null || counts.length == 0) {
+                    throw new RuntimeException("Data for table $table are not inserted")
+                }
+            }
+        } finally {
+            sql.close()
+        }
+    }
+
     protected List<String> listMssqlTables() {
         return new Sql(dataSource)
                 .rows("SELECT table_name FROM information_schema.tables WHERE table_type = 'base table'")
@@ -82,11 +121,11 @@ class DatabaseValue implements Value {
     protected Table getTableMeta(String table) {
         Connection connection = null
         ResultSet rs = null
-        final result = new Table()
+        final result = new Table(name: table)
         try {
             connection = dataSource.connection
             final databaseMetaData = connection.metaData
-            rs = databaseMetaData.getColumns(connection.catalog, schema, table, null)
+            rs = databaseMetaData.getColumns(connection.catalog, connection.schema, table, null)
             while (rs.next()) {
                 final String columnName = rs.getString(4)
                 final int columnType = rs.getInt(5)
@@ -108,7 +147,7 @@ class DatabaseValue implements Value {
         final List<String> result = new ArrayList<String>()
         try {
             connection = dataSource.connection
-            rs = connection.metaData.getPrimaryKeys(connection.catalog, schema, table)
+            rs = connection.metaData.getPrimaryKeys(connection.catalog, connection.schema, table)
             while (rs.next()) {
                 result.add(rs.getString(4))
             }
@@ -159,7 +198,7 @@ class DatabaseValue implements Value {
                 result = listMssqlTables()
             } else {
                 final String[] types = { 'TABLE' }
-                rs = databaseMetaData.getTables(connection.catalog, schema, null, types)
+                rs = databaseMetaData.getTables(connection.catalog, connection.schema, null, types)
                 while (rs.next()) {
                     result.add(rs.getString("TABLE_NAME"))
                 }
@@ -169,27 +208,6 @@ class DatabaseValue implements Value {
             closeQuietly(connection)
         }
         return result
-    }
-
-    protected void insertData(String table, Collection<String> sortedKeys, List<Map> rows) {
-        final String insertStatement = buildInsertStatement(table, sortedKeys)
-        final sql = new Sql(dataSource)
-        try {
-            sql.withTransaction {
-                final counts = sql.withBatch(rows.size(), insertStatement) {
-                    final BatchingPreparedStatementWrapper statement ->
-                        for (final rowMap : rows) {
-                            statement.addBatch(new LinkedHashMap(rowMap))
-                        }
-                }
-                sql.commit()
-                if (counts == null || counts.length == 0) {
-                    throw new RuntimeException("Data for table $table are not inserted")
-                }
-            }
-        } finally {
-            sql.close()
-        }
     }
 
     @Override
@@ -218,7 +236,7 @@ class DatabaseValue implements Value {
 
     private static class Table {
         private String name
-        private List<String> idFields
+        private List<String> idFields = []
         private Map<String, Column> columnMap = [:]
         private Map<String, Map<String, Object>> fkMap = [:]
     }
