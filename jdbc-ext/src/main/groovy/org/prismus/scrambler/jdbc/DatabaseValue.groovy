@@ -5,7 +5,7 @@ import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
-import org.prismus.scrambler.Value
+import org.prismus.scrambler.value.Constant
 import org.prismus.scrambler.value.ValueDefinition
 
 import javax.sql.DataSource
@@ -19,7 +19,7 @@ import java.sql.ResultSetMetaData
  * @author Serge Pruteanu
  */
 @CompileStatic
-class DatabaseValue implements Value {
+class DatabaseValue extends Constant<List<Map<String, Object>>> {
     private final DataSource dataSource
     private final Map<String, Table> tableMap
     private boolean generateNullable = true
@@ -73,13 +73,9 @@ class DatabaseValue implements Value {
     }
 
     @Override
-    Object next() {
-        throw new RuntimeException('Implement me')
-    }
-
-    @Override
-    Object get() {
-        throw new RuntimeException('Implement me')
+    protected List<Map<String, Object>> doNext() {
+        // todo: implement me
+        return new ArrayList<Map<String,Object>>()
     }
 
     protected void insertData(String table, Collection<String> sortedKeys, List<Map> rows) {
@@ -125,7 +121,7 @@ class DatabaseValue implements Value {
         try {
             connection = dataSource.connection
             final databaseMetaData = connection.metaData
-            rs = databaseMetaData.getColumns(connection.catalog, connection.schema, table, null)
+            rs = databaseMetaData.getColumns(connection.catalog, null, table, null)
             while (rs.next()) {
                 final String columnName = rs.getString(4)
                 final int columnType = rs.getInt(5)
@@ -147,7 +143,7 @@ class DatabaseValue implements Value {
         final List<String> result = new ArrayList<String>()
         try {
             connection = dataSource.connection
-            rs = connection.metaData.getPrimaryKeys(connection.catalog, connection.schema, table)
+            rs = connection.metaData.getPrimaryKeys(connection.catalog, null, table)
             while (rs.next()) {
                 result.add(rs.getString(4))
             }
@@ -198,7 +194,7 @@ class DatabaseValue implements Value {
                 result = listMssqlTables()
             } else {
                 final String[] types = { 'TABLE' }
-                rs = databaseMetaData.getTables(connection.catalog, connection.schema, null, types)
+                rs = databaseMetaData.getTables(connection.catalog, null, null, types)
                 while (rs.next()) {
                     result.add(rs.getString("TABLE_NAME"))
                 }

@@ -1,4 +1,3 @@
-/*adopted example from http://www.telerik.com/help/openaccess-classic/quickstart-carrental-sample-database.html*/
 CREATE TABLE Cars(
   CarID INT IDENTITY(1,1) NOT NULL,
   TagNumber varchar(20) NULL,
@@ -63,21 +62,6 @@ CREATE TABLE RentalOrders(
   OrderTotal  DECIMAL(20, 2) NULL,
   OrderStatus varchar(50) NULL
 )
-/
-
-ALTER TABLE Cars ADD CONSTRAINT PK_RentalRates PRIMARY KEY (CarID)
-/
-
-ALTER TABLE RentalRates ADD CONSTRAINT PK_RentalRates PRIMARY KEY (RentalRateID)
-/
-
-ALTER TABLE Employees ADD CONSTRAINT PK_Employees PRIMARY KEY (EmployeeID)
-/
-
-ALTER TABLE Customers ADD CONSTRAINT PK_Customer PRIMARY KEY (CustomerID)
-/
-
-ALTER TABLE RentalOrders ADD CONSTRAINT PK_RentalOrder PRIMARY KEY (RentalOrderID)
 /
 
 ALTER TABLE RentalOrders ADD CONSTRAINT FK_Cars FOREIGN KEY(CarID) REFERENCES Cars (CarID)
