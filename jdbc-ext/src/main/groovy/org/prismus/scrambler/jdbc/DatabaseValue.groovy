@@ -1,5 +1,6 @@
 package org.prismus.scrambler.jdbc
 
+import com.sun.istack.internal.Nullable
 import groovy.sql.BatchingPreparedStatementWrapper
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
@@ -101,8 +102,16 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
 
     protected List<String> listMssqlTables() {
         return new Sql(dataSource)
-                .rows("SELECT table_name FROM information_schema.tables WHERE table_type = 'base table'")
+                .rows('SELECT table_name FROM information_schema.tables WHERE table_type = \'base table\'')
                 .collect { GroovyRowResult it -> it.getAt(0) } as List<String>
+    }
+
+    protected List<String> listH2Tables() {
+        return new Sql(dataSource)
+                .rows('SELECT DISTINCT table_name FROM information_schema.columns')
+                .collect { GroovyRowResult it ->
+            it.getAt(0)
+        } as List<String>
     }
 
     protected Map<String, Table> listTableMap() {
@@ -177,7 +186,7 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
         final ResultSetMetaData rsmd = rs.getMetaData()
         final int columnCount = rsmd.getColumnCount()
         for (int i = 0; i < columnCount; i++) {
-            props.put(rsmd.getColumnName(i), rs.getObject(i))
+            props.put(rsmd.getColumnName(i + 1), rs.getObject(i + 1))
         }
         return props
     }
@@ -192,6 +201,8 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
             final databaseProductName = connection.metaData.databaseProductName
             if (databaseProductName.contains('Microsoft')) {
                 result = listMssqlTables()
+            } else if (databaseProductName.contains('H2')) {
+                result = listH2Tables()
             } else {
                 final String[] types = { 'TABLE' }
                 rs = databaseMetaData.getTables(connection.catalog, null, null, types)
@@ -241,12 +252,16 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
         private String name
         private int type
 
-        private boolean nullable
-        private boolean increment
-
         private Class clazzType
-        private Map<String, Object> columnProperties
+        private Map<String, Object> columnProperties = [:]
 
+        boolean isNullable() {
+            return columnProperties.get('NULLABLE') == 0
+        }
+
+        boolean isIncrement() {
+            return columnProperties.get('IS_AUTOINCREMENT')?.toString()?.equalsIgnoreCase('yes')
+        }
     }
 
 }

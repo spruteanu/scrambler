@@ -23,8 +23,10 @@ class DatabaseTest extends Specification {
     void 'verify database population'() {
         given:
         final dbValue = new DatabaseValue(dataSource)
+
         expect:
         dbValue != null
+        dbValue.tableMap.size() > 0
     }
 
 }
