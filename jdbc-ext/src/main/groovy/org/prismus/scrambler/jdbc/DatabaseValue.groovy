@@ -52,6 +52,7 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
 
     private final DataSource dataSource
     private final Map<String, Table> tableMap
+    private final Map<String, String> fkTableMap = [:] as Map<String, String>
     private boolean generateNullable = true
 
     private List<Table> tables = new ArrayList<Table>()
@@ -203,7 +204,9 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
             rs = connection.metaData.getExportedKeys(connection.getCatalog(), null, table)
             while (rs.next()) {
                 final String fkName = rs.getString("FK_NAME")
-                result.put(fkName, listProperties(rs))
+                final fkProps = listProperties(rs)
+                result.put(fkName, fkProps)
+                fkTableMap.put(table + '.' + fkProps.get(''), null)
             }
         } finally {
             closeQuietly(rs)
