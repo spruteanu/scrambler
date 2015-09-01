@@ -27,6 +27,7 @@ class DatabaseTest extends Specification {
         expect:
         dbValue != null
         dbValue.tableMap.size() > 0
+        'H2' == dbValue.dbName
     }
 
 }

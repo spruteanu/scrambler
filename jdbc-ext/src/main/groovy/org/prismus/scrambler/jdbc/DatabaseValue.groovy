@@ -1,18 +1,16 @@
 package org.prismus.scrambler.jdbc
 
-import com.sun.istack.internal.Nullable
 import groovy.sql.BatchingPreparedStatementWrapper
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 import org.prismus.scrambler.value.Constant
+import org.prismus.scrambler.value.MapValue
 import org.prismus.scrambler.value.ValueDefinition
 
 import javax.sql.DataSource
-import java.sql.Connection
-import java.sql.ResultSet
-import java.sql.ResultSetMetaData
+import java.sql.*
 
 /**
  * todo: add description
@@ -21,11 +19,41 @@ import java.sql.ResultSetMetaData
  */
 @CompileStatic
 class DatabaseValue extends Constant<List<Map<String, Object>>> {
+    static Map<Integer, Class> typeClassMap = [
+            (Types.BIT)          : Boolean,
+            (Types.TINYINT)      : Byte,
+            (Types.SMALLINT)     : Short,
+            (Types.INTEGER)      : Integer,
+            (Types.BIGINT)       : Long,
+            (Types.FLOAT)        : Float,
+            (Types.REAL)         : Float,
+            (Types.DOUBLE)       : Double,
+            (Types.NUMERIC)      : BigDecimal,
+            (Types.DECIMAL)      : BigDecimal,
+            (Types.CHAR)         : Character,
+            (Types.VARCHAR)      : String,
+            (Types.LONGVARCHAR)  : String,
+            (Types.DATE)         : java.sql.Date,
+            (Types.TIME)         : Time,
+            (Types.TIMESTAMP)    : Timestamp,
+            (Types.BINARY)       : (byte[]),
+            (Types.VARBINARY)    : (byte[]),
+            (Types.LONGVARBINARY): (byte[]),
+            (Types.BLOB)         : (byte[]),
+            (Types.CLOB)         : String,
+            (Types.BOOLEAN)      : Boolean,
+            (Types.NCHAR)        : String,
+            (Types.NVARCHAR)     : String,
+            (Types.LONGNVARCHAR) : String,
+            (Types.NCLOB)        : String,
+    ] as Map<Integer, Class>
+
     private final DataSource dataSource
     private final Map<String, Table> tableMap
     private boolean generateNullable = true
 
     private List<Table> tables = new ArrayList<Table>()
+    private Map<String, MapValue<String>> tableValueMap
 
     private ValueDefinition definition
 
@@ -33,6 +61,11 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
         this.dataSource = dataSource
         this.definition = new ValueDefinition()
         this.tableMap = listTableMap()
+    }
+
+    DatabaseValue registerTypeClass(int type, Class clazzType) {
+        typeClassMap.put(type, clazzType)
+        return this
     }
 
     DatabaseValue generateAll() {
@@ -76,7 +109,7 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
     @Override
     protected List<Map<String, Object>> doNext() {
         // todo: implement me
-        return new ArrayList<Map<String,Object>>()
+        return new ArrayList<Map<String, Object>>()
     }
 
     protected void insertData(String table, Collection<String> sortedKeys, List<Map> rows) {
@@ -109,9 +142,7 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
     protected List<String> listH2Tables() {
         return new Sql(dataSource)
                 .rows('SELECT DISTINCT table_name FROM information_schema.columns')
-                .collect { GroovyRowResult it ->
-            it.getAt(0)
-        } as List<String>
+                .collect { GroovyRowResult it -> it.getAt(0) } as List<String>
     }
 
     protected Map<String, Table> listTableMap() {
@@ -217,6 +248,16 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
         return result
     }
 
+    String getDbName() {
+        Connection connection = null
+        try {
+            connection = dataSource.connection
+            return connection.metaData.databaseProductName
+        } finally {
+            closeQuietly(connection)
+        }
+    }
+
     @Override
     Object clone() throws CloneNotSupportedException {
         return super.clone()
@@ -252,7 +293,6 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
         private String name
         private int type
 
-        private Class clazzType
         private Map<String, Object> columnProperties = [:]
 
         boolean isNullable() {
@@ -261,6 +301,10 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
 
         boolean isIncrement() {
             return columnProperties.get('IS_AUTOINCREMENT')?.toString()?.equalsIgnoreCase('yes')
+        }
+
+        Class getClassType() {
+            return typeClassMap.get(type)
         }
     }
 
