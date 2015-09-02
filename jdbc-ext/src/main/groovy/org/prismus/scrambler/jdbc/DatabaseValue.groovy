@@ -110,8 +110,18 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
 
     @Override
     protected List<Map<String, Object>> doNext() {
+        sortTablesByFkDependency()
         // todo: implement me
         return new ArrayList<Map<String, Object>>()
+    }
+
+    protected void sortTablesByFkDependency() {
+        Collections.sort(tables, new Comparator<Table>() {
+            @Override
+            int compare(Table left, Table right) {
+                return right.hasFkDependency(left.name) ? 1 : 0
+            }
+        })
     }
 
     protected void insertData(String table, String insertStatement, List<Map> rows) {
@@ -206,13 +216,17 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
                 final String fkName = rs.getString("FK_NAME")
                 final fkProps = listProperties(rs)
                 result.put(fkName, fkProps)
-                fkTableMap.put(table + '.' + fkProps.get(''), null)
+                fkTableMap.put(buildFkTableKey(fkProps.get('FKTABLE_NAME').toString(), fkProps.get('FKCOLUMN_NAME').toString()), table)
             }
         } finally {
             closeQuietly(rs)
             closeQuietly(connection)
         }
         return result
+    }
+
+    protected String buildFkTableKey(String table, String column) {
+        return "$table.$column"
     }
 
     protected Map<String, Object> listProperties(ResultSet rs) {
