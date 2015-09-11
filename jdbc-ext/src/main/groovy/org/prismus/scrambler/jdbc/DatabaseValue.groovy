@@ -336,19 +336,21 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
             final valueMap = new LinkedHashMap<String, Value>()
             for (Map.Entry<String, Column> entry : columnMap.entrySet()) {
                 final column = entry.value
-                if (!column.isIncrement()) {
+                if (column.isAutoIncrement()) {
                     continue
                 }
                 final columnName = entry.key
                 Value value = databaseValue.definition.lookupValue(columnName, column.classType)
                 if (!databaseValue.generateNullable && column.isNullable()) {
-                    value = null
+                    continue
                 }
                 if (value != null) {
                     keys.add(columnName)
                     valueMap.put(columnName, value)
+                } else {
+                    // todo Serge: resolve foreign key values
                 }
-            } // todo Serge: resolve foreign key values
+            }
 
             Collections.sort(keys)
             sortedKeys = new LinkedHashSet<String>(keys)
@@ -374,7 +376,7 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
             return columnProperties.get('NULLABLE') == 0
         }
 
-        boolean isIncrement() {
+        boolean isAutoIncrement() {
             return columnProperties.get('IS_AUTOINCREMENT')?.toString()?.equalsIgnoreCase('yes')
         }
 

@@ -22,6 +22,7 @@ definition(~/(?i)(?:last\s*Name)|(?:last)/, lastNames.randomOf())
 definition(~/(?i)gender/, new GenderValue(femaleFirstNames, ~/(?i)gender/))
 definition(~/(?i)(?:\w*dob)|(?:\w*birth)/, new DobValue())
 definition(~/(?i)\w*phone/, new PhoneValue())
+definition(~/(?i)\w*email\w*/, new EmailValue(getContextProperty('domain')))
 
 @CompileStatic
 private static List loadNames() {
@@ -124,5 +125,38 @@ class PhoneValue extends Constant<String> {
     @Override
     protected String doNext() {
         return String.format('(%s)-%s-%s', group1.next(), group2.next(), group3.next())
+    }
+}
+
+@CompileStatic
+class DomainValue extends Constant<String> {
+    private Value<String> nameValue;
+    private Value<String> emailPartValue;
+
+    @Override
+    protected String doNext() {
+        return String.format('%s.%s', emailPartValue.next() , nameValue.next())
+    }
+}
+
+@CompileStatic
+class EmailValue extends Constant<String> {
+    private Value<String> domainValue;
+    private Value<String> nameValue;
+
+    EmailValue() {
+    }
+
+    EmailValue(String domain) {
+    }
+
+    EmailValue(Value<String> domainValue, Value<String> nameValue) {
+        this.domainValue = domainValue
+        this.nameValue = nameValue
+    }
+
+    @Override
+    protected String doNext() {
+        return String.format('%s@%s', nameValue.next() , domainValue.next())
     }
 }
