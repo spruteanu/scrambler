@@ -368,6 +368,10 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
+    public Map<String, Object> getContextMap() {
+        return contextMap;
+    }
+
     public Object getContextProperty(String property) {
         return contextMap.get(property);
     }

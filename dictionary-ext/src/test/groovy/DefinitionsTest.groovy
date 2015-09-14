@@ -28,7 +28,8 @@ class DefinitionsTest extends Specification {
         0 < MapScrambler.mapOf(['firstName', 'lastName', 'middleName', 'gender', 'dateOfBirth', 'phone']).next().size()
 
         and: 'verify address generation for Washington state'
-        0 < MapScrambler.mapOf(['Building Number', 'Street', 'State', 'City', 'Postal Code'], [state: 'Washington']).next().size()
+        0 < MapScrambler.mapOf(['Building Number', 'Street', 'State', 'City', 'Postal Code', 'email'],
+                [state: 'Washington', 'domain': 'google.com']).next().size()
     }
 
 }

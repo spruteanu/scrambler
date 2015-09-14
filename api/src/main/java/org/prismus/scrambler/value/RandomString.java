@@ -22,22 +22,29 @@ package org.prismus.scrambler.value;
  * @author Serge Pruteanu
  */
 public class RandomString extends Constant<String> {
+    private String template;
     private final java.util.Random random;
     private Integer count;
+    private Integer maxCount;
 
     public RandomString() {
-        this(null);
+        this(null, null);
     }
 
     public RandomString(String value) {
-        super(value);
-        random = new java.util.Random();
+        this(value, null);
     }
 
     public RandomString(String value, Integer count) {
         super(value);
+        this.template = value;
         this.count = count;
         random = new java.util.Random();
+    }
+
+    public RandomString maxCount(Integer maxCount) {
+        this.maxCount = maxCount;
+        return this;
     }
 
     public void setCount(Integer count) {
@@ -51,7 +58,10 @@ public class RandomString extends Constant<String> {
 
     @Override
     protected String doNext() {
-        String value = this.value;
+        String value = template;
+        if (value == null) {
+            value = this.value;
+        }
         if (value == null) {
             value = "RandomString";
         }
@@ -62,6 +72,9 @@ public class RandomString extends Constant<String> {
 
     Integer checkCount(String value) {
         Integer count = this.count;
+        if (count == null && maxCount != null) {
+            count = random.nextInt(maxCount) + 1;
+        }
         if (count == null) {
             count = value.length();
         }

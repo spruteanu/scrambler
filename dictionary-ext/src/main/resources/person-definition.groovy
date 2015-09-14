@@ -3,6 +3,7 @@ import org.prismus.scrambler.CollectionScrambler
 import org.prismus.scrambler.NumberScrambler
 import org.prismus.scrambler.Value
 import org.prismus.scrambler.value.Constant
+import org.prismus.scrambler.value.RandomString
 import org.prismus.scrambler.value.ReferenceValue
 
 import java.util.regex.Pattern
@@ -22,7 +23,7 @@ definition(~/(?i)(?:last\s*Name)|(?:last)/, lastNames.randomOf())
 definition(~/(?i)gender/, new GenderValue(femaleFirstNames, ~/(?i)gender/))
 definition(~/(?i)(?:\w*dob)|(?:\w*birth)/, new DobValue())
 definition(~/(?i)\w*phone/, new PhoneValue())
-definition(~/(?i)\w*email\w*/, new EmailValue(getContextProperty('domain')))
+definition(~/(?i)\w*email\w*/, EmailValue.of(getContextMap()))
 
 @CompileStatic
 private static List loadNames() {
@@ -130,25 +131,36 @@ class PhoneValue extends Constant<String> {
 
 @CompileStatic
 class DomainValue extends Constant<String> {
-    private Value<String> nameValue;
-    private Value<String> emailPartValue;
+    private final Value<String> nameValue;
+    private final Value<String> extensionValue;
+
+    DomainValue(Value<String> nameValue, Value<String> extensionValue) {
+        this.nameValue = nameValue
+        this.extensionValue = extensionValue
+    }
 
     @Override
     protected String doNext() {
-        return String.format('%s.%s', emailPartValue.next() , nameValue.next())
+        return String.format('%s.%s', nameValue.next() , extensionValue.next())
+    }
+
+    static DomainValue of(Map<String, Object> contextMap) {
+        Value<String> domainValue = new RandomString(EmailValue.getTemplateString()).maxCount(20)
+        Value<String> extensionValue = new RandomString(EmailValue.getTemplateString()).maxCount(10)
+        if (contextMap.containsKey('domain-template')) {
+            domainValue = new RandomString(contextMap.get('domain-template').toString())
+        }
+        if (contextMap.containsKey('domain-extension')) {
+            domainValue = new Constant<String>(contextMap.get('domain-extension').toString())
+        }
+        return new DomainValue(domainValue, extensionValue)
     }
 }
 
 @CompileStatic
 class EmailValue extends Constant<String> {
-    private Value<String> domainValue;
-    private Value<String> nameValue;
-
-    EmailValue() {
-    }
-
-    EmailValue(String domain) {
-    }
+    private final Value<String> domainValue;
+    private final Value<String> nameValue;
 
     EmailValue(Value<String> domainValue, Value<String> nameValue) {
         this.domainValue = domainValue
@@ -158,5 +170,28 @@ class EmailValue extends Constant<String> {
     @Override
     protected String doNext() {
         return String.format('%s@%s', nameValue.next() , domainValue.next())
+    }
+
+    static Value<String> of(Map<String, Object> contextMap) {
+        if (contextMap.containsKey('email')) {
+            return new Constant<String>(contextMap.get('email').toString())
+        }
+        if (contextMap.containsKey('domain')) {
+            String domainNamePattern = getTemplateString()
+            return new EmailValue(
+                    new Constant<String>(contextMap.get('domain').toString()),
+                    new RandomString(domainNamePattern).maxCount(20)
+            )
+        }
+        return new EmailValue(DomainValue.of(contextMap), new RandomString(getTemplateString()))
+    }
+
+    @CompileStatic
+    static String getTemplateString() {
+        List list = new ArrayList()
+        list += 'a'..'z'
+        list += 0..9
+        list += ['.', '_', '-']
+        return list.join('')
     }
 }

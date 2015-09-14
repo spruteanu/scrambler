@@ -42,6 +42,6 @@ contributor context(ctype: Boolean.name) , {
     findClass('org.prismus.scrambler.value.GroovyValueDefinition.BooleanCategory')?.methods?.each methodsClosure
 }
 
-contributor context(scope: scriptScope(name: /(?:.*definition|.*vd).groovy/ )) , {
+contributor context(scope: scriptScope(name: ~/(?:.*definition|.*vd).groovy/ )) , {
     findClass('org.prismus.scrambler.value.GroovyValueDefinition.ValueDefinitionCategory')?.methods?.each methodsClosure
 }
