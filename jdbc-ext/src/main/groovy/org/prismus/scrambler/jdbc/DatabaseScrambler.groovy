@@ -1,6 +1,5 @@
 package org.prismus.scrambler.jdbc
 
-import groovy.sql.BatchingPreparedStatementWrapper
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
@@ -123,26 +122,6 @@ class DatabaseScrambler {
                 return right.hasFkDependency(left.name) ? 1 : 0
             }
         })
-    }
-
-    protected void insertData(String table, String insertStatement, List<Map> rows) {
-        final sql = new Sql(dataSource)
-        try {
-            sql.withTransaction {
-                final counts = sql.withBatch(rows.size(), insertStatement) {
-                    final BatchingPreparedStatementWrapper statement ->
-                        for (final rowMap : rows) {
-                            statement.addBatch(new LinkedHashMap(rowMap))
-                        }
-                }
-                sql.commit()
-                if (counts == null || counts.length == 0) {
-                    throw new RuntimeException("Data for table $table are not inserted")
-                }
-            }
-        } finally {
-            sql.close()
-        }
     }
 
     protected List<String> listMssqlTables() {
