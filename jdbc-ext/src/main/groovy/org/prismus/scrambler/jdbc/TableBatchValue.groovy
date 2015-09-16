@@ -29,7 +29,6 @@ class TableBatchValue extends Constant<List<Map<String, Object>>> {
                         statement.addBatch(new LinkedHashMap(rowMap))
                     }
             }
-            dataSet.commit()
             if (counts == null || counts.length == 0) {
                 throw new RuntimeException("Data for table $table are not inserted")
             }
