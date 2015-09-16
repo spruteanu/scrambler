@@ -1,47 +1,76 @@
-
-final methodsClosure = {
-    if (!it.isConstructor()) {
-        add it
-    }
-}
-
 /**
  * IntelliJ IDEA contextMap code completion definitions for DataScrambler
  *
  * @author Serge Pruteanu
  */
-contributor context(ctype: Number.name) , {
-    findClass('org.prismus.scrambler.value.GroovyValueDefinition.NumberCategory')?.methods?.each methodsClosure
+contributor context(ctype: Number.name), {
+    findClass('org.prismus.scrambler.value.GroovyValueDefinition.NumberCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
 }
 
-contributor context(ctype: Date.name) , {
-    findClass('org.prismus.scrambler.value.GroovyValueDefinition.DateCategory')?.methods?.each methodsClosure
+contributor context(ctype: Date.name), {
+    findClass('org.prismus.scrambler.value.GroovyValueDefinition.DateCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
 }
 
-contributor context(ctype: String.name) , {
-    findClass('org.prismus.scrambler.value.GroovyValueDefinition.StringCategory')?.methods?.each methodsClosure
+contributor context(ctype: String.name), {
+    findClass('org.prismus.scrambler.value.GroovyValueDefinition.StringCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
 }
 
-contributor context(ctype: Collection.name) , {
-    findClass('org.prismus.scrambler.value.GroovyValueDefinition.CollectionCategory')?.methods?.each methodsClosure
+contributor context(ctype: Collection.name), {
+    findClass('org.prismus.scrambler.value.GroovyValueDefinition.CollectionCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
 }
 
-contributor context(ctype: Map.name) , {
-    findClass('org.prismus.scrambler.value.GroovyValueDefinition.MapCategory')?.methods?.each methodsClosure
+contributor context(ctype: Map.name), {
+    findClass('org.prismus.scrambler.value.GroovyValueDefinition.MapCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
 }
 
-contributor context(ctype: Object.name) , {
-    findClass('org.prismus.scrambler.value.GroovyValueDefinition.ObjectCategory')?.methods?.each methodsClosure
+contributor context(ctype: Object.name), {
+    findClass('org.prismus.scrambler.value.GroovyValueDefinition.ObjectCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
 }
 
-contributor context(ctype: Class.name) , {
-    findClass('org.prismus.scrambler.value.GroovyValueDefinition.ClassCategory')?.methods?.each methodsClosure
+contributor context(ctype: Class.name), {
+    findClass('org.prismus.scrambler.value.GroovyValueDefinition.ClassCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
 }
 
-contributor context(ctype: Boolean.name) , {
-    findClass('org.prismus.scrambler.value.GroovyValueDefinition.BooleanCategory')?.methods?.each methodsClosure
+contributor context(ctype: Boolean.name), {
+    findClass('org.prismus.scrambler.value.GroovyValueDefinition.BooleanCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
 }
 
-contributor context(scope: scriptScope(name: ~/(?:.*definition|.*vd).groovy/ )) , {
-    findClass('org.prismus.scrambler.value.GroovyValueDefinition.ValueDefinitionCategory')?.methods?.each methodsClosure
+contributor context(scope: scriptScope(name: ~/(?:.*definition|.*vd).groovy/)), {
+    findClass('org.prismus.scrambler.value.GroovyValueDefinition.ValueDefinitionCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
 }
