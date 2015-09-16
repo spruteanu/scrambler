@@ -3,7 +3,6 @@ package org.prismus.scrambler.jdbc
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
-import groovy.transform.PackageScope
 import org.prismus.scrambler.value.ValueDefinition
 
 import javax.sql.DataSource
@@ -157,13 +156,13 @@ class DatabaseScrambler {
                 final String columnName = rs.getString(4)
                 final int columnType = rs.getInt(5)
                 result.columnMap.put(columnName, new ColumnMeta(name: columnName, type: columnType,
-                        columnProperties: listProperties(rs), classType: typeClassMap.get(columnType)))
+                        columnProperties: Util.asMap(rs), classType: typeClassMap.get(columnType)))
             }
             result.idFields = getPrimaryKeys(table)
             result.fkMap = getForeignKeys(table)
         } finally {
-            closeQuietly(rs)
-            closeQuietly(connection)
+            Util.closeQuietly(rs)
+            Util.closeQuietly(connection)
         }
         return result
     }
@@ -179,8 +178,8 @@ class DatabaseScrambler {
                 result.add(rs.getString(4))
             }
         } finally {
-            closeQuietly(rs)
-            closeQuietly(connection)
+            Util.closeQuietly(rs)
+            Util.closeQuietly(connection)
         }
         return result
     }
@@ -194,29 +193,19 @@ class DatabaseScrambler {
             rs = connection.metaData.getExportedKeys(connection.getCatalog(), null, table)
             while (rs.next()) {
                 final String fkName = rs.getString("FK_NAME")
-                final fkProps = listProperties(rs)
+                final fkProps = Util.asMap(rs)
                 result.put(fkName, fkProps)
                 fkTableMap.put(buildFkTableKey(fkProps.get('FKTABLE_NAME').toString(), fkProps.get('FKCOLUMN_NAME').toString()), table)
             }
         } finally {
-            closeQuietly(rs)
-            closeQuietly(connection)
+            Util.closeQuietly(rs)
+            Util.closeQuietly(connection)
         }
         return result
     }
 
     protected String buildFkTableKey(String table, String column) {
         return "$table.$column"
-    }
-
-    protected Map<String, Object> listProperties(ResultSet rs) {
-        final props = [:]
-        final ResultSetMetaData rsmd = rs.getMetaData()
-        final int columnCount = rsmd.getColumnCount()
-        for (int i = 0; i < columnCount; i++) {
-            props.put(rsmd.getColumnName(i + 1), rs.getObject(i + 1))
-        }
-        return props
     }
 
     protected List<String> listTables() {
@@ -239,8 +228,8 @@ class DatabaseScrambler {
                 }
             }
         } finally {
-            closeQuietly(rs)
-            closeQuietly(connection)
+            Util.closeQuietly(rs)
+            Util.closeQuietly(connection)
         }
         return result
     }
@@ -251,22 +240,8 @@ class DatabaseScrambler {
             connection = dataSource.connection
             return connection.metaData.databaseProductName
         } finally {
-            closeQuietly(connection)
+            Util.closeQuietly(connection)
         }
-    }
-
-    @PackageScope
-    static void closeQuietly(Connection connection) {
-        try {
-            connection?.close()
-        } catch (Exception ignore) { }
-    }
-
-    @PackageScope
-    static void closeQuietly(ResultSet rs) {
-        try {
-            rs?.close()
-        } catch (Exception ignore) { }
     }
 
 }

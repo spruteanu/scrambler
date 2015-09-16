@@ -4,6 +4,8 @@ import groovy.sql.BatchingPreparedStatementWrapper
 import groovy.sql.DataSet
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
+import org.prismus.scrambler.Value
 import org.prismus.scrambler.value.Constant
 
 import javax.sql.DataSource
@@ -16,23 +18,40 @@ import javax.sql.DataSource
 @CompileStatic
 class TableBatchValue extends Constant<List<Map<String, Object>>> {
     final DataSet dataSet
+    final Map<String, Value> valueMap
+    final int count
 
-    TableBatchValue(DataSource dataSource, String table) {
+    private final String insertStatement
+
+    TableBatchValue(DataSource dataSource, String table, Map<String, Value> valueMap, int count) {
         this.dataSet = new DataSet(new Sql(dataSource), table)
+        this.valueMap = valueMap
+        this.count = count
+        insertStatement = Util.buildInsertStatement(table, valueMap.keySet().sort())
     }
 
-    protected void insertData(String table, String insertStatement, List<Map> rows) {
+    @Override
+    protected List<Map<String, Object>> doNext() {
+        final rows = new ArrayList<Map<String, Object>>(count)
         dataSet.withTransaction {
-            final counts = dataSet.withBatch(rows.size(), insertStatement) {
-                final BatchingPreparedStatementWrapper statement ->
-                    for (final rowMap : rows) {
-                        statement.addBatch(new LinkedHashMap(rowMap))
-                    }
-            }
-            if (counts == null || counts.length == 0) {
-                throw new RuntimeException("Data for table $table are not inserted")
+            dataSet.withBatch(count, insertStatement) { final BatchingPreparedStatementWrapper statement ->
+                for (int i = 0; i < count; i++) {
+                    final Map<String, Object> rowMap = generateRowMap()
+                    rows.add(rowMap)
+                    statement.addBatch(rowMap)
+                }
             }
         }
+        return rows
+    }
+
+    @PackageScope
+    Map<String, Object> generateRowMap() {
+        final rowMap = new LinkedHashMap<String, Object>(valueMap.size())
+        for (Map.Entry<String, Value> entry : valueMap.entrySet()) {
+            rowMap.put(entry.key, entry.value.next())
+        }
+        return rowMap
     }
 
 }
