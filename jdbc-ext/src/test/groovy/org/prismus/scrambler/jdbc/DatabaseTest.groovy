@@ -22,7 +22,7 @@ class DatabaseTest extends Specification {
 
     void 'verify database population'() {
         given:
-        final dbValue = new DatabaseValue(dataSource)
+        final dbValue = new DatabaseScrambler(dataSource)
 
         expect:
         dbValue != null

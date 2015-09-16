@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
  * @author Serge Pruteanu
  */
 public class Expect {
+    // todo Serge: investigate groovy code visitor capabilities, based on example: class SqlWhereVisitor extends CodeVisitorSupport
     private final List<ValuePredicate> predicates;
     private TestContext expectationContext;
     private String message;

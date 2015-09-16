@@ -5,10 +5,7 @@ import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
-import org.prismus.scrambler.MapScrambler
-import org.prismus.scrambler.Value
 import org.prismus.scrambler.value.Constant
-import org.prismus.scrambler.value.MapValue
 import org.prismus.scrambler.value.ValueDefinition
 
 import javax.sql.DataSource
@@ -20,7 +17,7 @@ import java.sql.*
  * @author Serge Pruteanu
  */
 @CompileStatic
-class DatabaseValue extends Constant<List<Map<String, Object>>> {
+class DatabaseScrambler extends Constant<List<Map<String, Object>>> {
     static Map<Integer, Class> typeClassMap = [
             (Types.BIT)          : Boolean,
             (Types.TINYINT)      : Byte,
@@ -51,36 +48,36 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
     ] as Map<Integer, Class>
 
     private final DataSource dataSource
-    private final Map<String, Table> tableMap
+    private final Map<String, TableMeta> tableMap
     private final Map<String, String> fkTableMap = [:] as Map<String, String>
     private boolean generateNullable = true
 
-    private List<Table> tables = new ArrayList<Table>()
+    private List<TableMeta> tables = new ArrayList<TableMeta>()
 
     private ValueDefinition definition
 
-    DatabaseValue(DataSource dataSource) {
+    DatabaseScrambler(DataSource dataSource) {
         this.dataSource = dataSource
         this.definition = new ValueDefinition()
         this.tableMap = listTableMap()
     }
 
-    DatabaseValue registerTypeClass(int type, Class clazzType) {
+    DatabaseScrambler registerTypeClass(int type, Class clazzType) {
         typeClassMap.put(type, clazzType)
         return this
     }
 
-    DatabaseValue generateAll() {
+    DatabaseScrambler generateAll() {
         this.generateNullable = true
         return this
     }
 
-    DatabaseValue generateStrict() {
+    DatabaseScrambler generateStrict() {
         this.generateNullable = false
         return this
     }
 
-    DatabaseValue forTable(String table) {
+    DatabaseScrambler forTable(String table) {
         if (!tableMap.containsKey(table)) {
             throw new IllegalArgumentException("'$table' is not found in provided datasource")
         }
@@ -88,24 +85,36 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
         return this
     }
 
-    DatabaseValue usingDefinition(ValueDefinition definition) {
+    DatabaseScrambler usingDefinition(ValueDefinition definition) {
         this.definition = definition
         return this
     }
 
-    DatabaseValue usingDefinition(String... definitions) {
+    DatabaseScrambler usingDefinition(String... definitions) {
         definition.usingDefinitions(definitions)
         return this
     }
 
-    DatabaseValue scanDefinition(String definition, String... definitions) {
+    DatabaseScrambler scanDefinition(String definition, String... definitions) {
         this.definition.scanDefinitions(definition, definitions)
         return this
     }
 
-    DatabaseValue scanLibraryDefinition(String definitionMatcher) {
+    DatabaseScrambler scanLibraryDefinition(String definitionMatcher) {
         definition.usingLibraryDefinitions(definitionMatcher)
         return this
+    }
+
+    ValueDefinition getDefinition() {
+        return definition
+    }
+
+    boolean getGenerateNullable() {
+        return generateNullable
+    }
+
+    static Map<Integer, Class> getTypeClassMap() {
+        return typeClassMap
     }
 
     @Override
@@ -116,9 +125,9 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
     }
 
     protected void sortTablesByFkDependency() {
-        Collections.sort(tables, new Comparator<Table>() {
+        Collections.sort(tables, new Comparator<TableMeta>() {
             @Override
-            int compare(Table left, Table right) {
+            int compare(TableMeta left, TableMeta right) {
                 return right.hasFkDependency(left.name) ? 1 : 0
             }
         })
@@ -156,19 +165,19 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
                 .collect { GroovyRowResult it -> it.getAt(0) } as List<String>
     }
 
-    protected Map<String, Table> listTableMap() {
+    protected Map<String, TableMeta> listTableMap() {
         final List<String> tables = listTables()
-        final tableMap = new LinkedHashMap<String, Table>(tables.size())
+        final tableMap = new LinkedHashMap<String, TableMeta>(tables.size())
         for (final String table : tables) {
             tableMap.put(table, getTableMeta(table))
         }
         return tableMap
     }
 
-    protected Table getTableMeta(String table) {
+    protected TableMeta getTableMeta(String table) {
         Connection connection = null
         ResultSet rs = null
-        final result = new Table(name: table)
+        final result = new TableMeta(name: table)
         try {
             connection = dataSource.connection
             final databaseMetaData = connection.metaData
@@ -176,7 +185,7 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
             while (rs.next()) {
                 final String columnName = rs.getString(4)
                 final int columnType = rs.getInt(5)
-                result.columnMap.put(columnName, new Column(name: columnName, type: columnType,
+                result.columnMap.put(columnName, new ColumnMeta(name: columnName, type: columnType,
                         columnProperties: listProperties(rs)))
             }
             result.idFields = getPrimaryKeys(table)
@@ -281,11 +290,6 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
     }
 
     @PackageScope
-    static String buildInsertStatement(String table, Collection<String> sortedKeys) {
-        return "INSERT INTO $table (${sortedKeys.join(',')}) VALUES (${':' + sortedKeys.join(', :')})"
-    }
-
-    @PackageScope
     static void closeQuietly(Connection connection) {
         try {
             connection?.close()
@@ -297,92 +301,6 @@ class DatabaseValue extends Constant<List<Map<String, Object>>> {
         try {
             rs?.close()
         } catch (Exception ignore) { }
-    }
-
-    @CompileStatic
-    private static class Table {
-        private String name
-        private List<String> idFields = []
-        private Map<String, Column> columnMap = [:]
-        private Map<String, Map<String, Object>> fkMap = [:]
-        private Set<String> fkTables = []
-
-        private String insertStatement
-        private Set<String> sortedKeys
-        private MapValue<String> mapValue
-
-        void setFkMap(Map<String, Map<String, Object>> fkMap) {
-            this.fkMap = fkMap
-            this.fkTables = new LinkedHashSet<String>(fkMap.size())
-            for (Map<String, Object> fkProps : fkMap.values()) {
-                fkTables.add(fkProps.get('FKTABLE_NAME').toString())
-            }
-        }
-
-        boolean hasFkDependency(String table) {
-            return fkTables.contains(table)
-        }
-
-        boolean isBuilt() {
-            return !mapValue
-        }
-
-        Map<String, Object> getInsertMap() {
-            return mapValue.next()
-        }
-
-        Table build(DatabaseValue databaseValue) {
-            final List<String> keys = new ArrayList<String>(columnMap.size())
-            final valueMap = new LinkedHashMap<String, Value>()
-            for (Map.Entry<String, Column> entry : columnMap.entrySet()) {
-                final column = entry.value
-                if (column.isAutoIncrement()) {
-                    continue
-                }
-                final columnName = entry.key
-                Value value = databaseValue.definition.lookupValue(columnName, column.classType)
-                if (!databaseValue.generateNullable && column.isNullable()) {
-                    continue
-                }
-                if (value != null) {
-                    keys.add(columnName)
-                    valueMap.put(columnName, value)
-                } else {
-                    // todo Serge: resolve foreign key values
-                }
-            }
-
-            Collections.sort(keys)
-            sortedKeys = new LinkedHashSet<String>(keys)
-            insertStatement = buildInsertStatement(name, sortedKeys)
-
-            final map = new LinkedHashMap<String, Value>()
-            for (String column : sortedKeys) {
-                map.put(column, valueMap.get(column))
-            }
-            mapValue = MapScrambler.of(map)
-            return this
-        }
-    }
-
-    @CompileStatic
-    private static class Column {
-        private String name
-        private int type
-
-        private Map<String, Object> columnProperties = [:]
-
-        boolean isNullable() {
-            return columnProperties.get('NULLABLE') == 0
-        }
-
-        boolean isAutoIncrement() {
-            return columnProperties.get('IS_AUTOINCREMENT')?.toString()?.equalsIgnoreCase('yes')
-        }
-
-        Class getClassType() {
-            return typeClassMap.get(type)
-        }
     }
 
 }
