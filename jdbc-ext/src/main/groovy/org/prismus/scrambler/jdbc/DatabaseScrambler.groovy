@@ -5,7 +5,6 @@ import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
-import org.prismus.scrambler.value.Constant
 import org.prismus.scrambler.value.ValueDefinition
 
 import javax.sql.DataSource
@@ -17,7 +16,7 @@ import java.sql.*
  * @author Serge Pruteanu
  */
 @CompileStatic
-class DatabaseScrambler extends Constant<List<Map<String, Object>>> {
+class DatabaseScrambler {
     static Map<Integer, Class> typeClassMap = [
             (Types.BIT)          : Boolean,
             (Types.TINYINT)      : Byte,
@@ -117,13 +116,6 @@ class DatabaseScrambler extends Constant<List<Map<String, Object>>> {
         return typeClassMap
     }
 
-    @Override
-    protected List<Map<String, Object>> doNext() {
-        sortTablesByFkDependency()
-        // todo: implement me
-        return new ArrayList<Map<String, Object>>()
-    }
-
     protected void sortTablesByFkDependency() {
         Collections.sort(tables, new Comparator<TableMeta>() {
             @Override
@@ -186,7 +178,7 @@ class DatabaseScrambler extends Constant<List<Map<String, Object>>> {
                 final String columnName = rs.getString(4)
                 final int columnType = rs.getInt(5)
                 result.columnMap.put(columnName, new ColumnMeta(name: columnName, type: columnType,
-                        columnProperties: listProperties(rs)))
+                        columnProperties: listProperties(rs), classType: typeClassMap.get(columnType)))
             }
             result.idFields = getPrimaryKeys(table)
             result.fkMap = getForeignKeys(table)
@@ -282,11 +274,6 @@ class DatabaseScrambler extends Constant<List<Map<String, Object>>> {
         } finally {
             closeQuietly(connection)
         }
-    }
-
-    @Override
-    Object clone() throws CloneNotSupportedException {
-        return super.clone()
     }
 
     @PackageScope

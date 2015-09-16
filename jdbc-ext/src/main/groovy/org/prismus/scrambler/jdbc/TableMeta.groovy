@@ -81,6 +81,13 @@ class TableMeta {
     }
 
     @PackageScope
+    String generateSelectStatement(TableMeta tableMeta) {
+        String select = "SELECT ${tableMeta.idFields.join(', ')} FROM $tableMeta.name ORDER BY ${tableMeta.idFields.join('DESC, ')}"
+        select += ' DESC'
+        return select
+    }
+
+    @PackageScope
     static String buildInsertStatement(String table, Collection<String> sortedKeys) {
         return "INSERT INTO $table (${sortedKeys.join(',')}) VALUES (${':' + sortedKeys.join(', :')})"
     }

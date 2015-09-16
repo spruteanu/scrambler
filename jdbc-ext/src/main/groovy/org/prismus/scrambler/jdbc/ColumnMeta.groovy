@@ -14,6 +14,8 @@ class ColumnMeta {
     String name
     int type
 
+    private Class classType
+
     Map<String, Object> columnProperties = [:]
 
     boolean isNullable() {
@@ -25,7 +27,7 @@ class ColumnMeta {
     }
 
     Class getClassType() {
-        return DatabaseScrambler.typeClassMap.get(type)
+        return classType
     }
 
 }
