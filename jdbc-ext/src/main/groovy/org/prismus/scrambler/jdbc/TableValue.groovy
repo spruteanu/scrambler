@@ -3,6 +3,7 @@ package org.prismus.scrambler.jdbc
 import groovy.sql.DataSet
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import org.prismus.scrambler.value.Constant
 
 import javax.sql.DataSource
@@ -71,8 +72,7 @@ class TableValue extends Constant<Map<String, Object>> {
         }
         String select = this.select
         if (!select) {
-            select = "SELECT ${tableMeta.idFields.join(', ')} FROM $tableMeta.name ORDER BY ${tableMeta.idFields.join('DESC, ')}"
-            select += ' DESC'
+            select = generateSelectStatement()
         }
         if (params) {
             if (params instanceof Map) {
@@ -83,6 +83,13 @@ class TableValue extends Constant<Map<String, Object>> {
         } else {
             return (Map<String, Object>) dataSet.firstRow(select)
         }
+    }
+
+    @PackageScope
+    String generateSelectStatement() {
+        String select = "SELECT ${tableMeta.idFields.join(', ')} FROM $tableMeta.name ORDER BY ${tableMeta.idFields.join('DESC, ')}"
+        select += ' DESC'
+        return select
     }
 
 }
