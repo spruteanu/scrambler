@@ -16,14 +16,14 @@ import javax.sql.DataSource
  * @author Serge Pruteanu
  */
 @CompileStatic
-class TableBatchValue extends Constant<List<Map<String, Object>>> {
+class TableBatchInsertValue extends Constant<List<Map<String, Object>>> {
     final DataSet dataSet
     final Map<String, Value> valueMap
     final int count
 
     private final String insertStatement
 
-    TableBatchValue(DataSource dataSource, String table, Map<String, Value> valueMap, int count) {
+    TableBatchInsertValue(DataSource dataSource, String table, Map<String, Value> valueMap, int count) {
         this.dataSet = new DataSet(new Sql(dataSource), table)
         this.valueMap = valueMap
         this.count = count

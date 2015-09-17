@@ -3,7 +3,6 @@ package org.prismus.scrambler.jdbc
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
-import org.prismus.scrambler.value.ValueDefinition
 
 import javax.sql.DataSource
 import java.sql.*
@@ -45,17 +44,11 @@ class DatabaseScrambler {
     ] as Map<Integer, Class>
 
     private final DataSource dataSource
-    private final Map<String, TableMeta> tableMap
+    protected final Map<String, TableMeta> tableMap
     private final Map<String, String> fkTableMap = [:] as Map<String, String>
-    private boolean generateNullable = true
-
-    private List<TableMeta> tables = new ArrayList<TableMeta>()
-
-    private ValueDefinition definition
 
     DatabaseScrambler(DataSource dataSource) {
         this.dataSource = dataSource
-        this.definition = new ValueDefinition()
         this.tableMap = listTableMap()
     }
 
@@ -64,63 +57,8 @@ class DatabaseScrambler {
         return this
     }
 
-    DatabaseScrambler generateAll() {
-        this.generateNullable = true
-        return this
-    }
-
-    DatabaseScrambler generateStrict() {
-        this.generateNullable = false
-        return this
-    }
-
-    DatabaseScrambler forTable(String table) {
-        if (!tableMap.containsKey(table)) {
-            throw new IllegalArgumentException("'$table' is not found in provided datasource")
-        }
-        tables.add(tableMap.get(table))
-        return this
-    }
-
-    DatabaseScrambler usingDefinition(ValueDefinition definition) {
-        this.definition = definition
-        return this
-    }
-
-    DatabaseScrambler usingDefinition(String... definitions) {
-        definition.usingDefinitions(definitions)
-        return this
-    }
-
-    DatabaseScrambler scanDefinition(String definition, String... definitions) {
-        this.definition.scanDefinitions(definition, definitions)
-        return this
-    }
-
-    DatabaseScrambler scanLibraryDefinition(String definitionMatcher) {
-        definition.usingLibraryDefinitions(definitionMatcher)
-        return this
-    }
-
-    ValueDefinition getDefinition() {
-        return definition
-    }
-
-    boolean getGenerateNullable() {
-        return generateNullable
-    }
-
     static Map<Integer, Class> getTypeClassMap() {
         return typeClassMap
-    }
-
-    protected void sortTablesByFkDependency() {
-        Collections.sort(tables, new Comparator<TableMeta>() {
-            @Override
-            int compare(TableMeta left, TableMeta right) {
-                return right.hasFkDependency(left.name) ? 1 : 0
-            }
-        })
     }
 
     protected List<String> listMssqlTables() {

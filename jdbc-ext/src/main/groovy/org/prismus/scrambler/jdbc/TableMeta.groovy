@@ -45,9 +45,7 @@ class TableMeta {
         return mapValue.next()
     }
 
-    TableMeta build(DatabaseScrambler databaseValue) {
-        final ValueDefinition definition = databaseValue.definition
-        final generateNullable = databaseValue.generateNullable
+    TableMeta build(ValueDefinition definition, boolean generateNullable) {
         final List<String> keys = new ArrayList<String>(columnMap.size())
         final valueMap = new LinkedHashMap<String, Value>()
         for (Map.Entry<String, ColumnMeta> entry : columnMap.entrySet()) {
