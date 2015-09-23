@@ -4,6 +4,8 @@ import groovy.transform.CompileStatic
 import org.prismus.scrambler.Value
 import org.prismus.scrambler.value.ValueDefinition
 
+import javax.sql.DataSource
+
 /**
  * todo: add description
  *
@@ -11,14 +13,16 @@ import org.prismus.scrambler.value.ValueDefinition
  */
 @CompileStatic
 class DatabaseBatchBuilder {
-    private final DatabaseScrambler databaseScrambler
     private boolean generateNullable = true
     private List<TableMeta> tables = new ArrayList<TableMeta>()
-    private ValueDefinition definition
+    private DataSourceDefinition definition
 
-    protected DatabaseBatchBuilder(DatabaseScrambler databaseScrambler) {
-        this.databaseScrambler = databaseScrambler
-        this.definition = new ValueDefinition()
+    protected DatabaseBatchBuilder(DataSource dataSource) {
+        this(new DataSourceDefinition(dataSource))
+    }
+
+    protected DatabaseBatchBuilder(DataSourceDefinition dataSourceDefinition) {
+        this.definition = dataSourceDefinition
     }
 
     DatabaseBatchBuilder generateNullable() {
@@ -32,7 +36,7 @@ class DatabaseBatchBuilder {
     }
 
     DatabaseBatchBuilder forTable(String table) {
-        final tableMap = databaseScrambler.tableMap
+        final tableMap = definition.tableMap
         if (!tableMap.containsKey(table)) {
             throw new IllegalArgumentException("'$table' is not found in provided datasource")
         }
@@ -40,7 +44,7 @@ class DatabaseBatchBuilder {
         return this
     }
 
-    DatabaseBatchBuilder usingDefinition(ValueDefinition definition) {
+    DatabaseBatchBuilder usingDefinition(DataSourceDefinition definition) {
         this.definition = definition
         return this
     }

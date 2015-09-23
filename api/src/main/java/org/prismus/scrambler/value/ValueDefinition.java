@@ -444,7 +444,7 @@ public class ValueDefinition implements Cloneable {
     //------------------------------------------------------------------------------------------------------------------
     // Internal Methods
     //------------------------------------------------------------------------------------------------------------------
-    ValueDefinition build() {
+    protected ValueDefinition build() {
         for (final InstanceValue value : instanceValueMap.values()) {
             value.build(this);
         }

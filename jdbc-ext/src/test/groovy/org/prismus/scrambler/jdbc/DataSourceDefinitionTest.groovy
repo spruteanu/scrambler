@@ -9,7 +9,7 @@ import javax.sql.DataSource
 /**
  * @author Serge Pruteanu
  */
-class DatabaseTest extends Specification {
+class DataSourceDefinitionTest extends Specification {
     private static DataSource dataSource
 
     void setupSpec() {
@@ -22,13 +22,13 @@ class DatabaseTest extends Specification {
 
     void 'verify database population'() {
         given:
-        final dbValue = new DatabaseScrambler(dataSource)
+        final dataSourceDefinition = new DataSourceDefinition(dataSource).build()
 
         expect:
-        dbValue != null
-        dbValue.tableMap.size() > 0
-        dbValue.fkTableMap.size() > 0
-        'H2' == dbValue.dbName
+        dataSourceDefinition != null
+        dataSourceDefinition.tableMap.size() > 0
+        dataSourceDefinition.fkTableMap.size() > 0
+        'H2' == dataSourceDefinition.dbName
     }
 
 }
