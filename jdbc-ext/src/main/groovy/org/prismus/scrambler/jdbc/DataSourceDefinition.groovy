@@ -54,7 +54,6 @@ class DataSourceDefinition extends ValueDefinition {
     ] as Map<Integer, Class>
 
     protected Map<String, TableMeta> tableMap
-    private Map<String, String> fkTableMap = [:] as Map<String, String>
 
     private final DataSource dataSource
 
@@ -132,13 +131,31 @@ class DataSourceDefinition extends ValueDefinition {
     protected Map<String, TableMeta> listTableMap() {
         final List<String> tables = listTables()
         final tableMap = new LinkedHashMap<String, TableMeta>(tables.size())
+        final Map<String, String> fkTableMap = [:] as Map<String, String>
         for (final String table : tables) {
-            tableMap.put(table, getTableMeta(table))
+            tableMap.put(table, getTableMeta(table, fkTableMap))
         }
+
+        resolveForeignKeysMeta(fkTableMap, tableMap)
         return tableMap
     }
 
-    protected TableMeta getTableMeta(String table) {
+    protected void resolveForeignKeysMeta(Map<String, String> fkTableMap, Map<String, TableMeta> tableMap) {
+        for (final Map.Entry<String, String> entry : fkTableMap.entrySet()) {
+            final fkName = entry.key
+            final TableMeta parentMeta = tableMap.get(entry.value)
+            final fkPropertiesMap = parentMeta.relationshipMap.get(fkName)
+            final fkTableName = fkPropertiesMap.get('FKTABLE_NAME').toString()
+            final fkColumnName = fkPropertiesMap.get('FKCOLUMN_NAME').toString()
+            final fkTableMeta = tableMap.get(fkTableName)
+            final fkColumnMeta = fkTableMeta.columnMap.get(fkColumnName)
+            fkTableMeta.fkColumns.add(fkColumnName)
+            fkColumnMeta.fkName = fkName
+            fkColumnMeta.columnProperties.put(fkName, fkPropertiesMap)
+        }
+    }
+
+    protected TableMeta getTableMeta(String table, Map<String, String> fkTableMap) {
         Connection connection = null
         ResultSet rs = null
         final result = new TableMeta(name: table)
@@ -152,8 +169,8 @@ class DataSourceDefinition extends ValueDefinition {
                 result.columnMap.put(columnName, new ColumnMeta(name: columnName, type: columnType,
                         columnProperties: Util.asMap(rs), classType: typeClassMap.get(columnType)))
             }
-            result.idFields = getPrimaryKeys(table)
-            result.fkMap = getForeignKeys(table)
+            result.ids = getPrimaryKeys(table)
+            result.relationshipMap = getForeignKeys(table, fkTableMap)
         } finally {
             Util.closeQuietly(rs)
             Util.closeQuietly(connection)
@@ -178,7 +195,7 @@ class DataSourceDefinition extends ValueDefinition {
         return result
     }
 
-    protected Map<String, Map<String, Object>> getForeignKeys(String table) {
+    protected Map<String, Map<String, Object>> getForeignKeys(String table, Map<String, String> fkTableMap) {
         Connection connection = null
         ResultSet rs = null
         final result = [:]
@@ -189,17 +206,13 @@ class DataSourceDefinition extends ValueDefinition {
                 final String fkName = rs.getString("FK_NAME")
                 final fkProps = Util.asMap(rs)
                 result.put(fkName, fkProps)
-                fkTableMap.put(buildFkTableKey(fkProps.get('FKTABLE_NAME').toString(), fkProps.get('FKCOLUMN_NAME').toString()), table)
+                fkTableMap.put(fkName, table)
             }
         } finally {
             Util.closeQuietly(rs)
             Util.closeQuietly(connection)
         }
-        return result
-    }
-
-    protected String buildFkTableKey(String table, String column) {
-        return "$table.$column"
+        return result ? result : null
     }
 
     protected List<String> listTables() {
@@ -245,7 +258,7 @@ class DataSourceDefinition extends ValueDefinition {
 
     @PackageScope
     String generateSelectStatement(TableMeta tableMeta) {
-        String select = "SELECT ${tableMeta.idFields.join(', ')} FROM $tableMeta.name ORDER BY ${tableMeta.idFields.join('DESC, ')}"
+        String select = "SELECT ${tableMeta.ids.join(', ')} FROM $tableMeta.name ORDER BY ${tableMeta.ids.join('DESC, ')}"
         select += ' DESC'
         return select
     }

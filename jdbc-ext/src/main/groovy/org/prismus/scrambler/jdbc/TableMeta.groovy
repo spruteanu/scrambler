@@ -12,21 +12,28 @@ import groovy.transform.PackageScope
 @PackageScope
 class TableMeta {
     String name
-    List<String> idFields = []
-    Map<String, ColumnMeta> columnMap = [:]
-    Map<String, Map<String, Object>> fkMap = [:]
-    Set<String> fkTables = []
 
-    void setFkMap(Map<String, Map<String, Object>> fkMap) {
-        this.fkMap = fkMap
-        this.fkTables = new LinkedHashSet<String>(fkMap.size())
+    List<String> ids
+    Map<String, ColumnMeta> columnMap = [:]
+
+    List<String> fkColumns = []
+
+    Map<String, Map<String, Object>> relationshipMap
+    Set<String> relationshipTables
+
+    void setRelationshipMap(Map<String, Map<String, Object>> fkMap) {
+        if (!fkMap) {
+            return
+        }
+        this.relationshipMap = fkMap
+        this.relationshipTables = new LinkedHashSet<String>(fkMap.size())
         for (Map<String, Object> fkProps : fkMap.values()) {
-            fkTables.add(fkProps.get('FKTABLE_NAME').toString())
+            relationshipTables.add(fkProps.get('FKTABLE_NAME').toString())
         }
     }
 
-    boolean hasFkDependency(String table) {
-        return fkTables.contains(table)
+    boolean hasRelationship(String table) {
+        return relationshipTables.contains(table)
     }
 
 }

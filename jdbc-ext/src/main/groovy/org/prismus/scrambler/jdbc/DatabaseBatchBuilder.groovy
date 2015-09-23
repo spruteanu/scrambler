@@ -72,7 +72,7 @@ class DatabaseBatchBuilder {
         Collections.sort(tables, new Comparator<TableMeta>() {
             @Override
             int compare(TableMeta left, TableMeta right) {
-                return right.hasFkDependency(left.name) ? 1 : 0
+                return right.hasRelationship(left.name) ? 1 : 0
             }
         })
     }
