@@ -10,11 +10,7 @@ import org.prismus.scrambler.value.MapValue
 import org.prismus.scrambler.value.ValueDefinition
 
 import javax.sql.DataSource
-import java.sql.Connection
-import java.sql.ResultSet
-import java.sql.Time
-import java.sql.Timestamp
-import java.sql.Types
+import java.sql.*
 
 /**
  * todo: add description
@@ -98,8 +94,11 @@ class DataSourceDefinition extends ValueDefinition {
             if (value != null) {
                 keys.add(columnName)
                 valueMap.put(columnName, value)
-            } else {
-                // todo Serge: resolve foreign key values
+            } else if (column.isFk()) {
+                final primaryTableName = column.getPrimaryTableName()
+                final primaryColumnName = column.primaryColumnName
+                valueMap.put(columnName, new TableRowValue(dataSource, primaryTableName,
+                        "SELECT $primaryColumnName FROM $primaryTableName ORDER BY $primaryColumnName DESC"))
             }
         }
 
