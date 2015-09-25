@@ -41,6 +41,7 @@ public class ValueDefinition implements Cloneable {
     public static final String DEFINITION_SCRIPT_SUFFIX = "-definition.groovy";
     public static final String DEFAULT_DEFINITIONS_RESOURCE = "/org.prismus.scrambler.value.default-definition.groovy";
     public static final String META_INF_ANCHOR = "META-INF/dictionary.desc";
+    public static final String WILDCARD_STRING = "*";
 
     private ValueDefinition parent;
 
@@ -486,12 +487,23 @@ public class ValueDefinition implements Cloneable {
     }
 
     static List<String> matchValueDefinitions(String definitionMatcher, Set<String> definitionsCache) {
-        String wildcardPattern = "*";
-        if (definitionMatcher != null) {
-            wildcardPattern += definitionMatcher;
+        String wildcardPattern;
+        if (definitionMatcher == null || (!definitionMatcher.contains(WILDCARD_STRING))) {
+            wildcardPattern = WILDCARD_STRING;
+            if (definitionMatcher != null) {
+                wildcardPattern += definitionMatcher;
+            }
+        } else {
+            wildcardPattern = definitionMatcher;
+        }
+        if (!wildcardPattern.startsWith(WILDCARD_STRING)) {
+            wildcardPattern = WILDCARD_STRING + wildcardPattern;
         }
         if (!wildcardPattern.endsWith(".groovy")) {
-            wildcardPattern += ".groovy";
+            if (!wildcardPattern.endsWith(WILDCARD_STRING)) {
+                wildcardPattern += WILDCARD_STRING;
+            }
+            wildcardPattern += "-definition.groovy";
         }
         final Pattern pattern = Pattern.compile(Util.replaceWildcards(wildcardPattern));
         final List<String> matchedResources = new ArrayList<String>();

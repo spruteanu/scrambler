@@ -4,9 +4,10 @@ import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
-import org.prismus.scrambler.MapScrambler
 import org.prismus.scrambler.Value
-import org.prismus.scrambler.value.MapValue
+import org.prismus.scrambler.ValuePredicate
+import org.prismus.scrambler.ValuePredicates
+import org.prismus.scrambler.value.Constant
 import org.prismus.scrambler.value.ValueDefinition
 
 import javax.sql.DataSource
@@ -50,11 +51,17 @@ class DataSourceDefinition extends ValueDefinition {
     ] as Map<Integer, Class>
 
     protected Map<String, TableMeta> tableMap
+    private Map<String, ValueDefinition> tableDefinitionMap = [:] // todo implement table definitions
 
     private final DataSource dataSource
 
     DataSourceDefinition(DataSource dataSource) {
         this.dataSource = dataSource
+    }
+
+    @PackageScope
+    void setTableMap(Map<String, TableMeta> tableMap) {
+        this.tableMap = tableMap
     }
 
     DataSourceDefinition registerTypeClass(int type, Class clazzType) {
@@ -73,46 +80,85 @@ class DataSourceDefinition extends ValueDefinition {
     @Override
     protected DataSourceDefinition build() {
         tableMap = listTableMap()
+        for (final String table : tableMap.keySet()) {
+            tableDefinitionMap.put(table, new ValueDefinition().usingLibraryDefinitions(table))
+        }
         super.build()
         return this
     }
 
-    MapValue<String> toMapValue(TableMeta tableMeta, boolean generateNullable) {
+    DataSourceDefinition usingDefinition(String table, ValueDefinition definition) {
+        tableDefinitionMap.put(table, definition)
+        return this
+    }
+
+    DataSourceDefinition usingDefinition(String table, String definition, String... definitions) {
+        tableDefinitionMap.put(table, new ValueDefinition().usingDefinitions((definitions != null
+                ? (Arrays.asList(definition) + Arrays.asList(definitions)).toArray(new String[1 + definitions.length])
+                : [definition] as String[]
+        )))
+        return this
+    }
+
+    Value lookupValue(String tableName, ValuePredicate predicate) {
+        return tableDefinitionMap.containsKey(tableName) ? tableDefinitionMap.get(tableName).lookupValue(predicate) : null
+    }
+
+    Value lookupValue(String tableName, String property, Class type) {
+        return tableDefinitionMap.containsKey(tableName) ? tableDefinitionMap.get(tableName).lookupValue(property, type) : null
+    }
+
+    Map<String, Value> toMapValue(TableMeta tableMeta, boolean generateNullable) {
         final columnMap = tableMeta.columnMap
         final List<String> keys = new ArrayList<String>(columnMap.size())
         final valueMap = new LinkedHashMap<String, Value>()
         for (Map.Entry<String, ColumnMeta> entry : columnMap.entrySet()) {
             final column = entry.value
-            if (column.isAutoIncrement()) {
+            if (column.isAutoIncrement() || (!generateNullable && column.isNullable())) {
                 continue
             }
             final columnName = entry.key
-            Value value = lookupValue(columnName, column.classType)
-            if (!generateNullable && column.isNullable()) {
-                continue
+            final boolean fkColumn = column.isFk()
+            Value value
+            if (fkColumn) {
+                value = lookupValue(ValuePredicates.matchProperty(columnName))
+            } else {
+                value = lookupValue(columnName, column.classType)
             }
-            if (value != null) {
+            if (value) {
                 keys.add(columnName)
                 valueMap.put(columnName, value)
-            } else if (column.isFk()) {
-                final primaryTableName = column.getPrimaryTableName()
+            } else if (fkColumn) {
+                final primaryTableName = column.primaryTableName
                 final primaryColumnName = column.primaryColumnName
-                valueMap.put(columnName, new TableRowValue(dataSource, primaryTableName,
-                        "SELECT $primaryColumnName FROM $primaryTableName ORDER BY $primaryColumnName DESC"))
+                final primaryTableMeta = tableMap.get(primaryTableName)
+                final primaryColumnMeta = primaryTableMeta.columnMap.get(primaryColumnName)
+                value = lookupValue(primaryTableName, primaryColumnName, primaryColumnMeta.classType)
+                if (value == null) {
+                    final insertValue = new TableInsertValue(dataSource, primaryTableName, toMapValue(primaryTableMeta, generateNullable))
+                    if (primaryColumnMeta.autoIncrement) {
+                        // todo Serge: might be here it will be better to have a strategy for picking up a random value.
+                        // The issue is in fact that random range can be either costly on huge table or dependent on DB vendor SQL functions
+                        value = new ColumnDelegateValue(primaryColumnName, new AutoIncrementIdInsertValue(primaryColumnName,
+                                new TableRowValue(dataSource, primaryTableName,
+                                        "SELECT $primaryColumnName FROM $primaryTableName ORDER BY $primaryColumnName DESC"),
+                                insertValue))
+                    } else {
+                        value = new ColumnDelegateValue(primaryColumnName, insertValue)
+                    }
+                }
+                if (value) {
+                    valueMap.put(columnName, value)
+                }
             }
         }
 
         Collections.sort(keys)
-//    String insertStatement
-//    Set<String> sortedKeys
-//        sortedKeys = new LinkedHashSet<String>(keys)
-//        insertStatement = buildInsertStatement(tableMeta.name, sortedKeys)
-
         final map = new LinkedHashMap<String, Value>()
         for (String column : keys) {
             map.put(column, valueMap.get(column))
         }
-        return MapScrambler.of(map)
+        return map
     }
 
     protected List<String> listMssqlTables() {
@@ -260,6 +306,39 @@ class DataSourceDefinition extends ValueDefinition {
         String select = "SELECT ${tableMeta.ids.join(', ')} FROM $tableMeta.name ORDER BY ${tableMeta.ids.join('DESC, ')}"
         select += ' DESC'
         return select
+    }
+
+    @CompileStatic
+    private static class ColumnDelegateValue extends Constant {
+        private final String columnName
+        private final Value<Map<String, Object>> value
+
+        ColumnDelegateValue(String columnName, Value<Map<String, Object>> value) {
+            this.columnName = columnName
+            this.value = value
+        }
+
+        @Override
+        protected Object doNext() {
+            final map = value.next()
+            return map.get(columnName)
+        }
+    }
+
+    @CompileStatic
+    private static class AutoIncrementIdInsertValue extends ColumnDelegateValue {
+        private final Value insertValue
+
+        AutoIncrementIdInsertValue(String columnName, Value<Map<String, Object>> value, Value insertValue) {
+            super(columnName, value)
+            this.insertValue = insertValue
+        }
+
+        @Override
+        protected Object doNext() {
+            insertValue.next()
+            return super.doNext()
+        }
     }
 
 }
