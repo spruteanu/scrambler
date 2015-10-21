@@ -51,7 +51,7 @@ class DataSourceDefinition extends ValueDefinition {
     ] as Map<Integer, Class>
 
     protected Map<String, TableMeta> tableMap
-    private Map<String, ValueDefinition> tableDefinitionMap = [:] // todo implement table definitions
+    private Map<String, ValueDefinition> tableDefinitionMap = [:]
 
     private final DataSource dataSource
 
@@ -81,7 +81,9 @@ class DataSourceDefinition extends ValueDefinition {
     protected DataSourceDefinition build() {
         tableMap = listTableMap()
         for (final String table : tableMap.keySet()) {
-            tableDefinitionMap.put(table, new ValueDefinition().usingLibraryDefinitions(table))
+            if (!tableDefinitionMap.containsKey(table)) {
+                tableDefinitionMap.put(table, new ValueDefinition().usingLibraryDefinitions(table))
+            }
         }
         super.build()
         return this
@@ -129,24 +131,7 @@ class DataSourceDefinition extends ValueDefinition {
                 keys.add(columnName)
                 valueMap.put(columnName, value)
             } else if (fkColumn) {
-                final primaryTableName = column.primaryTableName
-                final primaryColumnName = column.primaryColumnName
-                final primaryTableMeta = tableMap.get(primaryTableName)
-                final primaryColumnMeta = primaryTableMeta.columnMap.get(primaryColumnName)
-                value = lookupValue(primaryTableName, primaryColumnName, primaryColumnMeta.classType)
-                if (value == null) {
-                    final insertValue = new TableInsertValue(dataSource, primaryTableName, toMapValue(primaryTableMeta, generateNullable))
-                    if (primaryColumnMeta.autoIncrement) {
-                        // todo Serge: might be here it will be better to have a strategy for picking up a random value.
-                        // The issue is in fact that random range can be either costly on huge table or dependent on DB vendor SQL functions
-                        value = new ColumnDelegateValue(primaryColumnName, new AutoIncrementIdInsertValue(primaryColumnName,
-                                new TableRowValue(dataSource, primaryTableName,
-                                        "SELECT $primaryColumnName FROM $primaryTableName ORDER BY $primaryColumnName DESC"),
-                                insertValue))
-                    } else {
-                        value = new ColumnDelegateValue(primaryColumnName, insertValue)
-                    }
-                }
+                value = lookupFkValue(column, generateNullable)
                 if (value) {
                     valueMap.put(columnName, value)
                 }
@@ -159,6 +144,27 @@ class DataSourceDefinition extends ValueDefinition {
             map.put(column, valueMap.get(column))
         }
         return map
+    }
+
+    @PackageScope
+    Value lookupFkValue(ColumnMeta column, boolean generateNullable) {
+        final primaryTableName = column.primaryTableName
+        final primaryColumnName = column.primaryColumnName
+        final primaryTableMeta = tableMap.get(primaryTableName)
+        final primaryColumnMeta = primaryTableMeta.columnMap.get(primaryColumnName)
+        Value value = lookupValue(primaryTableName, primaryColumnName, primaryColumnMeta.classType)
+        if (value == null) {
+            final insertValue = new TableInsertValue(dataSource, primaryTableName, toMapValue(primaryTableMeta, generateNullable))
+            if (primaryColumnMeta.autoIncrement) {
+                value = new ColumnDelegateValue(primaryColumnName, new AutoIncrementIdInsertValue(primaryColumnName,
+                        new TableRowValue(dataSource, primaryTableName,
+                                "SELECT $primaryColumnName FROM $primaryTableName ORDER BY $primaryColumnName DESC"),
+                        insertValue))
+            } else {
+                value = new ColumnDelegateValue(primaryColumnName, insertValue)
+            }
+        }
+        return value
     }
 
     protected List<String> listMssqlTables() {
