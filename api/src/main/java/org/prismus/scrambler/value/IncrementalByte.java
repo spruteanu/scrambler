@@ -21,7 +21,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-class IncrementalByte extends Constant<Byte> implements ByteArray {
+public class IncrementalByte extends Constant<Byte> implements ByteArray {
     private static final byte DEFAULT_STEP = Integer.valueOf(1).byteValue();
     private byte step;
 

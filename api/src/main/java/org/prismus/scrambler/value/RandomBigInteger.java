@@ -24,7 +24,7 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-class RandomBigInteger extends AbstractRandomRange<BigInteger> {
+public class RandomBigInteger extends AbstractRandomRange<BigInteger> {
 
     private final Random random;
 

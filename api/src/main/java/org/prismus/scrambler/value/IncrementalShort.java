@@ -21,7 +21,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-class IncrementalShort extends Constant<Short> implements ShortArray {
+public class IncrementalShort extends Constant<Short> implements ShortArray {
     private static final short DEFAULT_STEP = Integer.valueOf(1).shortValue();
     private short step;
 

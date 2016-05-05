@@ -21,7 +21,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-class IncrementalInteger extends Constant<Integer> implements IntArray {
+public class IncrementalInteger extends Constant<Integer> implements IntArray {
     private static final int DEFAULT_STEP = 1;
     private int step;
 

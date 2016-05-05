@@ -23,7 +23,7 @@ import java.math.BigInteger;
 /**
  * @author Serge Pruteanu
  */
-class IncrementalBigInteger extends Constant<BigInteger> {
+public class IncrementalBigInteger extends Constant<BigInteger> {
     private BigInteger step;
     private static final BigInteger DEFAULT_STEP = BigInteger.valueOf(1L);
 

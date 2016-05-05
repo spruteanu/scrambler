@@ -21,7 +21,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-class IncrementalDouble extends Constant<Double> implements DoubleArray {
+public class IncrementalDouble extends Constant<Double> implements DoubleArray {
     private static final double DEFAULT_STEP = 1.0;
     private double step;
 

@@ -23,7 +23,7 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-class RandomByte extends AbstractRandomRange<Byte> implements ByteArray {
+public class RandomByte extends AbstractRandomRange<Byte> implements ByteArray {
     private final java.util.Random random;
 
     public RandomByte() {

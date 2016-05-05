@@ -18,10 +18,10 @@
 
 package org.prismus.scrambler;
 
-import org.prismus.scrambler.value.AbstractRandomRange;
-import org.prismus.scrambler.value.ArrayValue;
-import org.prismus.scrambler.value.Types;
-import org.prismus.scrambler.value.Util;
+import org.prismus.scrambler.value.*;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * {@link Number} value methods, exposes all possible ways to generate {@link Number} objects
@@ -29,9 +29,167 @@ import org.prismus.scrambler.value.Util;
  * @author Serge Pruteanu
  */
 public class NumberScrambler {
-    //------------------------------------------------------------------------------------------------------------------
-    // Number methods
-    //------------------------------------------------------------------------------------------------------------------
+
+    public static Value<Byte> increment(byte self) {
+        return new IncrementalByte(self);
+    }
+
+    public static Value<Byte> increment(byte self, byte step) {
+        return new IncrementalByte(self, step);
+    }
+
+    public static Value<Byte> random(byte seed) {
+        return new RandomByte(seed);
+    }
+
+    public static Value<Byte> random(byte minimum, byte maximum) {
+        return new RandomByte(minimum, maximum);
+    }
+
+    public static Value<Byte> random(byte seed, byte minimum, byte maximum) {
+        return new RandomByte(seed, minimum, maximum);
+    }
+
+    public static Value<Short> increment(short self) {
+        return new IncrementalShort(self);
+    }
+
+    public static Value<Short> increment(short self, short step) {
+        return new IncrementalShort(self, step);
+    }
+
+    public static Value<Short> random(short seed) {
+        return new RandomShort(seed);
+    }
+
+    public static Value<Short> random(short minimum, short maximum) {
+        return new RandomShort(minimum, maximum);
+    }
+
+    public static Value<Short> random(short seed, short minimum, short maximum) {
+        return new RandomShort(seed, minimum, maximum);
+    }
+
+    public static Value<Integer> increment(int self) {
+        return new IncrementalInteger(self);
+    }
+
+    public static Value<Integer> increment(int self, int step) {
+        return new IncrementalInteger(self, step);
+    }
+
+    public static Value<Integer> random(int seed) {
+        return new RandomInteger(seed);
+    }
+
+    public static Value<Integer> random(int minimum, int maximum) {
+        return new RandomInteger(minimum, maximum);
+    }
+
+    public static Value<Integer> random(int seed, int minimum, int maximum) {
+        return new RandomInteger(seed, minimum, maximum);
+    }
+
+    public static Value<Long> increment(long self) {
+        return new IncrementalLong(self);
+    }
+
+    public static Value<Long> increment(long self, long step) {
+        return new IncrementalLong(self, step);
+    }
+
+    public static Value<Long> random(long seed) {
+        return new RandomLong(seed);
+    }
+
+    public static Value<Long> random(long minimum, long maximum) {
+        return new RandomLong(minimum, maximum);
+    }
+
+    public static Value<Long> random(long seed, long minimum, long maximum) {
+        return new RandomLong(seed, minimum, maximum);
+    }
+
+    public static Value<Float> increment(float self) {
+        return new IncrementalFloat(self);
+    }
+
+    public static Value<Float> increment(float self, float step) {
+        return new IncrementalFloat(self, step);
+    }
+
+    public static Value<Float> random(float seed) {
+        return new RandomFloat(seed);
+    }
+
+    public static Value<Float> random(float minimum, float maximum) {
+        return new RandomFloat(minimum, maximum);
+    }
+
+    public static Value<Float> random(float seed, float minimum, float maximum) {
+        return new RandomFloat(seed, minimum, maximum);
+    }
+
+    public static Value<Double> increment(Double self) {
+        return new IncrementalDouble(self);
+    }
+
+    public static Value<Double> increment(double self, double step) {
+        return new IncrementalDouble(self, step);
+    }
+
+    public static Value<Double> random(double seed) {
+        return new RandomDouble(seed);
+    }
+
+    public static Value<Double> random(double minimum, double maximum) {
+        return new RandomDouble(minimum, maximum);
+    }
+
+    public static Value<Double> random(double seed, double minimum, double maximum) {
+        return new RandomDouble(seed, minimum, maximum);
+    }
+
+    public static Value<BigInteger> increment(BigInteger self) {
+        return new IncrementalBigInteger(self);
+    }
+
+    public static Value<BigInteger> increment(BigInteger self, BigInteger step) {
+        return new IncrementalBigInteger(self, step);
+    }
+
+    public static Value<BigInteger> random(BigInteger seed) {
+        return new RandomBigInteger(seed);
+    }
+
+    public static Value<BigInteger> random(BigInteger minimum, BigInteger maximum) {
+        return new RandomBigInteger(minimum, maximum);
+    }
+
+    public static Value<BigInteger> random(BigInteger seed, BigInteger minimum, BigInteger maximum) {
+        return new RandomBigInteger(seed, minimum, maximum);
+    }
+
+    public static Value<BigDecimal> increment(BigDecimal self) {
+        return new IncrementalBigDecimal(self);
+    }
+
+    public static Value<BigDecimal> increment(BigDecimal self, BigDecimal step) {
+        return new IncrementalBigDecimal(self, step);
+    }
+
+    public static Value<BigDecimal> random(BigDecimal seed) {
+        return new RandomBigDecimal(seed);
+    }
+
+    public static Value<BigDecimal> random(BigDecimal minimum, BigDecimal maximum) {
+        return new RandomBigDecimal(minimum, maximum);
+    }
+
+    public static Value<BigDecimal> random(BigDecimal seed, BigDecimal minimum, BigDecimal maximum) {
+        return new RandomBigDecimal(seed, minimum, maximum);
+    }
+
     @SuppressWarnings({"unchecked"})
     public static <T extends Number> Value<T> increment(T self) {
         return increment((Class<T>) self.getClass(), self, null);
@@ -40,6 +198,20 @@ public class NumberScrambler {
     @SuppressWarnings({"unchecked"})
     public static <T extends Number> Value<T> increment(T self, T step) {
         return increment((Class<T>) self.getClass(), self, step);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static <T extends Number> Value<T> increment(Class<T> self, T defaultValue, T step) {
+        if (Types.incrementTypeMap.containsKey(self)) {
+            final Value value;
+            if (self.isArray()) {
+                value = ArrayScrambler.incrementArray(self, defaultValue, step, null);
+            } else {
+                value = (Value) Util.createInstance(Types.incrementTypeMap.get(self), new Object[]{defaultValue, step}, new Class[]{self, self});
+            }
+            return value;
+        }
+        throw new UnsupportedOperationException(String.format("The method is not supported for class type: %s, default value: %s", self, self));
     }
 
     @SuppressWarnings({"unchecked"})
@@ -62,20 +234,6 @@ public class NumberScrambler {
             throw new UnsupportedOperationException(String.format(Types.NOT_SUPPORTED_RANGE_TYPE_MSG, val.getClass(), minimum, maximum));
         }
         return value;
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static <T extends Number> Value<T> increment(Class<T> self, T defaultValue, T step) {
-        if (Types.incrementTypeMap.containsKey(self)) {
-            final Value value;
-            if (self.isArray()) {
-                value = ArrayScrambler.incrementArray(self, defaultValue, step, null);
-            } else {
-                value = (Value) Util.createInstance(Types.incrementTypeMap.get(self), new Object[]{defaultValue, step}, new Class[]{self, self});
-            }
-            return value;
-        }
-        throw new UnsupportedOperationException(String.format("The method is not supported for class type: %s, default value: %s", self, self));
     }
 
     @SuppressWarnings("unchecked")

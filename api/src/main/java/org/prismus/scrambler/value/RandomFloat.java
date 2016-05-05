@@ -23,7 +23,7 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-class RandomFloat extends AbstractRandomRange<Float> implements FloatArray {
+public class RandomFloat extends AbstractRandomRange<Float> implements FloatArray {
     private final Random random;
 
     public RandomFloat() {

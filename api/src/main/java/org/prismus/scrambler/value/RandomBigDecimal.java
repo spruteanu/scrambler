@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 /**
  * @author Serge Pruteanu
  */
-class RandomBigDecimal extends AbstractRandomRange<BigDecimal> {
+public class RandomBigDecimal extends AbstractRandomRange<BigDecimal> {
 
     public RandomBigDecimal() {
         this(null, null, null);

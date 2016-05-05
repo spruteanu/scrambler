@@ -23,7 +23,7 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-class RandomInteger extends AbstractRandomRange<Integer> implements IntArray {
+public class RandomInteger extends AbstractRandomRange<Integer> implements IntArray {
 
     private final Random random;
 
