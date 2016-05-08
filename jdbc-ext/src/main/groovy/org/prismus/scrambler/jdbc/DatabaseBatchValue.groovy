@@ -12,17 +12,17 @@ import org.prismus.scrambler.value.Constant
  */
 @CompileStatic
 @PackageScope
-class DatabaseBatchValue extends Constant<Map<String, Object>> {
-    final Map<String, Value> tableValueBatch
+class DatabaseBatchValue extends Constant<Map<String, Map<String, Object>>> {
+    final Map<String, Value<Map<String, Object>>> tableValueBatch
 
-    DatabaseBatchValue(Map<String, Value> tableValueBatch) {
+    DatabaseBatchValue(Map<String, Value<Map<String, Object>>> tableValueBatch) {
         this.tableValueBatch = tableValueBatch
     }
 
     @Override
-    protected Map<String, Object> doNext() {
-        final resultMap = new LinkedHashMap<String, Object>(tableValueBatch.size())
-        for (Map.Entry<String, Value> entry : tableValueBatch.entrySet()) {
+    protected Map<String, Map<String, Object>> doNext() {
+        final resultMap = new TreeMap<String, Map<String, Object>>(String.CASE_INSENSITIVE_ORDER)
+        for (Map.Entry<String, Value<Map<String, Object>>> entry : tableValueBatch.entrySet()) {
             resultMap.put(entry.key, entry.value.next())
         }
         return resultMap

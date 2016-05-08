@@ -14,19 +14,19 @@ class TableMeta {
     String name
 
     List<String> ids
-    Map<String, ColumnMeta> columnMap = [:]
+    Map<String, ColumnMeta> columnMap = new TreeMap<String, ColumnMeta>(String.CASE_INSENSITIVE_ORDER)
 
     List<String> fkColumns = []
 
     Map<String, Map<String, Object>> relationshipMap
-    Set<String> relationshipTables
+    Set<String> relationshipTables = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER)
 
     void setRelationshipMap(Map<String, Map<String, Object>> fkMap) {
         if (!fkMap) {
             return
         }
         this.relationshipMap = fkMap
-        this.relationshipTables = new LinkedHashSet<String>(fkMap.size())
+        this.relationshipTables = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER)
         for (Map<String, Object> fkProps : fkMap.values()) {
             relationshipTables.add(fkProps.get('FKTABLE_NAME').toString())
         }

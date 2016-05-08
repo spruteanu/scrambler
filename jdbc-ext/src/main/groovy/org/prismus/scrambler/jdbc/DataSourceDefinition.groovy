@@ -181,7 +181,7 @@ class DataSourceDefinition extends ValueDefinition {
 
     protected Map<String, TableMeta> listTableMap() {
         final List<String> tables = listTables()
-        final tableMap = new LinkedHashMap<String, TableMeta>(tables.size())
+        final tableMap = new TreeMap<String, TableMeta>(String.CASE_INSENSITIVE_ORDER)
         final Map<String, String> fkTableMap = [:] as Map<String, String>
         for (final String table : tables) {
             tableMap.put(table, getTableMeta(table, fkTableMap))
@@ -249,7 +249,7 @@ class DataSourceDefinition extends ValueDefinition {
     protected Map<String, Map<String, Object>> getForeignKeys(String table, Map<String, String> fkTableMap) {
         Connection connection = null
         ResultSet rs = null
-        final result = [:]
+        final result = new TreeMap<String, Map<String, Object>>(String.CASE_INSENSITIVE_ORDER)
         try {
             connection = dataSource.connection
             rs = connection.metaData.getExportedKeys(connection.getCatalog(), null, table)

@@ -38,7 +38,7 @@ final class Util {
     }
 
     static Map<String, Object> asMap(ResultSet rs) {
-        final props = [:]
+        final props = new TreeMap<String, Object>(String.CASE_INSENSITIVE_ORDER)
         final ResultSetMetaData rsmd = rs.getMetaData()
         final int columnCount = rsmd.getColumnCount()
         for (int i = 0; i < columnCount; i++) {

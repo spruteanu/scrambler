@@ -30,7 +30,7 @@ class DatabaseBatchBuilder {
         return this
     }
 
-    DatabaseBatchBuilder generateRequired() {
+    DatabaseBatchBuilder generateRequiredOnly() {
         this.generateNullable = false
         return this
     }
@@ -68,7 +68,7 @@ class DatabaseBatchBuilder {
         return definition
     }
 
-    protected void sortTablesByFkDependency() {
+    protected void sortTablesByFkDependency(List<TableMeta> tables) {
         Collections.sort(tables, new Comparator<TableMeta>() {
             @Override
             int compare(TableMeta left, TableMeta right) {
@@ -77,7 +77,11 @@ class DatabaseBatchBuilder {
         })
     }
 
-    Value<Map<String, Object>> build() {
+    Value<Map<String, Map<String, Object>>> build() {
+        if (!tables) {
+            throw new IllegalStateException('No tables have been defined to build')
+        }
+        sortTablesByFkDependency(tables)
         // todo Serge: implement me
         throw new RuntimeException('Implement me')
     }
