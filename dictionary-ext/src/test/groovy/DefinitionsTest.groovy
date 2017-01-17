@@ -1,5 +1,5 @@
 import org.prismus.scrambler.MapScrambler
-import org.prismus.scrambler.value.DataDefinition
+import org.prismus.scrambler.data.DataDefinition
 import spock.lang.Specification
 
 /**

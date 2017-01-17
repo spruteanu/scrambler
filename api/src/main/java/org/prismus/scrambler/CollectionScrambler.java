@@ -18,16 +18,16 @@
 
 package org.prismus.scrambler;
 
-import org.prismus.scrambler.value.CollectionData;
-import org.prismus.scrambler.value.Combinations;
-import org.prismus.scrambler.value.ListRandomElement;
+import org.prismus.scrambler.data.CollectionData;
+import org.prismus.scrambler.data.Combinations;
+import org.prismus.scrambler.data.ListRandomElement;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 /**
- * {@link java.util.Collection} value methods, exposes all possible ways to generate {@link java.util.Collection} objects
+ * {@link java.util.Collection} object methods, exposes all possible ways to generate {@link java.util.Collection} objects
  *
  * @author Serge Pruteanu
  */
@@ -44,8 +44,8 @@ public class CollectionScrambler {
         return new CollectionData<V, T>(collection, data, count);
     }
 
-    public static <T> Data<T> randomOf(List<T> values) {
-        return new ListRandomElement<T>(values);
+    public static <T> Data<T> randomOf(List<T> list) {
+        return new ListRandomElement<T>(list);
     }
 
     public static <T> Data<T> randomOf(Collection<T> collection) {
@@ -60,8 +60,8 @@ public class CollectionScrambler {
         return Combinations.of(dataList);
     }
 
-    public static <T> Data<List<T>> combinationValues(List<Data<T>> datas) {
-        return Combinations.valuesOf(datas);
+    public static <T> Data<List<T>> dataCombinations(List<Data<T>> dataList) {
+        return Combinations.dataOf(dataList);
     }
 
 }

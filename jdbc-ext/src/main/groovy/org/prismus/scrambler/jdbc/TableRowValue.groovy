@@ -3,7 +3,7 @@ package org.prismus.scrambler.jdbc
 import groovy.sql.DataSet
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
-import org.prismus.scrambler.value.ConstantData
+import org.prismus.scrambler.data.ConstantData
 
 import javax.sql.DataSource
 import java.sql.Statement
@@ -62,8 +62,8 @@ class TableRowValue extends ConstantData<Map<String, Object>> {
 
     @Override
     protected Map<String, Object> doNext() {
-        if (constantValue && value != null) {
-            return (Map<String, Object>) value
+        if (constantValue && object != null) {
+            return (Map<String, Object>) object
         }
         if (where) {
             return (Map<String, Object>) dataSet.findAll(where).firstRow()
@@ -80,7 +80,7 @@ class TableRowValue extends ConstantData<Map<String, Object>> {
     }
 
     /**
-     * Creates an instance of table selection value based on provided parameters
+     * Creates an instance of table selection object based on provided parameters
      *
      * @param dataSource DB datasource instance
      * @param table table name
@@ -91,7 +91,7 @@ class TableRowValue extends ConstantData<Map<String, Object>> {
     }
 
     /**
-     * Creates an instance of table selection value based on provided parameters
+     * Creates an instance of table selection object based on provided parameters
      *
      * @param dataSource DB datasource instance
      * @param table table name
@@ -103,7 +103,7 @@ class TableRowValue extends ConstantData<Map<String, Object>> {
     }
 
     /**
-     * Creates an instance of table selection value based on provided parameters
+     * Creates an instance of table selection object based on provided parameters
      *
      * @param dataSource DB datasource instance
      * @param table table name
@@ -115,7 +115,7 @@ class TableRowValue extends ConstantData<Map<String, Object>> {
     }
 
     /**
-     * Creates an instance of table selection value based on provided parameters
+     * Creates an instance of table selection object based on provided parameters
      *
      * @param dataSource DB datasource instance
      * @param table table name
@@ -127,7 +127,7 @@ class TableRowValue extends ConstantData<Map<String, Object>> {
     }
 
     /**
-     * Creates an instance of table selection value based on provided parameters
+     * Creates an instance of table selection object based on provided parameters
      *
      * @param dataSource DB datasource instance
      * @param table table name

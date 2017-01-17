@@ -3,7 +3,7 @@ package org.prismus.scrambler.jdbc
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 import org.prismus.scrambler.Data
-import org.prismus.scrambler.value.ConstantData
+import org.prismus.scrambler.data.ConstantData
 
 /**
  * todo: add description

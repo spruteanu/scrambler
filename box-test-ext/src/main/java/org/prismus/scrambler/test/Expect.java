@@ -137,8 +137,8 @@ public class Expect {
     public Expect executedIn(final long expectedTime) {
         predicates.add(new DataPredicate() {
             @Override
-            public boolean apply(String property, Object value) {
-                final MethodContext executionContext = (MethodContext) value;
+            public boolean apply(String property, Object data) {
+                final MethodContext executionContext = (MethodContext) data;
                 final long inspected = executionContext.getExecutionTime();
                 return expectedTime <= inspected;
             }
@@ -159,8 +159,8 @@ public class Expect {
         }
 
         @Override
-        public boolean apply(String property, Object value) {
-            final TestContext testContext = (TestContext) value;
+        public boolean apply(String property, Object data) {
+            final TestContext testContext = (TestContext) data;
             return predicate.apply(property, testContext.getInspected());
         }
 

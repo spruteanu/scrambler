@@ -79,7 +79,7 @@ import org.prismus.scrambler.beans.Address
 import org.prismus.scrambler.beans.ClassRoom
 import org.prismus.scrambler.beans.Person
 import org.prismus.scrambler.beans.School
-import org.prismus.scrambler.data.ReferenceValue
+import org.prismus.scrambler.data.ReferenceData
 
 /**
  * School entities definition, with adequate address and person definitions
@@ -98,7 +98,7 @@ definition('address', InstanceScrambler.instanceOf(Address).usingDefinitions(add
 definition('staff', [].of(InstanceScrambler.instanceOf(Person)
         .usingDefinitions(personDefinition).usingDefinitions(addressDefinition)))
 
-definition('principle', new ReferenceValue('staff') {
+definition('principle', new ReferenceData('staff') {
     @Override
     protected Object doNext() {
         final staffList = super.doNext()
@@ -112,7 +112,7 @@ definition('rooms', [].of(InstanceScrambler.instanceOf(ClassRoom)
         .usingDefinitions(
             parent: School.reference(), schoolId: School.reference('schoolId'),
             roomNumber: "101A".random(4),
-            teacher: new ReferenceValue(School, 'staff') {
+            teacher: new ReferenceData(School, 'staff') {
                 @Override
                 protected Object doNext() {
                     final staffList = super.doNext()
@@ -128,6 +128,6 @@ definition('rooms', [].of(InstanceScrambler.instanceOf(ClassRoom)
 ```
 
 ### IntelliJ IDEA IDE highlighting/context completion support
-DataScrambler API DSL support is defined in `org.prismus.scrambler.data.ValueDefinition.gdsl` and it is included in final jar. 
+DataScrambler API DSL support is defined in `org.prismus.scrambler.data.DataDefinition.gdsl` and it is included in final jar. 
 IntelliJ IDEA IDE will detect the definition automatically and will provide DSL methods highlighting and 
 context support code/type completion.

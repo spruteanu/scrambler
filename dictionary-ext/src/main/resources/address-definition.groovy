@@ -2,9 +2,9 @@ import groovy.transform.CompileStatic
 import org.prismus.scrambler.CollectionScrambler
 import org.prismus.scrambler.NumberScrambler
 import org.prismus.scrambler.Data
-import org.prismus.scrambler.value.AbstractRandomRange
-import org.prismus.scrambler.value.ConstantData
-import org.prismus.scrambler.value.ReferenceData
+import org.prismus.scrambler.data.AbstractRandomRange
+import org.prismus.scrambler.data.ConstantData
+import org.prismus.scrambler.data.ReferenceData
 
 import java.util.zip.ZipFile
 

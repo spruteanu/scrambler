@@ -18,15 +18,15 @@
 
 package org.prismus.scrambler;
 
-import org.prismus.scrambler.value.ArrayData;
-import org.prismus.scrambler.value.IncrementalDate;
-import org.prismus.scrambler.value.RandomDate;
+import org.prismus.scrambler.data.ArrayData;
+import org.prismus.scrambler.data.IncrementalDate;
+import org.prismus.scrambler.data.RandomDate;
 
 import java.util.Date;
 import java.util.Map;
 
 /**
- * {@link Date} value methods, exposes all possible ways to generate {@link Date} objects
+ * {@link Date} object methods, exposes all possible ways to generate {@link Date} objects
  *
  * @author Serge Pruteanu
  */
@@ -70,8 +70,8 @@ public class DateScrambler {
         return new ArrayData<Date>(Date.class, count, data);
     }
 
-    public static RandomDate random(Date value) {
-        return new RandomDate(value);
+    public static RandomDate random(Date date) {
+        return new RandomDate(date);
     }
 
     public static RandomDate random(Date minimum, Date maximum) {

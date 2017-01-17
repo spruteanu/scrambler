@@ -19,8 +19,8 @@
 package org.prismus.scrambler.test;
 
 import org.prismus.scrambler.Data;
-import org.prismus.scrambler.value.ArrayContainerData;
-import org.prismus.scrambler.value.DataDefinition;
+import org.prismus.scrambler.data.ArrayContainerData;
+import org.prismus.scrambler.data.DataDefinition;
 
 import java.util.Arrays;
 
@@ -31,17 +31,17 @@ import java.util.Arrays;
  */
 public class BoxTestScrambler {
 
-    public static Data<Object[]> methodValues(Class clazzType, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
-        return BoxTestSuite.of(clazzType).methodValues(method, args);
+    public static Data<Object[]> methodData(Class clazzType, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
+        return BoxTestSuite.of(clazzType).methodData(method, args);
     }
 
-    public static Data<Object[]> methodValues(String method, Class[] args, String... definitions) throws NoSuchMethodException, IllegalArgumentException {
+    public static Data<Object[]> methodData(String method, Class[] args, String... definitions) throws NoSuchMethodException, IllegalArgumentException {
         final DataDefinition dataDefinition = new DataDefinition().scanDefinitions(Arrays.asList(definitions));
-        return new ArrayContainerData(dataDefinition.lookupValues(Arrays.asList(args)));
+        return new ArrayContainerData(dataDefinition.lookupData(Arrays.asList(args)));
     }
 
-    public static Data<Object[]> methodValues(Object instance, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
-        return BoxTestSuite.of(instance).methodValues(method, args);
+    public static Data<Object[]> methodData(Object instance, String method, Class... args) throws NoSuchMethodException, IllegalArgumentException {
+        return BoxTestSuite.of(instance).methodData(method, args);
     }
 
     public static BoxTestSuite inspect(Object inspected) {

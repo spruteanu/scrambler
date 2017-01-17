@@ -18,13 +18,13 @@
 
 package org.prismus.scrambler;
 
-import org.prismus.scrambler.value.*;
+import org.prismus.scrambler.data.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
- * {@link Number} value methods, exposes all possible ways to generate {@link Number} objects
+ * {@link Number} object methods, exposes all possible ways to generate {@link Number} objects
  *
  * @author Serge Pruteanu
  */
@@ -201,22 +201,22 @@ public class NumberScrambler {
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T extends Number> Data<T> increment(Class<T> self, T defaultValue, T step) {
+    public static <T extends Number> Data<T> increment(Class<T> self, T defaultObj, T step) {
         if (Types.incrementTypeMap.containsKey(self)) {
             final Data data;
             if (self.isArray()) {
-                data = ArrayScrambler.incrementArray(self, defaultValue, step, null);
+                data = ArrayScrambler.incrementArray(self, defaultObj, step, null);
             } else {
-                data = (Data) Util.createInstance(Types.incrementTypeMap.get(self), new Object[]{defaultValue, step}, new Class[]{self, self});
+                data = (Data) Util.createInstance(Types.incrementTypeMap.get(self), new Object[]{defaultObj, step}, new Class[]{self, self});
             }
             return data;
         }
-        throw new UnsupportedOperationException(String.format("The method is not supported for class type: %s, default value: %s", self, self));
+        throw new UnsupportedOperationException(String.format("The method is not supported for class type: %s, default object: %s", self, self));
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T extends Number> Data<T> random(T value) {
-        return ObjectScrambler.random((Class<T>) value.getClass(), value);
+    public static <T extends Number> Data<T> random(T obj) {
+        return ObjectScrambler.random((Class<T>) obj.getClass(), obj);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -228,8 +228,8 @@ public class NumberScrambler {
     public static <T extends Number> Data<T> random(T val, T minimum, T maximum) {
         final Data<T> data = ObjectScrambler.random((Class<T>) val.getClass(), val);
         if (data instanceof AbstractRandomRange) {
-            final AbstractRandomRange<Number> randomRangeValue = (AbstractRandomRange<Number>) data;
-            randomRangeValue.between(minimum, maximum);
+            final AbstractRandomRange<Number> randomRange = (AbstractRandomRange<Number>) data;
+            randomRange.between(minimum, maximum);
         } else {
             throw new UnsupportedOperationException(String.format(Types.NOT_SUPPORTED_RANGE_TYPE_MSG, val.getClass(), minimum, maximum));
         }
@@ -240,9 +240,9 @@ public class NumberScrambler {
     public static <T extends Number> Data<T> randomArray(Class self, T minimum, T maximum, Integer count) {
         Util.checkPositiveCount(count);
 
-        Object defaultValue = minimum != null ? minimum : maximum != null ? maximum : null;
+        Object defaultObj = minimum != null ? minimum : maximum != null ? maximum : null;
         if (self == null) {
-            self = defaultValue != null ? defaultValue.getClass() : null;
+            self = defaultObj != null ? defaultObj.getClass() : null;
         }
         if (self == null) {
             throw new IllegalArgumentException(String.format("Either minimum: %s or maximum: %s should be not null", minimum, maximum));
@@ -265,7 +265,7 @@ public class NumberScrambler {
         final Data<T> data;
         if (primitive) {
             data = (Data<T>) Util.createInstance(Types.randomTypeMap.get(self),
-                    new Object[]{self.isInstance(defaultValue) ? defaultValue : null, count, instance},
+                    new Object[]{self.isInstance(defaultObj) ? defaultObj : null, count, instance},
                     new Class[]{self, Integer.class, Object.class}
             );
         } else {

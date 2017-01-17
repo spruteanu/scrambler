@@ -21,23 +21,23 @@ package org.prismus.scrambler;
 import java.io.Serializable;
 
 /**
- * An interface used to generate data.
+ * An interface used to generate object.
  *
  * @author Serge Pruteanu
  */
 public interface Data<T> extends Serializable, Cloneable {
 
     /**
-     * Generates value.
+     * Generates object.
      *
      * @return an instance of object
      */
     T next();
 
     /**
-     * Gets current generated value
+     * Gets current generated object
      *
-     * @return current value
+     * @return current object
      */
     T get();
 

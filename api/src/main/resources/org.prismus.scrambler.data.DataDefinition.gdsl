@@ -1,0 +1,76 @@
+/**
+ * IntelliJ IDEA contextMap code completion definitions for DataScrambler
+ *
+ * @author Serge Pruteanu
+ */
+contributor context(ctype: Number.name), {
+    findClass('org.prismus.scrambler.object.GroovyDataDefinition.NumberCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
+}
+
+contributor context(ctype: Date.name), {
+    findClass('org.prismus.scrambler.object.GroovyDataDefinition.DateCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
+}
+
+contributor context(ctype: String.name), {
+    findClass('org.prismus.scrambler.object.GroovyDataDefinition.StringCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
+}
+
+contributor context(ctype: Collection.name), {
+    findClass('org.prismus.scrambler.object.GroovyDataDefinition.CollectionCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
+}
+
+contributor context(ctype: Map.name), {
+    findClass('org.prismus.scrambler.object.GroovyDataDefinition.MapCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
+}
+
+contributor context(ctype: Object.name), {
+    findClass('org.prismus.scrambler.object.GroovyDataDefinition.ObjectCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
+}
+
+contributor context(ctype: Class.name), {
+    findClass('org.prismus.scrambler.object.GroovyDataDefinition.ClassCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
+}
+
+contributor context(ctype: Boolean.name), {
+    findClass('org.prismus.scrambler.object.GroovyDataDefinition.BooleanCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
+}
+
+contributor context(scope: scriptScope(name: ~/(?:.*definition|.*vd).groovy/)), {
+    findClass('org.prismus.scrambler.object.GroovyDataDefinition.DataDefinitionCategory')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
+}

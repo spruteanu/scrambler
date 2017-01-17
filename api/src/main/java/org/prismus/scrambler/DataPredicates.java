@@ -18,7 +18,7 @@
 
 package org.prismus.scrambler;
 
-import org.prismus.scrambler.value.*;
+import org.prismus.scrambler.data.*;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -72,8 +72,8 @@ public class DataPredicates {
     public static DataPredicate isNull() {
         return new DataPredicate() {
             @Override
-            public boolean apply(String property, Object value) {
-                return null == value;
+            public boolean apply(String property, Object data) {
+                return null == data;
             }
 
             @Override
@@ -86,8 +86,8 @@ public class DataPredicates {
     public static DataPredicate isNotNull() {
         return new DataPredicate() {
             @Override
-            public boolean apply(String property, Object value) {
-                return null != value;
+            public boolean apply(String property, Object data) {
+                return null != data;
             }
 
             @Override
@@ -100,8 +100,8 @@ public class DataPredicates {
     public static DataPredicate equalsTo(final Object object) {
         return new DataPredicate() {
             @Override
-            public boolean apply(String property, Object value) {
-                return object.equals(value);
+            public boolean apply(String property, Object data) {
+                return object.equals(data);
             }
 
             @Override
@@ -114,8 +114,8 @@ public class DataPredicates {
     public static DataPredicate isSame(final Object object) {
         return new DataPredicate() {
             @Override
-            public boolean apply(String property, Object value) {
-                return object == value;
+            public boolean apply(String property, Object data) {
+                return object == data;
             }
 
             @Override
@@ -125,35 +125,35 @@ public class DataPredicates {
         };
     }
 
-    public static DataPredicate isAny(final Set<Object> values) {
+    public static DataPredicate isAny(final Set<Object> dataSet) {
         return new DataPredicate() {
             @Override
-            public boolean apply(String property, Object value) {
-                return values.contains(value);
+            public boolean apply(String property, Object data) {
+                return dataSet.contains(data);
             }
 
             @Override
             public String toString() {
-                return String.format("Data is any of: '%s'", values);
+                return String.format("Data is any of: '%s'", dataSet);
             }
         };
     }
 
-    public static DataPredicate isAny(final Object... values) {
-        return isAny(new LinkedHashSet<Object>(Arrays.asList(values)));
+    public static DataPredicate isAny(final Object... data) {
+        return isAny(new LinkedHashSet<Object>(Arrays.asList(data)));
     }
 
-    public static DataPredicate isAny(final Collection<Object> values) {
-        return isAny(new LinkedHashSet<Object>(values));
+    public static DataPredicate isAny(final Collection<Object> data) {
+        return isAny(new LinkedHashSet<Object>(data));
     }
 
     public static <N extends Comparable> DataPredicate between(final N min, final N max) {
         return new DataPredicate() {
             @SuppressWarnings("unchecked")
             @Override
-            public boolean apply(String property, Object value) {
-                Comparable comparedValue = (Comparable) value;
-                return (min == null || min.compareTo(comparedValue) >= 0) && (max == null || max.compareTo(comparedValue) >= 0);
+            public boolean apply(String property, Object data) {
+                Comparable comparedData = (Comparable) data;
+                return (min == null || min.compareTo(comparedData) >= 0) && (max == null || max.compareTo(comparedData) >= 0);
             }
 
             @Override

@@ -3,7 +3,7 @@ import org.prismus.scrambler.beans.Address
 import org.prismus.scrambler.beans.ClassRoom
 import org.prismus.scrambler.beans.Person
 import org.prismus.scrambler.beans.School
-import org.prismus.scrambler.value.ReferenceData
+import org.prismus.scrambler.data.ReferenceData
 
 /**
  * School entities definition, with adequate address and person definitions

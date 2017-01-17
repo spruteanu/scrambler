@@ -26,7 +26,7 @@ Assert.assertNotNull(person.getAddress().getState());
 
 void 'check data definitions (tree definition) for instance'() {
 given:
-GroovyValueDefinition.register()
+GroovyDataDefinition.register()
 final instance = new InstanceData<Order>(Order).usingDefinitions(
         (BigDecimal): BigDecimal.ONE.random(1.0, 100.0),
         (int[]): int.arrayOf(10.increment(10)),

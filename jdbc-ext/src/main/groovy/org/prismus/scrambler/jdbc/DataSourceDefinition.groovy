@@ -6,7 +6,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 import org.prismus.scrambler.Data
 import org.prismus.scrambler.DataPredicate
-import org.prismus.scrambler.value.DataDefinition
+import org.prismus.scrambler.data.DataDefinition
 
 import javax.sql.DataSource
 import java.sql.*
@@ -101,11 +101,11 @@ class DataSourceDefinition extends DataDefinition {
     }
 
     Data lookupValue(String tableName, DataPredicate predicate) {
-        return tableDefinitionMap.containsKey(tableName) ? tableDefinitionMap.get(tableName).lookupValue(predicate) : null
+        return tableDefinitionMap.containsKey(tableName) ? tableDefinitionMap.get(tableName).lookupData(predicate) : null
     }
 
     Data lookupValue(String tableName, String property, Class type) {
-        return tableDefinitionMap.containsKey(tableName) ? tableDefinitionMap.get(tableName).lookupValue(property, type) : null
+        return tableDefinitionMap.containsKey(tableName) ? tableDefinitionMap.get(tableName).lookupData(property, type) : null
     }
 
     Map<String, Data> toMapValue(TableMeta tableMeta, boolean generateNullable) {
@@ -126,7 +126,7 @@ class DataSourceDefinition extends DataDefinition {
             if (fkColumn) {
                 value = lookupFkValue(columnMeta, generateNullable)
             } else {
-                value = lookupValue(columnName, columnMeta.classType)
+                value = lookupData(columnName, columnMeta.classType)
             }
             if (value) {
                 keys.add(columnName)
@@ -155,7 +155,7 @@ class DataSourceDefinition extends DataDefinition {
         final primaryColumnMeta = primaryTableMeta.columnMap.get(primaryColumnName)
         Data value = lookupValue(primaryTableName, primaryColumnName, primaryColumnMeta.classType)
         if (value == null) {
-            // todo Serge: add a strategy to generate FK keys: pickup value from DB or from generated, cached values
+            // todo Serge: add a strategy to generate FK keys: pickup object from DB or from generated, cached array
         }
         return value
     }

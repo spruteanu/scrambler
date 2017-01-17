@@ -18,7 +18,7 @@
 
 package org.prismus.scrambler;
 
-import org.prismus.scrambler.value.*;
+import org.prismus.scrambler.data.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -208,8 +208,8 @@ public class InstanceScrambler {
         return new InstanceData<T>(self).withDefinitionClosure(defCl);
     }
 
-    public static <T> InstanceData<T> instanceOf(Class<T> self, Map<Object, Object> propertyValueMap, AbstractDefinitionCallable defCl) {
-        return new InstanceData<T>(self).withDefinitionClosure(defCl).usingDefinitions(propertyValueMap);
+    public static <T> InstanceData<T> instanceOf(Class<T> self, Map<Object, Object> fieldDefinitionMap, AbstractDefinitionCallable defCl) {
+        return new InstanceData<T>(self).withDefinitionClosure(defCl).usingDefinitions(fieldDefinitionMap);
     }
 
     public static <T> InstanceData<T> instanceOf(Class<T> self, Collection constructorArgs, AbstractDefinitionCallable defCl) {

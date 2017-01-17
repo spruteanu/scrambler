@@ -18,13 +18,13 @@
 
 package org.prismus.scrambler;
 
-import org.prismus.scrambler.value.ArrayData;
-import org.prismus.scrambler.value.IncrementalString;
-import org.prismus.scrambler.value.RandomString;
-import org.prismus.scrambler.value.RandomUuid;
+import org.prismus.scrambler.data.ArrayData;
+import org.prismus.scrambler.data.IncrementalString;
+import org.prismus.scrambler.data.RandomString;
+import org.prismus.scrambler.data.RandomUuid;
 
 /**
- * {@link String} value methods, exposes all possible ways to generate {@link String} objects
+ * {@link String} object methods, exposes all possible ways to generate {@link String} objects
  *
  * @author Serge Pruteanu
  */

@@ -18,10 +18,10 @@
 
 package org.prismus.scrambler;
 
-import org.prismus.scrambler.value.*;
+import org.prismus.scrambler.data.*;
 
 /**
- * Facade that exposes data generation for generic types, common to all {@link Object} derived
+ * Facade that exposes object generation for generic types, common to all {@link Object} derived
  *
  * @author Serge Pruteanu
  */
@@ -29,8 +29,8 @@ public class ObjectScrambler {
     //------------------------------------------------------------------------------------------------------------------
     // Object methods
     //------------------------------------------------------------------------------------------------------------------
-    public static <T> Data<T> constant(T value) {
-        return new ConstantData<T>(value);
+    public static <T> Data<T> constant(T obj) {
+        return new ConstantData<T>(obj);
     }
 
     public static <T> Data<T> random(Class<T> self) {
@@ -38,26 +38,26 @@ public class ObjectScrambler {
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Data<T> random(Class<T> self, T defaultValue) {
+    public static <T> Data<T> random(Class<T> self, T defaultObj) {
         if (Types.randomTypeMap.containsKey(self)) {
             if (self.isArray()) {
-                return ArrayScrambler.randomArray(self, defaultValue, null);
+                return ArrayScrambler.randomArray(self, defaultObj, null);
             } else {
                 if (self.isPrimitive()) {
                     return (Data) Util.createInstance(Types.randomTypeMap.get(self), null, null);
                 } else {
-                    return (Data) Util.createInstance(Types.randomTypeMap.get(self), new Object[]{defaultValue}, new Class[]{self});
+                    return (Data) Util.createInstance(Types.randomTypeMap.get(self), new Object[]{defaultObj}, new Class[]{self});
                 }
             }
         }
-        throw new UnsupportedOperationException(String.format("The method is not supported for class type: %s, default value: %s", self, defaultValue));
+        throw new UnsupportedOperationException(String.format("The method is not supported for class type: %s, default object: %s", self, defaultObj));
     }
 
     public static <T> Data<T> random(Class<T> self, T minimum, T maximum) {
         final Data<T> data = random(self, minimum);
         if (data instanceof AbstractRandomRange) {
-            final AbstractRandomRange<T> randomRangeValue = (AbstractRandomRange<T>) data;
-            randomRangeValue.between(minimum, maximum);
+            final AbstractRandomRange<T> randomRange = (AbstractRandomRange<T>) data;
+            randomRange.between(minimum, maximum);
         } else {
             throw new UnsupportedOperationException(String.format(Types.NOT_SUPPORTED_RANGE_TYPE_MSG, self, minimum, maximum));
         }
@@ -67,8 +67,8 @@ public class ObjectScrambler {
     //------------------------------------------------------------------------------------------------------------------
     // Boolean methods
     //------------------------------------------------------------------------------------------------------------------
-    public static Data<Boolean> random(Boolean value) {
-        return new RandomBoolean(value);
+    public static Data<Boolean> random(Boolean obj) {
+        return new RandomBoolean(obj);
     }
 
 }

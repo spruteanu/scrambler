@@ -1,7 +1,7 @@
 ## org.prismus.scrambler.Data
-Value interface defines data generation capabilities. 
+Data interface defines data generation capabilities. 
 
-![Value interface](data-class-dgm.png)
+![Data interface](data-class-dgm.png)
 
 ```java
 /**
@@ -32,7 +32,7 @@ It consists of 2 methods:
   Method is used to get the data from prior execution of ``next()`` method.
   
 ## Custom org.prismus.scrambler.Data implementation 
-It is recommended to create custom Value implementations by extending **org.prismus.scrambler.data.ConstantData** class.
+It is recommended to create custom Data implementations by extending **org.prismus.scrambler.data.ConstantData** class.
 This class is a template that allows to get and performs data setting for newly generated object.
 Your implementation has to extend method **org.prismus.scrambler.data.Constant#doNext()** for data generation.
 
@@ -40,17 +40,17 @@ Your implementation has to extend method **org.prismus.scrambler.data.Constant#d
 public class ConstantData<T> implements Data<T> {
 ...
     public T get() {
-        return data;
+        return object;
     }
 
     public T next() {
         final T data = doNext();
-        setValue(data);
+        setObject(data);
         return data;
     }
 
     protected T doNext() {
-        return data;
+        return object;
     }
 ...
 }
@@ -258,7 +258,7 @@ System.out.println(MapScrambler.mapOf(LinkedHashMap.class, new LinkedHashMap() {
 ![Map generation classes](map-data-class-dgm.png)
 
 ## org.prismus.scrambler.DataPredicate
-Value predicates are defined to match java classes fields with data generation rules.
+Data predicates are defined to match java classes fields with data generation rules.
 Fields can be matched by name and/or type. In order to have matching process more flexible, 
 fields can be matched by name, wildcard or regular expression. 
 
@@ -267,9 +267,9 @@ fields can be matched by name, wildcard or regular expression.
  * Interface that matches either {@code property} and/or {@code data}.
  * The predicate is mostly used as a Map.key for data definitions, to match instance fields
  */
-public interface ValuePredicate {
+public interface DataPredicate {
     /**
-     * Match either property and/or data, used to identify if {@link Value} is applicable for provided arguments
+     * Match either property and/or data, used to identify if {@link Data} is applicable for provided arguments
      *
      * @param property property name to be matched
      * @param data data to be matched
@@ -281,28 +281,28 @@ public interface ValuePredicate {
 
 ``org.prismus.scrambler.DataPredicates`` exposes variety of available predicates.
 
-![Value Predicate interface](data-predicate-dgm.png)
-![Value Predicate interface](data-predicate-class-dgm.png)
+![Data Predicate interface](data-predicate-dgm.png)
+![Data Predicate interface](data-predicate-class-dgm.png)
 
-## org.prismus.scrambler.data.ValueDefinition
-ValueDefinition is a builder that represents a registry of data generation rules matched by predicates.
-Following functionality is offered by ``org.prismus.scrambler.data.ValueDefinition``:
+## org.prismus.scrambler.data.DataDefinition
+DataDefinition is a builder that represents a registry of data generation rules matched by predicates.
+Following functionality is offered by ``org.prismus.scrambler.data.DataDefinition``:
 
 1. Register data for provided predicate through ``definition(...), constant(...), reference(...)`` methods
 1. Load definitions from external sources<br/>
   1. ``usingDefinitions``        - load existing definitions. If provided resource/file is not found, an exception will be thrown
   1. ``scanDefinitions``         - load definitions if exists.
   1. ``scanLibraryDefinitions``  - scan classpath for definition sources and load if any matched. Scanning matches all ``*data-definition.groovy`` scripts once and caches them internally.
-1. ``lookupValue``             - lookup a registered definition for provided arguments. Methods are used from reference and instance data
+1. ``lookupData``                - lookup a registered definition for provided arguments. Methods are used from reference and instance data
 1. Context properties.<br/>
   In order to make definition' resources more generic, it is possible to register a map of properties from 
 ``org.prismus.scrambler.InstanceScrambler`` methods and those properties will be available/injected from/to script definitions 
 using ``getContextProperty(...)``. More details will be given in DSL definitions section.
 
-All ``org.prismus.scrambler.data.ValueDefinition`` methods are accessible from definition scripts.
+All ``org.prismus.scrambler.data.DataDefinition`` methods are accessible from definition scripts.
 
 ## Java instances generation
-``org.prismus.scrambler.data.InstanceValue`` is a builder to generate java class with field's data for it.
+``org.prismus.scrambler.data.InstanceData`` is a builder to generate java class with field's data for it.
 Following operations are available:
 
 1. Create an instance from defaults
@@ -317,7 +317,7 @@ and it can be changed by ``usingDefaultDefinitions(...)`` methods
 * If no fields are defined, classpath will be scanned for class definition resource using following naming convention:<br/>
 ``"Class name" + "-definition.groovy"``, that for ``Person.class`` will match ``Person-definition.groovy``
 * Often it is needed to populate a field based on some field' datas of created class. 
-DataScrambler API allows that using ``org.prismus.scrambler.data.ReferenceValue`` rule. See bellow more details. 
+DataScrambler API allows that using ``org.prismus.scrambler.data.ReferenceData`` rule. See bellow more details. 
 
 ![Instance data classes](instance-data-class-dgm.png)
 
@@ -358,7 +358,7 @@ Assert.assertTrue("Washington".equals(address.getState()));
 
 ```
 
-### Reference Value
+### Reference Data
 Reference data is an implementation of data that allows to generate/create a field data by 'referencing' inquired 
 class in defined rules. For more clarity, let's examine two examples:
 
@@ -368,7 +368,7 @@ SID property from 'parent'. In order to resolve this data, a reference to ``Scho
 DataScrambler API parser will detect this declaration and will resolve the context for declared School.class reference data, thus, 
 ``Room.schoolId`` will get the data from already generated field ``School.schoolId``.
 
-**Example from test: org.prismus.scrambler.value.InstanceDataTesttest if parent is set properly**<br/>
+**Example from test: org.prismus.scrambler.data.InstanceDataTesttest if parent is set properly**<br/>
 ```groovy
 final instance = new InstanceData<School>(School).usingDefinitions(
         '*Id': 1.increment(1),
@@ -404,7 +404,7 @@ definition(firstNamePattern, allFirstNames.randomOf())
 ... some logic here
 
 //gender, reference the field on first name, and set according gender from generated first name field/data
-definition(~/(?i)gender/, new ReferenceValue(firstNamePattern) {
+definition(~/(?i)gender/, new ReferenceData(firstNamePattern) {
     @Override
     protected Object doNext() {
         final firstName = super.doNext()
@@ -417,7 +417,7 @@ definition(~/(?i)gender/, new ReferenceValue(firstNamePattern) {
 #### Notes
 * Referenced types and fields MUST be defined/declared first
 * Fields/types/Classes can be referenced by predicates
-* References can be defined either in script using ``ValueDefinition.reference(...)`` methods or explicitly using ``ReferenceValue.class`` object
+* References can be defined either in script using ``DataDefinition.reference(...)`` methods or explicitly using ``ReferenceData.class`` object
 
 ## DataScrambler DSL
 Java is a neat programming language, but it is too verbose in the cases when you need to configure/define datas for a class.
@@ -428,7 +428,7 @@ DSL, so, on top of DataScrambler API an according data generation DSL is created
 DataScrambler is implemented using Groovy metaclass DSL capabilities and mixin declarations 
 (see [Groovy dynamic stateless mixins](https://groovyland.wordpress.com/2008/06/07/groovy-dynamic-stateless-mixins/) for example)
 Scrambler generation facades' methods are added dynamically to groovy expando metaclass in 
-``org.prismus.scrambler.data.GroovyValueDefinition`` static block.
+``org.prismus.scrambler.data.GroovyDataDefinition`` static block.
 
 **DSL Examples:**<br/>
 ```groovy
@@ -454,16 +454,16 @@ new HashSet().of(4.increment(10), 100)
 ![DSL classes](groovy-definition-class-dgm.png)
 
 ### DataScrambler definition scripts
-In addition to DSL registration, ``org.prismus.scrambler.data.GroovyValueDefinition`` is responsible for DataScrambler 
-definition scripts parsing (``org.prismus.scrambler.data.GroovyValueDefinition#parseDefinitions(...)`` methods) 
+In addition to DSL registration, ``org.prismus.scrambler.data.GroovyDataDefinition`` is responsible for DataScrambler 
+definition scripts parsing (``org.prismus.scrambler.data.GroovyDataDefinition#parseDefinitions(...)`` methods) 
 from various sources (classpath resource, File, InputStream, Reader or even simple text with definitions).
 
 **NOTE:**<br/>
 Groovy Shell can be configured by defining in classpath ``/definitions-parser.properties`` file that will configure 
 ``org.codehaus.groovy.control.CompilerConfiguration`` properties.
 
-Along with DataScrambler API DSL extension, methods from ``org.prismus.scrambler.data.ValueDefinition`` are accessible 
-from definitions script. This is implemented by setting the ``org.prismus.scrambler.data.ValueDefinition`` instance 
+Along with DataScrambler API DSL extension, methods from ``org.prismus.scrambler.data.DataDefinition`` are accessible 
+from definitions script. This is implemented by setting the ``org.prismus.scrambler.data.DataDefinition`` instance 
 to ``groovy.util.DelegatingScript`` that evaluates definitions script.
 
 #### Performance
@@ -472,7 +472,7 @@ predicates matching, time is spent only on invoking data generation and fields p
 
 #### IDE support
 Currently DataScrambler has support for highlighting and completion only for IntelliJ IDEA by 
-``org.prismus.scrambler.data.ValueDefinition.gdsl`` file shipped with library. 
+``org.prismus.scrambler.data.DataDefinition.gdsl`` file shipped with library. 
 Eclipse support will be added in near future.
 
 ## DataScrambler extensions
@@ -481,12 +481,12 @@ Eclipse support will be added in near future.
 In order to make definitions scripts re-usage an easy process, as well as to write less code for data generation, 
 DataScrambler API has a capability of definitions scanning in the classpath. Definitions are scanned by listing 
 all resources of ``META-INF/dictionary.desc``. Library definitions methods are available under definitions script scope
-``org.prismus.scrambler.data.ValueDefinition#usingLibraryDefinitions(...)`` as well as at 
-``org.prismus.scrambler.data.InstanceValue#usingLibraryDefinitions(...)``.
+``org.prismus.scrambler.data.DataDefinition#usingLibraryDefinitions(...)`` as well as at 
+``org.prismus.scrambler.data.InstanceData#usingLibraryDefinitions(...)``.
 
 **Examples**<br/>
 ```groovy
-final definition = new ValueDefinition().usingLibraryDefinitions('person*')
+final definition = new DataDefinition().usingLibraryDefinitions('person*')
 expect: 'verify definitions loaded'
 definition.definitionMap.size() > 0
 

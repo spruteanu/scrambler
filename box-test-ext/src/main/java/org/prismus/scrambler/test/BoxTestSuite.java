@@ -2,9 +2,9 @@ package org.prismus.scrambler.test;
 
 import org.prismus.scrambler.Data;
 import org.prismus.scrambler.InstanceScrambler;
-import org.prismus.scrambler.value.ArrayContainerData;
-import org.prismus.scrambler.value.InstanceData;
-import org.prismus.scrambler.value.DataDefinition;
+import org.prismus.scrambler.data.ArrayContainerData;
+import org.prismus.scrambler.data.InstanceData;
+import org.prismus.scrambler.data.DataDefinition;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -38,18 +38,18 @@ public class BoxTestSuite {
         } else if (inspected instanceof String) {
             this.inspected = InstanceScrambler.instanceOf((String) inspected);
         } else {
-            this.inspected = new InstanceData().usingValue(inspected);
+            this.inspected = new InstanceData().usingInstance(inspected);
         }
         inspectedType = this.inspected.lookupType();
         return this;
     }
 
-    Data<Object[]> methodValues(String methodName, Class... args) {
+    Data<Object[]> methodData(String methodName, Class... args) {
         final DataDefinition definition = inspected.getDefinition();
         if (!definition.hasDefinitions()) {
             definition.scanDefinitions(inspectedType.getName() + "." + methodName);
         }
-        return new ArrayContainerData(definition.lookupValues(Arrays.asList(args)));
+        return new ArrayContainerData(definition.lookupData(Arrays.asList(args)));
     }
 
     public BoxTestSuite scanDefinitions(String... definitions) {
@@ -263,7 +263,7 @@ public class BoxTestSuite {
                 for (int i = 0; i < methodArgs.length; i++) {
                     Object arg = args.get(i);
                     if (arg instanceof Class) {
-                        arg = definition.lookupValue(null, (Class) arg);
+                        arg = definition.lookupData(null, (Class) arg);
                     }
                     if (arg instanceof Data) {
                         arg = ((Data) arg).next();

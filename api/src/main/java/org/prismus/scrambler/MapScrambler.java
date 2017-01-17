@@ -18,14 +18,14 @@
 
 package org.prismus.scrambler;
 
-import org.prismus.scrambler.value.MapData;
-import org.prismus.scrambler.value.DataDefinition;
+import org.prismus.scrambler.data.MapData;
+import org.prismus.scrambler.data.DataDefinition;
 
 import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * {@link java.util.Map} value methods, exposes all possible ways to generate {@link java.util.Map} objects
+ * {@link java.util.Map} object methods, exposes all possible ways to generate {@link java.util.Map} objects
  *
  * @author Serge Pruteanu
  */
@@ -34,28 +34,28 @@ public class MapScrambler {
     // Map methods
     //------------------------------------------------------------------------------------------------------------------
     @SuppressWarnings("unchecked")
-    public static <K> MapData<K> of(Map<K, Data> keyValueMap) {
-        return new MapData<K>((Class<Map>) keyValueMap.getClass(), keyValueMap);
+    public static <K> MapData<K> of(Map<K, Data> keyDataMap) {
+        return new MapData<K>((Class<Map>) keyDataMap.getClass(), keyDataMap);
     }
 
-    public static <K> MapData<K> of(Map<K, Object> self, Map<K, Data> keyValueMap) {
-        return new MapData<K>(self, keyValueMap);
+    public static <K> MapData<K> of(Map<K, Object> self, Map<K, Data> keyDataMap) {
+        return new MapData<K>(self, keyDataMap);
     }
 
     @SuppressWarnings("unchecked")
-    public static <K> MapData<K> of(Class<? extends Map> mapType, Map<K, Data> keyValueMap) {
-        return new MapData<K>((Class<Map>) mapType, keyValueMap);
+    public static <K> MapData<K> of(Class<? extends Map> mapType, Map<K, Data> keyDataMap) {
+        return new MapData<K>((Class<Map>) mapType, keyDataMap);
     }
 
     public static <K> MapData<K> of(Collection<K> self, Map<DataPredicate, Data> definitionMap) {
-        final Map<K, Object> valueMap = new LinkedHashMap<K, Object>();
-        final Map<K, Data> keyValueMap = matchKeyValueMap(self, definitionMap, valueMap);
-        return new MapData<K>(valueMap, keyValueMap);
+        final Map<K, Object> dataMap = new LinkedHashMap<K, Object>();
+        final Map<K, Data> keyDataMap = matchKeyDataMap(self, definitionMap, dataMap);
+        return new MapData<K>(dataMap, keyDataMap);
     }
 
     public static <K> MapData<K> mapOf(Map<K, Object> self, Map<String, Object> contextMap, String... definitions) {
-        final Map<K, Data> keyValueMap = lookupKeValueMap(self, contextMap, definitions);
-        return of(self, keyValueMap);
+        final Map<K, Data> keyDataMap = lookupKeyDataMap(self, contextMap, definitions);
+        return of(self, keyDataMap);
     }
 
     public static <K> MapData<K> mapOf(Class<Map> mapType, Collection<K> self, String... definitions) {
@@ -64,8 +64,8 @@ public class MapScrambler {
 
     @SuppressWarnings("unchecked")
     public static <K> MapData<K> mapOf(Class<Map> self, Collection<K> keys, Map<String, Object> contextMap, String... definitions) {
-        final Map<K, Data> keValueMap = lookupKeValueMap(keys, contextMap, definitions);
-        return new MapData<K>(self, keValueMap);
+        final Map<K, Data> keyDataMap = lookupKeyDataMap(keys, contextMap, definitions);
+        return new MapData<K>(self, keyDataMap);
     }
 
     public static <K> MapData<K> mapOf(Collection<K> self, String... definitions) {
@@ -73,57 +73,57 @@ public class MapScrambler {
     }
 
     public static <K> MapData<K> mapOf(Collection<K> self, Map<String, Object> contextMap, String... definitions) {
-        return of(lookupKeValueMap(self, contextMap, definitions));
+        return of(lookupKeyDataMap(self, contextMap, definitions));
     }
 
-    static <K> Map<K, Data> matchKeyValueMap(Collection<K> self, Map<DataPredicate, Data> definitionMap, Map<K, Object> valueMap) {
-        final Map<K, Data> keyValueMap = new LinkedHashMap<K, Data>();
+    static <K> Map<K, Data> matchKeyDataMap(Collection<K> self, Map<DataPredicate, Data> definitionMap, Map<K, Object> dataMap) {
+        final Map<K, Data> keyDataMap = new LinkedHashMap<K, Data>();
         for (Map.Entry<DataPredicate, Data> entry : definitionMap.entrySet()) {
             for (K key : self) {
                 final DataPredicate predicate = entry.getKey();
                 final Data data = entry.getValue();
                 if (predicate.apply(key.toString(), data.get())) {
-                    keyValueMap.put(key, data);
-                    valueMap.put(key, data.get());
+                    keyDataMap.put(key, data);
+                    dataMap.put(key, data.get());
                     break;
                 }
             }
         }
-        return keyValueMap;
+        return keyDataMap;
     }
 
-    static <K> Map<K, Data> lookupKeValueMap(Collection<K> self, Map<String, Object> contextMap, String... definitions) {
+    static <K> Map<K, Data> lookupKeyDataMap(Collection<K> self, Map<String, Object> contextMap, String... definitions) {
         final Map<K, Object> map = new LinkedHashMap<K, Object>();
         for (K k : self) {
             map.put(k, null);
         }
-        return lookupKeValueMap(map, contextMap, definitions);
+        return lookupKeyDataMap(map, contextMap, definitions);
     }
 
-    static <K> Map<K, Data> lookupKeValueMap(Map<K, Object> self, Map<String, Object> contextMap, String... definitions) {
+    static <K> Map<K, Data> lookupKeyDataMap(Map<K, Object> self, Map<String, Object> contextMap, String... definitions) {
         final DataDefinition definition = new DataDefinition().usingContext(contextMap);
         if (definitions != null && definitions.length > 0) {
             definition.scanDefinitions(Arrays.asList(definitions));
         } else {
             definition.usingLibraryDefinitions(null);
         }
-        final Map<K, Data> keyValueMap = new LinkedHashMap<K, Data>(self.size());
+        final Map<K, Data> keyDataMap = new LinkedHashMap<K, Data>(self.size());
         for (Map.Entry<K, Object> entry : self.entrySet()) {
             Data data = null;
             final K k = entry.getKey();
             if (k instanceof DataPredicate) {
-                data = definition.lookupValue((DataPredicate) k);
+                data = definition.lookupData((DataPredicate) k);
             } else if (k instanceof String){
                 final Object o = entry.getValue();
-                data = definition.lookupValue((String) k, o != null ? o.getClass() : null);
+                data = definition.lookupData((String) k, o != null ? o.getClass() : null);
             } else if (k instanceof Pattern) {
-                data = definition.lookupValue(DataPredicates.matchProperty((Pattern) k));
+                data = definition.lookupData(DataPredicates.matchProperty((Pattern) k));
             }
             if (data != null) {
-                keyValueMap.put(k, data);
+                keyDataMap.put(k, data);
             }
         }
-        return keyValueMap;
+        return keyDataMap;
     }
 
 }

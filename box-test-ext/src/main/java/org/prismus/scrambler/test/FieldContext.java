@@ -29,7 +29,7 @@ public class FieldContext extends TestContext {
         try {
             return field.get(value);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(String.format("Failed to get field: %s value from instance: %s", field.getName(), value), e);
+            throw new RuntimeException(String.format("Failed to get field: %s object from instance: %s", field.getName(), value), e);
         }
     }
 
