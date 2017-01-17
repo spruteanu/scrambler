@@ -9,7 +9,7 @@ import javax.sql.DataSource
 import java.sql.Statement
 
 /**
- * todo: add description
+ * Value instance that returns an object from DB based on provided DB selection string and parameters.
  *
  * @author Serge Pruteanu
  */
@@ -21,32 +21,38 @@ class TableRowValue extends Constant<Map<String, Object>> {
     private Object params
 
     private Closure where
+    private boolean constantValue
 
-    TableRowValue(DataSource dataSource, String table) {
+    TableRowValue(DataSource dataSource, String table, boolean constantValue = false) {
         this.dataSet = new DataSet(new Sql(dataSource), table)
         dataSet.withStatement { Statement statement ->
             statement.setFetchSize(1)
         }
+        this.constantValue = constantValue
     }
 
-    TableRowValue(DataSource dataSource, String table, String select) {
+    TableRowValue(DataSource dataSource, String table, String select, boolean constantValue = false) {
         this(dataSource, table)
         this.select = select
+        this.constantValue = constantValue
     }
 
-    TableRowValue(DataSource dataSource, String table, String select, List params) {
+    TableRowValue(DataSource dataSource, String table, String select, List params, boolean constantValue = false) {
         this(dataSource, table, select)
         this.params = params
+        this.constantValue = constantValue
     }
 
-    TableRowValue(DataSource dataSource, String table, String select, Object[] params) {
+    TableRowValue(DataSource dataSource, String table, String select, Object[] params, boolean constantValue = false) {
         this(dataSource, table, select)
         this.params = params
+        this.constantValue = constantValue
     }
 
-    TableRowValue(DataSource dataSource, String table, Closure where) {
+    TableRowValue(DataSource dataSource, String table, Closure where, boolean constantValue = false) {
         this(dataSource, table)
         this.where = where
+        this.constantValue = constantValue
     }
 
     TableRowValue withStatement(Closure statementClosure) {
@@ -56,6 +62,9 @@ class TableRowValue extends Constant<Map<String, Object>> {
 
     @Override
     protected Map<String, Object> doNext() {
+        if (constantValue && value != null) {
+            return (Map<String, Object>) value
+        }
         if (where) {
             return (Map<String, Object>) dataSet.findAll(where).firstRow()
         }
@@ -70,24 +79,65 @@ class TableRowValue extends Constant<Map<String, Object>> {
         }
     }
 
-    static TableRowValue of(DataSource dataSource, String table, String select) {
-        return new TableRowValue(dataSource, table, select)
+    /**
+     * Creates an instance of table selection value based on provided parameters
+     *
+     * @param dataSource DB datasource instance
+     * @param table table name
+     * @param select DB selection string "select max('age') from Person where name='%ete'"
+     */
+    static TableRowValue of(DataSource dataSource, String table, String select, boolean constantValue = false) {
+        return new TableRowValue(dataSource, table, select, constantValue)
     }
 
-    static TableRowValue of(DataSource dataSource, String table, String select, Map params) {
-        return new TableRowValue(dataSource, table, select)
+    /**
+     * Creates an instance of table selection value based on provided parameters
+     *
+     * @param dataSource DB datasource instance
+     * @param table table name
+     * @param select DB selection string "select * from PROJECT where name=:foo"
+     * @param params selection parameters, example: [foo:'Gradle']
+     */
+    static TableRowValue of(DataSource dataSource, String table, String select, Map params, boolean constantValue = false) {
+        return new TableRowValue(dataSource, table, select, params, constantValue)
     }
 
-    static TableRowValue of(DataSource dataSource, String table, String select, Object[] params) {
-        return new TableRowValue(dataSource, table, select)
+    /**
+     * Creates an instance of table selection value based on provided parameters
+     *
+     * @param dataSource DB datasource instance
+     * @param table table name
+     * @param select DB selection string "select * from PERSON where lastname like ?"
+     * @param params selection parameters, example: new Object[] {"%ete%"}
+     */
+    static TableRowValue of(DataSource dataSource, String table, String select, Object[] params, boolean constantValue = false) {
+        return new TableRowValue(dataSource, table, select, params, constantValue)
     }
 
-    static TableRowValue of(DataSource dataSource, String table, String select, List params) {
-        return new TableRowValue(dataSource, table, select)
+    /**
+     * Creates an instance of table selection value based on provided parameters
+     *
+     * @param dataSource DB datasource instance
+     * @param table table name
+     * @param select DB selection string "select * from PERSON where lastname like ?"
+     * @param params selection parameters, example: Arrays.asList("%ete%")
+     */
+    static TableRowValue of(DataSource dataSource, String table, String select, List params, boolean constantValue = false) {
+        return new TableRowValue(dataSource, table, select, params, constantValue)
     }
 
-    static TableRowValue of(DataSource dataSource, String table, Closure where) {
-        return new TableRowValue(dataSource, table, where)
+    /**
+     * Creates an instance of table selection value based on provided parameters
+     *
+     * @param dataSource DB datasource instance
+     * @param table table name
+     * @param select DB selection string "select * from PERSON where lastname like ?"
+     * @param params selection parameters, example: { ResultSet rs ->
+     *     while (rs.next()) println rs.getString('firstname') + ' ' + rs.getString(3)
+     *}
+     */
+    static TableRowValue of(DataSource dataSource, String table, Closure where, boolean constantValue = false) {
+        return new TableRowValue(dataSource, table, where, constantValue)
     }
 
 }

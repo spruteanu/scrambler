@@ -79,7 +79,7 @@ class DatabaseBatchBuilder {
 
     Value<Map<String, Map<String, Object>>> build() {
         if (!tables) {
-            throw new IllegalStateException('No tables have been defined to build')
+            throw new IllegalStateException('No tables are defined for build')
         }
         sortTablesByFkDependency(tables)
         // todo Serge: implement me

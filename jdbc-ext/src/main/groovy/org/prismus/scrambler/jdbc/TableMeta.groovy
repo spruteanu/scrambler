@@ -4,7 +4,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 
 /**
- * todo: add description
+ * Class responsible for table properties description
  *
  * @author Serge Pruteanu
  */

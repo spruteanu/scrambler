@@ -6,8 +6,6 @@ import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 import org.prismus.scrambler.Value
 import org.prismus.scrambler.ValuePredicate
-import org.prismus.scrambler.ValuePredicates
-import org.prismus.scrambler.value.Constant
 import org.prismus.scrambler.value.ValueDefinition
 
 import javax.sql.DataSource
@@ -115,23 +113,26 @@ class DataSourceDefinition extends ValueDefinition {
         final List<String> keys = new ArrayList<String>(columnMap.size())
         final valueMap = new LinkedHashMap<String, Value>()
         for (Map.Entry<String, ColumnMeta> entry : columnMap.entrySet()) {
-            final column = entry.value
-            if (column.isAutoIncrement() || (!generateNullable && column.isNullable())) {
+            final columnMeta = entry.value
+            if (columnMeta.isAutoIncrement()) {
+                // todo Serge: add option to simulate auto-incremented columns
+                continue
+            } else if (columnMeta.isNullable() && !generateNullable) {
                 continue
             }
             final columnName = entry.key
-            final boolean fkColumn = column.isFk()
+            final boolean fkColumn = columnMeta.isFk()
             Value value
             if (fkColumn) {
-                value = lookupValue(ValuePredicates.matchProperty(columnName))
+                value = lookupFkValue(columnMeta, generateNullable)
             } else {
-                value = lookupValue(columnName, column.classType)
+                value = lookupValue(columnName, columnMeta.classType)
             }
             if (value) {
                 keys.add(columnName)
                 valueMap.put(columnName, value)
             } else if (fkColumn) {
-                value = lookupFkValue(column, generateNullable)
+                value = lookupFkValue(columnMeta, generateNullable)
                 if (value) {
                     valueMap.put(columnName, value)
                 }
@@ -147,22 +148,14 @@ class DataSourceDefinition extends ValueDefinition {
     }
 
     @PackageScope
-    Value lookupFkValue(ColumnMeta column, boolean generateNullable) {
-        final primaryTableName = column.primaryTableName
-        final primaryColumnName = column.primaryColumnName
+    Value lookupFkValue(ColumnMeta columnMeta, boolean generateNullable) {
+        final primaryTableName = columnMeta.primaryTableName
+        final primaryColumnName = columnMeta.primaryColumnName
         final primaryTableMeta = tableMap.get(primaryTableName)
         final primaryColumnMeta = primaryTableMeta.columnMap.get(primaryColumnName)
         Value value = lookupValue(primaryTableName, primaryColumnName, primaryColumnMeta.classType)
         if (value == null) {
-            final insertValue = new TableInsertValue(dataSource, primaryTableName, toMapValue(primaryTableMeta, generateNullable))
-            if (primaryColumnMeta.autoIncrement) {
-                value = new ColumnDelegateValue(primaryColumnName, new AutoIncrementIdInsertValue(primaryColumnName,
-                        new TableRowValue(dataSource, primaryTableName,
-                                "SELECT $primaryColumnName FROM $primaryTableName ORDER BY $primaryColumnName DESC"),
-                        insertValue))
-            } else {
-                value = new ColumnDelegateValue(primaryColumnName, insertValue)
-            }
+            // todo Serge: add a strategy to generate FK keys: pickup value from DB or from generated, cached values
         }
         return value
     }
@@ -299,51 +292,6 @@ class DataSourceDefinition extends ValueDefinition {
             return connection.metaData.databaseProductName
         } finally {
             Util.closeQuietly(connection)
-        }
-    }
-
-    @PackageScope
-    static String buildInsertStatement(String table, Collection<String> sortedKeys) {
-        return "INSERT INTO $table (${sortedKeys.join(',')}) VALUES (${':' + sortedKeys.join(', :')})"
-    }
-
-    @PackageScope
-    String generateSelectStatement(TableMeta tableMeta) {
-        String select = "SELECT ${tableMeta.ids.join(', ')} FROM $tableMeta.name ORDER BY ${tableMeta.ids.join('DESC, ')}"
-        select += ' DESC'
-        return select
-    }
-
-    @CompileStatic
-    private static class ColumnDelegateValue extends Constant {
-        private final String columnName
-        private final Value<Map<String, Object>> value
-
-        ColumnDelegateValue(String columnName, Value<Map<String, Object>> value) {
-            this.columnName = columnName
-            this.value = value
-        }
-
-        @Override
-        protected Object doNext() {
-            final map = value.next()
-            return map.get(columnName)
-        }
-    }
-
-    @CompileStatic
-    private static class AutoIncrementIdInsertValue extends ColumnDelegateValue {
-        private final Value insertValue
-
-        AutoIncrementIdInsertValue(String columnName, Value<Map<String, Object>> value, Value insertValue) {
-            super(columnName, value)
-            this.insertValue = insertValue
-        }
-
-        @Override
-        protected Object doNext() {
-            insertValue.next()
-            return super.doNext()
         }
     }
 
