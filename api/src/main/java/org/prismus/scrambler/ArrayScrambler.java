@@ -28,20 +28,20 @@ import java.util.Arrays;
  * @author Serge Pruteanu
  */
 public class ArrayScrambler {
-    public static <T> Value<T> arrayOf(Class<T> self, Value val) {
+    public static <T> Data<T> arrayOf(Class<T> self, Data val) {
         return of(self, val, null);
     }
 
-    public static <T> Value<T> arrayOf(Class<T> self, Value val, Integer count) {
+    public static <T> Data<T> arrayOf(Class<T> self, Data val, Integer count) {
         return of(self, val, count);
     }
 
-    public static <T> Value<T> arrayOf(Object self, Value value) {
-        return arrayOf(self, value, null);
+    public static <T> Data<T> arrayOf(Object self, Data data) {
+        return arrayOf(self, data, null);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Value<T> arrayOf(Object self, Value value, Integer count) {
+    public static <T> Data<T> arrayOf(Object self, Data data, Integer count) {
         Util.checkNullValue(self);
         final Class<?> selfClass = self.getClass();
         if (!selfClass.isArray()) {
@@ -49,90 +49,90 @@ public class ArrayScrambler {
         }
         final Class<?> componentType = selfClass.getComponentType();
         if (componentType.isPrimitive()) {
-            return (Value) Util.createInstance(Types.primitivesArrayTypeMap.get(componentType),
-                    new Object[]{self, count, value}, new Class[]{selfClass, Integer.class, Object.class}
+            return (Data) Util.createInstance(Types.primitivesArrayTypeMap.get(componentType),
+                    new Object[]{self, count, data}, new Class[]{selfClass, Integer.class, Object.class}
             );
         } else {
-            return new ArrayValue((T[]) self, count, value);
+            return new ArrayData((T[]) self, count, data);
         }
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Value<T> incrementArray(Object self, Object step, Integer count) {
+    public static <T> Data<T> incrementArray(Object self, Object step, Integer count) {
         return incrementArray((Class<T>) self.getClass(), self, step, count);
     }
 
-    public static <T> Value<T> randomOf(T[] array) {
+    public static <T> Data<T> randomOf(T[] array) {
         return new ArrayRandomElement<T>(array);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Value<T> randomArray(Object value) {
-        return (Value<T>) randomArray(value.getClass(), value, null);
+    public static <T> Data<T> randomArray(Object value) {
+        return (Data<T>) randomArray(value.getClass(), value, null);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Value<T> randomArray(Object value, Integer count) {
-        return (Value<T>) randomArray(value.getClass(), (Object) value, count);
+    public static <T> Data<T> randomArray(Object value, Integer count) {
+        return (Data<T>) randomArray(value.getClass(), (Object) value, count);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Value<T> incrementArray(Class<T> self, Object defaultValue, Object step, Integer count) {
+    public static <T> Data<T> incrementArray(Class<T> self, Object defaultValue, Object step, Integer count) {
         Util.checkPositiveCount(count);
         final Class<?> componentType = self.isArray() ? self.getComponentType() : self;
-        final Value value;
+        final Data data;
         if (componentType.isPrimitive()) {
-            value = (Value) Util.createInstance(Types.incrementTypeMap.get(self), new Object[]{
+            data = (Data) Util.createInstance(Types.incrementTypeMap.get(self), new Object[]{
                             self.isInstance(defaultValue) ? defaultValue : null, count,
-                            (Value) Util.createInstance(
+                            (Data) Util.createInstance(
                                     Types.incrementTypeMap.get(componentType),
                                     new Object[]{self.isInstance(defaultValue) ? null : defaultValue, step},
                                     new Class[]{Types.primitiveWrapperMap.get(componentType), Types.primitiveWrapperMap.get(componentType)}
                             )}, new Class[]{self, Integer.class, Object.class}
             );
         } else {
-            value = new ArrayValue(componentType, count, (Value) Util.createInstance(
+            data = new ArrayData(componentType, count, (Data) Util.createInstance(
                     Types.incrementTypeMap.get(componentType),
                     new Object[]{componentType.isInstance(defaultValue) ? defaultValue : null, step}, new Class[]{componentType, componentType}
             ));
         }
-        return value;
+        return data;
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Value<T> randomArray(Class<T> self, Object defaultValue, Integer count) {
+    public static <T> Data<T> randomArray(Class<T> self, Object defaultValue, Integer count) {
         final Class<?> componentType = self.isArray() ? self.getComponentType() : self;
         final Class<?> valueClassType = componentType.isPrimitive() ? Types.primitiveWrapperMap.get(componentType) : componentType;
-        final Value valueType;
+        final Data dataType;
         if (defaultValue != null && !defaultValue.getClass().isArray()) {
-            valueType = (Value) Util.createInstance(Types.randomTypeMap.get(valueClassType), new Object[]{defaultValue,}, new Class[]{valueClassType,});
+            dataType = (Data) Util.createInstance(Types.randomTypeMap.get(valueClassType), new Object[]{defaultValue,}, new Class[]{valueClassType,});
         } else {
-            valueType = (Value) Util.createInstance(Types.randomTypeMap.get(valueClassType), new Object[]{}, new Class[]{});
+            dataType = (Data) Util.createInstance(Types.randomTypeMap.get(valueClassType), new Object[]{}, new Class[]{});
         }
         if (componentType.isPrimitive()) {
-            final Class<? extends Value> arrayValueType = Types.primitivesArrayTypeMap.get(componentType);
-            return (Value) Util.createInstance(arrayValueType, new Object[]{defaultValue, count, valueType}, new Class[]{self, Integer.class, Object.class});
+            final Class<? extends Data> arrayValueType = Types.primitivesArrayTypeMap.get(componentType);
+            return (Data) Util.createInstance(arrayValueType, new Object[]{defaultValue, count, dataType}, new Class[]{self, Integer.class, Object.class});
         } else {
-            return new ArrayValue(componentType, count, valueType);
+            return new ArrayData(componentType, count, dataType);
         }
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Value<T> of(Class clazzType, Value val, Integer count) {
+    public static <T> Data<T> of(Class clazzType, Data val, Integer count) {
         if (clazzType.isPrimitive()) {
-            final Class<? extends Value> arrayValueType = Types.primitivesArrayTypeMap.get(clazzType);
-            return (Value) Util.createInstance(arrayValueType, new Object[]{null, count, val}, new Class[]{Types.arrayTypeMap.get(clazzType), Integer.class, Object.class});
+            final Class<? extends Data> arrayValueType = Types.primitivesArrayTypeMap.get(clazzType);
+            return (Data) Util.createInstance(arrayValueType, new Object[]{null, count, val}, new Class[]{Types.arrayTypeMap.get(clazzType), Integer.class, Object.class});
         } else {
-            return new ArrayValue(clazzType, count, val);
+            return new ArrayData(clazzType, count, val);
         }
     }
 
-    public static ArrayContainerValue of(Value... values) {
-        return new ArrayContainerValue(Arrays.asList(values));
+    public static ArrayContainerData of(Data... datas) {
+        return new ArrayContainerData(Arrays.asList(datas));
     }
 
-    public static Value<Boolean> randomOf(final boolean[] values) {
-        return new RandomElementValue<Boolean>() {
+    public static Data<Boolean> randomOf(final boolean[] values) {
+        return new RandomElementData<Boolean>() {
             @Override
             protected Boolean doNext() {
                 return values[random.nextInt(values.length)];
@@ -140,8 +140,8 @@ public class ArrayScrambler {
         };
     }
 
-    public static Value<Byte> randomOf(final byte[] values) {
-        return new RandomElementValue<Byte>() {
+    public static Data<Byte> randomOf(final byte[] values) {
+        return new RandomElementData<Byte>() {
             @Override
             protected Byte doNext() {
                 return values[random.nextInt(values.length)];
@@ -149,8 +149,8 @@ public class ArrayScrambler {
         };
     }
 
-    public static Value<Short> randomOf(final short[] values) {
-        return new RandomElementValue<Short>() {
+    public static Data<Short> randomOf(final short[] values) {
+        return new RandomElementData<Short>() {
             @Override
             protected Short doNext() {
                 return values[random.nextInt(values.length)];
@@ -158,8 +158,8 @@ public class ArrayScrambler {
         };
     }
 
-    public static Value<Integer> randomOf(final int[] values) {
-        return new RandomElementValue<Integer>() {
+    public static Data<Integer> randomOf(final int[] values) {
+        return new RandomElementData<Integer>() {
             @Override
             protected Integer doNext() {
                 return values[random.nextInt(values.length)];
@@ -167,8 +167,8 @@ public class ArrayScrambler {
         };
     }
 
-    public static Value<Long> randomOf(final long[] values) {
-        return new RandomElementValue<Long>() {
+    public static Data<Long> randomOf(final long[] values) {
+        return new RandomElementData<Long>() {
             @Override
             protected Long doNext() {
                 return values[random.nextInt(values.length)];
@@ -176,8 +176,8 @@ public class ArrayScrambler {
         };
     }
 
-    public static Value<Float> randomOf(final float[] values) {
-        return new RandomElementValue<Float>() {
+    public static Data<Float> randomOf(final float[] values) {
+        return new RandomElementData<Float>() {
             @Override
             protected Float doNext() {
                 return values[random.nextInt(values.length)];
@@ -185,8 +185,8 @@ public class ArrayScrambler {
         };
     }
 
-    public static Value<Double> randomOf(final double[] values) {
-        return new RandomElementValue<Double>() {
+    public static Data<Double> randomOf(final double[] values) {
+        return new RandomElementData<Double>() {
             @Override
             protected Double doNext() {
                 return values[random.nextInt(values.length)];
@@ -194,39 +194,39 @@ public class ArrayScrambler {
         };
     }
 
-    public static <T> Value<T[]> combinationsOf(T... values) {
+    public static <T> Data<T[]> combinationsOf(T... values) {
         return Combinations.of(values);
     }
 
-    public static <T> Value<T[]> combinationsOf(Class<T> valueType, Value<T>... values) {
-        return Combinations.valuesOf(valueType, values);
+    public static <T> Data<T[]> combinationsOf(Class<T> valueType, Data<T>... datas) {
+        return Combinations.valuesOf(valueType, datas);
     }
 
-    public static Value<boolean[]> combinationsOf(final boolean... values) {
+    public static Data<boolean[]> combinationsOf(final boolean... values) {
         return Combinations.of(values);
     }
 
-    public static Value<byte[]> combinationsOf(final byte... values) {
+    public static Data<byte[]> combinationsOf(final byte... values) {
         return Combinations.of(values);
     }
 
-    public static Value<short[]> combinationsOf(final short... values) {
+    public static Data<short[]> combinationsOf(final short... values) {
         return Combinations.of(values);
     }
 
-    public static Value<int[]> combinationsOf(final int... values) {
+    public static Data<int[]> combinationsOf(final int... values) {
         return Combinations.of(values);
     }
 
-    public static Value<long[]> combinationsOf(final long... values) {
+    public static Data<long[]> combinationsOf(final long... values) {
         return Combinations.of(values);
     }
 
-    public static Value<float[]> combinationsOf(final float... values) {
+    public static Data<float[]> combinationsOf(final float... values) {
         return Combinations.of(values);
     }
 
-    public static Value<double[]> combinationsOf(final double... values) {
+    public static Data<double[]> combinationsOf(final double... values) {
         return Combinations.of(values);
     }
 }

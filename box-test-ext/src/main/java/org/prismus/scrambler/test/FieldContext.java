@@ -1,6 +1,6 @@
 package org.prismus.scrambler.test;
 
-import org.prismus.scrambler.Value;
+import org.prismus.scrambler.Data;
 
 import java.lang.reflect.Field;
 
@@ -25,7 +25,7 @@ public class FieldContext extends TestContext {
 
     @Override
     Object getInspected() {
-        final Object value = ((Value) inspected).get();
+        final Object value = ((Data) inspected).get();
         try {
             return field.get(value);
         } catch (IllegalAccessException e) {

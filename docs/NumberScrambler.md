@@ -13,7 +13,7 @@ System.out.println(NumberScrambler.increment(1.0d, 12.5d).next());
 System.out.println(NumberScrambler.increment(BigInteger.valueOf(-1), BigInteger.valueOf(-1)).next());
 
 // generate incremental array with step (100) starting from 0
-Value<Integer[]> integerArray = ArrayScrambler.incrementArray(new Integer[10], 100, 10);
+Data<Integer[]> integerArray = ArrayScrambler.incrementArray(new Integer[10], 100, 10);
 System.out.println(Arrays.asList(integerArray.next()));
 
 // generate incremental array with step (100) starting from 1
@@ -21,7 +21,7 @@ integerArray = ArrayScrambler.incrementArray(1, 100, 10);
 System.out.println(Arrays.asList(integerArray.next()));
 
 // generate incremental array with step (10.5) starting from 0
-Value<float[]> primitiveFloatArray = ArrayScrambler.incrementArray(new float[10], 10.5f, 10);
+Data<float[]> primitiveFloatArray = ArrayScrambler.incrementArray(new float[10], 10.5f, 10);
 System.out.println(Arrays.asList(primitiveFloatArray.next()));
 
 // generate random integer
@@ -56,4 +56,4 @@ System.out.println(NumberScrambler.random(BigInteger.valueOf(-1), BigInteger.val
 
 ```
 
-![Number generation classes](number-value-class-dgm.png)
+![Number generation classes](number-data-class-dgm.png)

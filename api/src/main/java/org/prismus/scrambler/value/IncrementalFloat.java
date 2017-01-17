@@ -21,7 +21,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalFloat extends Constant<Float> implements FloatArray{
+public class IncrementalFloat extends ConstantData<Float> implements FloatArray{
     private float step;
     private static final float DEFAULT_STEP = 1.0F;
 

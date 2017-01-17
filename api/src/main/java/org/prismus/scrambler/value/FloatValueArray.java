@@ -21,7 +21,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-class FloatValueArray extends Constant<float[]> {
+class FloatValueArray extends ConstantData<float[]> {
     private Integer count;
     private FloatArray instance;
     private boolean useInitialArray;

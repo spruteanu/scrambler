@@ -18,14 +18,14 @@
 
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.ValuePredicate;
+import org.prismus.scrambler.DataPredicate;
 
 /**
  * Type predicate, used to match definitions by class type
  *
  * @author Serge Pruteanu
  */
-public class TypePredicate implements ValuePredicate {
+public class TypePredicate implements DataPredicate {
     private Class type;
 
     public TypePredicate() {

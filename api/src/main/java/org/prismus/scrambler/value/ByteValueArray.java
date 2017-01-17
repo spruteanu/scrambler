@@ -21,7 +21,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-class ByteValueArray extends Constant<byte[]> {
+class ByteValueArray extends ConstantData<byte[]> {
     private Integer count;
     private ByteArray instance;
     private boolean useInitialArray;

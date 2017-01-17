@@ -1,7 +1,7 @@
 package org.prismus.scrambler.value;
 
+import org.prismus.scrambler.Data;
 import org.prismus.scrambler.ObjectScrambler;
-import org.prismus.scrambler.Value;
 
 /**
  * Class is an internal implementation to allow definitions of random types at runtime for provided clazzType.
@@ -9,41 +9,41 @@ import org.prismus.scrambler.Value;
  *
  * @author Serge Pruteanu
  */
-public class RandomTypeValue<T> implements Value<Value<T>> {
+public class RandomTypeData<T> implements Data<Data<T>> {
     private Object[] arguments;
 
-    public RandomTypeValue() {
+    public RandomTypeData() {
     }
 
-    public RandomTypeValue(Object... arguments) {
+    public RandomTypeData(Object... arguments) {
         usingArguments(arguments);
     }
 
     @SuppressWarnings("unchecked")
-    public Value<T> next(Class<T> clazzType) {
-        Value<T> value = null;
+    public Data<T> next(Class<T> clazzType) {
+        Data<T> data = null;
         if (arguments == null) {
-            value = ObjectScrambler.random(clazzType);
+            data = ObjectScrambler.random(clazzType);
         } else if (arguments.length == 1) {
-            value = ObjectScrambler.random(clazzType, (T) arguments[0]);
+            data = ObjectScrambler.random(clazzType, (T) arguments[0]);
         } else if (arguments.length == 2) {
-            value = ObjectScrambler.random(clazzType, (T) arguments[0], (T) arguments[1]);
+            data = ObjectScrambler.random(clazzType, (T) arguments[0], (T) arguments[1]);
         }
-        return value;
+        return data;
     }
 
-    public RandomTypeValue usingArguments(Object... arguments) {
+    public RandomTypeData usingArguments(Object... arguments) {
         this.arguments = arguments;
         return this;
     }
 
     @Override
-    public Value<T> next() {
+    public Data<T> next() {
         throw new UnsupportedOperationException("Next value is not supported in given implementation");
     }
 
     @Override
-    public Value<T> get() {
+    public Data<T> get() {
         throw new UnsupportedOperationException("Get value is not supported in given implementation");
     }
 

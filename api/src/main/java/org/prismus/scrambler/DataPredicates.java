@@ -27,11 +27,11 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * Value predicates facade class, exposes {@link ValuePredicate} types implementations
+ * Data predicates facade class, exposes {@link DataPredicate} types implementations
  *
  * @author Serge Pruteanu
  */
-public class ValuePredicates {
+public class DataPredicates {
 
     public static TypePredicate isTypeOf(Class clazzType) {
         return new TypePredicate(clazzType);
@@ -53,10 +53,10 @@ public class ValuePredicates {
         return new PropertyPredicate(pattern);
     }
 
-    public static ValuePredicate matchProperty(String propertyWildcard) {
+    public static DataPredicate matchProperty(String propertyWildcard) {
         Util.checkEmpty(propertyWildcard);
         final String predicatePattern = Util.replaceWildcards(propertyWildcard);
-        final ValuePredicate propertyPredicate;
+        final DataPredicate propertyPredicate;
         if (propertyWildcard.equals(predicatePattern)) {
             propertyPredicate = new SimplePropertyPredicate(propertyWildcard);
         } else {
@@ -65,12 +65,12 @@ public class ValuePredicates {
         return propertyPredicate;
     }
 
-    public static ValuePredicate matchesTypes(Pattern pattern) {
+    public static DataPredicate matchesTypes(Pattern pattern) {
         return new TypeFilterPredicate(pattern);
     }
 
-    public static ValuePredicate isNull() {
-        return new ValuePredicate() {
+    public static DataPredicate isNull() {
+        return new DataPredicate() {
             @Override
             public boolean apply(String property, Object value) {
                 return null == value;
@@ -78,13 +78,13 @@ public class ValuePredicates {
 
             @Override
             public String toString() {
-                return "Value is NULL";
+                return "Data is NULL";
             }
         };
     }
 
-    public static ValuePredicate isNotNull() {
-        return new ValuePredicate() {
+    public static DataPredicate isNotNull() {
+        return new DataPredicate() {
             @Override
             public boolean apply(String property, Object value) {
                 return null != value;
@@ -92,13 +92,13 @@ public class ValuePredicates {
 
             @Override
             public String toString() {
-                return "Value is NOT NULL";
+                return "Data is NOT NULL";
             }
         };
     }
 
-    public static ValuePredicate equalsTo(final Object object) {
-        return new ValuePredicate() {
+    public static DataPredicate equalsTo(final Object object) {
+        return new DataPredicate() {
             @Override
             public boolean apply(String property, Object value) {
                 return object.equals(value);
@@ -106,13 +106,13 @@ public class ValuePredicates {
 
             @Override
             public String toString() {
-                return String.format("Value equals to: '%s'", object);
+                return String.format("Data equals to: '%s'", object);
             }
         };
     }
 
-    public static ValuePredicate isSame(final Object object) {
-        return new ValuePredicate() {
+    public static DataPredicate isSame(final Object object) {
+        return new DataPredicate() {
             @Override
             public boolean apply(String property, Object value) {
                 return object == value;
@@ -120,13 +120,13 @@ public class ValuePredicates {
 
             @Override
             public String toString() {
-                return String.format("Value is same to: '%s'", object);
+                return String.format("Data is same to: '%s'", object);
             }
         };
     }
 
-    public static ValuePredicate isAny(final Set<Object> values) {
-        return new ValuePredicate() {
+    public static DataPredicate isAny(final Set<Object> values) {
+        return new DataPredicate() {
             @Override
             public boolean apply(String property, Object value) {
                 return values.contains(value);
@@ -134,21 +134,21 @@ public class ValuePredicates {
 
             @Override
             public String toString() {
-                return String.format("Value is any of: '%s'", values);
+                return String.format("Data is any of: '%s'", values);
             }
         };
     }
 
-    public static ValuePredicate isAny(final Object... values) {
+    public static DataPredicate isAny(final Object... values) {
         return isAny(new LinkedHashSet<Object>(Arrays.asList(values)));
     }
 
-    public static ValuePredicate isAny(final Collection<Object> values) {
+    public static DataPredicate isAny(final Collection<Object> values) {
         return isAny(new LinkedHashSet<Object>(values));
     }
 
-    public static <N extends Comparable> ValuePredicate between(final N min, final N max) {
-        return new ValuePredicate() {
+    public static <N extends Comparable> DataPredicate between(final N min, final N max) {
+        return new DataPredicate() {
             @SuppressWarnings("unchecked")
             @Override
             public boolean apply(String property, Object value) {
@@ -158,7 +158,7 @@ public class ValuePredicates {
 
             @Override
             public String toString() {
-                return String.format("Value is between: '%s and %s'", min, max);
+                return String.format("Data is between: '%s and %s'", min, max);
             }
         };
     }

@@ -1,10 +1,10 @@
 import groovy.transform.CompileStatic
 import org.prismus.scrambler.CollectionScrambler
 import org.prismus.scrambler.NumberScrambler
-import org.prismus.scrambler.Value
+import org.prismus.scrambler.Data
 import org.prismus.scrambler.value.AbstractRandomRange
-import org.prismus.scrambler.value.Constant
-import org.prismus.scrambler.value.ReferenceValue
+import org.prismus.scrambler.value.ConstantData
+import org.prismus.scrambler.value.ReferenceData
 
 import java.util.zip.ZipFile
 
@@ -108,8 +108,8 @@ private static Map<String, List<String>> loadStateCitiesMap() {
 }
 
 @CompileStatic
-class BuildingNumberValue extends Constant<String> {
-    private Value<Integer> randomNumberValue = NumberScrambler.random(1, 99999)
+class BuildingNumberValue extends ConstantData<String> {
+    private Data<Integer> randomNumberValue = NumberScrambler.random(1, 99999)
 
     @Override
     protected String doNext() {
@@ -118,12 +118,12 @@ class BuildingNumberValue extends Constant<String> {
 }
 
 @CompileStatic
-class StreetValue extends Constant<String> {
+class StreetValue extends ConstantData<String> {
     private static Map<Integer, String> sideMap = [1: 'NE', 2: 'NW', 3: 'SE', 4: 'SW'] as Map<Integer, String>
     private static Map<Integer, String> suffixMap = [1: 'st', 2: 'nd', 3: 'rd',] as Map<Integer, String>
 
-    private Value<Integer> randomNumber = NumberScrambler.random(1, 24)
-    private Value<Integer> randomStreetNumber = NumberScrambler.random(1, 270)
+    private Data<Integer> randomNumber = NumberScrambler.random(1, 24)
+    private Data<Integer> randomStreetNumber = NumberScrambler.random(1, 270)
 
     @Override
     protected String doNext() {
@@ -153,8 +153,8 @@ class StreetValue extends Constant<String> {
 }
 
 @CompileStatic
-class StateValue extends Constant<String> {
-    private Value randomState
+class StateValue extends ConstantData<String> {
+    private Data randomState
     private String state
 
     StateValue(Map<String, Map<String, String>> stateInfoMap, String state) {
@@ -169,14 +169,14 @@ class StateValue extends Constant<String> {
 }
 
 @CompileStatic
-class CityCodeValue extends ReferenceValue {
+class CityCodeValue extends ReferenceData {
     private final Map<String, List<String>> stateCitiesMap
-    private final Map<String, Value<String>> valueMap
+    private final Map<String, Data<String>> valueMap
 
     CityCodeValue(final Map<String, List<String>> stateCitiesMap) {
         super(~/(?i)state/)
         this.stateCitiesMap = stateCitiesMap
-        valueMap = new HashMap<String, Value<String>>(stateCitiesMap.size())
+        valueMap = new HashMap<String, Data<String>>(stateCitiesMap.size())
     }
 
     @Override
@@ -190,7 +190,7 @@ class CityCodeValue extends ReferenceValue {
 }
 
 @CompileStatic
-class PostalCodeValue extends ReferenceValue {
+class PostalCodeValue extends ReferenceData {
     private final Map<String, Map<String, String>> stateInfoMap
     private AbstractRandomRange<Integer> randomRange = NumberScrambler.random(1, 1000) as AbstractRandomRange<Integer>
 

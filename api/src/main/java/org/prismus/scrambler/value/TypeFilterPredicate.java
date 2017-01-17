@@ -1,15 +1,15 @@
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.ValuePredicate;
+import org.prismus.scrambler.DataPredicate;
 
 import java.util.regex.Pattern;
 
 /**
- * Value predicate that matches classes by name
+ * Data predicate that matches classes by name
  *
  * @author Serge Pruteanu
  */
-public class TypeFilterPredicate implements ValuePredicate {
+public class TypeFilterPredicate implements DataPredicate {
     private final Pattern pattern;
 
     public TypeFilterPredicate(Pattern pattern) {

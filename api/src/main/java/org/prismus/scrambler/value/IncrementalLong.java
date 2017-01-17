@@ -21,7 +21,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalLong extends Constant<Long> implements LongArray {
+public class IncrementalLong extends ConstantData<Long> implements LongArray {
     private static final long DEFAULT_STEP = 1L;
     private long step;
 

@@ -31,42 +31,42 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author Serge Pruteanu
  */
-public class InstanceValue<T> extends Constant<T> implements Value<T> {
+public class InstanceData<T> extends ConstantData<T> implements Data<T> {
 
-    private ValueDefinition definition;
-    private ValueDefinition defaultDefinition;
-    private Callable<ValueDefinition> definitionClosure;
+    private DataDefinition definition;
+    private DataDefinition defaultDefinition;
+    private Callable<DataDefinition> definitionClosure;
 
     private Object type;
     private List constructorArguments;
 
-    private final Map<InstanceFieldPredicate, Value> fieldValueMap;
+    private final Map<InstanceFieldPredicate, Data> fieldValueMap;
 
     private Map<String, Field> fieldMap;
     private AtomicBoolean shouldBuild = new AtomicBoolean(true);
     private boolean generateAll = true;
 
-    public InstanceValue() {
+    public InstanceData() {
         this(null, null);
     }
 
-    public InstanceValue(String type) {
+    public InstanceData(String type) {
         this(lookupType(type, false), null);
     }
 
-    public InstanceValue(Class type) {
+    public InstanceData(Class type) {
         this(type, null);
     }
 
-    public InstanceValue(Class type, Collection<Value> constructorArguments) {
+    public InstanceData(Class type, Collection<Data> constructorArguments) {
         ofType(type);
         if (constructorArguments != null) {
-            this.constructorArguments = new ArrayList<Value>(constructorArguments);
+            this.constructorArguments = new ArrayList<Data>(constructorArguments);
         }
-        fieldValueMap = new LinkedHashMap<InstanceFieldPredicate, Value>();
+        fieldValueMap = new LinkedHashMap<InstanceFieldPredicate, Data>();
     }
 
-    public ValueDefinition getDefinition() {
+    public DataDefinition getDefinition() {
         return definition;
     }
 
@@ -81,12 +81,12 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     @Override
     public T next() {
         if (!hasFieldsDefined() && generateAll) {
-            scanDefinitions(lookupType().toString() + ValueDefinition.DEFINITION_SCRIPT_SUFFIX);
+            scanDefinitions(lookupType().toString() + DataDefinition.DEFINITION_SCRIPT_SUFFIX);
         }
         if (shouldBuildInstance()) {
             final Class valueType = lookupType();
             build(null);
-            definition.definition(ValuePredicates.isTypeOf(valueType), this);
+            definition.definition(DataPredicates.isTypeOf(valueType), this);
         }
         final T instance = checkCreateInstance();
         setValue(instance);
@@ -94,46 +94,46 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return instance;
     }
 
-    public InstanceValue<T> withConstructorValues(List<Value> constructorValues) {
-        this.constructorArguments = constructorValues;
+    public InstanceData<T> withConstructorValues(List<Data> constructorDatas) {
+        this.constructorArguments = constructorDatas;
         return this;
     }
 
     @SuppressWarnings("unchecked")
-    public InstanceValue<T> withConstructorArguments(Collection constructorArguments) {
-        this.constructorArguments = new ArrayList<Value>();
+    public InstanceData<T> withConstructorArguments(Collection constructorArguments) {
+        this.constructorArguments = new ArrayList<Data>();
         if (constructorArguments != null) {
             for (final Object value : constructorArguments) {
-                if (Value.class.isInstance(value)) {
+                if (Data.class.isInstance(value)) {
                     this.constructorArguments.add(value);
                 } else {
-                    this.constructorArguments.add(new Constant(value));
+                    this.constructorArguments.add(new ConstantData(value));
                 }
             }
         }
         return this;
     }
 
-    public InstanceValue<T> withDefinitionClosure(AbstractDefinitionCallable definitionClosure) {
+    public InstanceData<T> withDefinitionClosure(AbstractDefinitionCallable definitionClosure) {
         this.definitionClosure = definitionClosure;
         return this;
     }
 
-    public InstanceValue<T> definition(String field, Value value) {
-        fieldValueMap.put(new InstanceFieldPredicate(field), value);
+    public InstanceData<T> definition(String field, Data data) {
+        fieldValueMap.put(new InstanceFieldPredicate(field), data);
         shouldBuild.set(true);
         return this;
     }
 
-    public InstanceValue<T> usingDefinitions(ValueDefinition valueDefinition) {
-        registerFieldValues(valueDefinition);
+    public InstanceData<T> usingDefinitions(DataDefinition dataDefinition) {
+        registerFieldValues(dataDefinition);
         checkDefinitionCreated();
-        definition.usingDefinition(valueDefinition);
+        definition.usingDefinition(dataDefinition);
         shouldBuild.set(true);
         return this;
     }
 
-    public InstanceValue<T> usingDefinitions(Map<Object, Object> valueDefinitions) {
+    public InstanceData<T> usingDefinitions(Map<Object, Object> valueDefinitions) {
         if (valueDefinitions != null && valueDefinitions.size() > 0) {
             checkDefinitionCreated();
             definition.definition(valueDefinitions);
@@ -142,18 +142,18 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return this;
     }
 
-    public InstanceValue<T> usingDefinitions(String resource, String... resources) {
+    public InstanceData<T> usingDefinitions(String resource, String... resources) {
         checkDefinitionCreated();
-        GroovyValueDefinition.Holder.instance.parseDefinition(definition, resource);
+        GroovyDataDefinition.Holder.instance.parseDefinition(definition, resource);
         if (resources != null) {
             for (String defResource : resources) {
-                GroovyValueDefinition.Holder.instance.parseDefinition(definition, defResource);
+                GroovyDataDefinition.Holder.instance.parseDefinition(definition, defResource);
             }
         }
         return this;
     }
 
-    public InstanceValue<T> scanDefinitions(String... resources) {
+    public InstanceData<T> scanDefinitions(String... resources) {
         checkDefinitionCreated();
         if (resources != null) {
             definition.scanDefinitions(Arrays.asList(resources));
@@ -169,7 +169,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     /**
      * Scans and parses ALL library definitions
      */
-    public InstanceValue<T> usingLibraryDefinitions() {
+    public InstanceData<T> usingLibraryDefinitions() {
         checkDefinitionCreated();
         definition.usingLibraryDefinitions();
         if (hasFieldsDefined()) {
@@ -183,7 +183,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
      *
      * @param definitionMatcher    wildcard or reg-ex to match library definitions for parsing
      */
-    public InstanceValue<T> usingLibraryDefinitions(String definitionMatcher) {
+    public InstanceData<T> usingLibraryDefinitions(String definitionMatcher) {
         checkDefinitionCreated();
         definition.usingLibraryDefinitions(definitionMatcher);
         if (hasFieldsDefined()) {
@@ -192,17 +192,17 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return this;
     }
 
-    public InstanceValue<T> usingDefaultDefinitions(ValueDefinition defaultDefinition) {
+    public InstanceData<T> usingDefaultDefinitions(DataDefinition defaultDefinition) {
         this.defaultDefinition = defaultDefinition;
         return this;
     }
 
-    public InstanceValue<T> usingDefaultDefinitions(String... definitions) {
-        this.defaultDefinition = new ValueDefinition().usingDefinitions(definitions);
+    public InstanceData<T> usingDefaultDefinitions(String... definitions) {
+        this.defaultDefinition = new DataDefinition().usingDefinitions(definitions);
         return this;
     }
 
-    public InstanceValue<T> usingValue(T value) {
+    public InstanceData<T> usingValue(T value) {
         this.value = value;
         if (value != null) {
             ofType(lookupType());
@@ -210,66 +210,66 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
         return this;
     }
 
-    public InstanceValue<T> ofType(Class clazzType) {
+    public InstanceData<T> ofType(Class clazzType) {
         this.type = clazzType;
         if (clazzType != null && generateAll) {
             final String classDefinitionResource = clazzType.getName() + ".groovy";
             final URL resource = clazzType.getResource(classDefinitionResource);
             if (resource != null) {
                 checkDefinitionCreated();
-                GroovyValueDefinition.Holder.instance.parseDefinition(definition, classDefinitionResource);
+                GroovyDataDefinition.Holder.instance.parseDefinition(definition, classDefinitionResource);
             }
         }
         return this;
     }
 
-    public InstanceValue<T> ofType(String valueType) {
+    public InstanceData<T> ofType(String valueType) {
         return ofType(lookupType(valueType, true));
     }
 
-    public InstanceValue<T> generateAll() {
+    public InstanceData<T> generateAll() {
         generateAll = true;
         return this;
     }
 
-    public InstanceValue<T> generateKnown() {
+    public InstanceData<T> generateKnown() {
         generateAll = false;
         return this;
     }
 
-    public Value lookupValue(ValuePredicate fieldPredicate) {
-        Value result = null;
-        for (final Map.Entry<InstanceFieldPredicate, Value> entry : fieldValueMap.entrySet()) {
+    public Data lookupValue(DataPredicate fieldPredicate) {
+        Data result = null;
+        for (final Map.Entry<InstanceFieldPredicate, Data> entry : fieldValueMap.entrySet()) {
             final String fieldName = entry.getKey().getProperty();
-            final Value value = entry.getValue();
-            if (fieldPredicate.apply(fieldName, value)) {
-                result = value;
+            final Data data = entry.getValue();
+            if (fieldPredicate.apply(fieldName, data)) {
+                result = data;
                 break;
             }
         }
         return result;
     }
 
-    public Value[] lookupValues(Class... clazzTypes) {
+    public Data[] lookupValues(Class... clazzTypes) {
         if (clazzTypes == null || clazzTypes.length == 0) {
             throw new IllegalArgumentException("Class types can't be null or empty");
         }
-        final Value[] values = new Value[clazzTypes.length];
+        final Data[] datas = new Data[clazzTypes.length];
         for (int i = 0; i < clazzTypes.length; i++) {
-            values[i] = lookupValue(new TypePredicate(clazzTypes[i]));
+            datas[i] = lookupValue(new TypePredicate(clazzTypes[i]));
         }
-        return values;
+        return datas;
     }
 
     //------------------------------------------------------------------------------------------------------------------
     // Internal Methods
     //------------------------------------------------------------------------------------------------------------------
-    void registerFieldValues(ValueDefinition valueDefinition) {
+    void registerFieldValues(DataDefinition dataDefinition) {
         checkFieldMapCreated();
 
         final Map<String, Field> unresolvedProps = new HashMap<String, Field>(fieldMap);
-        for (final Map.Entry<ValuePredicate, Value> entry : valueDefinition.getDefinitionMap().entrySet()) {
-            final ValuePredicate predicate = entry.getKey();
+        for (final Map.Entry<DataPredicate, Data> entry : dataDefinition.getDefinitionMap().entrySet()) {
+            final DataPredicate predicate = entry.getKey();
             for (final Field field : fieldMap.values()) {
                 final String propertyName = field.getName();
                 if (!fieldValueMap.containsKey(new InstanceFieldPredicate(propertyName))) {
@@ -284,18 +284,18 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
             unresolvedProps.remove(fieldPredicate.getProperty());
         }
         if (generateAll) {
-            fieldValueMap.putAll(lookupUnresolved(valueDefinition, unresolvedProps));
+            fieldValueMap.putAll(lookupUnresolved(dataDefinition, unresolvedProps));
         }
     }
 
     void checkDefinitionCreated() {
         if (definition == null) {
-            definition = new ValueDefinition();
+            definition = new DataDefinition();
         }
     }
 
     @SuppressWarnings("unchecked")
-    InstanceValue<T> build(ValueDefinition parent) {
+    InstanceData<T> build(DataDefinition parent) {
         checkDefinitionCreated();
         checkFieldMapCreated();
 
@@ -332,18 +332,18 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     void checkDefaultDefinitionCreated() {
         if (defaultDefinition == null) {
-            usingDefaultDefinitions(ValueDefinition.DEFAULT_DEFINITIONS_RESOURCE);
+            usingDefaultDefinitions(DataDefinition.DEFAULT_DEFINITIONS_RESOURCE);
         }
     }
 
     @SuppressWarnings("unchecked")
-    Map<InstanceFieldPredicate, Value> lookupUnresolved(ValueDefinition valueDefinition, Map<String, Field> unresolvedProps) {
+    Map<InstanceFieldPredicate, Data> lookupUnresolved(DataDefinition dataDefinition, Map<String, Field> unresolvedProps) {
         checkDefaultDefinitionCreated();
-        final Map<InstanceFieldPredicate, Value> propertyValueMap = new LinkedHashMap<InstanceFieldPredicate, Value>();
+        final Map<InstanceFieldPredicate, Data> propertyValueMap = new LinkedHashMap<InstanceFieldPredicate, Data>();
         for (final Map.Entry<String, Field> entry : unresolvedProps.entrySet()) {
             final String fieldName = entry.getKey();
             final Class fieldType = entry.getValue().getType();
-            Value val = defaultDefinition.lookupValue(fieldName, fieldType);
+            Data val = defaultDefinition.lookupValue(fieldName, fieldType);
             if (val != null) {
                 propertyValueMap.put(new InstanceFieldPredicate(fieldName), val);
             }
@@ -353,7 +353,7 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
 
     void populate(Object instance) {
         final Map<String, Object> propertyObjectMap = new LinkedHashMap<String, Object>(fieldValueMap.size());
-        for (Map.Entry<InstanceFieldPredicate, Value> entry : fieldValueMap.entrySet()) {
+        for (Map.Entry<InstanceFieldPredicate, Data> entry : fieldValueMap.entrySet()) {
             propertyObjectMap.put(entry.getKey().getProperty(), entry.getValue().next());
         }
         populate(instance, propertyObjectMap);
@@ -418,37 +418,37 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     }
 
     @SuppressWarnings("unchecked")
-    List<Value> lookupConstructorArguments() {
-        final List<Value> result = new ArrayList<Value>(constructorArguments.size());
+    List<Data> lookupConstructorArguments() {
+        final List<Data> result = new ArrayList<Data>(constructorArguments.size());
         for (Object argument : constructorArguments) {
-            if (argument instanceof Value) {
-                result.add((Value) argument);
+            if (argument instanceof Data) {
+                result.add((Data) argument);
             } else {
-                result.add(new Constant(argument));
+                result.add(new ConstantData(argument));
             }
         }
         return result;
     }
 
-    List<Value> lookupConstructorArguments(Class type) {
-        List<Value> result = null;
+    List<Data> lookupConstructorArguments(Class type) {
+        List<Data> result = null;
         for (final Constructor ctor : type.getConstructors()) {
             final Class[] types = ctor.getParameterTypes();
             if (types == null) {
-                return new ArrayList<Value>();
+                return new ArrayList<Data>();
             }
-            final List<Value> values = new ArrayList<Value>();
+            final List<Data> datas = new ArrayList<Data>();
             for (final Class argType : types) {
-                Value val = definition.lookupValue(null, argType);
+                Data val = definition.lookupValue(null, argType);
                 if (val == null) {
                     val = defaultDefinition.lookupValue(null, argType);
                 }
                 if (val != null) {
-                    values.add(val);
+                    datas.add(val);
                 }
             }
-            if (values.size() == types.length) {
-                result = values;
+            if (datas.size() == types.length) {
+                result = datas;
                 break;
             }
         }
@@ -456,34 +456,34 @@ public class InstanceValue<T> extends Constant<T> implements Value<T> {
     }
 
     @SuppressWarnings({"unchecked"})
-    List<Value> lookupConstructorValues(Class clazzType) {
-        List<Value> constructorValues = null;
+    List<Data> lookupConstructorValues(Class clazzType) {
+        List<Data> constructorDatas = null;
         if (constructorArguments != null && constructorArguments.size() > 0) {
-            constructorValues = lookupConstructorArguments();
+            constructorDatas = lookupConstructorArguments();
         } else {
             Constructor constructor = null;
             try {
                 constructor = clazzType.getConstructor();
             } catch (NoSuchMethodException ignore) { }
             if (constructor == null) {
-                constructorValues = lookupConstructorArguments(clazzType);
+                constructorDatas = lookupConstructorArguments(clazzType);
             }
         }
-        return constructorValues;
+        return constructorDatas;
     }
 
     @SuppressWarnings({"unchecked"})
     T checkCreateInstance() {
         final Class clazzType = lookupType();
-        final List<Value> constructorValues = lookupConstructorValues(clazzType);
+        final List<Data> constructorDatas = lookupConstructorValues(clazzType);
         Object[] arguments = null;
         Class[] types = null;
-        if (constructorValues != null && constructorValues.size() > 0) {
-            arguments = new Object[constructorValues.size()];
-            types = new Class[constructorValues.size()];
-            for (int i = 0; i < constructorValues.size(); i++) {
-                final Value value = constructorValues.get(i);
-                final Object valueObject = value.next();
+        if (constructorDatas != null && constructorDatas.size() > 0) {
+            arguments = new Object[constructorDatas.size()];
+            types = new Class[constructorDatas.size()];
+            for (int i = 0; i < constructorDatas.size(); i++) {
+                final Data data = constructorDatas.get(i);
+                final Object valueObject = data.next();
                 arguments[i] = valueObject;
                 types[i] = valueObject.getClass();
             }

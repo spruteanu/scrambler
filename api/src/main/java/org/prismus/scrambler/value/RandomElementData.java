@@ -1,6 +1,7 @@
 /*
  * Data Scrambler, Data Generation API
  * Copyright (c) 2015, Sergiu Prutean. All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -13,34 +14,22 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
- *
  */
 
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.Value;
-
-import java.util.List;
+import java.util.Random;
 
 /**
- * Container of values, that will generate an array of provided values
+ * Value instance that returns randomly an element from provided {@code values} array
  *
  * @author Serge Pruteanu
  */
-public class ArrayContainerValue extends Constant<Object[]> {
-    private List<Value> argumentTypes;
+public class RandomElementData<T> extends ConstantData<T> {
+    protected final Random random;
 
-    public ArrayContainerValue(List<Value> argumentTypes) {
-        this.argumentTypes = argumentTypes;
+    public RandomElementData() {
+        super();
+        random = new Random();
     }
-
-    @Override
-    protected Object[] doNext() {
-        final Object[] results = new Object[argumentTypes.size()];
-        for (int i = 0; i < argumentTypes.size(); i++) {
-            results[i] = argumentTypes.get(i).next();
-        }
-        return results;
-    }
-
 }

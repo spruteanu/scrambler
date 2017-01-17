@@ -23,7 +23,7 @@ package org.prismus.scrambler.value;
  *
  * @author Serge Pruteanu
  */
-public class ArrayRandomElement<T> extends RandomElementValue<T> {
+public class ArrayRandomElement<T> extends RandomElementData<T> {
     private T[] values;
 
     public ArrayRandomElement(T[] values) {

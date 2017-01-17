@@ -21,20 +21,20 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-class IntValueArray extends Constant<int[]> {
+class IntDataArray extends ConstantData<int[]> {
     private Integer count;
     private IntArray instance;
     private boolean useInitialArray;
 
-    public IntValueArray(int[] array, IntArray value) {
+    public IntDataArray(int[] array, IntArray value) {
         this(array, null, value);
     }
 
-    public IntValueArray(int[] array, Integer count, Object value1) {
+    public IntDataArray(int[] array, Integer count, Object value1) {
         this(array, count, (IntArray)value1);
     }
 
-    public IntValueArray(int[] array, Integer count, IntArray value1) {
+    public IntDataArray(int[] array, Integer count, IntArray value1) {
         super(array);
         this.count = count != null ? count : array != null ? array.length : null;
         this.instance = value1;

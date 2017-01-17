@@ -18,20 +18,20 @@
 
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.Value;
+import org.prismus.scrambler.Data;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Value that allows to generate combination arrays and list from provided source
+ * Data that allows to generate combination arrays and list from provided source
  * Combinations are generated using Johnson Trotter algorithm, adopted from
  * <a href="http://introcs.cs.princeton.edu/java/23recursion/JohnsonTrotter.java.html">Princeton Educational courses</a>
  *
  * @author Serge Pruteanu
  */
-public abstract class Combinations<T> extends Constant<T> {
+public abstract class Combinations<T> extends ConstantData<T> {
     private int[] permutations;
     private int[] inverse;
     private int[] directions;
@@ -99,47 +99,47 @@ public abstract class Combinations<T> extends Constant<T> {
 
     abstract void populate(T result, int i, int permIdx);
 
-    public static <T> Value<T[]> of(T... original) {
+    public static <T> Data<T[]> of(T... original) {
         return new ArrayCombinations<T>(original);
     }
 
-    public static <T> Value<T[]> valuesOf(Class<T> valueType, Value<T>... original) {
+    public static <T> Data<T[]> valuesOf(Class<T> valueType, Data<T>... original) {
         return new ValueArrayCombinations<T>(original, valueType);
     }
 
-    public static <T> Value<List<T>> of(List<T> original) {
+    public static <T> Data<List<T>> of(List<T> original) {
         return new ListCombinations<T>(original, original.size());
     }
 
-    public static <T> Value<List<T>> valuesOf(List<Value<T>> original) {
+    public static <T> Data<List<T>> valuesOf(List<Data<T>> original) {
         return new ValueListCombinations<T>(original, original.size());
     }
 
-    public static Value<boolean[]> of(boolean... original) {
+    public static Data<boolean[]> of(boolean... original) {
         return new BooleanCombinations(original);
     }
 
-    public static Value<byte[]> of(byte... original) {
+    public static Data<byte[]> of(byte... original) {
         return new ByteCombinations(original);
     }
 
-    public static Value<short[]> of(short... original) {
+    public static Data<short[]> of(short... original) {
         return new ShortCombinations(original);
     }
 
-    public static Value<int[]> of(int... original) {
+    public static Data<int[]> of(int... original) {
         return new IntCombinations(original);
     }
 
-    public static Value<long[]> of(long... original) {
+    public static Data<long[]> of(long... original) {
         return new LongCombinations(original);
     }
 
-    public static Value<float[]> of(float... original) {
+    public static Data<float[]> of(float... original) {
         return new FloatCombinations(original);
     }
 
-    public static Value<double[]> of(double... original) {
+    public static Data<double[]> of(double... original) {
         return new DoubleCombinations(original);
     }
 
@@ -165,10 +165,10 @@ public abstract class Combinations<T> extends Constant<T> {
     }
 
     static class ValueArrayCombinations<T> extends Combinations<T[]> {
-        private Value<T>[] original;
+        private Data<T>[] original;
         private Class<T> valueType;
 
-        ValueArrayCombinations(Value<T>[] original, Class<T> valueType) {
+        ValueArrayCombinations(Data<T>[] original, Class<T> valueType) {
             super(original.length);
             this.original = original;
             this.valueType = valueType;
@@ -209,10 +209,10 @@ public abstract class Combinations<T> extends Constant<T> {
     }
 
     static class ValueListCombinations<T> extends Combinations<List<T>> {
-        private List<Value<T>> original;
+        private List<Data<T>> original;
 
         @SuppressWarnings("unchecked")
-        ValueListCombinations(List<Value<T>> original, int count) {
+        ValueListCombinations(List<Data<T>> original, int count) {
             super(count);
             this.original = original;
         }

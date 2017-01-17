@@ -1,24 +1,24 @@
-## org.prismus.scrambler.Value
+## org.prismus.scrambler.Data
 Value interface defines data generation capabilities. 
 
-![Value interface](value-class-dgm.png)
+![Value interface](data-class-dgm.png)
 
 ```java
 /**
  * An interface used to generate data.
  */
-public interface Value<T> extends Serializable, Cloneable {
+public interface Data<T> extends Serializable, Cloneable {
     /**
-     * Generates value.
+     * Generates data.
      *
      * @return an instance of object
      */
     T next();
 
     /**
-     * Gets current generated value
+     * Gets current generated data
      *
-     * @return current value
+     * @return current data
      */
     T get();
 }
@@ -27,30 +27,30 @@ public interface Value<T> extends Serializable, Cloneable {
 It consists of 2 methods: 
 
 1. ``T next()``
-  Generates a value. Each call will produce a new one.
+  Generates a data. Each call will produce a new one.
 2. ``T get()``
-  Method is used to get the value from prior execution of ``next()`` method.
+  Method is used to get the data from prior execution of ``next()`` method.
   
-## Custom org.prismus.scrambler.Value implementation 
-It is recommended to create custom Value implementations by extending **org.prismus.scrambler.value.Constant** class.
-This class is a template that allows to get and performs value setting for newly generated object.
-Your implementation has to extend method **org.prismus.scrambler.value.Constant#doNext()** for value generation.
+## Custom org.prismus.scrambler.Data implementation 
+It is recommended to create custom Value implementations by extending **org.prismus.scrambler.data.ConstantData** class.
+This class is a template that allows to get and performs data setting for newly generated object.
+Your implementation has to extend method **org.prismus.scrambler.data.Constant#doNext()** for data generation.
 
 ```java
-public class Constant<T> implements Value<T> {
+public class ConstantData<T> implements Data<T> {
 ...
     public T get() {
-        return value;
+        return data;
     }
 
     public T next() {
-        final T value = doNext();
-        setValue(value);
-        return value;
+        final T data = doNext();
+        setValue(data);
+        return data;
     }
 
     protected T doNext() {
-        return value;
+        return data;
     }
 ...
 }
@@ -72,7 +72,7 @@ In order to hide complexity and have a simple API, generation capabilities are e
 Facades are defined in ``org.prismus.scrambler`` package and are grouped per type and named accordingly.
 
 ## java.lang.Number generation facade and classes
-DataScrambler offers following ways to generate a Number value:
+DataScrambler offers following ways to generate a Number data:
 
 1. Incremental Number with a step (default is 1)
 1. Random simple or in a range
@@ -85,17 +85,17 @@ DataScrambler offers following ways to generate a Number value:
 System.out.println(NumberScrambler.increment(1).next());
 
 // generate incremental array with step (100) starting from 0
-Value<Integer[]> integerArray = ArrayScrambler.incrementArray(new Integer[10], 100, 10);
+Data<Integer[]> integerArray = ArrayScrambler.incrementArray(new Integer[10], 100, 10);
 System.out.println(Arrays.asList(integerArray.next()));
 
 // generate incremental array with step (10.5) starting from 0
-Value<float[]> primitiveFloatArray = ArrayScrambler.incrementArray(new float[10], 10.5f, 10);
+Data<float[]> primitiveFloatArray = ArrayScrambler.incrementArray(new float[10], 10.5f, 10);
 System.out.println(Arrays.asList(primitiveFloatArray.next()));
 
 // generate random long in a range
 System.out.println(NumberScrambler.random(900L, 1000L).next());
 ```
-![Number generation classes](number-value-class-dgm.png)
+![Number generation classes](number-data-class-dgm.png)
 
 ## java.util.Date generation facade and classes
 Dates generation can be done in following way:
@@ -139,7 +139,7 @@ System.out.println(Arrays.asList(DateScrambler.randomArray(new Date(),
         5).next()));
 ```
 
-![Date generation classes](date-value-class-dgm.png)
+![Date generation classes](date-data-class-dgm.png)
 
 ## java.lang.String generation facade and classes
 1. Incremental String using provided formatter pattern with an incremented index 
@@ -163,30 +163,30 @@ System.out.println(StringScrambler.random("My Random String 123").next());
 System.out.println(Arrays.asList(StringScrambler.randomArray("My Random String 123", 10).next()));
 ```
 
-![String generation classes](string-value-class-dgm.png)
+![String generation classes](string-data-class-dgm.png)
 
 ## Generic object facade and classes
-1. Constant value, each call to ``next()`` returns same value
-1. Generated random value (simple or in a range) by providing Class type (if supported)
+1. Constant data, each call to ``next()`` returns same data
+1. Generated random data (simple or in a range) by providing Class type (if supported)
 1. Random array of specified class type
 1. Random Boolean
 
 **Examples**
 
 ```java
-// declare a value instance that represents constant value
+// declare a data instance that represents constant data
 Assert.assertEquals(1, ObjectScrambler.constant(1).next().longValue());
 
-// declare a value instance that will return randomly generated array
-final Value<Long[]> longValues = ArrayScrambler.randomArray(1L, 10);
+// declare a data instance that will return randomly generated array
+final Data<Long[]> longValues = ArrayScrambler.randomArray(1L, 10);
 Assert.assertEquals(10, longValues.next().length);
 
-// declare a value instance that will generate an array of short primitives randomly in a specified range
-final Value<short[]> primitivesInRange = ArrayScrambler.arrayOf(new short[10], NumberScrambler.random((short) 900, (short) 1000));
+// declare a data instance that will generate an array of short primitives randomly in a specified range
+final Data<short[]> primitivesInRange = ArrayScrambler.arrayOf(new short[10], NumberScrambler.random((short) 900, (short) 1000));
 Assert.assertEquals(10, primitivesInRange.next().length);
 ```
 
-![Generic object classes](generic-object-value-class-dgm.png)
+![Generic object classes](generic-object-data-class-dgm.png)
 
 ## Arrays generation facade and classes
 1. Array of specified type using provided generation strategy
@@ -198,23 +198,23 @@ Assert.assertEquals(10, primitivesInRange.next().length);
 **Examples:**
 
 ```java
-// declare a value instance that will return randomly generated primitives array
-final Value<long[]> longPrimitives = ArrayScrambler.randomArray(new long[10]);
+// declare a data instance that will return randomly generated primitives array
+final Data<long[]> longPrimitives = ArrayScrambler.randomArray(new long[10]);
 Assert.assertEquals(10, longPrimitives.next().length);
 
-// declare a value instance that will generate an array of Long objects randomly in a specified range
-final Value<Long[]> randomsInRange = ArrayScrambler.arrayOf(new Long[10], NumberScrambler.random(900L, 1000L));
+// declare a data instance that will generate an array of Long objects randomly in a specified range
+final Data<Long[]> randomsInRange = ArrayScrambler.arrayOf(new Long[10], NumberScrambler.random(900L, 1000L));
 Assert.assertEquals(10, randomsInRange.next().length);
 
-// declare a value instance that will generate an array of short primitives randomly in a specified range
-final Value<short[]> primitivesInRange = ArrayScrambler.arrayOf(new short[10], NumberScrambler.random((short) 900, (short) 1000));
+// declare a data instance that will generate an array of short primitives randomly in a specified range
+final Data<short[]> primitivesInRange = ArrayScrambler.arrayOf(new short[10], NumberScrambler.random((short) 900, (short) 1000));
 Assert.assertEquals(10, primitivesInRange.next().length);
 
 // Generate one combinations sequence of provided integer array using Johnson Trotter algorithm
 ArrayScrambler.combinationsOf(1, 2, 3, 4, 5).next();
 ```
 
-![Array generation classes](array-value-class-dgm.png)
+![Array generation classes](array-data-class-dgm.png)
 
 ## java.util.Collection generation facade and classes
 1. Generate a collection using provided strategy
@@ -236,10 +236,10 @@ System.out.printf("%s random element: %s%n", new HashSet<String>(Arrays.asList("
 System.out.printf("%s random element: %s%n", new HashSet<Integer>(Arrays.asList(1, 2, 3, 4, 5)), CollectionScrambler.randomOf(Arrays.asList(1, 2, 3, 4, 5)).next());
 ```
 
-![Collection generation classes](collection-value-class-dgm.png)
+![Collection generation classes](collection-data-class-dgm.png)
 
 ## java.util.Map generation facade and classes
-1. Generate a map of values using provided key/rule
+1. Generate a map of datas using provided key/rule
 
 **Examples**
 ```java
@@ -255,54 +255,54 @@ System.out.println(MapScrambler.mapOf(LinkedHashMap.class, new LinkedHashMap() {
 }}).next());
 ```
 
-![Map generation classes](map-value-class-dgm.png)
+![Map generation classes](map-data-class-dgm.png)
 
-## org.prismus.scrambler.ValuePredicate
+## org.prismus.scrambler.DataPredicate
 Value predicates are defined to match java classes fields with data generation rules.
 Fields can be matched by name and/or type. In order to have matching process more flexible, 
 fields can be matched by name, wildcard or regular expression. 
 
 ```java
 /**
- * Interface that matches either {@code property} and/or {@code value}.
- * The predicate is mostly used as a Map.key for value definitions, to match instance fields
+ * Interface that matches either {@code property} and/or {@code data}.
+ * The predicate is mostly used as a Map.key for data definitions, to match instance fields
  */
 public interface ValuePredicate {
     /**
-     * Match either property and/or value, used to identify if {@link Value} is applicable for provided arguments
+     * Match either property and/or data, used to identify if {@link Value} is applicable for provided arguments
      *
      * @param property property name to be matched
-     * @param value value to be matched
+     * @param data data to be matched
      * @return true if it should be applicable
      */
-    boolean apply(String property, Object value);
+    boolean apply(String property, Object data);
 }
 ```
 
-``org.prismus.scrambler.ValuePredicates`` exposes variety of available predicates.
+``org.prismus.scrambler.DataPredicates`` exposes variety of available predicates.
 
-![Value Predicate interface](value-predicate-dgm.png)
-![Value Predicate interface](value-predicate-class-dgm.png)
+![Value Predicate interface](data-predicate-dgm.png)
+![Value Predicate interface](data-predicate-class-dgm.png)
 
-## org.prismus.scrambler.value.ValueDefinition
-ValueDefinition is a builder that represents a registry of value generation rules matched by predicates.
-Following functionality is offered by ``org.prismus.scrambler.value.ValueDefinition``:
+## org.prismus.scrambler.data.ValueDefinition
+ValueDefinition is a builder that represents a registry of data generation rules matched by predicates.
+Following functionality is offered by ``org.prismus.scrambler.data.ValueDefinition``:
 
-1. Register value for provided predicate through ``definition(...), constant(...), reference(...)`` methods
+1. Register data for provided predicate through ``definition(...), constant(...), reference(...)`` methods
 1. Load definitions from external sources<br/>
   1. ``usingDefinitions``        - load existing definitions. If provided resource/file is not found, an exception will be thrown
   1. ``scanDefinitions``         - load definitions if exists.
-  1. ``scanLibraryDefinitions``  - scan classpath for definition sources and load if any matched. Scanning matches all ``*value-definition.groovy`` scripts once and caches them internally.
-1. ``lookupValue``             - lookup a registered definition for provided arguments. Methods are used from reference and instance value
+  1. ``scanLibraryDefinitions``  - scan classpath for definition sources and load if any matched. Scanning matches all ``*data-definition.groovy`` scripts once and caches them internally.
+1. ``lookupValue``             - lookup a registered definition for provided arguments. Methods are used from reference and instance data
 1. Context properties.<br/>
   In order to make definition' resources more generic, it is possible to register a map of properties from 
 ``org.prismus.scrambler.InstanceScrambler`` methods and those properties will be available/injected from/to script definitions 
 using ``getContextProperty(...)``. More details will be given in DSL definitions section.
 
-All ``org.prismus.scrambler.value.ValueDefinition`` methods are accessible from definition scripts.
+All ``org.prismus.scrambler.data.ValueDefinition`` methods are accessible from definition scripts.
 
 ## Java instances generation
-``org.prismus.scrambler.value.InstanceValue`` is a builder to generate java class with field's data for it.
+``org.prismus.scrambler.data.InstanceValue`` is a builder to generate java class with field's data for it.
 Following operations are available:
 
 1. Create an instance from defaults
@@ -312,20 +312,20 @@ Following operations are available:
 **Notes:**
 
 * If no fields are defined or a field doesn't have a match, field will be attempted to be generated using default 
-definitions. DataScrambler API is shipped with ``/org.prismus.scrambler.value.default-definition.groovy`` 
+definitions. DataScrambler API is shipped with ``/org.prismus.scrambler.data.default-definition.groovy`` 
 and it can be changed by ``usingDefaultDefinitions(...)`` methods
 * If no fields are defined, classpath will be scanned for class definition resource using following naming convention:<br/>
 ``"Class name" + "-definition.groovy"``, that for ``Person.class`` will match ``Person-definition.groovy``
-* Often it is needed to populate a field based on some field' values of created class. 
-DataScrambler API allows that using ``org.prismus.scrambler.value.ReferenceValue`` rule. See bellow more details. 
+* Often it is needed to populate a field based on some field' datas of created class. 
+DataScrambler API allows that using ``org.prismus.scrambler.data.ReferenceValue`` rule. See bellow more details. 
 
-![Instance value classes](instance-value-class-dgm.png)
+![Instance data classes](instance-data-class-dgm.png)
 
 **Examples:**</br>
 Groovy script example<br/> 
 ```groovy
 // create an instance of School.class that has a list of rooms
-final instance = new InstanceValue<School>(School).usingDefinitions(
+final instance = new InstanceData<School>(School).usingDefinitions(
         '*Id': 1.increment(1),
         'name': ['Enatai', 'Medina', 'Value Crest', 'Newport'].randomOf(),
         (List): [].of(ClassRoom.definition(
@@ -340,17 +340,17 @@ final school = instance.next()
 ```java
 // create an instance of Person.class with fields default generation rules. If in classpath there is a ``Person-definition.groovy`` script,
 // fields will be generated using definitions from it
-final InstanceValue<Person> personValue = InstanceScrambler.instanceOf(Person.class);
+final InstanceData<Person> personValue = InstanceScrambler.instanceOf(Person.class);
 Person person = personValue.next();
 
 //...
 // create an instance of Person.class using /person-definition.groovy definitions script
-final InstanceValue<Person> personValue = InstanceScrambler.instanceOf(Person.class, "/person-definition.groovy");
+final InstanceData<Person> personValue = InstanceScrambler.instanceOf(Person.class, "/person-definition.groovy");
 Person person = personValue.next();
 
 //...
 // Create an instance of Address.class using /address-definition.groovy and injected into script context properties
-final InstanceValue<Address> addressValue = InstanceScrambler.instanceOf(Address.class, new HashMap<String, Object>() {{
+final InstanceData<Address> addressValue = InstanceScrambler.instanceOf(Address.class, new HashMap<String, Object>() {{
     put("state", "Washington");
 }}, "/address-definition.groovy");
 Address address = addressValue.next();
@@ -359,18 +359,18 @@ Assert.assertTrue("Washington".equals(address.getState()));
 ```
 
 ### Reference Value
-Reference value is an implementation of value that allows to generate/create a field value by 'referencing' inquired 
+Reference data is an implementation of data that allows to generate/create a field data by 'referencing' inquired 
 class in defined rules. For more clarity, let's examine two examples:
 
 #### Parent/Child relationship
 There is a Database one-to-many relationship between School and Room, for which data are generated. Room.schoolId references
-SID property from 'parent'. In order to resolve this value, a reference to ``School.class`` is defined for 'School.schoolId' field.
-DataScrambler API parser will detect this declaration and will resolve the context for declared School.class reference value, thus, 
-``Room.schoolId`` will get the value from already generated field ``School.schoolId``.
+SID property from 'parent'. In order to resolve this data, a reference to ``School.class`` is defined for 'School.schoolId' field.
+DataScrambler API parser will detect this declaration and will resolve the context for declared School.class reference data, thus, 
+``Room.schoolId`` will get the data from already generated field ``School.schoolId``.
 
-**Example from test: org.prismus.scrambler.value.InstanceValueTest.test if parent is set properly**<br/>
+**Example from test: org.prismus.scrambler.value.InstanceDataTesttest if parent is set properly**<br/>
 ```groovy
-final instance = new InstanceValue<School>(School).usingDefinitions(
+final instance = new InstanceData<School>(School).usingDefinitions(
         '*Id': 1.increment(1),
         'name': ['Enatai', 'Medina', 'Value Crest', 'Newport'].randomOf(),
         (List): [].of(ClassRoom.definition(
@@ -392,7 +392,7 @@ for (ClassRoom classRoom : school.rooms) {
 }
 ```
 
-#### Generate field value based on other fields
+#### Generate field data based on other fields
 Example where rules are defined for person definitions. There is a list of male and female names, and based on chosen 
 name, an according gender should be set.
 
@@ -403,7 +403,7 @@ definition(firstNamePattern, allFirstNames.randomOf())
 
 ... some logic here
 
-//gender, reference the field on first name, and set according gender from generated first name field/value
+//gender, reference the field on first name, and set according gender from generated first name field/data
 definition(~/(?i)gender/, new ReferenceValue(firstNamePattern) {
     @Override
     protected Object doNext() {
@@ -420,7 +420,7 @@ definition(~/(?i)gender/, new ReferenceValue(firstNamePattern) {
 * References can be defined either in script using ``ValueDefinition.reference(...)`` methods or explicitly using ``ReferenceValue.class`` object
 
 ## DataScrambler DSL
-Java is a neat programming language, but it is too verbose in the cases when you need to configure/define values for a class.
+Java is a neat programming language, but it is too verbose in the cases when you need to configure/define datas for a class.
 Also, modern languages like Groovy and Scala comes with more capabilities that makes code even more succinct.
 DataScrambler uses Groovy as a mechanism to define generation rules easier. Also, Groovy offers a possibility to create 
 DSL, so, on top of DataScrambler API an according data generation DSL is created.
@@ -428,14 +428,14 @@ DSL, so, on top of DataScrambler API an according data generation DSL is created
 DataScrambler is implemented using Groovy metaclass DSL capabilities and mixin declarations 
 (see [Groovy dynamic stateless mixins](https://groovyland.wordpress.com/2008/06/07/groovy-dynamic-stateless-mixins/) for example)
 Scrambler generation facades' methods are added dynamically to groovy expando metaclass in 
-``org.prismus.scrambler.value.GroovyValueDefinition`` static block.
+``org.prismus.scrambler.data.GroovyValueDefinition`` static block.
 
 **DSL Examples:**<br/>
 ```groovy
-// define a random value in a range 1..100 of integer type 
+// define a random data in a range 1..100 of integer type 
 Integer.random(1, 100)
 
-// define a value that chooses a random element from the list
+// define a data that chooses a random element from the list
 [1, 2, 3].randomOf()
 
 // definition for an incremental Date, with 1 hour step 
@@ -444,26 +444,26 @@ new Date().increment(1, Calendar.HOUR)
 // generate java.util.HashSet() 100 count with incremental step 10
 new HashSet().of(4.increment(10), 100)
 
-// random range 1..100 integer value
+// random range 1..100 integer data
 2.random(1, 100)
 
-// random string value
+// random string data
 'some template string'.random('pattern')
 ```
 
 ![DSL classes](groovy-definition-class-dgm.png)
 
 ### DataScrambler definition scripts
-In addition to DSL registration, ``org.prismus.scrambler.value.GroovyValueDefinition`` is responsible for DataScrambler 
-definition scripts parsing (``org.prismus.scrambler.value.GroovyValueDefinition#parseDefinitions(...)`` methods) 
+In addition to DSL registration, ``org.prismus.scrambler.data.GroovyValueDefinition`` is responsible for DataScrambler 
+definition scripts parsing (``org.prismus.scrambler.data.GroovyValueDefinition#parseDefinitions(...)`` methods) 
 from various sources (classpath resource, File, InputStream, Reader or even simple text with definitions).
 
 **NOTE:**<br/>
 Groovy Shell can be configured by defining in classpath ``/definitions-parser.properties`` file that will configure 
 ``org.codehaus.groovy.control.CompilerConfiguration`` properties.
 
-Along with DataScrambler API DSL extension, methods from ``org.prismus.scrambler.value.ValueDefinition`` are accessible 
-from definitions script. This is implemented by setting the ``org.prismus.scrambler.value.ValueDefinition`` instance 
+Along with DataScrambler API DSL extension, methods from ``org.prismus.scrambler.data.ValueDefinition`` are accessible 
+from definitions script. This is implemented by setting the ``org.prismus.scrambler.data.ValueDefinition`` instance 
 to ``groovy.util.DelegatingScript`` that evaluates definitions script.
 
 #### Performance
@@ -472,7 +472,7 @@ predicates matching, time is spent only on invoking data generation and fields p
 
 #### IDE support
 Currently DataScrambler has support for highlighting and completion only for IntelliJ IDEA by 
-``org.prismus.scrambler.value.ValueDefinition.gdsl`` file shipped with library. 
+``org.prismus.scrambler.data.ValueDefinition.gdsl`` file shipped with library. 
 Eclipse support will be added in near future.
 
 ## DataScrambler extensions
@@ -481,8 +481,8 @@ Eclipse support will be added in near future.
 In order to make definitions scripts re-usage an easy process, as well as to write less code for data generation, 
 DataScrambler API has a capability of definitions scanning in the classpath. Definitions are scanned by listing 
 all resources of ``META-INF/dictionary.desc``. Library definitions methods are available under definitions script scope
-``org.prismus.scrambler.value.ValueDefinition#usingLibraryDefinitions(...)`` as well as at 
-``org.prismus.scrambler.value.InstanceValue#usingLibraryDefinitions(...)``.
+``org.prismus.scrambler.data.ValueDefinition#usingLibraryDefinitions(...)`` as well as at 
+``org.prismus.scrambler.data.InstanceValue#usingLibraryDefinitions(...)``.
 
 **Examples**<br/>
 ```groovy
@@ -505,7 +505,7 @@ and: 'verify address generation for Washington state'
   Keep in mind that fields are matched in the order how definitions are declared.
 1. Keep custom generation rules simple<br/>
   It is not recommended to create inner rules in definition under groovy script. Such constructions may have performance 
-  issues, as they are compiled dynamically. Instead, define the value class bellow and mark to compile statically 
+  issues, as they are compiled dynamically. Instead, define the data class bellow and mark to compile statically 
   or define it as java class.
 1. Declare definitions independent of usage context<br/>
   For better re-usage, keep definitions detached of usage context (do not use specific classes). 

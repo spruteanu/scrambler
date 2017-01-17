@@ -4,9 +4,9 @@ import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
-import org.prismus.scrambler.Value
-import org.prismus.scrambler.ValuePredicate
-import org.prismus.scrambler.value.ValueDefinition
+import org.prismus.scrambler.Data
+import org.prismus.scrambler.DataPredicate
+import org.prismus.scrambler.value.DataDefinition
 
 import javax.sql.DataSource
 import java.sql.*
@@ -17,7 +17,7 @@ import java.sql.*
  * @author Serge Pruteanu
  */
 @CompileStatic
-class DataSourceDefinition extends ValueDefinition {
+class DataSourceDefinition extends DataDefinition {
 
     private Map<Integer, Class> typeClassMap = [
             (Types.BIT)          : Boolean,
@@ -49,7 +49,7 @@ class DataSourceDefinition extends ValueDefinition {
     ] as Map<Integer, Class>
 
     protected Map<String, TableMeta> tableMap
-    private Map<String, ValueDefinition> tableDefinitionMap = [:]
+    private Map<String, DataDefinition> tableDefinitionMap = [:]
 
     private final DataSource dataSource
 
@@ -80,38 +80,38 @@ class DataSourceDefinition extends ValueDefinition {
         tableMap = listTableMap()
         for (final String table : tableMap.keySet()) {
             if (!tableDefinitionMap.containsKey(table)) {
-                tableDefinitionMap.put(table, new ValueDefinition().usingLibraryDefinitions(table))
+                tableDefinitionMap.put(table, new DataDefinition().usingLibraryDefinitions(table))
             }
         }
         super.build()
         return this
     }
 
-    DataSourceDefinition usingDefinition(String table, ValueDefinition definition) {
+    DataSourceDefinition usingDefinition(String table, DataDefinition definition) {
         tableDefinitionMap.put(table, definition)
         return this
     }
 
     DataSourceDefinition usingDefinition(String table, String definition, String... definitions) {
-        tableDefinitionMap.put(table, new ValueDefinition().usingDefinitions((definitions != null
+        tableDefinitionMap.put(table, new DataDefinition().usingDefinitions((definitions != null
                 ? (Arrays.asList(definition) + Arrays.asList(definitions)).toArray(new String[1 + definitions.length])
                 : [definition] as String[]
         )))
         return this
     }
 
-    Value lookupValue(String tableName, ValuePredicate predicate) {
+    Data lookupValue(String tableName, DataPredicate predicate) {
         return tableDefinitionMap.containsKey(tableName) ? tableDefinitionMap.get(tableName).lookupValue(predicate) : null
     }
 
-    Value lookupValue(String tableName, String property, Class type) {
+    Data lookupValue(String tableName, String property, Class type) {
         return tableDefinitionMap.containsKey(tableName) ? tableDefinitionMap.get(tableName).lookupValue(property, type) : null
     }
 
-    Map<String, Value> toMapValue(TableMeta tableMeta, boolean generateNullable) {
+    Map<String, Data> toMapValue(TableMeta tableMeta, boolean generateNullable) {
         final columnMap = tableMeta.columnMap
         final List<String> keys = new ArrayList<String>(columnMap.size())
-        final valueMap = new LinkedHashMap<String, Value>()
+        final valueMap = new LinkedHashMap<String, Data>()
         for (Map.Entry<String, ColumnMeta> entry : columnMap.entrySet()) {
             final columnMeta = entry.value
             if (columnMeta.isAutoIncrement()) {
@@ -122,7 +122,7 @@ class DataSourceDefinition extends ValueDefinition {
             }
             final columnName = entry.key
             final boolean fkColumn = columnMeta.isFk()
-            Value value
+            Data value
             if (fkColumn) {
                 value = lookupFkValue(columnMeta, generateNullable)
             } else {
@@ -140,7 +140,7 @@ class DataSourceDefinition extends ValueDefinition {
         }
 
         Collections.sort(keys)
-        final map = new LinkedHashMap<String, Value>()
+        final map = new LinkedHashMap<String, Data>()
         for (String column : keys) {
             map.put(column, valueMap.get(column))
         }
@@ -148,12 +148,12 @@ class DataSourceDefinition extends ValueDefinition {
     }
 
     @PackageScope
-    Value lookupFkValue(ColumnMeta columnMeta, boolean generateNullable) {
+    Data lookupFkValue(ColumnMeta columnMeta, boolean generateNullable) {
         final primaryTableName = columnMeta.primaryTableName
         final primaryColumnName = columnMeta.primaryColumnName
         final primaryTableMeta = tableMap.get(primaryTableName)
         final primaryColumnMeta = primaryTableMeta.columnMap.get(primaryColumnName)
-        Value value = lookupValue(primaryTableName, primaryColumnName, primaryColumnMeta.classType)
+        Data value = lookupValue(primaryTableName, primaryColumnName, primaryColumnMeta.classType)
         if (value == null) {
             // todo Serge: add a strategy to generate FK keys: pickup value from DB or from generated, cached values
         }

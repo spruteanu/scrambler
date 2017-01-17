@@ -23,7 +23,7 @@ import java.util.Random;
 /**
  * @author Serge Pruteanu
  */
-public class RandomBoolean extends Constant<Boolean> implements BooleanArray {
+public class RandomBoolean extends ConstantData<Boolean> implements BooleanArray {
 
     private final Random random;
 

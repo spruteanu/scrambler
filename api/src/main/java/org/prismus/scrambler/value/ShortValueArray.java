@@ -21,7 +21,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-class ShortValueArray extends Constant<short[]> {
+class ShortValueArray extends ConstantData<short[]> {
     private Integer count;
     private ShortArray instance;
     private boolean useInitialArray;

@@ -3,18 +3,18 @@ package org.prismus.scrambler.jdbc
 import groovy.sql.DataSet
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
-import org.prismus.scrambler.value.Constant
+import org.prismus.scrambler.value.ConstantData
 
 import javax.sql.DataSource
 import java.sql.Statement
 
 /**
- * Value instance that returns an object from DB based on provided DB selection string and parameters.
+ * Data instance that returns an object from DB based on provided DB selection string and parameters.
  *
  * @author Serge Pruteanu
  */
 @CompileStatic
-class TableRowValue extends Constant<Map<String, Object>> {
+class TableRowValue extends ConstantData<Map<String, Object>> {
     private final DataSet dataSet
 
     private String select

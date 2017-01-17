@@ -34,4 +34,4 @@ System.out.println(Arrays.asList(DateScrambler.randomArray(new Date(),
 
 ```
 
-![Date generation classes](date-value-class-dgm.png)
+![Date generation classes](date-data-class-dgm.png)

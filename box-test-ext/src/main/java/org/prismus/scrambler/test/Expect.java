@@ -1,7 +1,7 @@
 package org.prismus.scrambler.test;
 
-import org.prismus.scrambler.ValuePredicate;
-import org.prismus.scrambler.ValuePredicates;
+import org.prismus.scrambler.DataPredicate;
+import org.prismus.scrambler.DataPredicates;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -13,19 +13,19 @@ import java.util.regex.Pattern;
  */
 public class Expect {
     // todo Serge: investigate groovy code visitor capabilities, based on example: class SqlWhereVisitor extends CodeVisitorSupport
-    private final List<ValuePredicate> predicates;
+    private final List<DataPredicate> predicates;
     private TestContext expectationContext;
     private String message;
 
     Expect() {
-        this(new ArrayList<ValuePredicate>(), null);
+        this(new ArrayList<DataPredicate>(), null);
     }
 
     Expect(String message) {
-        this(new ArrayList<ValuePredicate>(), message);
+        this(new ArrayList<DataPredicate>(), message);
     }
 
-    Expect(List<ValuePredicate> predicates, String message) {
+    Expect(List<DataPredicate> predicates, String message) {
         this.predicates = predicates;
         this.message = message;
     }
@@ -47,7 +47,7 @@ public class Expect {
         final ResultContext resultContext = new ResultContext();
         boolean result = true;
         final Object inspected = expectationContext.getInspected();
-        for (final ValuePredicate predicate : predicates) {
+        for (final DataPredicate predicate : predicates) {
             final boolean predicateResult = predicate.apply(null, inspected);
             resultContext.add(new TestContext(inspected, predicate.toString()).verified(predicateResult));
             result &= predicateResult;
@@ -62,62 +62,62 @@ public class Expect {
     }
 
     public Expect isTypeOf(Class clazzType) {
-        predicates.add(new ContextDelegatingPredicate(ValuePredicates.isTypeOf(clazzType)));
+        predicates.add(new ContextDelegatingPredicate(DataPredicates.isTypeOf(clazzType)));
         return this;
     }
 
     public Expect isTypeOf(String clazzType) throws ClassNotFoundException {
-        predicates.add(new ContextDelegatingPredicate(ValuePredicates.isTypeOf(clazzType)));
+        predicates.add(new ContextDelegatingPredicate(DataPredicates.isTypeOf(clazzType)));
         return this;
     }
 
     public Expect matches(String propertyWildcard, Class clazzType) {
-        predicates.add(new ContextDelegatingPredicate(ValuePredicates.matches(propertyWildcard, clazzType)));
+        predicates.add(new ContextDelegatingPredicate(DataPredicates.matches(propertyWildcard, clazzType)));
         return this;
     }
 
     public Expect matches(Pattern pattern, Class clazzType) {
-        predicates.add(new ContextDelegatingPredicate(ValuePredicates.matches(pattern, clazzType)));
+        predicates.add(new ContextDelegatingPredicate(DataPredicates.matches(pattern, clazzType)));
         return this;
     }
 
     public Expect matches(Pattern pattern) {
-        predicates.add(new ContextDelegatingPredicate(ValuePredicates.matchProperty(pattern)));
+        predicates.add(new ContextDelegatingPredicate(DataPredicates.matchProperty(pattern)));
         return this;
     }
 
     public Expect matches(String propertyWildcard) {
-        predicates.add(new ContextDelegatingPredicate(ValuePredicates.matchProperty(propertyWildcard)));
+        predicates.add(new ContextDelegatingPredicate(DataPredicates.matchProperty(propertyWildcard)));
         return this;
     }
 
     public Expect matchesTypes(Pattern pattern) {
-        predicates.add(new ContextDelegatingPredicate(ValuePredicates.matchesTypes(pattern)));
+        predicates.add(new ContextDelegatingPredicate(DataPredicates.matchesTypes(pattern)));
         return this;
     }
 
     public Expect isNull() {
-        predicates.add(new ContextDelegatingPredicate(ValuePredicates.isNull()));
+        predicates.add(new ContextDelegatingPredicate(DataPredicates.isNull()));
         return this;
     }
 
     public Expect isNotNull() {
-        predicates.add(new ContextDelegatingPredicate(ValuePredicates.isNotNull()));
+        predicates.add(new ContextDelegatingPredicate(DataPredicates.isNotNull()));
         return this;
     }
 
     public Expect equalsTo(Object object) {
-        predicates.add(new ContextDelegatingPredicate(ValuePredicates.equalsTo(object)));
+        predicates.add(new ContextDelegatingPredicate(DataPredicates.equalsTo(object)));
         return this;
     }
 
     public Expect isSame(Object object) {
-        predicates.add(new ContextDelegatingPredicate(ValuePredicates.isSame(object)));
+        predicates.add(new ContextDelegatingPredicate(DataPredicates.isSame(object)));
         return this;
     }
 
     public Expect isAny(Set<Object> values) {
-        predicates.add(new ContextDelegatingPredicate(ValuePredicates.isAny(values)));
+        predicates.add(new ContextDelegatingPredicate(DataPredicates.isAny(values)));
         return this;
     }
 
@@ -130,12 +130,12 @@ public class Expect {
     }
 
     public <N extends Comparable> Expect between(final N min, final N max) {
-        predicates.add(new ContextDelegatingPredicate(ValuePredicates.between(min, max)));
+        predicates.add(new ContextDelegatingPredicate(DataPredicates.between(min, max)));
         return this;
     }
 
     public Expect executedIn(final long expectedTime) {
-        predicates.add(new ValuePredicate() {
+        predicates.add(new DataPredicate() {
             @Override
             public boolean apply(String property, Object value) {
                 final MethodContext executionContext = (MethodContext) value;
@@ -151,10 +151,10 @@ public class Expect {
         return this;
     }
 
-    private static class ContextDelegatingPredicate implements ValuePredicate {
-        private final ValuePredicate predicate;
+    private static class ContextDelegatingPredicate implements DataPredicate {
+        private final DataPredicate predicate;
 
-        public ContextDelegatingPredicate(ValuePredicate predicate) {
+        public ContextDelegatingPredicate(DataPredicate predicate) {
             this.predicate = predicate;
         }
 

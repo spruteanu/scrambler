@@ -5,7 +5,7 @@ import org.prismus.scrambler.ArrayScrambler
 import org.prismus.scrambler.DateScrambler
 import org.prismus.scrambler.NumberScrambler
 import org.prismus.scrambler.StringScrambler
-import org.prismus.scrambler.Value
+import org.prismus.scrambler.Data
 import spock.lang.Specification
 
 /**
@@ -15,27 +15,27 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental number generation'(Number start, Number step, Integer count) {
         given:
-        Value<Number> numberValue = NumberScrambler.increment(start, step)
+        Data<Number> numberData = NumberScrambler.increment(start, step)
 
         expect:
-        numberValue.get() == start
+        numberData.get() == start
         for (int i = 0; i < 5; i++) {
-            Assert.assertEquals(numberValue.get() + step, numberValue.next())
+            Assert.assertEquals(numberData.get() + step, numberData.next())
         }
 
         and: "verify array creation"
-        Value<Number[]> numberValues = ArrayScrambler.incrementArray(start, step, count)
+        Data<Number[]> dataNumbers = ArrayScrambler.incrementArray(start, step, count)
         for (int i = 0; i < 5; i++) {
-            Number[] values = numberValues.next()
-            Assert.assertNotNull(values)
-            Assert.assertTrue(values.length > 0)
+            Number[] data = dataNumbers.next()
+            Assert.assertNotNull(data)
+            Assert.assertTrue(data.length > 0)
             if (count != null) {
-                Assert.assertEquals(count, values.length)
+                Assert.assertEquals(count, data.length)
             }
-            Assert.assertEquals(start, values[0])
-            for (int j = 1; j < values.length; j++) {
-                Assert.assertEquals(start + step, values[j])
-                start = values[j]
+            Assert.assertEquals(start, data[0])
+            for (int j = 1; j < data.length; j++) {
+                Assert.assertEquals(start + step, data[j])
+                start = data[j]
             }
             start += step;
         }
@@ -46,29 +46,29 @@ class IncrementalTest extends Specification {
         count << [5, 3, null, 10, 20, null]
     }
 
-    void 'verify incremental float values'(Float start, Float step, Integer count) {
+    void 'verify incremental float data'(Float start, Float step, Integer count) {
         given:
-        Value<Float> numberValue = NumberScrambler.increment(start, step)
+        Data<Float> dataNumber = NumberScrambler.increment(start, step)
 
         expect:
-        numberValue.get() == start
+        dataNumber.get() == start
         for (int i = 0; i < 5; i++) {
-            Assert.assertEquals((float) numberValue.get() + step, numberValue.next(), 0.0f)
+            Assert.assertEquals((float) dataNumber.get() + step, dataNumber.next(), 0.0f)
         }
 
         and: "verify array creation"
-        Value<Float[]> numberValues = ArrayScrambler.incrementArray(start, step, count)
+        Data<Float[]> data = ArrayScrambler.incrementArray(start, step, count)
         for (int i = 0; i < 5; i++) {
-            Float[] values = numberValues.next()
-            Assert.assertNotNull(values)
-            Assert.assertTrue(values.length > 0)
+            Float[] floats = data.next()
+            Assert.assertNotNull(floats)
+            Assert.assertTrue(floats.length > 0)
             if (count != null) {
-                Assert.assertEquals(count, values.length)
+                Assert.assertEquals(count, floats.length)
             }
-            Assert.assertEquals(start, values[0], 0.00001f)
-            for (int j = 1; j < values.length; j++) {
-                Assert.assertEquals(start + step, values[j], 0.00001f)
-                start = values[j]
+            Assert.assertEquals(start, floats[0], 0.00001f)
+            for (int j = 1; j < floats.length; j++) {
+                Assert.assertEquals(start + step, floats[j], 0.00001f)
+                start = floats[j]
             }
             start += step;
         }
@@ -79,29 +79,29 @@ class IncrementalTest extends Specification {
         count << [5, null,]
     }
 
-    void 'verify incremental double values'(Double start, Double step, Integer count) {
+    void 'verify incremental double data'(Double start, Double step, Integer count) {
         given:
-        Value<Double> numberValue = NumberScrambler.increment(start, step)
+        Data<Double> numberData = NumberScrambler.increment(start, step)
 
         expect:
-        numberValue.get() == start
+        numberData.get() == start
         for (int i = 0; i < 5; i++) {
-            Assert.assertEquals(numberValue.get() + step, numberValue.next(), 0.0)
+            Assert.assertEquals(numberData.get() + step, numberData.next(), 0.0)
         }
 
         and: "verify array creation"
-        Value<Double[]> numberValues = ArrayScrambler.incrementArray(start, step, count)
+        Data<Double[]> data = ArrayScrambler.incrementArray(start, step, count)
         for (int i = 0; i < 5; i++) {
-            Double[] values = numberValues.next()
-            Assert.assertNotNull(values)
-            Assert.assertTrue(values.length > 0)
+            Double[] doubles = data.next()
+            Assert.assertNotNull(doubles)
+            Assert.assertTrue(doubles.length > 0)
             if (count != null) {
-                Assert.assertEquals(count, values.length)
+                Assert.assertEquals(count, doubles.length)
             }
-            Assert.assertEquals(start, values[0], 0.0)
-            for (int j = 1; j < values.length; j++) {
-                Assert.assertEquals(start + step, values[j], 0.0)
-                start = values[j]
+            Assert.assertEquals(start, doubles[0], 0.0)
+            for (int j = 1; j < doubles.length; j++) {
+                Assert.assertEquals(start + step, doubles[j], 0.0)
+                start = doubles[j]
             }
             start += step;
         }
@@ -114,19 +114,19 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental primitives generation'(Class type, Number start, Number step, Integer count) {
         given:
-        Value numberValues = ArrayScrambler.incrementArray(type, start, step, count)
+        Data numberData = ArrayScrambler.incrementArray(type, start, step, count)
 
         expect:
         for (int i = 0; i < 5; i++) {
-            final values = numberValues.next()
-            Assert.assertNotNull(values)
-            Assert.assertTrue(values.length > 0)
+            final data = numberData.next()
+            Assert.assertNotNull(data)
+            Assert.assertTrue(data.length > 0)
             if (count != null) {
-                Assert.assertEquals(count, values.length)
+                Assert.assertEquals(count, data.length)
             }
-            checkEqual(start, values[0])
-            for (int j = 1; j < values.length; j++) {
-                final val = values[j]
+            checkEqual(start, data[0])
+            for (int j = 1; j < data.length; j++) {
+                final val = data[j]
                 checkEqual(start + step, val)
                 start = val
             }
@@ -162,7 +162,7 @@ class IncrementalTest extends Specification {
         5 == DateScrambler.incrementArray(new Date(), [(Calendar.MINUTE): 2, (Calendar.HOUR): 1], 5).next().length
 
         and: "verify in a loop"
-        final Value<Date> incrementalDate = DateScrambler.increment(date, calendarField, step)
+        final Data<Date> incrementalDate = DateScrambler.increment(date, calendarField, step)
         for (int i = 0; i < 5; i++) {
             final nextDate = incrementalDate.next()
             Assert.assertTrue(date.before(nextDate))
@@ -174,24 +174,24 @@ class IncrementalTest extends Specification {
         step << [1, 1, 1, 1,]
     }
 
-    void 'verify string incremental'(String defaultValue, String pattern, Integer index) {
+    void 'verify string incremental'(String data, String pattern, Integer index) {
         expect:
-        defaultValue != StringScrambler.increment(defaultValue).next()
-        defaultValue != StringScrambler.increment(defaultValue, pattern).next()
-        defaultValue != StringScrambler.increment(defaultValue, pattern, index).next()
+        data != StringScrambler.increment(data).next()
+        data != StringScrambler.increment(data, pattern).next()
+        data != StringScrambler.increment(data, pattern, index).next()
 
-        5 == StringScrambler.incrementArray(defaultValue, 5).next().length
-        5 == StringScrambler.incrementArray(defaultValue, pattern, 5).next().length
-        5 == StringScrambler.incrementArray(defaultValue, pattern, index, 5).next().length
+        5 == StringScrambler.incrementArray(data, 5).next().length
+        5 == StringScrambler.incrementArray(data, pattern, 5).next().length
+        5 == StringScrambler.incrementArray(data, pattern, index, 5).next().length
 
         and: "verify in a loop"
-        final incrementalString = StringScrambler.increment(defaultValue, pattern, index)
+        final incrementalString = StringScrambler.increment(data, pattern, index)
         for (int i = 0; i < 5; i++) {
-            Assert.assertNotEquals(defaultValue, incrementalString.next())
+            Assert.assertNotEquals(data, incrementalString.next())
         }
 
         where:
-        defaultValue << ["Attempt N", "Test string ", "I would like ", "I would like to take ",]
+        data << ["Attempt N", "Test string ", "I would like ", "I would like to take ",]
         pattern << ["%s%d", "%s%d", "%s%d candies", "%s%d day offs",]
         index << [1, 1, 1, 1,]
     }

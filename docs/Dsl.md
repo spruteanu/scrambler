@@ -1,11 +1,11 @@
 ## Groovy scripting capabilities
 Data Scrambler API is 100% implemented in Java. Itself Java is a great language, but there are a lot of 
 ceremonies in coding that sometimes makes it boring. New generation languages like Groovy/Scala are less verbose/makes 
-coding easier, and DataScrambler API uses Groovy capabilities to make value definitions/data generation process easier.
+coding easier, and DataScrambler API uses Groovy capabilities to make data definitions/data generation process easier.
 
 ### DataScrambler DSL
 On top of DataScrambler generation API a DSL is defined that adds generation capabilities to Java objects. 
-As result, value definitions process is less verbose, and definitions are easy for reading/writing.
+As result, data definitions process is less verbose, and definitions are easy for reading/writing.
 
 **DataScrambler DSL examples**:  
 ```groovy
@@ -58,7 +58,7 @@ int.arrayOf(1.random())
 
 ### Definitions scripts
 
-**Example of values definition**  
+**Example of datas definition**  
 ```groovy
 
 definition(Integer.random(1, 100))
@@ -79,7 +79,7 @@ import org.prismus.scrambler.beans.Address
 import org.prismus.scrambler.beans.ClassRoom
 import org.prismus.scrambler.beans.Person
 import org.prismus.scrambler.beans.School
-import org.prismus.scrambler.value.ReferenceValue
+import org.prismus.scrambler.data.ReferenceValue
 
 /**
  * School entities definition, with adequate address and person definitions
@@ -128,6 +128,6 @@ definition('rooms', [].of(InstanceScrambler.instanceOf(ClassRoom)
 ```
 
 ### IntelliJ IDEA IDE highlighting/context completion support
-DataScrambler API DSL support is defined in `org.prismus.scrambler.value.ValueDefinition.gdsl` and it is included in final jar. 
+DataScrambler API DSL support is defined in `org.prismus.scrambler.data.ValueDefinition.gdsl` and it is included in final jar. 
 IntelliJ IDEA IDE will detect the definition automatically and will provide DSL methods highlighting and 
 context support code/type completion.

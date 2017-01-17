@@ -7,7 +7,7 @@ import java.util.UUID;
  *
  * @author Serge Pruteanu
  */
-public class RandomUuid extends Constant<String> {
+public class RandomUuid extends ConstantData<String> {
 
     @Override
     protected String doNext() {

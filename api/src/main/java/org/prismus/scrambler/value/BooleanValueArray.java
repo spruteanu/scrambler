@@ -21,7 +21,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-class BooleanValueArray extends Constant<boolean[]> {
+class BooleanValueArray extends ConstantData<boolean[]> {
     private Integer count;
     private BooleanArray instance;
     private boolean useInitialArray;

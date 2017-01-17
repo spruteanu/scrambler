@@ -18,7 +18,7 @@
 
 package org.prismus.scrambler;
 
-import org.prismus.scrambler.value.ArrayValue;
+import org.prismus.scrambler.value.ArrayData;
 import org.prismus.scrambler.value.IncrementalDate;
 import org.prismus.scrambler.value.RandomDate;
 
@@ -46,28 +46,28 @@ public class DateScrambler {
         return new IncrementalDate(self, calendarField, step);
     }
 
-    public static ArrayValue<Date> incrementArray(Date self, Integer step, Integer count) {
-        return new ArrayValue<Date>(Date.class, count, increment(self, step));
+    public static ArrayData<Date> incrementArray(Date self, Integer step, Integer count) {
+        return new ArrayData<Date>(Date.class, count, increment(self, step));
     }
 
     public static IncrementalDate increment(Date self, Map<Integer, Integer> calendarFieldStepMap) {
         return new IncrementalDate(self).incrementBy(calendarFieldStepMap);
     }
 
-    public static ArrayValue<Date> incrementArray(Date self, Map<Integer, Integer> calendarFieldStepMap, Integer count) {
-        return new ArrayValue<Date>(Date.class, count, increment(self, calendarFieldStepMap));
+    public static ArrayData<Date> incrementArray(Date self, Map<Integer, Integer> calendarFieldStepMap, Integer count) {
+        return new ArrayData<Date>(Date.class, count, increment(self, calendarFieldStepMap));
     }
 
-    public static ArrayValue<Date> incrementArray(Date self, Integer step, Integer calendarField, Integer count) {
-        return new ArrayValue<Date>(Date.class, count, increment(self, step, calendarField));
+    public static ArrayData<Date> incrementArray(Date self, Integer step, Integer calendarField, Integer count) {
+        return new ArrayData<Date>(Date.class, count, increment(self, step, calendarField));
     }
 
-    public static ArrayValue<Date> incrementArray(Date self, Integer count) {
-        return new ArrayValue<Date>(Date.class, count, increment(self));
+    public static ArrayData<Date> incrementArray(Date self, Integer count) {
+        return new ArrayData<Date>(Date.class, count, increment(self));
     }
 
-    public static ArrayValue<Date> arrayOf(Value<Date> value, Integer count) {
-        return new ArrayValue<Date>(Date.class, count, value);
+    public static ArrayData<Date> arrayOf(Data<Date> data, Integer count) {
+        return new ArrayData<Date>(Date.class, count, data);
     }
 
     public static RandomDate random(Date value) {
@@ -82,10 +82,10 @@ public class DateScrambler {
         return new RandomDate(self, minimum, maximum);
     }
 
-    public static ArrayValue<Date> randomArray(Date self, Date minimum, Date maximum, Integer count) {
+    public static ArrayData<Date> randomArray(Date self, Date minimum, Date maximum, Integer count) {
         final RandomDate randomDate = new RandomDate(self, minimum, maximum);
         randomDate.next();
-        return new ArrayValue<Date>(Date.class, count, randomDate);
+        return new ArrayData<Date>(Date.class, count, randomDate);
     }
 
 }

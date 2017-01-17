@@ -1,6 +1,6 @@
-import org.prismus.scrambler.Value
-import org.prismus.scrambler.value.Constant
-import org.prismus.scrambler.value.ReferenceValue
+import org.prismus.scrambler.Data
+import org.prismus.scrambler.value.ConstantData
+import org.prismus.scrambler.value.ReferenceData
 
 import java.util.zip.ZipFile
 
@@ -48,9 +48,9 @@ final firstNamePattern = ~/(?i)(?:first\s*Name)|(?:first)/
 definition(firstNamePattern, allFirstNames.randomOf())
 
 //middle Name
-definition(~/(?i)middle\w*/, new ReferenceValue(firstNamePattern) {
-    Value randomRange = Integer.random(1, 100)
-    Value randomMiddle = allFirstNames.randomOf()
+definition(~/(?i)middle\w*/, new ReferenceData(firstNamePattern) {
+    Data randomRange = Integer.random(1, 100)
+    Data randomMiddle = allFirstNames.randomOf()
 
     @Override
     protected Object doNext() {
@@ -66,7 +66,7 @@ definition(~/(?i)middle\w*/, new ReferenceValue(firstNamePattern) {
 definition(~/(?i)(?:last\s*Name)|(?:last)/, lastNames.randomOf())
 
 //gender
-definition(~/(?i)gender/, new ReferenceValue(firstNamePattern) {
+definition(~/(?i)gender/, new ReferenceData(firstNamePattern) {
     @Override
     protected Object doNext() {
         final firstName = super.doNext()
@@ -75,10 +75,10 @@ definition(~/(?i)gender/, new ReferenceValue(firstNamePattern) {
 })
 
 //dob
-definition(~/(?i)(?:\w*dob)|(?:\w*birth)/, new Constant() {
-    Value group1 = Integer.random(1, 12)
-    Value group2 = Integer.random(1, 31)
-    Value group3 = Integer.random(1920, 2015)
+definition(~/(?i)(?:\w*dob)|(?:\w*birth)/, new ConstantData() {
+    Data group1 = Integer.random(1, 12)
+    Data group2 = Integer.random(1, 31)
+    Data group3 = Integer.random(1920, 2015)
 
     @Override
     protected Object doNext() {
@@ -87,10 +87,10 @@ definition(~/(?i)(?:\w*dob)|(?:\w*birth)/, new Constant() {
 })
 
 //phone
-definition(~/(?i)\w*phone/, new Constant() {
-    Value group1 = Integer.random(100, 999)
-    Value group2 = Integer.random(100, 999)
-    Value group3 = Integer.random(1000, 9999)
+definition(~/(?i)\w*phone/, new ConstantData() {
+    Data group1 = Integer.random(100, 999)
+    Data group2 = Integer.random(100, 999)
+    Data group3 = Integer.random(1000, 9999)
 
     @Override
     protected Object doNext() {

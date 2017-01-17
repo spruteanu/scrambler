@@ -1,5 +1,5 @@
 /**
- * Example of value definition
+ * Example of data definition
  *
  * @author Serge Pruteanu
  */

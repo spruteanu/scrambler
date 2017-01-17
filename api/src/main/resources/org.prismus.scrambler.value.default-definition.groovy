@@ -15,13 +15,12 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-
-import org.prismus.scrambler.ValuePredicates
+import org.prismus.scrambler.DataPredicates
 import org.prismus.scrambler.value.IncrementalDate
-import org.prismus.scrambler.value.IncrementalTypeValue
-import org.prismus.scrambler.value.InstanceTypeValue
-import org.prismus.scrambler.value.InstanceValueTypePredicate
-import org.prismus.scrambler.value.RandomTypeValue
+import org.prismus.scrambler.value.IncrementalTypeData
+import org.prismus.scrambler.value.InstanceTypeData
+import org.prismus.scrambler.value.InstanceDataTypePredicate
+import org.prismus.scrambler.value.RandomTypeData
 import org.prismus.scrambler.value.RandomUuid
 
 /**
@@ -31,26 +30,26 @@ import org.prismus.scrambler.value.RandomUuid
  */
 
 // if property name contains 'created' and type is java.util.Date generate date in a range of 5 years till current date
-definition(ValuePredicates.matches(~/(?i).*created.*/, Date), new IncrementalTypeValue(
+definition(DataPredicates.matches(~/(?i).*created.*/, Date), new IncrementalTypeData(
         new IncrementalDate(new Date()).years(-5).next(), new Date()
 ))
 
 // if property name contains 'modified' and type is java.util.Date generate date in a range of one month till current date
-definition(ValuePredicates.matches(~/(?i).*modified.*/, Date), new IncrementalTypeValue(
+definition(DataPredicates.matches(~/(?i).*modified.*/, Date), new IncrementalTypeData(
         new IncrementalDate(new Date()).months(-1).next(), new Date()
 ))
 
 // if property ends with ID and is a Integer, and incremental Integer will be created starting from 1, step 1
-definition(ValuePredicates.matches(~/(?i).*id/, Integer), new IncrementalTypeValue(0))
+definition(DataPredicates.matches(~/(?i).*id/, Integer), new IncrementalTypeData(0))
 
 // if property ends with ID and is a Long, and incremental Long will be created starting from 100_000L, step 100L
-definition(ValuePredicates.matches(~/(?i).*id/, Long), new IncrementalTypeValue(99_999L, 100L))
+definition(DataPredicates.matches(~/(?i).*id/, Long), new IncrementalTypeData(99_999L, 100L))
 
 // if property ends with ID and is of type string, a random string will be generated
-definition(ValuePredicates.matches(~/(?i).*id/, String), new RandomUuid())
+definition(DataPredicates.matches(~/(?i).*id/, String), new RandomUuid())
 
 // anything that is not JDK object generate Instance value object
-definition(new InstanceValueTypePredicate(), new InstanceTypeValue())
+definition(new InstanceDataTypePredicate(), new InstanceTypeData())
 
 // anything else try to generate randomly (if supported)
-definition(ValuePredicates.isTypeOf(Object), new RandomTypeValue())
+definition(DataPredicates.isTypeOf(Object), new RandomTypeData())

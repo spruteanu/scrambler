@@ -7,7 +7,7 @@ import org.prismus.scrambler.DateScrambler
 import org.prismus.scrambler.NumberScrambler
 import org.prismus.scrambler.ObjectScrambler
 import org.prismus.scrambler.StringScrambler
-import org.prismus.scrambler.Value
+import org.prismus.scrambler.Data
 import spock.lang.Specification
 
 /**
@@ -21,7 +21,7 @@ class RandomTest extends Specification {
 
     void 'verify random number generation'(Number minimum, Number maximum, Integer count) {
         given:
-        Value<Number> randomNumber = NumberScrambler.random(minimum, maximum)
+        Data<Number> randomNumber = NumberScrambler.random(minimum, maximum)
 
         expect:
         null != NumberScrambler.random(maximum).next()
@@ -48,7 +48,7 @@ class RandomTest extends Specification {
 
     void 'verify random primitives generation'(Class type, Number minimum, Number maximum, Integer count) {
         given:
-        Value numberValues = NumberScrambler.randomArray(type, minimum, maximum, count)
+        Data numberValues = NumberScrambler.randomArray(type, minimum, maximum, count)
 
         expect:
         for (int i = 0; i < 5; i++) {
@@ -98,7 +98,7 @@ class RandomTest extends Specification {
         isBetween(minimum, maximum, DateScrambler.random(date, minimum, maximum).next())
 
         and: "verify in a loop"
-        final Value<Date[]> randomDate = DateScrambler.randomArray(date, minimum, maximum, count)
+        final Data<Date[]> randomDate = DateScrambler.randomArray(date, minimum, maximum, count)
         final Date[] dates = randomDate.next();
         if (count != null) {
             Assert.assertEquals(count, dates.length)

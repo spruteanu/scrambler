@@ -21,7 +21,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-public class RandomString extends Constant<String> {
+public class RandomString extends ConstantData<String> {
     private String template;
     private final java.util.Random random;
     private Integer count;

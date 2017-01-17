@@ -16,20 +16,31 @@
  * License along with this library.
  */
 
-package org.prismus.scrambler.value;
+package org.prismus.scrambler;
 
-import java.util.Random;
+import java.io.Serializable;
 
 /**
- * Value instance that returns randomly an element from provided {@code values} array
+ * An interface used to generate data.
  *
  * @author Serge Pruteanu
  */
-public class RandomElementValue<T> extends Constant<T> {
-    protected final Random random;
+public interface Data<T> extends Serializable, Cloneable {
 
-    public RandomElementValue() {
-        super();
-        random = new Random();
-    }
+    /**
+     * Generates value.
+     *
+     * @return an instance of object
+     */
+    T next();
+
+    /**
+     * Gets current generated value
+     *
+     * @return current value
+     */
+    T get();
+
+    Object clone() throws CloneNotSupportedException;
+
 }

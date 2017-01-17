@@ -1,8 +1,8 @@
 package org.prismus.scrambler.jdbc
 
 import groovy.transform.CompileStatic
-import org.prismus.scrambler.Value
-import org.prismus.scrambler.value.ValueDefinition
+import org.prismus.scrambler.Data
+import org.prismus.scrambler.value.DataDefinition
 
 import javax.sql.DataSource
 
@@ -64,7 +64,7 @@ class DatabaseBatchBuilder {
         return this
     }
 
-    ValueDefinition getDefinition() {
+    DataDefinition getDefinition() {
         return definition
     }
 
@@ -77,7 +77,7 @@ class DatabaseBatchBuilder {
         })
     }
 
-    Value<Map<String, Map<String, Object>>> build() {
+    Data<Map<String, Map<String, Object>>> build() {
         if (!tables) {
             throw new IllegalStateException('No tables are defined for build')
         }

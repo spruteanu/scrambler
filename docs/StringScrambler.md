@@ -19,4 +19,4 @@ System.out.println(Arrays.asList(StringScrambler.randomArray("My Random String 1
 
 ```
 
-![String generation classes](string-value-class-dgm.png)
+![String generation classes](string-data-class-dgm.png)

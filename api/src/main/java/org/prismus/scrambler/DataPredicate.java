@@ -24,10 +24,10 @@ package org.prismus.scrambler;
  *
  * @author Serge Pruteanu
  */
-public interface ValuePredicate {
+public interface DataPredicate {
 
     /**
-     * Match either property and/or value, used to identify if {@link Value} is applicable for provided arguments
+     * Match either property and/or value, used to identify if {@link Data} is applicable for provided arguments
      *
      * @param property property name to be matched
      * @param value value to be matched

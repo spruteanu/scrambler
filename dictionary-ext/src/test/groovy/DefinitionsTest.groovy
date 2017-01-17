@@ -1,5 +1,5 @@
 import org.prismus.scrambler.MapScrambler
-import org.prismus.scrambler.value.ValueDefinition
+import org.prismus.scrambler.value.DataDefinition
 import spock.lang.Specification
 
 /**
@@ -8,19 +8,19 @@ import spock.lang.Specification
 class DefinitionsTest extends Specification {
 
     void 'verify person definitions'() {
-        final definition = new ValueDefinition().usingDefinitions('/person-definition.groovy')
+        final definition = new DataDefinition().usingDefinitions('/person-definition.groovy')
         expect:
         definition.definitionMap.size() > 0
     }
 
     void 'verify address definitions'() {
-        final definition = new ValueDefinition().usingDefinitions('/address-definition.groovy')
+        final definition = new DataDefinition().usingDefinitions('/address-definition.groovy')
         expect:
         definition.definitionMap.size() > 0
     }
 
     void 'verify definitions scanning'() {
-        final definition = new ValueDefinition().usingLibraryDefinitions()
+        final definition = new DataDefinition().usingLibraryDefinitions()
         expect: 'verify definitions loaded'
         definition.definitionMap.size() > 0
 

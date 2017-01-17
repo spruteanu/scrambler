@@ -18,7 +18,7 @@
 
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.ValuePredicate;
+import org.prismus.scrambler.DataPredicate;
 
 import java.util.regex.Pattern;
 
@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
  *
  * @author Serge Pruteanu
  */
-public class PropertyPredicate implements ValuePredicate {
+public class PropertyPredicate implements DataPredicate {
     private String wildcardPattern;
     private Pattern pattern;
 

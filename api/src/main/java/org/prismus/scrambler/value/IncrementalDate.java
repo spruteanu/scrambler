@@ -26,7 +26,7 @@ import java.util.*;
  *
  * @author Serge Pruteanu
  */
-public class IncrementalDate extends Constant<Date> {
+public class IncrementalDate extends ConstantData<Date> {
     private static final int DEFAULT_STEP = 1;
     private static final int DEFAULT_CALENDAR_FIELD = Calendar.DATE;
 

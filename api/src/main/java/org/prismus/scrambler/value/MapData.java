@@ -18,50 +18,50 @@
 
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.Value;
+import org.prismus.scrambler.Data;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Value instance that allows to create a map of values using provided values strategy (@code keyValueMap)
+ * Data instance that allows to create a map of values using provided values strategy (@code keyValueMap)
  *
  * @author Serge Pruteanu
  */
-public class MapValue<K> extends Constant<Map<K, Object>> {
+public class MapData<K> extends ConstantData<Map<K, Object>> {
 
-    private Map<K, Value> keyValueMap = new LinkedHashMap<K, Value>();
+    private Map<K, Data> keyValueMap = new LinkedHashMap<K, Data>();
     private Class<Map> clazzType;
 
-    public MapValue() {
+    public MapData() {
         this(new LinkedHashMap<K, Object>());
     }
 
-    public MapValue(Map<K, Object> value) {
+    public MapData(Map<K, Object> value) {
         super(value);
     }
 
-    public MapValue(Map<K, Object> value, Map<K, Value> keyValueMap) {
+    public MapData(Map<K, Object> value, Map<K, Data> keyValueMap) {
         super(value);
         this.keyValueMap = keyValueMap;
     }
 
-    public MapValue(Class<Map> clazzType) {
+    public MapData(Class<Map> clazzType) {
         this(clazzType, null);
     }
 
-    public MapValue(Class<Map> clazzType, Map<K, Value> keyValueMap) {
+    public MapData(Class<Map> clazzType, Map<K, Data> keyValueMap) {
         super(null);
         this.clazzType = clazzType;
         this.keyValueMap = keyValueMap;
     }
 
-    public MapValue<K> of(K key, Value value) {
-        keyValueMap.put(key, value);
+    public MapData<K> of(K key, Data data) {
+        keyValueMap.put(key, data);
         return this;
     }
 
-    public MapValue<K> usingValueMap(Map<K, Value> keyValueMap) {
+    public MapData<K> usingValueMap(Map<K, Data> keyValueMap) {
         this.keyValueMap = keyValueMap;
         return this;
     }
@@ -69,7 +69,7 @@ public class MapValue<K> extends Constant<Map<K, Object>> {
     @Override
     protected Map<K, Object> doNext() {
         final Map<K, Object> kvMap = checkCreate();
-        for (Map.Entry<K, Value> entry : keyValueMap.entrySet()) {
+        for (Map.Entry<K, Data> entry : keyValueMap.entrySet()) {
             kvMap.put(entry.getKey(), entry.getValue().next());
         }
         return kvMap;
@@ -83,7 +83,7 @@ public class MapValue<K> extends Constant<Map<K, Object>> {
             clazzType = (Class<Map>) valueMap.getClass();
         }
         if (clazzType == null) {
-            throw new RuntimeException(String.format("Value map type is undefined, either clazzType or value map instance: %s should be provided", valueMap));
+            throw new RuntimeException(String.format("Data map type is undefined, either clazzType or value map instance: %s should be provided", valueMap));
         }
         valueMap = (Map<K, Object>) Util.createInstance(clazzType, new Object[]{});
         return valueMap;

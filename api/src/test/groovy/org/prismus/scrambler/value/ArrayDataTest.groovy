@@ -5,10 +5,10 @@ import spock.lang.Specification
 /**
  * @author Serge Pruteanu
  */
-class ArrayValueTest extends Specification {
+class ArrayDataTest extends Specification {
 
     void 'test array creation'() {
-        GroovyValueDefinition.register()
+        GroovyDataDefinition.register()
         given:
         def value = int.arrayOf(10.random(), null)
         def array = value.next()

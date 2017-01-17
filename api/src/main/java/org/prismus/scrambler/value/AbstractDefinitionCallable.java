@@ -26,21 +26,21 @@ import java.util.concurrent.Callable;
  *
  * @author Serge Pruteanu
  */
-public abstract class AbstractDefinitionCallable implements Callable<ValueDefinition> {
-    private ValueDefinition definition;
+public abstract class AbstractDefinitionCallable implements Callable<DataDefinition> {
+    private DataDefinition definition;
 
     public AbstractDefinitionCallable() {
     }
 
-    public AbstractDefinitionCallable(ValueDefinition definition) {
+    public AbstractDefinitionCallable(DataDefinition definition) {
         this.definition = definition;
     }
 
-    public ValueDefinition getDefinition() {
+    public DataDefinition getDefinition() {
         return definition;
     }
 
-    public void setDefinition(ValueDefinition definition) {
+    public void setDefinition(DataDefinition definition) {
         this.definition = definition;
     }
 }

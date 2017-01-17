@@ -8,7 +8,7 @@ public class CreateObjectTest {
 
     @Test
     public void createObjectOrphanGetter() {
-        InstanceValue<Car> items = InstanceScrambler.instanceOf(Car.class);
+        InstanceData<Car> items = InstanceScrambler.instanceOf(Car.class);
         Car car = items.next();
         System.out.println(car.getWheelSize());
     }

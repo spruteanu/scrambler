@@ -18,22 +18,22 @@
 
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.Value;
+import org.prismus.scrambler.Data;
 
 /**
- * Value instance that represents a constant. Methods get/next will return same value. Also, class can be
- * used for developing custom implementations by overriding method {@link Constant#doNext()},
+ * Data instance that represents a constant. Methods get/next will return same value. Also, class can be
+ * used for developing custom implementations by overriding method {@link ConstantData#doNext()},
  * as next will store generated value
  * 
  * @author Serge Pruteanu
  */
-public class Constant<T> implements Value<T> {
+public class ConstantData<T> implements Data<T> {
     protected transient T value;
 
-    public Constant() {
+    public ConstantData() {
     }
 
-    public Constant(T value) {
+    public ConstantData(T value) {
         this.value = value;
     }
 
@@ -41,7 +41,7 @@ public class Constant<T> implements Value<T> {
         this.value = value;
     }
 
-    public Constant<T> usingValue(T value) {
+    public ConstantData<T> usingValue(T value) {
         this.value = value;
         return this;
     }

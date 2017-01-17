@@ -18,7 +18,7 @@
 
 package org.prismus.scrambler;
 
-import org.prismus.scrambler.value.CollectionValue;
+import org.prismus.scrambler.value.CollectionData;
 import org.prismus.scrambler.value.Combinations;
 import org.prismus.scrambler.value.ListRandomElement;
 
@@ -36,32 +36,32 @@ public class CollectionScrambler {
     //------------------------------------------------------------------------------------------------------------------
     // Collection methods
     //------------------------------------------------------------------------------------------------------------------
-    public static <V, T extends Collection<V>> CollectionValue<V, T> of(T collection, Value<V> value) {
-        return of(collection, value, null);
+    public static <V, T extends Collection<V>> CollectionData<V, T> of(T collection, Data<V> data) {
+        return of(collection, data, null);
     }
 
-    public static <V, T extends Collection<V>> CollectionValue<V, T> of(T collection, Value<V> value, Integer count) {
-        return new CollectionValue<V, T>(collection, value, count);
+    public static <V, T extends Collection<V>> CollectionData<V, T> of(T collection, Data<V> data, Integer count) {
+        return new CollectionData<V, T>(collection, data, count);
     }
 
-    public static <T> Value<T> randomOf(List<T> values) {
+    public static <T> Data<T> randomOf(List<T> values) {
         return new ListRandomElement<T>(values);
     }
 
-    public static <T> Value<T> randomOf(Collection<T> collection) {
+    public static <T> Data<T> randomOf(Collection<T> collection) {
         return new ListRandomElement<T>(new ArrayList<T>(collection));
     }
 
-    public static <V, T extends Collection<V>> CollectionValue<V, T> collectionOf(Class<T> clazzType, Value<V> value) {
-        return new CollectionValue<V, T>(clazzType, value, null);
+    public static <V, T extends Collection<V>> CollectionData<V, T> collectionOf(Class<T> clazzType, Data<V> data) {
+        return new CollectionData<V, T>(clazzType, data, null);
     }
 
-    public static <T> Value<List<T>> combinationsOf(List<T> values) {
-        return Combinations.of(values);
+    public static <T> Data<List<T>> combinationsOf(List<T> dataList) {
+        return Combinations.of(dataList);
     }
 
-    public static <T> Value<List<T>> combinationValues(List<Value<T>> values) {
-        return Combinations.valuesOf(values);
+    public static <T> Data<List<T>> combinationValues(List<Data<T>> datas) {
+        return Combinations.valuesOf(datas);
     }
 
 }

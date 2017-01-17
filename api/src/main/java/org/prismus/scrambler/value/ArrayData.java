@@ -18,46 +18,46 @@
 
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.Value;
+import org.prismus.scrambler.Data;
 
 import java.lang.reflect.Array;
 
 /**
- * Value instance that allows to create an array of values using provided value instance strategy (@code instance)
+ * Data instance that allows to create an array of values using provided value instance strategy (@code instance)
  *
  * @author Serge Pruteanu
  */
-public class ArrayValue<T> extends Constant<T[]> {
+public class ArrayData<T> extends ConstantData<T[]> {
     private Integer count;
-    private Value<T> instance;
+    private Data<T> instance;
     private Class<T> valueType;
 
-    public ArrayValue() {
+    public ArrayData() {
     }
 
-    public ArrayValue(T[] array, Value<T> value) {
-        this(array, null, value);
+    public ArrayData(T[] array, Data<T> data) {
+        this(array, null, data);
     }
 
-    public ArrayValue(Class<T> valueType, Value<T> value) {
-        this(valueType, null, value);
+    public ArrayData(Class<T> valueType, Data<T> data) {
+        this(valueType, null, data);
     }
 
-    public ArrayValue(T[] array, Integer count, Value<T> value1) {
+    public ArrayData(T[] array, Integer count, Data<T> data1) {
         super(array);
         this.count = count != null ? count : array != null ? array.length : null;
-        this.instance = value1;
+        this.instance = data1;
     }
 
-    public ArrayValue(Class<T> valueType, Integer count, Value<T> value1) {
+    public ArrayData(Class<T> valueType, Integer count, Data<T> data1) {
         super(null);
         this.valueType = valueType;
         this.count = count;
-        this.instance = value1;
+        this.instance = data1;
     }
 
     @SuppressWarnings("unchecked")
-    public ArrayValue forType(Class<T> valueType) {
+    public ArrayData forType(Class<T> valueType) {
         this.valueType = valueType.isArray() ? (Class<T>) valueType.getComponentType() : valueType;
         return this;
     }
@@ -104,11 +104,11 @@ public class ArrayValue<T> extends Constant<T[]> {
         this.count = count;
     }
 
-    public Value getInstance() {
+    public Data getInstance() {
         return instance;
     }
 
-    public void setInstance(Value<T> instance) {
+    public void setInstance(Data<T> instance) {
         this.instance = instance;
     }
 

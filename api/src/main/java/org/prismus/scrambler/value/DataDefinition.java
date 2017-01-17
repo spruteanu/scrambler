@@ -18,9 +18,9 @@
 
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.Value;
-import org.prismus.scrambler.ValuePredicate;
-import org.prismus.scrambler.ValuePredicates;
+import org.prismus.scrambler.Data;
+import org.prismus.scrambler.DataPredicate;
+import org.prismus.scrambler.DataPredicates;
 
 import java.io.*;
 import java.net.URL;
@@ -31,48 +31,48 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
 /**
- * Value definitions dictionary/builder class. Responsible for building predicates/values key/value pairs
+ * Data definitions dictionary/builder class. Responsible for building predicates/values key/value pairs
  *
  * @author Serge Pruteanu
  */
 @SuppressWarnings("unchecked")
-public class ValueDefinition implements Cloneable {
+public class DataDefinition implements Cloneable {
     private static final String JAR_SUFFIX = ".jar";
     public static final String DEFINITION_SCRIPT_SUFFIX = "-definition.groovy";
     public static final String DEFAULT_DEFINITIONS_RESOURCE = "/org.prismus.scrambler.value.default-definition.groovy";
     public static final String META_INF_ANCHOR = "META-INF/dictionary.desc";
     public static final String WILDCARD_STRING = "*";
 
-    private ValueDefinition parent;
+    private DataDefinition parent;
 
-    private Map<ValuePredicate, Value> definitionMap = new LinkedHashMap<ValuePredicate, Value>();
-    private Map<ValuePredicate, InstanceValue> instanceValueMap = new LinkedHashMap<ValuePredicate, InstanceValue>();
+    private Map<DataPredicate, Data> definitionMap = new LinkedHashMap<DataPredicate, Data>();
+    private Map<DataPredicate, InstanceData> instanceDataMap = new LinkedHashMap<DataPredicate, InstanceData>();
     private Map<String, Object> contextMap = new LinkedHashMap<String, Object>();
 
-    public ValueDefinition() {
+    public DataDefinition() {
     }
 
-    public ValueDefinition(Map<Object, Value> definitionMap) {
+    public DataDefinition(Map<Object, Data> definitionMap) {
         definition((Map) definitionMap);
     }
 
-    public void setParent(ValueDefinition parent) {
+    public void setParent(DataDefinition parent) {
         this.parent = parent;
     }
 
-    public Map<ValuePredicate, Value> getDefinitionMap() {
+    public Map<DataPredicate, Data> getDefinitionMap() {
         return definitionMap;
     }
 
-    ValueDefinition clearInternals() {
-        instanceValueMap.clear();
-        final Set<ValuePredicate> removedSet = new LinkedHashSet<ValuePredicate>();
-        for (ValuePredicate predicate : definitionMap.keySet()) {
+    DataDefinition clearInternals() {
+        instanceDataMap.clear();
+        final Set<DataPredicate> removedSet = new LinkedHashSet<DataPredicate>();
+        for (DataPredicate predicate : definitionMap.keySet()) {
             if (predicate instanceof InstanceFieldPredicate) {
                 removedSet.add(predicate);
             }
         }
-        for (ValuePredicate predicate : removedSet) {
+        for (DataPredicate predicate : removedSet) {
             definitionMap.remove(predicate);
         }
         if (parent != null) {
@@ -84,21 +84,21 @@ public class ValueDefinition implements Cloneable {
     //------------------------------------------------------------------------------------------------------------------
     // Definitions Builder Methods
     //------------------------------------------------------------------------------------------------------------------
-    public ValueDefinition definition(Value value) {
-        Util.checkNullValue(value);
-        final Object value1 = value.get();
+    public DataDefinition definition(Data data) {
+        Util.checkNullValue(data);
+        final Object value1 = data.get();
         Util.checkNullValue(value1);
-        registerPredicateValue(ValuePredicates.isTypeOf(value1.getClass()), value);
+        registerDataPredicate(DataPredicates.isTypeOf(value1.getClass()), data);
         return this;
     }
 
-    public ValueDefinition definition(InstanceValue value) {
+    public DataDefinition definition(InstanceData value) {
         Util.checkNullValue(value);
-        registerPredicateValue(new TypePredicate((Class) value.lookupType()), value);
+        registerDataPredicate(new TypePredicate((Class) value.lookupType()), value);
         return this;
     }
 
-    public ValueDefinition definition(Map<Object, Object> props) {
+    public DataDefinition definition(Map<Object, Object> props) {
         Util.checkNullValue(props);
         for (final Map.Entry entry : props.entrySet()) {
             final Object key = entry.getKey();
@@ -106,219 +106,219 @@ public class ValueDefinition implements Cloneable {
 
             final Object value = entry.getValue();
             if (String.class.isInstance(key)) {
-                if (value instanceof Value) {
-                    definition((String) key, (Value) value);
+                if (value instanceof Data) {
+                    definition((String) key, (Data) value);
                 } else {
                     definition((String) key, value);
                 }
             } else if (Pattern.class.isInstance(key)) {
-                if (value instanceof Value) {
-                    definition(new PropertyPredicate((Pattern) key), (Value) value);
+                if (value instanceof Data) {
+                    definition(new PropertyPredicate((Pattern) key), (Data) value);
                 } else {
                     definition(new PropertyPredicate((Pattern) key), value);
                 }
             } else if (key instanceof Class) {
-                if (value instanceof Value) {
-                    definition((Class) key, (Value) value);
+                if (value instanceof Data) {
+                    definition((Class) key, (Data) value);
                 } else {
                     definition((Class) key, value);
                 }
-            } else if (ValuePredicate.class.isInstance(key)) {
-                if (value instanceof Value) {
-                    definition((ValuePredicate) key, (Value) value);
+            } else if (DataPredicate.class.isInstance(key)) {
+                if (value instanceof Data) {
+                    definition((DataPredicate) key, (Data) value);
                 } else {
-                    definition((ValuePredicate) key, value);
+                    definition((DataPredicate) key, value);
                 }
             } else {
-                throw new IllegalArgumentException(String.format("Key should be of following types: [String, Class, ValuePredicate]; passed map: %s", props));
+                throw new IllegalArgumentException(String.format("Key should be of following types: [String, Class, DataPredicate]; passed map: %s", props));
             }
         }
         return this;
     }
 
-    public ValueDefinition constant(Object value) {
+    public DataDefinition constant(Object value) {
         Util.checkNullValue(value);
-        registerPredicateValue(ValuePredicates.isTypeOf(value.getClass()), new Constant(value));
+        registerDataPredicate(DataPredicates.isTypeOf(value.getClass()), new ConstantData(value));
         return this;
     }
 
-    public ValueDefinition constant(String propertyName, Object value) {
+    public DataDefinition constant(String propertyName, Object value) {
         Util.checkNullValue(value);
-        registerPredicateValue(ValuePredicates.matchProperty(propertyName), new Constant(value));
+        registerDataPredicate(DataPredicates.matchProperty(propertyName), new ConstantData(value));
         return this;
     }
 
-    public ValueDefinition constant(Map<Object, Object> props) {
+    public DataDefinition constant(Map<Object, Object> props) {
         Util.checkNullValue(props);
         for (final Map.Entry entry : props.entrySet()) {
             final Object key = entry.getKey();
             Util.checkNullValue(key);
 
             final Object value = entry.getValue();
-            if (Value.class.isInstance(value)) {
-                throw new IllegalArgumentException(String.format("Constant values can't be of Value type; passed map: %s", props));
+            if (Data.class.isInstance(value)) {
+                throw new IllegalArgumentException(String.format("ConstantData values can't be of Data type; passed map: %s", props));
             }
             if (String.class.isInstance(key)) {
-                definition((String) key, new Constant(value));
+                definition((String) key, new ConstantData(value));
             } else if (key instanceof Class) {
-                definition((Class) key, new Constant(value));
-            } else if (ValuePredicate.class.isInstance(key)) {
-                definition((ValuePredicate) key, new Constant(value));
+                definition((Class) key, new ConstantData(value));
+            } else if (DataPredicate.class.isInstance(key)) {
+                definition((DataPredicate) key, new ConstantData(value));
             } else {
-                throw new IllegalArgumentException(String.format("Key should be of following types: [String, Class, ValuePredicate]; passed map: %s", props));
+                throw new IllegalArgumentException(String.format("Key should be of following types: [String, Class, DataPredicate]; passed map: %s", props));
             }
         }
         return this;
     }
 
-    public ValueDefinition definition(String propertyName, Object value) {
-        registerPredicateValue(ValuePredicates.matchProperty(propertyName), new Constant(value));
+    public DataDefinition definition(String propertyName, Object value) {
+        registerDataPredicate(DataPredicates.matchProperty(propertyName), new ConstantData(value));
         return this;
     }
 
-    public ValueDefinition definition(Pattern pattern, Object value) {
-        registerPredicateValue(PropertyPredicate.of(pattern), new Constant(value));
+    public DataDefinition definition(Pattern pattern, Object value) {
+        registerDataPredicate(PropertyPredicate.of(pattern), new ConstantData(value));
         return this;
     }
 
-    public ValueDefinition definition(Class type, Object value) {
+    public DataDefinition definition(Class type, Object value) {
         Util.checkNullValue(type);
-        registerPredicateValue(ValuePredicates.isTypeOf(type), new Constant(value));
+        registerDataPredicate(DataPredicates.isTypeOf(type), new ConstantData(value));
         return this;
     }
 
-    public ValueDefinition definition(String propertyName, Value value) {
-        Util.checkNullValue(value);
-        if (value instanceof ReferenceValue) {
-            ((ReferenceValue) value).setDefinition(this);
+    public DataDefinition definition(String propertyName, Data data) {
+        Util.checkNullValue(data);
+        if (data instanceof ReferenceData) {
+            ((ReferenceData) data).setDefinition(this);
         }
-        registerPredicateValue(ValuePredicates.matchProperty(propertyName), value);
+        registerDataPredicate(DataPredicates.matchProperty(propertyName), data);
         return this;
     }
 
-    public ValueDefinition definition(Pattern pattern, Value value) {
-        Util.checkNullValue(value);
-        if (value instanceof ReferenceValue) {
-            ((ReferenceValue) value).setDefinition(this);
+    public DataDefinition definition(Pattern pattern, Data data) {
+        Util.checkNullValue(data);
+        if (data instanceof ReferenceData) {
+            ((ReferenceData) data).setDefinition(this);
         }
-        registerPredicateValue(PropertyPredicate.of(pattern), value);
+        registerDataPredicate(PropertyPredicate.of(pattern), data);
         return this;
     }
 
-    public ValueDefinition definition(Class type, Value value) {
+    public DataDefinition definition(Class type, Data data) {
         Util.checkNullValue(type);
-        Util.checkNullValue(value);
-        registerPredicateValue(ValuePredicates.isTypeOf(type), value);
+        Util.checkNullValue(data);
+        registerDataPredicate(DataPredicates.isTypeOf(type), data);
         return this;
     }
 
-    void lookupRegisterInstanceValue(ValuePredicate valuePredicate, Value value) {
-        if (InstanceValue.class.isInstance(value)) {
-            final InstanceValue instanceValue = (InstanceValue) value;
-            if (instanceValue.getDefinition() != this) {
-                instanceValueMap.put(valuePredicate, instanceValue);
+    void lookupRegisterInstanceValue(DataPredicate dataPredicate, Data data) {
+        if (InstanceData.class.isInstance(data)) {
+            final InstanceData instanceData = (InstanceData) data;
+            if (instanceData.getDefinition() != this) {
+                instanceDataMap.put(dataPredicate, instanceData);
             }
-        } else if (CollectionValue.class.isInstance(value)) {
-            lookupRegisterInstanceValue(valuePredicate, ((CollectionValue) value).getInstance());
-        } else if (value instanceof ArrayValue) {
-            lookupRegisterInstanceValue(valuePredicate, ((ArrayValue) value).getInstance());
+        } else if (CollectionData.class.isInstance(data)) {
+            lookupRegisterInstanceValue(dataPredicate, ((CollectionData) data).getInstance());
+        } else if (data instanceof ArrayData) {
+            lookupRegisterInstanceValue(dataPredicate, ((ArrayData) data).getInstance());
         }
     }
 
-    void registerPredicateValue(ValuePredicate valuePredicate, Value value) {
-        lookupRegisterInstanceValue(valuePredicate, value);
-        definitionMap.put(valuePredicate, value);
+    void registerDataPredicate(DataPredicate dataPredicate, Data data) {
+        lookupRegisterInstanceValue(dataPredicate, data);
+        definitionMap.put(dataPredicate, data);
     }
 
-    public ValueDefinition definition(ValuePredicate valuePredicate, Value value) {
-        Util.checkNullValue(valuePredicate);
-        Util.checkNullValue(value);
-        registerPredicateValue(valuePredicate, value);
+    public DataDefinition definition(DataPredicate dataPredicate, Data data) {
+        Util.checkNullValue(dataPredicate);
+        Util.checkNullValue(data);
+        registerDataPredicate(dataPredicate, data);
         return this;
     }
 
-    public ValueDefinition definition(ValuePredicate valuePredicate, Object value) {
-        Util.checkNullValue(valuePredicate);
-        registerPredicateValue(valuePredicate, new Constant(value));
+    public DataDefinition definition(DataPredicate dataPredicate, Object value) {
+        Util.checkNullValue(dataPredicate);
+        registerDataPredicate(dataPredicate, new ConstantData(value));
         return this;
     }
 
-    public ValueDefinition reference(Class type) {
+    public DataDefinition reference(Class type) {
         Util.checkNullValue(type);
-        final ValuePredicate predicate = ValuePredicates.isTypeOf(type);
-        registerPredicateValue(predicate, new ReferenceValue(this, predicate));
+        final DataPredicate predicate = DataPredicates.isTypeOf(type);
+        registerDataPredicate(predicate, new ReferenceData(this, predicate));
         return this;
     }
 
-    public ValueDefinition reference(Class type, String parentPredicate) {
-        reference(type, ValuePredicates.matchProperty(parentPredicate));
+    public DataDefinition reference(Class type, String parentPredicate) {
+        reference(type, DataPredicates.matchProperty(parentPredicate));
         return this;
     }
 
-    public ValueDefinition reference(Class type, Class parentPredicate) {
+    public DataDefinition reference(Class type, Class parentPredicate) {
         Util.checkNullValue(parentPredicate);
-        reference(type, ValuePredicates.isTypeOf(parentPredicate));
+        reference(type, DataPredicates.isTypeOf(parentPredicate));
         return this;
     }
 
-    public ValueDefinition reference(Class type, ValuePredicate parentPredicate) {
+    public DataDefinition reference(Class type, DataPredicate parentPredicate) {
         Util.checkNullValue(type);
-        final ValuePredicate predicate = ValuePredicates.isTypeOf(type);
-        registerPredicateValue(predicate, new ReferenceValue(this, parentPredicate));
+        final DataPredicate predicate = DataPredicates.isTypeOf(type);
+        registerDataPredicate(predicate, new ReferenceData(this, parentPredicate));
         return this;
     }
 
-    public ValueDefinition reference(String propertyName, Class parentPredicate) {
+    public DataDefinition reference(String propertyName, Class parentPredicate) {
         Util.checkNullValue(parentPredicate);
-        reference(ValuePredicates.matchProperty(propertyName), ValuePredicates.isTypeOf(parentPredicate));
+        reference(DataPredicates.matchProperty(propertyName), DataPredicates.isTypeOf(parentPredicate));
         return this;
     }
 
-    public ValueDefinition reference(Pattern pattern, Class parentPredicate) {
+    public DataDefinition reference(Pattern pattern, Class parentPredicate) {
         Util.checkNullValue(parentPredicate);
-        reference(PropertyPredicate.of(pattern), ValuePredicates.isTypeOf(parentPredicate));
+        reference(PropertyPredicate.of(pattern), DataPredicates.isTypeOf(parentPredicate));
         return this;
     }
 
-    public ValueDefinition reference(String propertyName) {
-        final ValuePredicate predicate = ValuePredicates.matchProperty(propertyName);
-        registerPredicateValue(predicate, new ReferenceValue(this, predicate));
+    public DataDefinition reference(String propertyName) {
+        final DataPredicate predicate = DataPredicates.matchProperty(propertyName);
+        registerDataPredicate(predicate, new ReferenceData(this, predicate));
         return this;
     }
 
-    public ValueDefinition reference(Pattern pattern) {
+    public DataDefinition reference(Pattern pattern) {
         final PropertyPredicate predicate = PropertyPredicate.of(pattern);
-        registerPredicateValue(predicate, new ReferenceValue(this, predicate));
+        registerDataPredicate(predicate, new ReferenceData(this, predicate));
         return this;
     }
 
-    public ValueDefinition reference(ValuePredicate valuePredicate, ValuePredicate parentPredicate) {
-        Util.checkNullValue(valuePredicate);
-        registerPredicateValue(valuePredicate, new ReferenceValue(this, parentPredicate));
+    public DataDefinition reference(DataPredicate dataPredicate, DataPredicate parentPredicate) {
+        Util.checkNullValue(dataPredicate);
+        registerDataPredicate(dataPredicate, new ReferenceData(this, parentPredicate));
         return this;
     }
 
-    public ValueDefinition usingDefinition(ValueDefinition definition) {
+    public DataDefinition usingDefinition(DataDefinition definition) {
         contextMap.putAll(definition.contextMap);
         return usingDefinitions(definition.getDefinitionMap());
     }
 
-    public ValueDefinition usingDefinitions(Map<ValuePredicate, Value> definitions) {
+    public DataDefinition usingDefinitions(Map<DataPredicate, Data> definitions) {
         definitionMap.putAll(definitions);
         return this;
     }
 
-    public ValueDefinition usingDefinitions(String... definitions) {
+    public DataDefinition usingDefinitions(String... definitions) {
         if (definitions != null) {
             for (String definition : definitions) {
-                GroovyValueDefinition.Holder.instance.parseDefinition(this, definition);
+                GroovyDataDefinition.Holder.instance.parseDefinition(this, definition);
             }
             build();
         }
         return this;
     }
 
-    public ValueDefinition scanDefinitions(List<String> definitions) {
+    public DataDefinition scanDefinitions(List<String> definitions) {
         int foundCount = 0;
         for (String definition : definitions) {
             final URL url = getClass().getResource(definition);
@@ -327,7 +327,7 @@ public class ValueDefinition implements Cloneable {
                     continue;
                 }
             } // not found resources filtered, parse definition
-            GroovyValueDefinition.Holder.instance.parseDefinition(this, definition);
+            GroovyDataDefinition.Holder.instance.parseDefinition(this, definition);
             foundCount++;
         }
         if (foundCount > 0) {
@@ -336,7 +336,7 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
-    public ValueDefinition scanDefinitions(String resource, String... resources) {
+    public DataDefinition scanDefinitions(String resource, String... resources) {
         final ArrayList<String> resourceList = new ArrayList<String>();
         resourceList.add(resource);
         if (resources != null) {
@@ -349,7 +349,7 @@ public class ValueDefinition implements Cloneable {
     /**
      * Scans and parses ALL library definitions
      */
-    public ValueDefinition usingLibraryDefinitions() {
+    public DataDefinition usingLibraryDefinitions() {
         return usingLibraryDefinitions(null, Holder.libraryDefinitionsCache);
     }
 
@@ -358,11 +358,11 @@ public class ValueDefinition implements Cloneable {
      *
      * @param definitionMatcher    wildcard or reg-ex to match library definitions for parsing
      */
-    public ValueDefinition usingLibraryDefinitions(String definitionMatcher) {
+    public DataDefinition usingLibraryDefinitions(String definitionMatcher) {
         return usingLibraryDefinitions(definitionMatcher, Holder.libraryDefinitionsCache);
     }
 
-    public ValueDefinition usingContext(Map<String, Object> contextMap) {
+    public DataDefinition usingContext(Map<String, Object> contextMap) {
         if (contextMap != null) {
             this.contextMap = contextMap;
         }
@@ -385,15 +385,15 @@ public class ValueDefinition implements Cloneable {
         return result;
     }
 
-    public Value lookupValue(ValuePredicate predicate) {
-        Value result = definitionMap.get(predicate);
+    public Data lookupValue(DataPredicate predicate) {
+        Data result = definitionMap.get(predicate);
         if (result == null && parent != null) {
             result = parent.lookupValue(predicate);
         }
         return result;
     }
 
-    public List<Value> lookupValues(Class type, Class... types) {
+    public List<Data> lookupValues(Class type, Class... types) {
         final ArrayList<Class> list = new ArrayList<Class>();
         list.add(type);
         if (types != null) {
@@ -402,8 +402,8 @@ public class ValueDefinition implements Cloneable {
         return lookupValues(list);
     }
 
-    public List<Value> lookupValues(List<Class> types) {
-        final ArrayList<Value> results = new ArrayList<Value>(types.size());
+    public List<Data> lookupValues(List<Class> types) {
+        final ArrayList<Data> results = new ArrayList<Data>(types.size());
         for (Class type : types) {
             results.add(lookupValue(null, type));
         }
@@ -414,46 +414,46 @@ public class ValueDefinition implements Cloneable {
         return definitionMap.isEmpty();
     }
 
-    public Value lookupValue(String property, Class type) {
+    public Data lookupValue(String property, Class type) {
         if (hasDefinitions()) {
             scanDefinitions(DEFAULT_DEFINITIONS_RESOURCE);
         }
-        Value value = null;
-        for (Map.Entry<ValuePredicate, Value> entry : definitionMap.entrySet()) {
+        Data data = null;
+        for (Map.Entry<DataPredicate, Data> entry : definitionMap.entrySet()) {
             if (!isIterableOrMap(type) && entry.getKey().apply(property, type)) {
-                value = entry.getValue();
+                data = entry.getValue();
                 break;
             }
         }
-        if (value instanceof InstanceTypeValue) {
-            value = ((InstanceTypeValue) value).next(type);
-        } else if (value instanceof RandomTypeValue) {
-            value = ((RandomTypeValue) value).next(type);
-        } else if (value instanceof IncrementalTypeValue) {
-            value = ((IncrementalTypeValue) value).next(type);
+        if (data instanceof InstanceTypeData) {
+            data = ((InstanceTypeData) data).next(type);
+        } else if (data instanceof RandomTypeData) {
+            data = ((RandomTypeData) data).next(type);
+        } else if (data instanceof IncrementalTypeData) {
+            data = ((IncrementalTypeData) data).next(type);
         }
-        if (value == null && parent != null) {
+        if (data == null && parent != null) {
             parent.lookupValue(property, type);
         }
-        return value;
+        return data;
     }
 
-    public ValueDefinition getValueDefinition() {
+    public DataDefinition getValueDefinition() {
         return this;
     }
 
     //------------------------------------------------------------------------------------------------------------------
     // Internal Methods
     //------------------------------------------------------------------------------------------------------------------
-    protected ValueDefinition build() {
-        for (final InstanceValue value : instanceValueMap.values()) {
+    protected DataDefinition build() {
+        for (final InstanceData value : instanceDataMap.values()) {
             value.build(this);
         }
         return this;
     }
 
-    ValueDefinition usingLibraryDefinitions(String definitionMatcher, Set<String> foundResources) {
-        final List<String> matchedResources = matchValueDefinitions(definitionMatcher, foundResources);
+    DataDefinition usingLibraryDefinitions(String definitionMatcher, Set<String> foundResources) {
+        final List<String> matchedResources = matchDefinitions(definitionMatcher, foundResources);
         String jarFileName = null;
         JarFile jarFile = null;
         for (String matchedResource : matchedResources) {
@@ -474,7 +474,7 @@ public class ValueDefinition implements Cloneable {
                     inputStream = new FileInputStream(definitionSource);
                 }
                 try {
-                    GroovyValueDefinition.Holder.instance.parseDefinition(this, inputStream);
+                    GroovyDataDefinition.Holder.instance.parseDefinition(this, inputStream);
                 } finally {
                     try { inputStream.close(); } catch (IOException ignore) { }
                 }
@@ -486,7 +486,7 @@ public class ValueDefinition implements Cloneable {
         return this;
     }
 
-    static List<String> matchValueDefinitions(String definitionMatcher, Set<String> definitionsCache) {
+    static List<String> matchDefinitions(String definitionMatcher, Set<String> definitionsCache) {
         String wildcardPattern;
         if (definitionMatcher == null || (!definitionMatcher.contains(WILDCARD_STRING))) {
             wildcardPattern = WILDCARD_STRING;

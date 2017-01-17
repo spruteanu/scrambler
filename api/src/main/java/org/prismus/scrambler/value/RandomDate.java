@@ -18,7 +18,7 @@
 
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.Value;
+import org.prismus.scrambler.Data;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -29,7 +29,7 @@ import java.util.Date;
 public class RandomDate extends AbstractRandomRange<Date> {
 
     private final RandomLong randomLong;
-    private Value<Date> dateValue;
+    private Data<Date> dateData;
 
     public RandomDate() {
         this(null, null, null);
@@ -46,11 +46,11 @@ public class RandomDate extends AbstractRandomRange<Date> {
     public RandomDate(Date value, Date minimum, Date maximum) {
         super(value, minimum, maximum);
         randomLong = new RandomLong();
-        dateValue = new Constant<Date>(new IncrementalDate().usingDefaults().next());
+        dateData = new ConstantData<Date>(new IncrementalDate().usingDefaults().next());
     }
 
-    public RandomDate withDateValue(Value<Date> dateValue) {
-        this.dateValue = dateValue;
+    public RandomDate withDateValue(Data<Date> dateData) {
+        this.dateData = dateData;
         return this;
     }
 
@@ -78,7 +78,7 @@ public class RandomDate extends AbstractRandomRange<Date> {
             if (value == null) {
                 value = new Timestamp(System.currentTimeMillis());
             }
-            value = nextValue(value, dateValue.next());
+            value = nextValue(value, dateData.next());
         }
         return value;
     }

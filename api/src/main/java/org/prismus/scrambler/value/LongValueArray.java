@@ -21,7 +21,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-class LongValueArray extends Constant<long[]> {
+class LongValueArray extends ConstantData<long[]> {
     private Integer count;
     private LongArray instance;
     private boolean useInitialArray;

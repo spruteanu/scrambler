@@ -29,45 +29,45 @@ public class ObjectScrambler {
     //------------------------------------------------------------------------------------------------------------------
     // Object methods
     //------------------------------------------------------------------------------------------------------------------
-    public static <T> Value<T> constant(T value) {
-        return new Constant<T>(value);
+    public static <T> Data<T> constant(T value) {
+        return new ConstantData<T>(value);
     }
 
-    public static <T> Value<T> random(Class<T> self) {
+    public static <T> Data<T> random(Class<T> self) {
         return random(self, null);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T> Value<T> random(Class<T> self, T defaultValue) {
+    public static <T> Data<T> random(Class<T> self, T defaultValue) {
         if (Types.randomTypeMap.containsKey(self)) {
             if (self.isArray()) {
                 return ArrayScrambler.randomArray(self, defaultValue, null);
             } else {
                 if (self.isPrimitive()) {
-                    return (Value) Util.createInstance(Types.randomTypeMap.get(self), null, null);
+                    return (Data) Util.createInstance(Types.randomTypeMap.get(self), null, null);
                 } else {
-                    return (Value) Util.createInstance(Types.randomTypeMap.get(self), new Object[]{defaultValue}, new Class[]{self});
+                    return (Data) Util.createInstance(Types.randomTypeMap.get(self), new Object[]{defaultValue}, new Class[]{self});
                 }
             }
         }
         throw new UnsupportedOperationException(String.format("The method is not supported for class type: %s, default value: %s", self, defaultValue));
     }
 
-    public static <T> Value<T> random(Class<T> self, T minimum, T maximum) {
-        final Value<T> value = random(self, minimum);
-        if (value instanceof AbstractRandomRange) {
-            final AbstractRandomRange<T> randomRangeValue = (AbstractRandomRange<T>) value;
+    public static <T> Data<T> random(Class<T> self, T minimum, T maximum) {
+        final Data<T> data = random(self, minimum);
+        if (data instanceof AbstractRandomRange) {
+            final AbstractRandomRange<T> randomRangeValue = (AbstractRandomRange<T>) data;
             randomRangeValue.between(minimum, maximum);
         } else {
             throw new UnsupportedOperationException(String.format(Types.NOT_SUPPORTED_RANGE_TYPE_MSG, self, minimum, maximum));
         }
-        return value;
+        return data;
     }
 
     //------------------------------------------------------------------------------------------------------------------
     // Boolean methods
     //------------------------------------------------------------------------------------------------------------------
-    public static Value<Boolean> random(Boolean value) {
+    public static Data<Boolean> random(Boolean value) {
         return new RandomBoolean(value);
     }
 

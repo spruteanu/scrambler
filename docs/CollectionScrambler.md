@@ -12,4 +12,4 @@ System.out.printf("%s random element: %s%n", new HashSet<Integer>(Arrays.asList(
 
 ```
 
-![Collection generation classes](collection-value-class-dgm.png)
+![Collection generation classes](collection-data-class-dgm.png)

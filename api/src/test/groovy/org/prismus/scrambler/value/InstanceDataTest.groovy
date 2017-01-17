@@ -1,7 +1,7 @@
 package org.prismus.scrambler.value
 
 import org.junit.Assert
-import org.prismus.scrambler.Value
+import org.prismus.scrambler.Data
 import org.prismus.scrambler.beans.*
 import spock.lang.Specification
 
@@ -9,11 +9,11 @@ import spock.lang.Specification
  * @author Serge Pruteanu
  */
 @SuppressWarnings("GroovyConstructorNamedArguments")
-class InstanceValueTest extends Specification {
+class InstanceDataTest extends Specification {
 
     void 'instance creation'(Object value, Class expectedType) {
         given:
-        final instance = new InstanceValue().usingValue(value)
+        final instance = new InstanceData().usingValue(value)
 
         and:
         final instanceValue = instance.checkCreateInstance()
@@ -28,7 +28,7 @@ class InstanceValueTest extends Specification {
 
     void 'verify encapsulated fields generation'() {
         given:
-        final obj = new InstanceValue<EncapsulatedExtend>(EncapsulatedExtend).next()
+        final obj = new InstanceData<EncapsulatedExtend>(EncapsulatedExtend).next()
 
         expect:
         null != obj.extReadOnly
@@ -42,9 +42,9 @@ class InstanceValueTest extends Specification {
 
     @SuppressWarnings("GroovyAssignabilityCheck")
     void 'instance creation with arguments'(Object value, Class instanceType,
-                                            List<Value> constructorValues, Integer expectedValue) {
+                                            List<Data> constructorValues, Integer expectedValue) {
         given:
-        final instance = new InstanceValue().usingValue(value).withConstructorValues(constructorValues)
+        final instance = new InstanceData().usingValue(value).withConstructorValues(constructorValues)
 
         and:
         final instanceValue = instance.checkCreateInstance()
@@ -57,13 +57,13 @@ class InstanceValueTest extends Specification {
         where:
         value << [School.class.name, School]
         instanceType << [School, School]
-        constructorValues << [[new Constant(5)], [new Constant(100), new Constant("test")]]
+        constructorValues << [[new ConstantData(5)], [new ConstantData(100), new ConstantData("test")]]
         expectedValue << [5, 100]
     }
 
     void 'test lookup property definitions'() {
         given:
-        final instance = new InstanceValue<Order>().usingValue(new Order())
+        final instance = new InstanceData<Order>().usingValue(new Order())
 
         and:
         final propertyDescriptors = instance.lookupFields(instance.get())
@@ -77,7 +77,7 @@ class InstanceValueTest extends Specification {
 
     void 'test populate instance with properties'() {
         given:
-        final instance = new InstanceValue<School>().usingValue(new School()).build(null)
+        final instance = new InstanceData<School>().usingValue(new School()).build(null)
 
         and:
         instance.populate(instance.get(), [schoolId: 3, name: 'Enatai'])
@@ -89,8 +89,8 @@ class InstanceValueTest extends Specification {
 
     void 'check value definitions (tree definition) for instance'() {
         given:
-        GroovyValueDefinition.register()
-        final instance = new InstanceValue<Order>(Order).usingDefinitions(
+        GroovyDataDefinition.register()
+        final instance = new InstanceData<Order>(Order).usingDefinitions(
                 (BigDecimal): BigDecimal.ONE.random(1.0, 100.0),
                 (int[]): int.arrayOf(10.increment(10)),
                 person: Person.definition(
@@ -131,8 +131,8 @@ class InstanceValueTest extends Specification {
 
     void 'check value definition introspection'() {
         given:
-        GroovyValueDefinition.register()
-        final instanceValue = new InstanceValue<Order>(Order).usingDefinitions(new ValueDefinition(
+        GroovyDataDefinition.register()
+        final instanceValue = new InstanceData<Order>(Order).usingDefinitions(new DataDefinition(
                 'firstName': ['Andy', 'Nicole', 'Nicolas', 'Jasmine'].randomOf(),
                 'lastName': ['Smith', 'Ferrara', 'Maldini', "Shaffer"].randomOf(),
                 'gender': ['M', 'F'].randomOf(),
@@ -154,11 +154,11 @@ class InstanceValueTest extends Specification {
 
     void 'test if parent is set properly'() {
         given:
-        GroovyValueDefinition.register()
+        GroovyDataDefinition.register()
 
-        final instance = new InstanceValue<School>(School).usingDefinitions(
+        final instance = new InstanceData<School>(School).usingDefinitions(
                 '*Id': 1.increment(1),
-                'name': ['Enatai', 'Medina', 'Value Crest', 'Newport'].randomOf(),
+                'name': ['Enatai', 'Medina', 'Data Crest', 'Newport'].randomOf(),
                 (List): [].of(ClassRoom.definition(
                         parent: School.reference(),
                         schoolId: School.reference('schoolId'),

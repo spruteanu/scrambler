@@ -18,7 +18,7 @@
 
 package org.prismus.scrambler;
 
-import org.prismus.scrambler.value.ArrayValue;
+import org.prismus.scrambler.value.ArrayData;
 import org.prismus.scrambler.value.IncrementalString;
 import org.prismus.scrambler.value.RandomString;
 import org.prismus.scrambler.value.RandomUuid;
@@ -49,20 +49,20 @@ public class StringScrambler {
         return new IncrementalString(self, pattern, index);
     }
 
-    public static ArrayValue<String> incrementArray(String self, Integer count) {
-        return new ArrayValue<String>(String.class, count, new IncrementalString(self));
+    public static ArrayData<String> incrementArray(String self, Integer count) {
+        return new ArrayData<String>(String.class, count, new IncrementalString(self));
     }
 
-    public static ArrayValue<String> incrementArray(String self, String pattern, Integer count) {
-        return new ArrayValue<String>(String.class, count, new IncrementalString(self, pattern));
+    public static ArrayData<String> incrementArray(String self, String pattern, Integer count) {
+        return new ArrayData<String>(String.class, count, new IncrementalString(self, pattern));
     }
 
-    public static ArrayValue<String> incrementArray(String value, Integer index, Integer count) {
-        return new ArrayValue<String>(String.class, count, new IncrementalString(value, index));
+    public static ArrayData<String> incrementArray(String value, Integer index, Integer count) {
+        return new ArrayData<String>(String.class, count, new IncrementalString(value, index));
     }
 
-    public static ArrayValue<String> incrementArray(String value, String pattern, Integer index, Integer count) {
-        return new ArrayValue<String>(String.class, count, new IncrementalString(value, pattern, index));
+    public static ArrayData<String> incrementArray(String value, String pattern, Integer index, Integer count) {
+        return new ArrayData<String>(String.class, count, new IncrementalString(value, pattern, index));
     }
 
     public static RandomString random(String value) {
@@ -77,12 +77,12 @@ public class StringScrambler {
         return new RandomUuid();
     }
 
-    public static ArrayValue<String> randomArray(String value, Integer arrayCount) {
-        return new ArrayValue<String>(String.class, arrayCount, random(value));
+    public static ArrayData<String> randomArray(String value, Integer arrayCount) {
+        return new ArrayData<String>(String.class, arrayCount, random(value));
     }
 
-    public static ArrayValue<String> randomArray(String value, Integer count, Integer arrayCount) {
-        return new ArrayValue<String>(String.class, count, random(value, arrayCount));
+    public static ArrayData<String> randomArray(String value, Integer count, Integer arrayCount) {
+        return new ArrayData<String>(String.class, count, random(value, arrayCount));
     }
 
 }

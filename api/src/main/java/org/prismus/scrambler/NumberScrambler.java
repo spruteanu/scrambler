@@ -30,214 +30,214 @@ import java.math.BigInteger;
  */
 public class NumberScrambler {
 
-    public static Value<Byte> increment(byte self) {
+    public static Data<Byte> increment(byte self) {
         return new IncrementalByte(self);
     }
 
-    public static Value<Byte> increment(byte self, byte step) {
+    public static Data<Byte> increment(byte self, byte step) {
         return new IncrementalByte(self, step);
     }
 
-    public static Value<Byte> random(byte seed) {
+    public static Data<Byte> random(byte seed) {
         return new RandomByte(seed);
     }
 
-    public static Value<Byte> random(byte minimum, byte maximum) {
+    public static Data<Byte> random(byte minimum, byte maximum) {
         return new RandomByte(minimum, maximum);
     }
 
-    public static Value<Byte> random(byte seed, byte minimum, byte maximum) {
+    public static Data<Byte> random(byte seed, byte minimum, byte maximum) {
         return new RandomByte(seed, minimum, maximum);
     }
 
-    public static Value<Short> increment(short self) {
+    public static Data<Short> increment(short self) {
         return new IncrementalShort(self);
     }
 
-    public static Value<Short> increment(short self, short step) {
+    public static Data<Short> increment(short self, short step) {
         return new IncrementalShort(self, step);
     }
 
-    public static Value<Short> random(short seed) {
+    public static Data<Short> random(short seed) {
         return new RandomShort(seed);
     }
 
-    public static Value<Short> random(short minimum, short maximum) {
+    public static Data<Short> random(short minimum, short maximum) {
         return new RandomShort(minimum, maximum);
     }
 
-    public static Value<Short> random(short seed, short minimum, short maximum) {
+    public static Data<Short> random(short seed, short minimum, short maximum) {
         return new RandomShort(seed, minimum, maximum);
     }
 
-    public static Value<Integer> increment(int self) {
+    public static Data<Integer> increment(int self) {
         return new IncrementalInteger(self);
     }
 
-    public static Value<Integer> increment(int self, int step) {
+    public static Data<Integer> increment(int self, int step) {
         return new IncrementalInteger(self, step);
     }
 
-    public static Value<Integer> random(int seed) {
+    public static Data<Integer> random(int seed) {
         return new RandomInteger(seed);
     }
 
-    public static Value<Integer> random(int minimum, int maximum) {
+    public static Data<Integer> random(int minimum, int maximum) {
         return new RandomInteger(minimum, maximum);
     }
 
-    public static Value<Integer> random(int seed, int minimum, int maximum) {
+    public static Data<Integer> random(int seed, int minimum, int maximum) {
         return new RandomInteger(seed, minimum, maximum);
     }
 
-    public static Value<Long> increment(long self) {
+    public static Data<Long> increment(long self) {
         return new IncrementalLong(self);
     }
 
-    public static Value<Long> increment(long self, long step) {
+    public static Data<Long> increment(long self, long step) {
         return new IncrementalLong(self, step);
     }
 
-    public static Value<Long> random(long seed) {
+    public static Data<Long> random(long seed) {
         return new RandomLong(seed);
     }
 
-    public static Value<Long> random(long minimum, long maximum) {
+    public static Data<Long> random(long minimum, long maximum) {
         return new RandomLong(minimum, maximum);
     }
 
-    public static Value<Long> random(long seed, long minimum, long maximum) {
+    public static Data<Long> random(long seed, long minimum, long maximum) {
         return new RandomLong(seed, minimum, maximum);
     }
 
-    public static Value<Float> increment(float self) {
+    public static Data<Float> increment(float self) {
         return new IncrementalFloat(self);
     }
 
-    public static Value<Float> increment(float self, float step) {
+    public static Data<Float> increment(float self, float step) {
         return new IncrementalFloat(self, step);
     }
 
-    public static Value<Float> random(float seed) {
+    public static Data<Float> random(float seed) {
         return new RandomFloat(seed);
     }
 
-    public static Value<Float> random(float minimum, float maximum) {
+    public static Data<Float> random(float minimum, float maximum) {
         return new RandomFloat(minimum, maximum);
     }
 
-    public static Value<Float> random(float seed, float minimum, float maximum) {
+    public static Data<Float> random(float seed, float minimum, float maximum) {
         return new RandomFloat(seed, minimum, maximum);
     }
 
-    public static Value<Double> increment(Double self) {
+    public static Data<Double> increment(Double self) {
         return new IncrementalDouble(self);
     }
 
-    public static Value<Double> increment(double self, double step) {
+    public static Data<Double> increment(double self, double step) {
         return new IncrementalDouble(self, step);
     }
 
-    public static Value<Double> random(double seed) {
+    public static Data<Double> random(double seed) {
         return new RandomDouble(seed);
     }
 
-    public static Value<Double> random(double minimum, double maximum) {
+    public static Data<Double> random(double minimum, double maximum) {
         return new RandomDouble(minimum, maximum);
     }
 
-    public static Value<Double> random(double seed, double minimum, double maximum) {
+    public static Data<Double> random(double seed, double minimum, double maximum) {
         return new RandomDouble(seed, minimum, maximum);
     }
 
-    public static Value<BigInteger> increment(BigInteger self) {
+    public static Data<BigInteger> increment(BigInteger self) {
         return new IncrementalBigInteger(self);
     }
 
-    public static Value<BigInteger> increment(BigInteger self, BigInteger step) {
+    public static Data<BigInteger> increment(BigInteger self, BigInteger step) {
         return new IncrementalBigInteger(self, step);
     }
 
-    public static Value<BigInteger> random(BigInteger seed) {
+    public static Data<BigInteger> random(BigInteger seed) {
         return new RandomBigInteger(seed);
     }
 
-    public static Value<BigInteger> random(BigInteger minimum, BigInteger maximum) {
+    public static Data<BigInteger> random(BigInteger minimum, BigInteger maximum) {
         return new RandomBigInteger(minimum, maximum);
     }
 
-    public static Value<BigInteger> random(BigInteger seed, BigInteger minimum, BigInteger maximum) {
+    public static Data<BigInteger> random(BigInteger seed, BigInteger minimum, BigInteger maximum) {
         return new RandomBigInteger(seed, minimum, maximum);
     }
 
-    public static Value<BigDecimal> increment(BigDecimal self) {
+    public static Data<BigDecimal> increment(BigDecimal self) {
         return new IncrementalBigDecimal(self);
     }
 
-    public static Value<BigDecimal> increment(BigDecimal self, BigDecimal step) {
+    public static Data<BigDecimal> increment(BigDecimal self, BigDecimal step) {
         return new IncrementalBigDecimal(self, step);
     }
 
-    public static Value<BigDecimal> random(BigDecimal seed) {
+    public static Data<BigDecimal> random(BigDecimal seed) {
         return new RandomBigDecimal(seed);
     }
 
-    public static Value<BigDecimal> random(BigDecimal minimum, BigDecimal maximum) {
+    public static Data<BigDecimal> random(BigDecimal minimum, BigDecimal maximum) {
         return new RandomBigDecimal(minimum, maximum);
     }
 
-    public static Value<BigDecimal> random(BigDecimal seed, BigDecimal minimum, BigDecimal maximum) {
+    public static Data<BigDecimal> random(BigDecimal seed, BigDecimal minimum, BigDecimal maximum) {
         return new RandomBigDecimal(seed, minimum, maximum);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T extends Number> Value<T> increment(T self) {
+    public static <T extends Number> Data<T> increment(T self) {
         return increment((Class<T>) self.getClass(), self, null);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T extends Number> Value<T> increment(T self, T step) {
+    public static <T extends Number> Data<T> increment(T self, T step) {
         return increment((Class<T>) self.getClass(), self, step);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T extends Number> Value<T> increment(Class<T> self, T defaultValue, T step) {
+    public static <T extends Number> Data<T> increment(Class<T> self, T defaultValue, T step) {
         if (Types.incrementTypeMap.containsKey(self)) {
-            final Value value;
+            final Data data;
             if (self.isArray()) {
-                value = ArrayScrambler.incrementArray(self, defaultValue, step, null);
+                data = ArrayScrambler.incrementArray(self, defaultValue, step, null);
             } else {
-                value = (Value) Util.createInstance(Types.incrementTypeMap.get(self), new Object[]{defaultValue, step}, new Class[]{self, self});
+                data = (Data) Util.createInstance(Types.incrementTypeMap.get(self), new Object[]{defaultValue, step}, new Class[]{self, self});
             }
-            return value;
+            return data;
         }
         throw new UnsupportedOperationException(String.format("The method is not supported for class type: %s, default value: %s", self, self));
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T extends Number> Value<T> random(T value) {
+    public static <T extends Number> Data<T> random(T value) {
         return ObjectScrambler.random((Class<T>) value.getClass(), value);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T extends Number> Value<T> random(T minimum, T maximum) {
+    public static <T extends Number> Data<T> random(T minimum, T maximum) {
         return ObjectScrambler.random((Class<T>) minimum.getClass(), minimum, maximum);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <T extends Number> Value<T> random(T val, T minimum, T maximum) {
-        final Value<T> value = ObjectScrambler.random((Class<T>) val.getClass(), val);
-        if (value instanceof AbstractRandomRange) {
-            final AbstractRandomRange<Number> randomRangeValue = (AbstractRandomRange<Number>) value;
+    public static <T extends Number> Data<T> random(T val, T minimum, T maximum) {
+        final Data<T> data = ObjectScrambler.random((Class<T>) val.getClass(), val);
+        if (data instanceof AbstractRandomRange) {
+            final AbstractRandomRange<Number> randomRangeValue = (AbstractRandomRange<Number>) data;
             randomRangeValue.between(minimum, maximum);
         } else {
             throw new UnsupportedOperationException(String.format(Types.NOT_SUPPORTED_RANGE_TYPE_MSG, val.getClass(), minimum, maximum));
         }
-        return value;
+        return data;
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends Number> Value<T> randomArray(Class self, T minimum, T maximum, Integer count) {
+    public static <T extends Number> Data<T> randomArray(Class self, T minimum, T maximum, Integer count) {
         Util.checkPositiveCount(count);
 
         Object defaultValue = minimum != null ? minimum : maximum != null ? maximum : null;
@@ -259,19 +259,19 @@ public class NumberScrambler {
             componentType = self;
         }
 
-        Value instance = (Value) Util.createInstance(Types.randomTypeMap.get(componentType),
+        Data instance = (Data) Util.createInstance(Types.randomTypeMap.get(componentType),
                 new Object[]{minimum, maximum}, new Class[]{componentType, componentType}
         );
-        final Value<T> value;
+        final Data<T> data;
         if (primitive) {
-            value = (Value<T>) Util.createInstance(Types.randomTypeMap.get(self),
+            data = (Data<T>) Util.createInstance(Types.randomTypeMap.get(self),
                     new Object[]{self.isInstance(defaultValue) ? defaultValue : null, count, instance},
                     new Class[]{self, Integer.class, Object.class}
             );
         } else {
-            value = new ArrayValue(self, count, instance);
+            data = new ArrayData(self, count, instance);
         }
-        return value;
+        return data;
     }
 
 }

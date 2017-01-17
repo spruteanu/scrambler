@@ -36,53 +36,53 @@ public class InstanceScrambler {
     //------------------------------------------------------------------------------------------------------------------
     // Parse definition methods
     //------------------------------------------------------------------------------------------------------------------
-    public static ValueDefinition parseDefinition(String definition) throws IOException {
-        return GroovyValueDefinition.Holder.instance.parseDefinition(definition);
+    public static DataDefinition parseDefinition(String definition) throws IOException {
+        return GroovyDataDefinition.Holder.instance.parseDefinition(definition);
     }
 
-    public static ValueDefinition parseDefinition(String definition, Map<String, Object> contextMap) throws IOException {
-        return GroovyValueDefinition.Holder.instance.parseDefinition(definition, contextMap);
+    public static DataDefinition parseDefinition(String definition, Map<String, Object> contextMap) throws IOException {
+        return GroovyDataDefinition.Holder.instance.parseDefinition(definition, contextMap);
     }
 
-    static <T> InstanceValue<T> parseDefinitions(InstanceValue<T> instanceValue, Map<String, Object> contextMap, String... definitions) throws IOException {
+    static <T> InstanceData<T> parseDefinitions(InstanceData<T> instanceData, Map<String, Object> contextMap, String... definitions) throws IOException {
         if (definitions != null) {
             for (String definition : definitions) {
-                instanceValue.usingDefinitions(parseDefinition(definition, contextMap));
+                instanceData.usingDefinitions(parseDefinition(definition, contextMap));
             }
         }
-        return instanceValue;
+        return instanceData;
     }
 
-    public static ValueDefinition parseDefinition(File definition) throws IOException {
-        return GroovyValueDefinition.Holder.instance.parseDefinition(definition);
+    public static DataDefinition parseDefinition(File definition) throws IOException {
+        return GroovyDataDefinition.Holder.instance.parseDefinition(definition);
     }
 
-    public static ValueDefinition parseDefinition(File definition, Map<String, Object> contextMap) throws IOException {
-        return GroovyValueDefinition.Holder.instance.parseDefinition(definition, contextMap);
+    public static DataDefinition parseDefinition(File definition, Map<String, Object> contextMap) throws IOException {
+        return GroovyDataDefinition.Holder.instance.parseDefinition(definition, contextMap);
     }
 
-    static <T> InstanceValue<T> parseDefinitions(InstanceValue<T> instanceValue, Map<String, Object> contextMap, File... definitions) throws IOException {
+    static <T> InstanceData<T> parseDefinitions(InstanceData<T> instanceData, Map<String, Object> contextMap, File... definitions) throws IOException {
         if (definitions != null) {
             for (File definition : definitions) {
-                instanceValue.usingDefinitions(parseDefinition(definition, contextMap));
+                instanceData.usingDefinitions(parseDefinition(definition, contextMap));
             }
         }
-        return instanceValue;
+        return instanceData;
     }
 
-    public static ValueDefinition parseDefinition(InputStream inputStream) throws IOException {
-        return GroovyValueDefinition.Holder.instance.parseDefinition(inputStream);
+    public static DataDefinition parseDefinition(InputStream inputStream) throws IOException {
+        return GroovyDataDefinition.Holder.instance.parseDefinition(inputStream);
     }
 
-    public static ValueDefinition parseDefinition(InputStream inputStream, Map<String, Object> contextMap) throws IOException {
-        return GroovyValueDefinition.Holder.instance.parseDefinition(inputStream, contextMap);
+    public static DataDefinition parseDefinition(InputStream inputStream, Map<String, Object> contextMap) throws IOException {
+        return GroovyDataDefinition.Holder.instance.parseDefinition(inputStream, contextMap);
     }
 
-    static <T> InstanceValue<T> parseDefinitions(InstanceValue<T> instanceValue, Map<String, Object> contextMap, InputStream... inputStreams) throws IOException {
+    static <T> InstanceData<T> parseDefinitions(InstanceData<T> instanceData, Map<String, Object> contextMap, InputStream... inputStreams) throws IOException {
         if (inputStreams != null) {
             for (InputStream inputStream : inputStreams) {
                 try {
-                    instanceValue.usingDefinitions(parseDefinition(inputStream, contextMap));
+                    instanceData.usingDefinitions(parseDefinition(inputStream, contextMap));
                 } finally {
                     try {
                         inputStream.close();
@@ -90,18 +90,18 @@ public class InstanceScrambler {
                 }
             }
         }
-        return instanceValue;
+        return instanceData;
     }
 
-    public static ValueDefinition parseDefinition(Reader reader, Map<String, Object> contextMap) throws IOException {
-        return GroovyValueDefinition.Holder.instance.parseDefinition(reader, contextMap);
+    public static DataDefinition parseDefinition(Reader reader, Map<String, Object> contextMap) throws IOException {
+        return GroovyDataDefinition.Holder.instance.parseDefinition(reader, contextMap);
     }
 
-    static <T> InstanceValue<T> parseDefinitions(InstanceValue<T> instanceValue, Map<String, Object> contextMap, Reader... readers) throws IOException {
+    static <T> InstanceData<T> parseDefinitions(InstanceData<T> instanceData, Map<String, Object> contextMap, Reader... readers) throws IOException {
         if (readers != null) {
             for (Reader reader : readers) {
                 try {
-                    instanceValue.usingDefinitions(parseDefinition(reader, contextMap));
+                    instanceData.usingDefinitions(parseDefinition(reader, contextMap));
                 } finally {
                     try {
                         reader.close();
@@ -109,119 +109,119 @@ public class InstanceScrambler {
                 }
             }
         }
-        return instanceValue;
+        return instanceData;
     }
 
 
     //------------------------------------------------------------------------------------------------------------------
-    // InstanceValue methods
+    // InstanceData methods
     //------------------------------------------------------------------------------------------------------------------
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, String... definitions) throws IOException {
+    public static <T> InstanceData<T> instanceOf(Class<T> clazzType, String... definitions) throws IOException {
         return parseDefinitions(instanceOf(clazzType), null, definitions);
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<String, Object> contextMap, String... definitions) throws IOException {
+    public static <T> InstanceData<T> instanceOf(Class<T> clazzType, Map<String, Object> contextMap, String... definitions) throws IOException {
         return parseDefinitions(instanceOf(clazzType), contextMap, definitions);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, String... definitions) throws IOException {
-        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), null, definitions);
+    public static <T> InstanceData<T> instanceOf(String clazzType, String... definitions) throws IOException {
+        return (InstanceData<T>) parseDefinitions(instanceOf(clazzType), null, definitions);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, Map<String, Object> contextMap, String... definitions) throws IOException {
-        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), contextMap, definitions);
+    public static <T> InstanceData<T> instanceOf(String clazzType, Map<String, Object> contextMap, String... definitions) throws IOException {
+        return (InstanceData<T>) parseDefinitions(instanceOf(clazzType), contextMap, definitions);
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, File... definitions) throws IOException {
+    public static <T> InstanceData<T> instanceOf(Class<T> clazzType, File... definitions) throws IOException {
         return parseDefinitions(instanceOf(clazzType), null, definitions);
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<String, Object> contextMap, File... definitions) throws IOException {
+    public static <T> InstanceData<T> instanceOf(Class<T> clazzType, Map<String, Object> contextMap, File... definitions) throws IOException {
         return parseDefinitions(instanceOf(clazzType), contextMap, definitions);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, File... definitions) throws IOException {
-        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), null, definitions);
+    public static <T> InstanceData<T> instanceOf(String clazzType, File... definitions) throws IOException {
+        return (InstanceData<T>) parseDefinitions(instanceOf(clazzType), null, definitions);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, Map<String, Object> contextMap, File... definitions) throws IOException {
-        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), contextMap, definitions);
+    public static <T> InstanceData<T> instanceOf(String clazzType, Map<String, Object> contextMap, File... definitions) throws IOException {
+        return (InstanceData<T>) parseDefinitions(instanceOf(clazzType), contextMap, definitions);
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, InputStream... inputStreams) throws IOException {
+    public static <T> InstanceData<T> instanceOf(Class<T> clazzType, InputStream... inputStreams) throws IOException {
         return parseDefinitions(instanceOf(clazzType), null, inputStreams);
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<String, Object> contextMap, InputStream... inputStreams) throws IOException {
+    public static <T> InstanceData<T> instanceOf(Class<T> clazzType, Map<String, Object> contextMap, InputStream... inputStreams) throws IOException {
         return parseDefinitions(instanceOf(clazzType), contextMap, inputStreams);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, InputStream... inputStreams) throws IOException {
-        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), null, inputStreams);
+    public static <T> InstanceData<T> instanceOf(String clazzType, InputStream... inputStreams) throws IOException {
+        return (InstanceData<T>) parseDefinitions(instanceOf(clazzType), null, inputStreams);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, Map<String, Object> contextMap, InputStream... inputStreams) throws IOException {
-        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), contextMap, inputStreams);
+    public static <T> InstanceData<T> instanceOf(String clazzType, Map<String, Object> contextMap, InputStream... inputStreams) throws IOException {
+        return (InstanceData<T>) parseDefinitions(instanceOf(clazzType), contextMap, inputStreams);
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Reader... readers) throws IOException {
+    public static <T> InstanceData<T> instanceOf(Class<T> clazzType, Reader... readers) throws IOException {
         return parseDefinitions(instanceOf(clazzType), null, readers);
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<String, Object> contextMap, Reader... readers) throws IOException {
+    public static <T> InstanceData<T> instanceOf(Class<T> clazzType, Map<String, Object> contextMap, Reader... readers) throws IOException {
         return parseDefinitions(instanceOf(clazzType), contextMap, readers);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, Reader... readers) throws IOException {
-        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), null, readers);
+    public static <T> InstanceData<T> instanceOf(String clazzType, Reader... readers) throws IOException {
+        return (InstanceData<T>) parseDefinitions(instanceOf(clazzType), null, readers);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> InstanceValue<T> instanceOf(String clazzType, Map<String, Object> contextMap, Reader... readers) throws IOException {
-        return (InstanceValue<T>) parseDefinitions(instanceOf(clazzType), contextMap, readers);
+    public static <T> InstanceData<T> instanceOf(String clazzType, Map<String, Object> contextMap, Reader... readers) throws IOException {
+        return (InstanceData<T>) parseDefinitions(instanceOf(clazzType), contextMap, readers);
     }
 
-    public static <T> InstanceValue<T> instanceOf(String type) {
+    public static <T> InstanceData<T> instanceOf(String type) {
         return instanceOf(type, (Map<Object, Object>) null);
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType) {
+    public static <T> InstanceData<T> instanceOf(Class<T> clazzType) {
         return instanceOf(clazzType, (Map<Object, Object>) null);
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> clazzType, Map<Object, Object> fieldMap) {
-        return new InstanceValue<T>(clazzType).usingDefinitions(fieldMap);
+    public static <T> InstanceData<T> instanceOf(Class<T> clazzType, Map<Object, Object> fieldMap) {
+        return new InstanceData<T>(clazzType).usingDefinitions(fieldMap);
     }
 
-    public static <T> InstanceValue<T> instanceOf(String type, Map<Object, Object> fieldMap) {
-        return new InstanceValue<T>(type).usingDefinitions(fieldMap);
+    public static <T> InstanceData<T> instanceOf(String type, Map<Object, Object> fieldMap) {
+        return new InstanceData<T>(type).usingDefinitions(fieldMap);
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> self, AbstractDefinitionCallable defCl) {
-        return new InstanceValue<T>(self).withDefinitionClosure(defCl);
+    public static <T> InstanceData<T> instanceOf(Class<T> self, AbstractDefinitionCallable defCl) {
+        return new InstanceData<T>(self).withDefinitionClosure(defCl);
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> self, Map<Object, Object> propertyValueMap, AbstractDefinitionCallable defCl) {
-        return new InstanceValue<T>(self).withDefinitionClosure(defCl).usingDefinitions(propertyValueMap);
+    public static <T> InstanceData<T> instanceOf(Class<T> self, Map<Object, Object> propertyValueMap, AbstractDefinitionCallable defCl) {
+        return new InstanceData<T>(self).withDefinitionClosure(defCl).usingDefinitions(propertyValueMap);
     }
 
-    public static <T> InstanceValue<T> instanceOf(Class<T> self, Collection constructorArgs, AbstractDefinitionCallable defCl) {
-        return new InstanceValue<T>(self).withDefinitionClosure(defCl).withConstructorArguments(constructorArgs);
+    public static <T> InstanceData<T> instanceOf(Class<T> self, Collection constructorArgs, AbstractDefinitionCallable defCl) {
+        return new InstanceData<T>(self).withDefinitionClosure(defCl).withConstructorArguments(constructorArgs);
     }
 
-    public static ReferenceValue reference(Class self) {
+    public static ReferenceData reference(Class self) {
         return reference(self, null);
     }
 
-    public static ReferenceValue reference(Class self, String propertyPredicate) {
-        return new ReferenceValue(ValuePredicates.isTypeOf(self), propertyPredicate != null ? ValuePredicates.matchProperty(propertyPredicate) : null);
+    public static ReferenceData reference(Class self, String propertyPredicate) {
+        return new ReferenceData(DataPredicates.isTypeOf(self), propertyPredicate != null ? DataPredicates.matchProperty(propertyPredicate) : null);
     }
 
 }

@@ -1,10 +1,10 @@
 import groovy.transform.CompileStatic
 import org.prismus.scrambler.CollectionScrambler
 import org.prismus.scrambler.NumberScrambler
-import org.prismus.scrambler.Value
-import org.prismus.scrambler.value.Constant
+import org.prismus.scrambler.Data
+import org.prismus.scrambler.value.ConstantData
 import org.prismus.scrambler.value.RandomString
-import org.prismus.scrambler.value.ReferenceValue
+import org.prismus.scrambler.value.ReferenceData
 
 import java.util.regex.Pattern
 import java.util.zip.ZipFile
@@ -18,7 +18,7 @@ import java.util.zip.ZipFile
 def (Set<String> allFirstNames, Set<String> lastNames, Set<String> femaleFirstNames) = loadNames()
 
 definition(~/(?i)(?:first\s*Name)|(?:first)/, allFirstNames.randomOf())
-definition(~/(?i)middle\w*/, new MiddleNameValue(allFirstNames, ~/(?i)middle\w*/))
+definition(~/(?i)middle\w*/, new MiddleNameData(allFirstNames, ~/(?i)middle\w*/))
 definition(~/(?i)(?:last\s*Name)|(?:last)/, lastNames.randomOf())
 definition(~/(?i)gender/, new GenderValue(femaleFirstNames, ~/(?i)gender/))
 definition(~/(?i)(?:\w*dob)|(?:\w*birth)/, new DobValue())
@@ -32,7 +32,7 @@ private static List loadNames() {
     Set<String> allFirstNames = new LinkedHashSet<>(6000)
     ZipFile zip = null
     try {
-        zip = new ZipFile(new File(this.class.getResource('/census-names.zip').toURI()))
+        zip = new ZipFile(new File('person-definition'.class.getResource('/census-names.zip').toURI()))
 //http://deron.meranda.us/data/census-dist-female-first.txt
         final parseClosure = { String line ->
             return line.split('\\s')[0].toLowerCase().capitalize()
@@ -68,11 +68,11 @@ private static List loadNames() {
 }
 
 @CompileStatic
-class MiddleNameValue extends ReferenceValue {
-    private final Value<Integer> randomRange
-    private final Value randomMiddle
+class MiddleNameData extends ReferenceData {
+    private final Data<Integer> randomRange
+    private final Data randomMiddle
 
-    MiddleNameValue(Set<String> allFirstNames, Pattern fieldPattern) {
+    MiddleNameData(Set<String> allFirstNames, Pattern fieldPattern) {
         super(fieldPattern)
         randomRange = NumberScrambler.random(1, 100)
         randomMiddle = CollectionScrambler.randomOf(allFirstNames)
@@ -90,7 +90,7 @@ class MiddleNameValue extends ReferenceValue {
 }
 
 @CompileStatic
-class GenderValue extends ReferenceValue {
+class GenderValue extends ReferenceData {
     private final Set<String> femaleFirstNames
 
     GenderValue(Set<String> femaleFirstNames, Pattern fieldPattern) {
@@ -106,10 +106,10 @@ class GenderValue extends ReferenceValue {
 }
 
 @CompileStatic
-class DobValue extends Constant<String> {
-    private Value group1 = NumberScrambler.random(1, 12)
-    private Value group2 = NumberScrambler.random(1, 31)
-    private Value group3 = NumberScrambler.random(1920, 2015)
+class DobValue extends ConstantData<String> {
+    private Data group1 = NumberScrambler.random(1, 12)
+    private Data group2 = NumberScrambler.random(1, 31)
+    private Data group3 = NumberScrambler.random(1920, 2015)
 
     @Override
     protected String doNext() {
@@ -118,10 +118,10 @@ class DobValue extends Constant<String> {
 }
 
 @CompileStatic
-class PhoneValue extends Constant<String> {
-    private Value group1 = NumberScrambler.random(100, 999)
-    private Value group2 = NumberScrambler.random(100, 999)
-    private Value group3 = NumberScrambler.random(1000, 9999)
+class PhoneValue extends ConstantData<String> {
+    private Data group1 = NumberScrambler.random(100, 999)
+    private Data group2 = NumberScrambler.random(100, 999)
+    private Data group3 = NumberScrambler.random(1000, 9999)
 
     @Override
     protected String doNext() {
@@ -130,11 +130,11 @@ class PhoneValue extends Constant<String> {
 }
 
 @CompileStatic
-class DomainValue extends Constant<String> {
-    private final Value<String> nameValue;
-    private final Value<String> extensionValue;
+class DomainValue extends ConstantData<String> {
+    private final Data<String> nameValue;
+    private final Data<String> extensionValue;
 
-    DomainValue(Value<String> nameValue, Value<String> extensionValue) {
+    DomainValue(Data<String> nameValue, Data<String> extensionValue) {
         this.nameValue = nameValue
         this.extensionValue = extensionValue
     }
@@ -145,24 +145,24 @@ class DomainValue extends Constant<String> {
     }
 
     static DomainValue of(Map<String, Object> contextMap) {
-        Value<String> domainValue = new RandomString(EmailValue.getTemplateString()).maxCount(20)
-        Value<String> extensionValue = new RandomString(EmailValue.getTemplateString()).maxCount(10)
+        Data<String> domainValue = new RandomString(EmailValue.getTemplateString()).maxCount(20)
+        Data<String> extensionValue = new RandomString(EmailValue.getTemplateString()).maxCount(10)
         if (contextMap.containsKey('domain-template')) {
             domainValue = new RandomString(contextMap.get('domain-template').toString())
         }
         if (contextMap.containsKey('domain-extension')) {
-            domainValue = new Constant<String>(contextMap.get('domain-extension').toString())
+            domainValue = new ConstantData<String>(contextMap.get('domain-extension').toString())
         }
         return new DomainValue(domainValue, extensionValue)
     }
 }
 
 @CompileStatic
-class EmailValue extends Constant<String> {
-    private final Value<String> domainValue;
-    private final Value<String> nameValue;
+class EmailValue extends ConstantData<String> {
+    private final Data<String> domainValue;
+    private final Data<String> nameValue;
 
-    EmailValue(Value<String> domainValue, Value<String> nameValue) {
+    EmailValue(Data<String> domainValue, Data<String> nameValue) {
         this.domainValue = domainValue
         this.nameValue = nameValue
     }
@@ -172,14 +172,14 @@ class EmailValue extends Constant<String> {
         return String.format('%s@%s', nameValue.next() , domainValue.next())
     }
 
-    static Value<String> of(Map<String, Object> contextMap) {
+    static Data<String> of(Map<String, Object> contextMap) {
         if (contextMap.containsKey('email')) {
-            return new Constant<String>(contextMap.get('email').toString())
+            return new ConstantData<String>(contextMap.get('email').toString())
         }
         if (contextMap.containsKey('domain')) {
             String domainNamePattern = getTemplateString()
             return new EmailValue(
-                    new Constant<String>(contextMap.get('domain').toString()),
+                    new ConstantData<String>(contextMap.get('domain').toString()),
                     new RandomString(domainNamePattern).maxCount(20)
             )
         }

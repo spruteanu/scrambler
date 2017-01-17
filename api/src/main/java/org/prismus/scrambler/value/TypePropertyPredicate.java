@@ -21,7 +21,7 @@ package org.prismus.scrambler.value;
 import java.util.regex.Pattern;
 
 /**
- * Value Predicate that will match property by name and by type
+ * Data Predicate that will match property by name and by type
  *
  * @author Serge Pruteanu
  */

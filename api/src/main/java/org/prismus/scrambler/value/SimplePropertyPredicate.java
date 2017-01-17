@@ -18,14 +18,14 @@
 
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.ValuePredicate;
+import org.prismus.scrambler.DataPredicate;
 
 /**
  * Property predicate, represents a simple property, matched by name
  *
  * @author Serge Pruteanu
  */
-public class SimplePropertyPredicate implements ValuePredicate {
+public class SimplePropertyPredicate implements DataPredicate {
     private String property;
 
     public SimplePropertyPredicate(String property) {

@@ -13,4 +13,4 @@ System.out.println(MapScrambler.mapOf(LinkedHashMap.class, new LinkedHashMap() {
 
 ```
 
-![Map generation classes](map-value-class-dgm.png)
+![Map generation classes](map-data-class-dgm.png)

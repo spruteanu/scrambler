@@ -18,9 +18,9 @@
 
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.Value;
-import org.prismus.scrambler.ValuePredicate;
-import org.prismus.scrambler.ValuePredicates;
+import org.prismus.scrambler.Data;
+import org.prismus.scrambler.DataPredicate;
+import org.prismus.scrambler.DataPredicates;
 
 import java.util.regex.Pattern;
 
@@ -30,41 +30,41 @@ import java.util.regex.Pattern;
  *
  * @author Serge Pruteanu
  */
-public class ReferenceValue extends Constant<Object> {
-    private ValueDefinition definition;
-    private ValuePredicate predicate;
-    private ValuePredicate fieldPredicate;
+public class ReferenceData extends ConstantData<Object> {
+    private DataDefinition definition;
+    private DataPredicate predicate;
+    private DataPredicate fieldPredicate;
 
-    public ReferenceValue(String fieldPredicate) {
-        this((ValuePredicate)null, ValuePredicates.matchProperty(fieldPredicate));
+    public ReferenceData(String fieldPredicate) {
+        this((DataPredicate)null, DataPredicates.matchProperty(fieldPredicate));
     }
 
-    public ReferenceValue(ValuePredicate fieldPredicate) {
-        this((ValuePredicate) null, fieldPredicate);
+    public ReferenceData(DataPredicate fieldPredicate) {
+        this((DataPredicate) null, fieldPredicate);
     }
 
-    public ReferenceValue(Pattern fieldPattern) {
-        this((ValuePredicate)null, PropertyPredicate.of(fieldPattern));
+    public ReferenceData(Pattern fieldPattern) {
+        this((DataPredicate)null, PropertyPredicate.of(fieldPattern));
     }
 
-    public ReferenceValue(java.lang.Class type, java.lang.String fieldPredicate) {
-        this(ValuePredicates.isTypeOf(type), ValuePredicates.matchProperty(fieldPredicate));
+    public ReferenceData(java.lang.Class type, java.lang.String fieldPredicate) {
+        this(DataPredicates.isTypeOf(type), DataPredicates.matchProperty(fieldPredicate));
     }
 
-    public ReferenceValue(ValuePredicate predicate, ValuePredicate fieldPredicate) {
+    public ReferenceData(DataPredicate predicate, DataPredicate fieldPredicate) {
         this.predicate = predicate;
         this.fieldPredicate = fieldPredicate;
     }
 
-    public ReferenceValue(Pattern predicatePattern, Pattern fieldPattern) {
+    public ReferenceData(Pattern predicatePattern, Pattern fieldPattern) {
         this(PropertyPredicate.of(predicatePattern), PropertyPredicate.of(fieldPattern));
     }
 
-    public ReferenceValue(ValueDefinition definition, Pattern pattern) {
+    public ReferenceData(DataDefinition definition, Pattern pattern) {
         this(definition, PropertyPredicate.of(pattern));
     }
 
-    public ReferenceValue(ValueDefinition definition, ValuePredicate predicate) {
+    public ReferenceData(DataDefinition definition, DataPredicate predicate) {
         this.definition = definition;
         this.predicate = predicate;
     }
@@ -73,7 +73,7 @@ public class ReferenceValue extends Constant<Object> {
     protected Object doNext() {
         Object result = null;
         if (definition != null) {
-            Value referencedInstance = null;
+            Data referencedInstance = null;
 
             if (predicate != null) {
                 referencedInstance = definition.lookupValue(predicate);
@@ -82,30 +82,30 @@ public class ReferenceValue extends Constant<Object> {
                 result = referencedInstance.get();
             }
             if (fieldPredicate != null) {
-                Value referencedFieldValue = null;
-                if (referencedInstance instanceof InstanceValue) {
-                    referencedFieldValue = ((InstanceValue) referencedInstance).lookupValue(fieldPredicate);
+                Data referencedFieldData = null;
+                if (referencedInstance instanceof InstanceData) {
+                    referencedFieldData = ((InstanceData) referencedInstance).lookupValue(fieldPredicate);
                 }
-                if (referencedFieldValue == null && definition != null) {
-                    referencedFieldValue = definition.lookupValue(fieldPredicate);
+                if (referencedFieldData == null && definition != null) {
+                    referencedFieldData = definition.lookupValue(fieldPredicate);
                 }
-                if (referencedFieldValue != null) {
-                    result = referencedFieldValue.get();
+                if (referencedFieldData != null) {
+                    result = referencedFieldData.get();
                 }
             }
         }
         return result;
     }
 
-    public void setDefinition(ValueDefinition definition) {
+    public void setDefinition(DataDefinition definition) {
         this.definition = definition;
     }
 
-    public void setPredicate(ValuePredicate predicate) {
+    public void setPredicate(DataPredicate predicate) {
         this.predicate = predicate;
     }
 
-    public void setFieldPredicate(ValuePredicate fieldPredicate) {
+    public void setFieldPredicate(DataPredicate fieldPredicate) {
         this.fieldPredicate = fieldPredicate;
     }
 

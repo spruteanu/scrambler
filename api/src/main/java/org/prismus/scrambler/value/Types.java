@@ -18,7 +18,7 @@
 
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.Value;
+import org.prismus.scrambler.Data;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -30,8 +30,8 @@ import java.util.*;
  */
 public class Types {
     public static final String NOT_SUPPORTED_RANGE_TYPE_MSG = "Not supported range method for provided class type: %s, range of [%s, %s]";
-    public static Map<Class, Class<? extends Value>> randomTypeMap = lookupRandomTypeMap();
-    public static Map<Class, Class<? extends Value>> incrementTypeMap = lookupIncrementTypeMap();
+    public static Map<Class, Class<? extends Data>> randomTypeMap = lookupRandomTypeMap();
+    public static Map<Class, Class<? extends Data>> incrementTypeMap = lookupIncrementTypeMap();
     public static Map<Class, Class> arrayTypeMap = new LinkedHashMap<Class, Class>() {{
         put(byte.class, byte[].class);
         put(short.class, short[].class);
@@ -41,7 +41,7 @@ public class Types {
         put(int.class, int[].class);
         put(long.class, long[].class);
     }};
-    public static Map<Class, Class<? extends Value>> primitivesArrayTypeMap = lookupPrimitiveArrayTypeMap();
+    public static Map<Class, Class<? extends Data>> primitivesArrayTypeMap = lookupPrimitiveArrayTypeMap();
     public static Map<Class, Class> primitiveWrapperMap = new LinkedHashMap<Class, Class>() {{
         put(byte.class, Byte.class);
         put(short.class, Short.class);
@@ -64,8 +64,8 @@ public class Types {
         return Collections.unmodifiableSet(incrementTypeMap.keySet());
     }
 
-    private static Map<Class, Class<? extends Value>> lookupRandomTypeMap() {
-        final Map<Class, Class<? extends Value>> typeMap = new LinkedHashMap<Class, Class<? extends Value>>();
+    private static Map<Class, Class<? extends Data>> lookupRandomTypeMap() {
+        final Map<Class, Class<? extends Data>> typeMap = new LinkedHashMap<Class, Class<? extends Data>>();
         typeMap.put(Byte.TYPE, RandomByte.class);
         typeMap.put(Byte.class, RandomByte.class);
         typeMap.put(byte[].class, ByteValueArray.class);
@@ -88,7 +88,7 @@ public class Types {
 
         typeMap.put(Integer.TYPE, RandomInteger.class);
         typeMap.put(Integer.class, RandomInteger.class);
-        typeMap.put(int[].class, IntValueArray.class);
+        typeMap.put(int[].class, IntDataArray.class);
 
         typeMap.put(Long.TYPE, RandomLong.class);
         typeMap.put(Long.class, RandomLong.class);
@@ -104,8 +104,8 @@ public class Types {
         return typeMap;
     }
 
-    private static Map<Class, Class<? extends Value>> lookupIncrementTypeMap() {
-        final Map<Class, Class<? extends Value>> typeMap = new LinkedHashMap<Class, Class<? extends Value>>();
+    private static Map<Class, Class<? extends Data>> lookupIncrementTypeMap() {
+        final Map<Class, Class<? extends Data>> typeMap = new LinkedHashMap<Class, Class<? extends Data>>();
         typeMap.put(Byte.TYPE, IncrementalByte.class);
         typeMap.put(Byte.class, IncrementalByte.class);
         typeMap.put(byte[].class, ByteValueArray.class);
@@ -124,7 +124,7 @@ public class Types {
 
         typeMap.put(Integer.TYPE, IncrementalInteger.class);
         typeMap.put(Integer.class, IncrementalInteger.class);
-        typeMap.put(int[].class, IntValueArray.class);
+        typeMap.put(int[].class, IntDataArray.class);
 
         typeMap.put(Long.TYPE, IncrementalLong.class);
         typeMap.put(Long.class, IncrementalLong.class);
@@ -140,14 +140,14 @@ public class Types {
         return typeMap;
     }
 
-    private static Map<Class, Class<? extends Value>> lookupPrimitiveArrayTypeMap() {
-        final Map<Class, Class<? extends Value>> typeMap = new LinkedHashMap<Class, Class<? extends Value>>();
+    private static Map<Class, Class<? extends Data>> lookupPrimitiveArrayTypeMap() {
+        final Map<Class, Class<? extends Data>> typeMap = new LinkedHashMap<Class, Class<? extends Data>>();
         typeMap.put(byte.class, ByteValueArray.class);
         typeMap.put(short.class, ShortValueArray.class);
         typeMap.put(boolean.class, BooleanValueArray.class);
         typeMap.put(double.class, DoubleValueArray.class);
         typeMap.put(float.class, FloatValueArray.class);
-        typeMap.put(int.class, IntValueArray.class);
+        typeMap.put(int.class, IntDataArray.class);
         typeMap.put(long.class, LongValueArray.class);
         return typeMap;
     }

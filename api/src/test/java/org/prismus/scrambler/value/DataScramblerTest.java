@@ -23,11 +23,11 @@ public class DataScramblerTest {
         Assert.assertEquals(1, ObjectScrambler.constant(1).next().longValue());
 
         // declare a value instance that will return randomly generated array
-        final Value<Long[]> longValues = ArrayScrambler.randomArray(1L, 10);
+        final Data<Long[]> longValues = ArrayScrambler.randomArray(1L, 10);
         Assert.assertEquals(10, longValues.next().length);
 
         // declare a value instance that will return randomly generated primitives array
-        final Value<long[]> longPrimitives = ArrayScrambler.randomArray(new long[10]);
+        final Data<long[]> longPrimitives = ArrayScrambler.randomArray(new long[10]);
         Assert.assertEquals(10, longPrimitives.next().length);
 
         // declare a value instance that will return an element from provided array randomly
@@ -35,11 +35,11 @@ public class DataScramblerTest {
                 ArrayScrambler.randomOf(new Integer[]{1, 2, 3, 4}).next()));
 
         // declare a value instance that will generate an array of Long objects randomly in a specified range
-        final Value<Long[]> randomsInRange = ArrayScrambler.arrayOf(new Long[10], NumberScrambler.random(900L, 1000L));
+        final Data<Long[]> randomsInRange = ArrayScrambler.arrayOf(new Long[10], NumberScrambler.random(900L, 1000L));
         Assert.assertEquals(10, randomsInRange.next().length);
 
         // declare a value instance that will generate an array of short primitives randomly in a specified range
-        final Value<short[]> primitivesInRange = ArrayScrambler.arrayOf(new short[10], NumberScrambler.random((short) 900, (short) 1000));
+        final Data<short[]> primitivesInRange = ArrayScrambler.arrayOf(new short[10], NumberScrambler.random((short) 900, (short) 1000));
         Assert.assertEquals(10, primitivesInRange.next().length);
     }
 
@@ -49,11 +49,11 @@ public class DataScramblerTest {
         Assert.assertNotNull(ObjectScrambler.random(true).next());
 
         // value instance that will return randomly generated Boolean array
-        final Value<Boolean[]> booleanValues = ArrayScrambler.randomArray(true, 10);
+        final Data<Boolean[]> booleanValues = ArrayScrambler.randomArray(true, 10);
         Assert.assertEquals(10, booleanValues.next().length);
 
         // value instance that will return randomly generated primitives boolean array
-        final Value<boolean[]> booleanPrimitives = ArrayScrambler.randomArray(new boolean[10]);
+        final Data<boolean[]> booleanPrimitives = ArrayScrambler.randomArray(new boolean[10]);
         Assert.assertEquals(10, booleanPrimitives.next().length);
     }
 
@@ -72,7 +72,7 @@ public class DataScramblerTest {
         System.out.println(NumberScrambler.increment(BigInteger.valueOf(-1), BigInteger.valueOf(-1)).next());
 
         // generate incremental array with step (100) starting from 0
-        Value<Integer[]> integerArray = ArrayScrambler.incrementArray(new Integer[10], 100, 10);
+        Data<Integer[]> integerArray = ArrayScrambler.incrementArray(new Integer[10], 100, 10);
         System.out.println(Arrays.asList(integerArray.next()));
 
         // generate incremental array with step (100) starting from 1
@@ -80,7 +80,7 @@ public class DataScramblerTest {
         System.out.println(Arrays.asList(integerArray.next()));
 
         // generate incremental array with step (10.5) starting from 0
-        Value<float[]> primitiveFloatArray = ArrayScrambler.incrementArray(new float[10], 10.5f, 10);
+        Data<float[]> primitiveFloatArray = ArrayScrambler.incrementArray(new float[10], 10.5f, 10);
         System.out.println(Arrays.asList(primitiveFloatArray.next()));
 
         // generate random integer
@@ -190,7 +190,7 @@ public class DataScramblerTest {
     public void test_map_methods() {
         System.out.println(MapScrambler.of(LinkedHashMap.class, new LinkedHashMap() {{
             put("ValueSID", NumberScrambler.increment(1));
-            put("SomeID", new Constant(1));
+            put("SomeID", new ConstantData(1));
             put("Amount", NumberScrambler.increment(100.0d));
             put("products", CollectionScrambler.collectionOf(ArrayList.class, MapScrambler.of(LinkedHashMap.class, new LinkedHashMap() {{
                 put("ProductSID", NumberScrambler.increment(1));
@@ -202,7 +202,7 @@ public class DataScramblerTest {
 
     @Test
     public void test_instance_all_randomly_generated() {
-        final InstanceValue<Person> personValue = InstanceScrambler.instanceOf(Person.class);
+        final InstanceData<Person> personValue = InstanceScrambler.instanceOf(Person.class);
         Person person = personValue.next();
         Assert.assertNotNull(person.getFirstName());
         Assert.assertNotNull(person.getLastName());
@@ -217,7 +217,7 @@ public class DataScramblerTest {
 
     @Test
     public void test_parse_definition() throws IOException {
-        final InstanceValue<Person> personValue = InstanceScrambler.instanceOf(Person.class, "/person-definition.groovy");
+        final InstanceData<Person> personValue = InstanceScrambler.instanceOf(Person.class, "/person-definition.groovy");
         Person person = personValue.next();
         Assert.assertNotNull(person.getFirstName());
         Assert.assertNotNull(person.getLastName());
@@ -226,7 +226,7 @@ public class DataScramblerTest {
         final Pattern pattern = Pattern.compile("[A-Z]{2}-\\d+");
         Assert.assertTrue(false == pattern.matcher(person.getAddress().getPostalCode()).matches());
 
-        final InstanceValue<Address> addressValue = InstanceScrambler.instanceOf(Address.class, "/address-definition.groovy");
+        final InstanceData<Address> addressValue = InstanceScrambler.instanceOf(Address.class, "/address-definition.groovy");
         Address address = addressValue.next();
         Assert.assertNotNull(address.getNumber());
         Assert.assertNotNull(address.getStreet());
@@ -247,7 +247,7 @@ public class DataScramblerTest {
 
     @Test
     public void test_parse_definition_with_context_map_injection() throws IOException {
-        final InstanceValue<Address> addressValue = InstanceScrambler.instanceOf(Address.class, new HashMap<String, Object>() {{
+        final InstanceData<Address> addressValue = InstanceScrambler.instanceOf(Address.class, new HashMap<String, Object>() {{
             put("state", "Washington");
         }}, "/address-definition.groovy");
         Address address = addressValue.next();
@@ -261,7 +261,7 @@ public class DataScramblerTest {
 
     @Test
     public void test_complex_reused_definitions() throws IOException {
-        final InstanceValue<School> schoolValue = InstanceScrambler.instanceOf(School.class, new HashMap<String, Object>() {{
+        final InstanceData<School> schoolValue = InstanceScrambler.instanceOf(School.class, new HashMap<String, Object>() {{
             put("state", "Washington");
         }}, "/school-definition.groovy");
         School school = schoolValue.next();

@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalBigDecimal extends Constant<BigDecimal> {
+public class IncrementalBigDecimal extends ConstantData<BigDecimal> {
     private BigDecimal step;
     private static final BigDecimal DEFAULT_STEP = BigDecimal.valueOf(1L);
 

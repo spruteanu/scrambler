@@ -1,15 +1,15 @@
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.ValuePredicate;
+import org.prismus.scrambler.DataPredicate;
 
 import java.util.regex.Pattern;
 
 /**
- * Value predicate that filters non JDK classes, used internally
+ * Data predicate that filters non JDK classes, used internally
  *
  * @author Serge Pruteanu
  */
-public class InstanceValueTypePredicate implements ValuePredicate {
+public class InstanceDataTypePredicate implements DataPredicate {
     private Pattern pattern = Pattern.compile("^(?!java).+");
 
     @Override

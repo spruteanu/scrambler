@@ -6,7 +6,7 @@ provided definitions.
 **Example of automatically generated fields for Person.class**  
 ```java
 
-final InstanceValue<Person> personValue = InstanceScrambler.instanceOf(Person.class);
+final InstanceData<Person> personValue = InstanceScrambler.instanceOf(Person.class);
 Person person = personValue.next();
 Assert.assertNotNull(person.getFirstName());
 Assert.assertNotNull(person.getLastName());
@@ -24,10 +24,10 @@ Assert.assertNotNull(person.getAddress().getState());
 
 ```groovy
 
-void 'check value definitions (tree definition) for instance'() {
+void 'check data definitions (tree definition) for instance'() {
 given:
 GroovyValueDefinition.register()
-final instance = new InstanceValue<Order>(Order).usingDefinitions(
+final instance = new InstanceData<Order>(Order).usingDefinitions(
         (BigDecimal): BigDecimal.ONE.random(1.0, 100.0),
         (int[]): int.arrayOf(10.increment(10)),
         person: Person.definition(
@@ -51,7 +51,7 @@ final order = instance.next()
 
 ```
 
-Bellow snippet shows how values definition script is used to create an instance of type School 
+Bellow snippet shows how datas definition script is used to create an instance of type School 
 with address generated classes related to Washington state (cities, adequate zip codes), and adequate Persons with "real" 
 names, "adequate" phone numbers, DOBs.
 
@@ -59,7 +59,7 @@ names, "adequate" phone numbers, DOBs.
 
     @Test
     public void test_complex_reused_definitions() throws IOException {
-        final InstanceValue<School> schoolValue = InstanceScrambler.instanceOf(School.class, new HashMap<String, Object>() {{
+        final InstanceData<School> schoolValue = InstanceScrambler.instanceOf(School.class, new HashMap<String, Object>() {{
             put("state", "Washington");
         }}, "/school-definition.groovy");
         School school = schoolValue.next();

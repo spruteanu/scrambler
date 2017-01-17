@@ -1,7 +1,6 @@
 /*
  * Data Scrambler, Data Generation API
  * Copyright (c) 2015, Sergiu Prutean. All rights reserved.
- *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -14,33 +13,34 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
+ *
  */
 
-package org.prismus.scrambler;
+package org.prismus.scrambler.value;
 
-import java.io.Serializable;
+import org.prismus.scrambler.Data;
+
+import java.util.List;
 
 /**
- * An interface used to generate data.
+ * Container of values, that will generate an array of provided values
  *
  * @author Serge Pruteanu
  */
-public interface Value<T> extends Serializable, Cloneable {
+public class ArrayContainerData extends ConstantData<Object[]> {
+    private List<Data> argumentTypes;
 
-    /**
-     * Generates value.
-     *
-     * @return an instance of object
-     */
-    T next();
+    public ArrayContainerData(List<Data> argumentTypes) {
+        this.argumentTypes = argumentTypes;
+    }
 
-    /**
-     * Gets current generated value
-     *
-     * @return current value
-     */
-    T get();
-
-    Object clone() throws CloneNotSupportedException;
+    @Override
+    protected Object[] doNext() {
+        final Object[] results = new Object[argumentTypes.size()];
+        for (int i = 0; i < argumentTypes.size(); i++) {
+            results[i] = argumentTypes.get(i).next();
+        }
+        return results;
+    }
 
 }

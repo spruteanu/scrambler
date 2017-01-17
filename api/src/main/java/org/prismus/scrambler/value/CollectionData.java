@@ -18,38 +18,38 @@
 
 package org.prismus.scrambler.value;
 
-import org.prismus.scrambler.Value;
+import org.prismus.scrambler.Data;
 
 import java.util.Collection;
 
 /**
- * Value instance that allows to create collection of values using provided value instance strategy (@code instance)
+ * Data instance that allows to create collection of values using provided value instance strategy (@code instance)
  *
  * @author Serge Pruteanu
  */
-public class CollectionValue<V, T extends Collection<V>> extends Constant<T> {
+public class CollectionData<V, T extends Collection<V>> extends ConstantData<T> {
     private Integer count;
-    private Value<V> instance;
+    private Data<V> instance;
     private Class<T> clazzType;
 
-    public CollectionValue(T collection, Value<V> value) {
-        this(collection, value, null);
+    public CollectionData(T collection, Data<V> data) {
+        this(collection, data, null);
     }
 
-    public CollectionValue(T value, Value<V> value1, Integer count) {
+    public CollectionData(T value, Data<V> data1, Integer count) {
         super(value);
-        this.instance = value1;
+        this.instance = data1;
         this.count = count;
     }
 
-    public CollectionValue(Class<T> clazzType, Value<V> value1, Integer count) {
+    public CollectionData(Class<T> clazzType, Data<V> data1, Integer count) {
         super(null);
         this.clazzType = clazzType;
-        this.instance = value1;
+        this.instance = data1;
         this.count = count;
     }
 
-    public CollectionValue<V, T> count(Integer count) {
+    public CollectionData<V, T> count(Integer count) {
         this.count = count;
         return this;
     }
@@ -58,7 +58,7 @@ public class CollectionValue<V, T extends Collection<V>> extends Constant<T> {
         this.count = count;
     }
 
-    public Value<V> getInstance() {
+    public Data<V> getInstance() {
         return instance;
     }
 
@@ -82,7 +82,7 @@ public class CollectionValue<V, T extends Collection<V>> extends Constant<T> {
             clazzType = (Class<T>) collection.getClass();
         }
         if (clazzType == null) {
-            throw new RuntimeException(String.format("Value map type is undefined, either clazzType or collection instance: %s should be provided", collection));
+            throw new RuntimeException(String.format("Data map type is undefined, either clazzType or collection instance: %s should be provided", collection));
         }
 
         collection = (T) Util.createInstance(clazzType, new Object[]{});

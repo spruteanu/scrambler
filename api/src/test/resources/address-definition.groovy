@@ -1,7 +1,7 @@
-import org.prismus.scrambler.Value
+import org.prismus.scrambler.Data
 import org.prismus.scrambler.value.AbstractRandomRange
-import org.prismus.scrambler.value.Constant
-import org.prismus.scrambler.value.ReferenceValue
+import org.prismus.scrambler.value.ConstantData
+import org.prismus.scrambler.value.ReferenceData
 
 import java.util.zip.ZipFile
 
@@ -10,12 +10,12 @@ import java.util.zip.ZipFile
  *
  * @author Serge Pruteanu
  */
-definition(~/(?i)\w*number/, new Constant<String>() {
-    private Value<Integer> randomNumberValue = Integer.random(1, 99999)
+definition(~/(?i)\w*number/, new ConstantData<String>() {
+    private Data<Integer> randomNumber = Integer.random(1, 99999)
 
     @Override
     protected String doNext() {
-        return randomNumberValue.next().toString()
+        return randomNumber.next().toString()
     }
 })
 
@@ -96,12 +96,12 @@ try {
     } catch (Exception ignore) { }
 }
 
-definition(~/(?i)street/, new Constant<String>() {
+definition(~/(?i)street/, new ConstantData<String>() {
     private static Map<Integer, String> sideMap = [1: 'NE', 2: 'NW', 3: 'SE', 4: 'SW']
     private static Map<Integer, String> suffixMap = [1: 'st', 2: 'nd', 3: 'rd', ]
 
-    private Value<Integer> randomNumber = Integer.random(1, 24)
-    private Value<Integer> randomStreetNumber = Integer.random(1, 270)
+    private Data<Integer> randomNumber = Integer.random(1, 24)
+    private Data<Integer> randomStreetNumber = Integer.random(1, 270)
 
     @Override
     protected String doNext() {
@@ -130,8 +130,8 @@ definition(~/(?i)street/, new Constant<String>() {
 
 })
 
-definition(~/(?i)state/, new Constant<String>() {
-    private Value randomState = stateInfoMap.keySet().randomOf()
+definition(~/(?i)state/, new ConstantData<String>() {
+    private Data randomState = stateInfoMap.keySet().randomOf()
     private String state = getContextProperty('state')
     @Override
     protected String doNext() {
@@ -139,7 +139,7 @@ definition(~/(?i)state/, new Constant<String>() {
     }
 })
 
-definition(~/(?i)city/, new ReferenceValue(~/(?i)state/) {
+definition(~/(?i)city/, new ReferenceData(~/(?i)state/) {
     @Override
     protected Object doNext() {
         String state = super.doNext()
@@ -147,7 +147,7 @@ definition(~/(?i)city/, new ReferenceValue(~/(?i)state/) {
     }
 })
 
-definition(~/(?i)(?:postal\w*)|(?:zip\w*)/, new ReferenceValue(~/(?i)state/) {
+definition(~/(?i)(?:postal\w*)|(?:zip\w*)/, new ReferenceData(~/(?i)state/) {
     private AbstractRandomRange<Integer> randomRange = Integer.random(1, 1000)
     @Override
     protected Object doNext() {

@@ -1,10 +1,10 @@
 package org.prismus.scrambler.test;
 
+import org.prismus.scrambler.Data;
 import org.prismus.scrambler.InstanceScrambler;
-import org.prismus.scrambler.Value;
-import org.prismus.scrambler.value.ArrayContainerValue;
-import org.prismus.scrambler.value.InstanceValue;
-import org.prismus.scrambler.value.ValueDefinition;
+import org.prismus.scrambler.value.ArrayContainerData;
+import org.prismus.scrambler.value.InstanceData;
+import org.prismus.scrambler.value.DataDefinition;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -17,7 +17,7 @@ import java.util.concurrent.Callable;
  * @author Serge Pruteanu
  */
 public class BoxTestSuite {
-    private InstanceValue inspected;
+    private InstanceData inspected;
     private Class inspectedType;
 
     private final List<Callable<TestContext>> executionsList = new ArrayList<Callable<TestContext>>();
@@ -31,25 +31,25 @@ public class BoxTestSuite {
 
     @SuppressWarnings("unchecked")
     public BoxTestSuite inspect(Object inspected) {
-        if (inspected instanceof InstanceValue) {
-            this.inspected = (InstanceValue) inspected;
+        if (inspected instanceof InstanceData) {
+            this.inspected = (InstanceData) inspected;
         } else if (inspected instanceof Class) {
             this.inspected = InstanceScrambler.instanceOf((Class) inspected);
         } else if (inspected instanceof String) {
             this.inspected = InstanceScrambler.instanceOf((String) inspected);
         } else {
-            this.inspected = new InstanceValue().usingValue(inspected);
+            this.inspected = new InstanceData().usingValue(inspected);
         }
         inspectedType = this.inspected.lookupType();
         return this;
     }
 
-    Value<Object[]> methodValues(String methodName, Class... args) {
-        final ValueDefinition definition = inspected.getDefinition();
+    Data<Object[]> methodValues(String methodName, Class... args) {
+        final DataDefinition definition = inspected.getDefinition();
         if (!definition.hasDefinitions()) {
             definition.scanDefinitions(inspectedType.getName() + "." + methodName);
         }
-        return new ArrayContainerValue(definition.lookupValues(Arrays.asList(args)));
+        return new ArrayContainerData(definition.lookupValues(Arrays.asList(args)));
     }
 
     public BoxTestSuite scanDefinitions(String... definitions) {
@@ -74,7 +74,7 @@ public class BoxTestSuite {
         return methodSuite;
     }
 
-    public MethodSuite of(String method, Value... args) throws NoSuchMethodException {
+    public MethodSuite of(String method, Data... args) throws NoSuchMethodException {
         final MethodSuite methodSuite = new MethodSuite(method, args);
         executionsList.add(new MethodExecutionCallable(methodSuite));
         return methodSuite;
@@ -140,7 +140,7 @@ public class BoxTestSuite {
         private Method method;
         private final List<Object> args;
 
-        private final ValueDefinition definition = new ValueDefinition();
+        private final DataDefinition definition = new DataDefinition();
         private MethodContext context;
         private final List<Expect> expectList = new ArrayList<Expect>();
 
@@ -265,8 +265,8 @@ public class BoxTestSuite {
                     if (arg instanceof Class) {
                         arg = definition.lookupValue(null, (Class) arg);
                     }
-                    if (arg instanceof Value) {
-                        arg = ((Value) arg).next();
+                    if (arg instanceof Data) {
+                        arg = ((Data) arg).next();
                     }
                     methodArgs[i] = arg;
                 }

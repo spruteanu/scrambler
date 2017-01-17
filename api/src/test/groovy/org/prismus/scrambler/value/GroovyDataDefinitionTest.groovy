@@ -1,31 +1,31 @@
 package org.prismus.scrambler.value
 
-import org.prismus.scrambler.Value
+import org.prismus.scrambler.Data
 import spock.lang.Specification
 
 /**
  * @author Serge Pruteanu
  */
-class GroovyValueDefinitionTest extends Specification {
+class GroovyDataDefinitionTest extends Specification {
 
-    void 'test scan value definitions'() {
+    void 'test scan data definitions'() {
         final foundResources = new LinkedHashSet<String>()
-        ValueDefinition.Holder.lookupJarDefinitions(getClass().getResource('/test-scan-value-definition.jar').toURI().path, foundResources)
+        DataDefinition.Holder.lookupJarDefinitions(getClass().getResource('/test-data-scan-definition.jar').toURI().path, foundResources)
         expect:
         1 == foundResources.size()
-        1 == ValueDefinition.matchValueDefinitions('test-scan*', foundResources).size()
-        1 == ValueDefinition.matchValueDefinitions(null, foundResources).size()
-        0 == ValueDefinition.matchValueDefinitions('resource', foundResources).size()
+        1 == DataDefinition.matchDefinitions('test-data-scan*', foundResources).size()
+        1 == DataDefinition.matchDefinitions(null, foundResources).size()
+        0 == DataDefinition.matchDefinitions('resource', foundResources).size()
 
         and:'check scan definitions'
-        final definition = new ValueDefinition()
-        definition.usingLibraryDefinitions('test-scan*', foundResources)
+        final definition = new DataDefinition()
+        definition.usingLibraryDefinitions('test-data-scan*', foundResources)
         definition.getDefinitionMap().size() > 0
     }
 
     void 'test parse type text definitions'() {
         given:
-        final parser = new GroovyValueDefinition()
+        final parser = new GroovyDataDefinition()
 
         expect:
         parser.parseDefinitionText("definition Integer.random(1, 100)").definitionMap.size() > 0
@@ -69,26 +69,26 @@ constant 'some template string'
 
     void 'test parse from resource'() {
         given:
-        def parser = new GroovyValueDefinition()
-        ValueDefinition valueDefinition = parser.parseDefinition('/test-vd.groovy')
+        def parser = new GroovyDataDefinition()
+        DataDefinition dataDefinition = parser.parseDefinition('/test-vd.groovy')
 
         expect:
-        7 == valueDefinition.definitionMap.size()
+        7 == dataDefinition.definitionMap.size()
 
         and: 'check definitions parse from different resource'
         parser.parseDefinition(this.class.getResource('/test-vd.groovy')).definitionMap.size() > 0
 
-        and: 'check value parse from different resource'
-        Value.isInstance(parser.parseValue(this.class.getResource('/test-value.groovy')))
-        Value.isInstance(parser.parseValue('/test-value.groovy'))
+        and: 'check data parsed from different resource'
+        Data.isInstance(parser.parseData(this.class.getResource('/test-data.groovy')))
+        Data.isInstance(parser.parseData('/test-data.groovy'))
     }
 
-    void 'test parse value type definitions'() {
+    void 'test parse data type definitions'() {
         given:
-        final parser = new GroovyValueDefinition()
+        final parser = new GroovyDataDefinition()
 
         expect:
-        Value.isInstance(parser.parseValueText("2.random(1, 100)"))
+        Data.isInstance(parser.parseDataText("2.random(1, 100)"))
 
         parser.parseDefinitionText("definition 2.random(1, 100)").definitionMap.size() > 0
         parser.parseDefinitionText("definition 3L.random(1L, 100L)").definitionMap.size() > 0
@@ -124,9 +124,9 @@ definition 'some template string'.constant()
 """).definitionMap.size() > 0
     }
 
-    void 'test property value definition'() {
+    void 'test property definition'() {
         given:
-        final parser = new GroovyValueDefinition()
+        final parser = new GroovyDataDefinition()
 
         expect:
         parser.parseDefinitionText("definition '*Sid', 1.0").definitionMap.size() > 0
@@ -158,16 +158,16 @@ definition 'some template string'.constant()
 
     void 'test parse text class definitions'() {
         given:
-        final parser = new GroovyValueDefinition()
+        final parser = new GroovyDataDefinition()
 
         and:
-        final valueDefinition = parser.parseDefinitionText("""
+        final dataDefinition = parser.parseDefinitionText("""
 definition org.prismus.scrambler.beans.School.definition {
         definition '*Id', 1
 }
 """)
         expect:
-        valueDefinition.definitionMap.size() > 0
+        dataDefinition.definitionMap.size() > 0
 
         and:
         parser.parseDefinitionText("""
@@ -185,7 +185,7 @@ definition org.prismus.scrambler.beans.School.definition([2.0.random(), 3], {
 
     void 'test parse text with parent reference definition'() {
         given:
-        final parser = new GroovyValueDefinition()
+        final parser = new GroovyDataDefinition()
 
         and:
         def definition = parser.parseDefinitionText("""
@@ -202,24 +202,24 @@ definition org.prismus.scrambler.beans.School.definition {
         parser.parseDefinitionText("reference '*Parent'").definitionMap.size() > 0
     }
 
-    void 'test parse container with value'() {
+    void 'test parse container with data'() {
         given:
-        final parser = new GroovyValueDefinition()
+        final parser = new GroovyDataDefinition()
 
         and:
-        def valueDefinition = parser.parseDefinitionText("definition 'mumu', [:].of(prop1: 'param'.increment('%s%d', 1), prop2: 1.increment(1))")
+        def dataDefinition = parser.parseDefinitionText("definition 'mumu', [:].of(prop1: 'param'.increment('%s%d', 1), prop2: 1.increment(1))")
 
         expect:
-        valueDefinition.definitionMap.size() > 0
+        dataDefinition.definitionMap.size() > 0
 
         and:
         0 < parser.parseDefinitionText("definition 'cucu*', [:].of(prop1: 'param'.increment('%s%d', 1), prop2: 1.increment(1))").definitionMap.size()
         0 < parser.parseDefinitionText("definition 'cucu*', [].of('param'.random(10))").definitionMap.size()
     }
 
-    void 'test value definitions DSL from code'() {
+    void 'test data definitions DSL from code'() {
         given:
-        GroovyValueDefinition.register()
+        GroovyDataDefinition.register()
 
         expect:
         null != 'text'.increment('%s%d')
@@ -237,14 +237,14 @@ definition org.prismus.scrambler.beans.School.definition {
 
     void 'test parse text for map'() {
         given:
-        final parser = new GroovyValueDefinition()
-        final valueDefinition = parser.parseDefinitionText("""
+        final parser = new GroovyDataDefinition()
+        final dataDefinition = parser.parseDefinitionText("""
 definition('a*':1.constant(), b:2.random(), c:'cucu')
 definition('*Sid': Integer.random(1, 100))
 """)
 
         expect:
-        valueDefinition.definitionMap.size() > 0
+        dataDefinition.definitionMap.size() > 0
     }
 
 }

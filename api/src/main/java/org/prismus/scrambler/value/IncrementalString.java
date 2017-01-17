@@ -21,7 +21,7 @@ package org.prismus.scrambler.value;
 /**
  * @author Serge Pruteanu
  */
-public class IncrementalString extends Constant<String> {
+public class IncrementalString extends ConstantData<String> {
     private static final String DEFAULT_PATTERN = "%s%010d";
     private static final int DEFAULT_STEP = 1;
 
