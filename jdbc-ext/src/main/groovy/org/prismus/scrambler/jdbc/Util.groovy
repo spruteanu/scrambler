@@ -8,7 +8,7 @@ import java.sql.ResultSetMetaData
 import java.sql.Statement
 
 /**
- * todo: add description
+ * DB utilities methods
  *
  * @author Serge Pruteanu
  */
@@ -31,10 +31,6 @@ final class Util {
         try {
             statement?.close()
         } catch (Exception ignore) { }
-    }
-
-    static String buildInsertStatement(String table, Collection<String> sortedColumns) {
-        return "INSERT INTO $table (${sortedColumns.join(',')}) VALUES (${':' + sortedColumns.join(', :')})"
     }
 
     static Map<String, Object> asMap(ResultSet rs) {

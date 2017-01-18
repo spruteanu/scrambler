@@ -12,30 +12,30 @@ import javax.sql.DataSource
  * @author Serge Pruteanu
  */
 @CompileStatic
-class DatabaseBatchBuilder {
+class DbDataBuilder {
     private boolean generateNullable = true
     private List<TableMeta> tables = new ArrayList<TableMeta>()
-    private DataSourceDefinition definition
+    private DbDataDefinition definition
 
-    protected DatabaseBatchBuilder(DataSource dataSource) {
-        this(new DataSourceDefinition(dataSource))
+    protected DbDataBuilder(DataSource dataSource) {
+        this(new DbDataDefinition(dataSource))
     }
 
-    protected DatabaseBatchBuilder(DataSourceDefinition dataSourceDefinition) {
+    protected DbDataBuilder(DbDataDefinition dataSourceDefinition) {
         this.definition = dataSourceDefinition
     }
 
-    DatabaseBatchBuilder generateNullable() {
+    DbDataBuilder generateNullable() {
         this.generateNullable = true
         return this
     }
 
-    DatabaseBatchBuilder generateRequiredOnly() {
+    DbDataBuilder generateRequiredOnly() {
         this.generateNullable = false
         return this
     }
 
-    DatabaseBatchBuilder forTable(String table) {
+    DbDataBuilder forTable(String table) {
         final tableMap = definition.tableMap
         if (!tableMap.containsKey(table)) {
             throw new IllegalArgumentException("'$table' is not found in provided datasource")
@@ -44,22 +44,22 @@ class DatabaseBatchBuilder {
         return this
     }
 
-    DatabaseBatchBuilder usingDefinition(DataSourceDefinition definition) {
+    DbDataBuilder usingDefinition(DbDataDefinition definition) {
         this.definition = definition
         return this
     }
 
-    DatabaseBatchBuilder usingDefinition(String... definitions) {
+    DbDataBuilder usingDefinition(String... definitions) {
         definition.usingDefinitions(definitions)
         return this
     }
 
-    DatabaseBatchBuilder scanDefinition(String definition, String... definitions) {
+    DbDataBuilder scanDefinition(String definition, String... definitions) {
         this.definition.scanDefinitions(definition, definitions)
         return this
     }
 
-    DatabaseBatchBuilder scanLibraryDefinition(String definitionMatcher) {
+    DbDataBuilder scanLibraryDefinition(String definitionMatcher) {
         definition.usingLibraryDefinitions(definitionMatcher)
         return this
     }
@@ -82,6 +82,7 @@ class DatabaseBatchBuilder {
             throw new IllegalStateException('No tables are defined for build')
         }
         sortTablesByFkDependency(tables)
+        // todo Serge: add multiple relationship types handling: 1x1, 1xMany, Manyx1, ManyXMany
         // todo Serge: implement me
         throw new RuntimeException('Implement me')
     }

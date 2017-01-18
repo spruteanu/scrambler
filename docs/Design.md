@@ -393,7 +393,7 @@ for (ClassRoom classRoom : school.rooms) {
 ```
 
 #### Generate field data based on other fields
-Example where rules are defined for person definitions. There is a list of male and female names, and based on chosen 
+Example whereClosure rules are defined for person definitions. There is a list of male and female names, and based on chosen 
 name, an according gender should be set.
 
 **An example snippet from person-definition.groovy:**<br/>

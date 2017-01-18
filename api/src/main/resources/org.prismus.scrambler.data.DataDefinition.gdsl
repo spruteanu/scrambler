@@ -4,7 +4,7 @@
  * @author Serge Pruteanu
  */
 contributor context(ctype: Number.name), {
-    findClass('org.prismus.scrambler.object.GroovyDataDefinition.NumberCategory')?.methods?.each {
+    findClass('org.prismus.scrambler.data.GroovyDataDefinition.NumberCategory')?.methods?.each {
         if (!it.isConstructor()) {
             add it
         }
@@ -12,7 +12,7 @@ contributor context(ctype: Number.name), {
 }
 
 contributor context(ctype: Date.name), {
-    findClass('org.prismus.scrambler.object.GroovyDataDefinition.DateCategory')?.methods?.each {
+    findClass('org.prismus.scrambler.data.GroovyDataDefinition.DateCategory')?.methods?.each {
         if (!it.isConstructor()) {
             add it
         }
@@ -20,7 +20,7 @@ contributor context(ctype: Date.name), {
 }
 
 contributor context(ctype: String.name), {
-    findClass('org.prismus.scrambler.object.GroovyDataDefinition.StringCategory')?.methods?.each {
+    findClass('org.prismus.scrambler.data.GroovyDataDefinition.StringCategory')?.methods?.each {
         if (!it.isConstructor()) {
             add it
         }
@@ -28,7 +28,7 @@ contributor context(ctype: String.name), {
 }
 
 contributor context(ctype: Collection.name), {
-    findClass('org.prismus.scrambler.object.GroovyDataDefinition.CollectionCategory')?.methods?.each {
+    findClass('org.prismus.scrambler.data.GroovyDataDefinition.CollectionCategory')?.methods?.each {
         if (!it.isConstructor()) {
             add it
         }
@@ -36,7 +36,7 @@ contributor context(ctype: Collection.name), {
 }
 
 contributor context(ctype: Map.name), {
-    findClass('org.prismus.scrambler.object.GroovyDataDefinition.MapCategory')?.methods?.each {
+    findClass('org.prismus.scrambler.data.GroovyDataDefinition.MapCategory')?.methods?.each {
         if (!it.isConstructor()) {
             add it
         }
@@ -44,7 +44,7 @@ contributor context(ctype: Map.name), {
 }
 
 contributor context(ctype: Object.name), {
-    findClass('org.prismus.scrambler.object.GroovyDataDefinition.ObjectCategory')?.methods?.each {
+    findClass('org.prismus.scrambler.data.GroovyDataDefinition.ObjectCategory')?.methods?.each {
         if (!it.isConstructor()) {
             add it
         }
@@ -52,7 +52,7 @@ contributor context(ctype: Object.name), {
 }
 
 contributor context(ctype: Class.name), {
-    findClass('org.prismus.scrambler.object.GroovyDataDefinition.ClassCategory')?.methods?.each {
+    findClass('org.prismus.scrambler.data.GroovyDataDefinition.ClassCategory')?.methods?.each {
         if (!it.isConstructor()) {
             add it
         }
@@ -60,15 +60,15 @@ contributor context(ctype: Class.name), {
 }
 
 contributor context(ctype: Boolean.name), {
-    findClass('org.prismus.scrambler.object.GroovyDataDefinition.BooleanCategory')?.methods?.each {
+    findClass('org.prismus.scrambler.data.GroovyDataDefinition.BooleanCategory')?.methods?.each {
         if (!it.isConstructor()) {
             add it
         }
     }
 }
 
-contributor context(scope: scriptScope(name: ~/(?:.*definition|.*vd).groovy/)), {
-    findClass('org.prismus.scrambler.object.GroovyDataDefinition.DataDefinitionCategory')?.methods?.each {
+contributor context(scope: scriptScope(name: ~/(?:.*definition|.*vd|.*dd).groovy/)), {
+    findClass('org.prismus.scrambler.data.GroovyDataDefinition.DataDefinitionCategory')?.methods?.each {
         if (!it.isConstructor()) {
             add it
         }

@@ -9,7 +9,7 @@ import javax.sql.DataSource
 /**
  * @author Serge Pruteanu
  */
-class DataSourceDefinitionTest extends Specification {
+class DbDataDefinitionTest extends Specification {
     private static DataSource dataSource
 
     void setupSpec() {
@@ -23,7 +23,7 @@ class DataSourceDefinitionTest extends Specification {
     @SuppressWarnings("GroovyPointlessBoolean")
     void 'verify database population'() {
         given:
-        final dataSourceDefinition = new DataSourceDefinition(dataSource).build()
+        final dataSourceDefinition = new DbDataDefinition(dataSource).build()
 
         expect:
         dataSourceDefinition != null
@@ -47,8 +47,8 @@ class DataSourceDefinitionTest extends Specification {
 
     void 'verify tables sorted by fks'() {
         given:
-        final dataSourceDefinition = new DataSourceDefinition(dataSource).build()
-        final builder = new DatabaseBatchBuilder(dataSourceDefinition)
+        final dataSourceDefinition = new DbDataDefinition(dataSource).build()
+        final builder = new DbDataBuilder(dataSourceDefinition)
 
         final tables = dataSourceDefinition.tableMap.subMap('cars', 'rentalRates', 'employees', 'customers', 'rentalOrders').values().toList()
         builder.sortTablesByFkDependency(tables)

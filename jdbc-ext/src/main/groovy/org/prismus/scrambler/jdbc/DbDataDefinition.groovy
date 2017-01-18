@@ -17,7 +17,7 @@ import java.sql.*
  * @author Serge Pruteanu
  */
 @CompileStatic
-class DataSourceDefinition extends DataDefinition {
+class DbDataDefinition extends DataDefinition {
 
     private Map<Integer, Class> typeClassMap = [
             (Types.BIT)          : Boolean,
@@ -53,7 +53,7 @@ class DataSourceDefinition extends DataDefinition {
 
     private final DataSource dataSource
 
-    DataSourceDefinition(DataSource dataSource) {
+    DbDataDefinition(DataSource dataSource) {
         this.dataSource = dataSource
     }
 
@@ -62,7 +62,7 @@ class DataSourceDefinition extends DataDefinition {
         this.tableMap = tableMap
     }
 
-    DataSourceDefinition registerTypeClass(int type, Class clazzType) {
+    DbDataDefinition registerTypeClass(int type, Class clazzType) {
         typeClassMap.put(type, clazzType)
         return this
     }
@@ -76,7 +76,7 @@ class DataSourceDefinition extends DataDefinition {
     }
 
     @Override
-    protected DataSourceDefinition build() {
+    protected DbDataDefinition build() {
         tableMap = listTableMap()
         for (final String table : tableMap.keySet()) {
             if (!tableDefinitionMap.containsKey(table)) {
@@ -87,12 +87,12 @@ class DataSourceDefinition extends DataDefinition {
         return this
     }
 
-    DataSourceDefinition usingDefinition(String table, DataDefinition definition) {
+    DbDataDefinition usingDefinition(String table, DataDefinition definition) {
         tableDefinitionMap.put(table, definition)
         return this
     }
 
-    DataSourceDefinition usingDefinition(String table, String definition, String... definitions) {
+    DbDataDefinition usingDefinition(String table, String definition, String... definitions) {
         tableDefinitionMap.put(table, new DataDefinition().usingDefinitions((definitions != null
                 ? (Arrays.asList(definition) + Arrays.asList(definitions)).toArray(new String[1 + definitions.length])
                 : [definition] as String[]
