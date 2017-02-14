@@ -3,7 +3,7 @@ package org.prismus.scrambler.data
 import org.junit.Assert
 import org.prismus.scrambler.ArrayScrambler
 import org.prismus.scrambler.DateScrambler
-import org.prismus.scrambler.NumberScrambler
+import org.prismus.scrambler.NumericScrambler
 import org.prismus.scrambler.StringScrambler
 import org.prismus.scrambler.Data
 import spock.lang.Specification
@@ -15,7 +15,7 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental number generation'(Number start, Number step, Integer count) {
         given:
-        Data<Number> numberData = NumberScrambler.increment(start, step)
+        Data<Number> numberData = NumericScrambler.increment(start, step)
 
         expect:
         numberData.get() == start
@@ -48,7 +48,7 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental float data'(Float start, Float step, Integer count) {
         given:
-        Data<Float> dataNumber = NumberScrambler.increment(start, step)
+        Data<Float> dataNumber = NumericScrambler.increment(start, step)
 
         expect:
         dataNumber.get() == start
@@ -81,7 +81,7 @@ class IncrementalTest extends Specification {
 
     void 'verify incremental double data'(Double start, Double step, Integer count) {
         given:
-        Data<Double> numberData = NumberScrambler.increment(start, step)
+        Data<Double> numberData = NumericScrambler.increment(start, step)
 
         expect:
         numberData.get() == start

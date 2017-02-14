@@ -28,7 +28,7 @@ import org.prismus.scrambler.CollectionScrambler
 import org.prismus.scrambler.InstanceScrambler
 import org.prismus.scrambler.DateScrambler
 import org.prismus.scrambler.MapScrambler
-import org.prismus.scrambler.NumberScrambler
+import org.prismus.scrambler.NumericScrambler
 import org.prismus.scrambler.ObjectScrambler
 import org.prismus.scrambler.StringScrambler
 import org.prismus.scrambler.Data
@@ -210,7 +210,7 @@ class GroovyDataDefinition {
         }
 
         static <T extends Number> Data<T> increment(Class<T> self, T data, T step) {
-            return NumberScrambler.increment(self, data, step)
+            return NumericScrambler.increment(self, data, step)
         }
 
         static <T> Data<T> random(Class<T> self) {
@@ -234,7 +234,7 @@ class GroovyDataDefinition {
         }
 
         static <T extends Number> Data<T> randomArray(Class self, T minimum, T maximum, Integer count) {
-            return NumberScrambler.randomArray(self, minimum, maximum, count)
+            return NumericScrambler.randomArray(self, minimum, maximum, count)
         }
 
         static <K> MapData<K> mapOf(Class<Map<K, Object>> mapType, Map<K, Data> keyDataMap) {
@@ -373,7 +373,7 @@ class GroovyDataDefinition {
     static class NumberCategory {
 
         static <T extends Number> Data<T> increment(T self, T step = null) {
-            return NumberScrambler.increment(self, step)
+            return NumericScrambler.increment(self, step)
         }
 
         static <T extends Number> Data incrementArray(T self, T step = null, Integer count = null) {
@@ -381,15 +381,15 @@ class GroovyDataDefinition {
         }
 
         static <T extends Number> Data<T> random(T data) {
-            return NumberScrambler.random(data)
+            return NumericScrambler.random(data)
         }
 
         static <T extends Number> Data<T> random(T minimum, T maximum) {
-            return NumberScrambler.random(minimum, maximum)
+            return NumericScrambler.random(minimum, maximum)
         }
 
         static <T extends Number> Data<T> random(T val, T minimum, T maximum) {
-            return NumberScrambler.random(val, minimum, maximum)
+            return NumericScrambler.random(val, minimum, maximum)
         }
 
     }

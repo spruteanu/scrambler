@@ -1,6 +1,6 @@
 import groovy.transform.CompileStatic
 import org.prismus.scrambler.CollectionScrambler
-import org.prismus.scrambler.NumberScrambler
+import org.prismus.scrambler.NumericScrambler
 import org.prismus.scrambler.Data
 import org.prismus.scrambler.data.ConstantData
 import org.prismus.scrambler.data.RandomString
@@ -74,7 +74,7 @@ class MiddleNameData extends ReferenceData {
 
     MiddleNameData(Set<String> allFirstNames, Pattern fieldPattern) {
         super(fieldPattern)
-        randomRange = NumberScrambler.random(1, 100)
+        randomRange = NumericScrambler.random(1, 100)
         randomMiddle = CollectionScrambler.randomOf(allFirstNames)
     }
 
@@ -107,9 +107,9 @@ class GenderValue extends ReferenceData {
 
 @CompileStatic
 class DobValue extends ConstantData<String> {
-    private Data group1 = NumberScrambler.random(1, 12)
-    private Data group2 = NumberScrambler.random(1, 31)
-    private Data group3 = NumberScrambler.random(1920, 2015)
+    private Data group1 = NumericScrambler.random(1, 12)
+    private Data group2 = NumericScrambler.random(1, 31)
+    private Data group3 = NumericScrambler.random(1920, 2015)
 
     @Override
     protected String doNext() {
@@ -119,9 +119,9 @@ class DobValue extends ConstantData<String> {
 
 @CompileStatic
 class PhoneValue extends ConstantData<String> {
-    private Data group1 = NumberScrambler.random(100, 999)
-    private Data group2 = NumberScrambler.random(100, 999)
-    private Data group3 = NumberScrambler.random(1000, 9999)
+    private Data group1 = NumericScrambler.random(100, 999)
+    private Data group2 = NumericScrambler.random(100, 999)
+    private Data group3 = NumericScrambler.random(1000, 9999)
 
     @Override
     protected String doNext() {

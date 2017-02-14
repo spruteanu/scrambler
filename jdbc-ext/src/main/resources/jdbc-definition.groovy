@@ -1,6 +1,6 @@
 import groovy.transform.CompileStatic
 import org.prismus.scrambler.CollectionScrambler
-import org.prismus.scrambler.NumberScrambler
+import org.prismus.scrambler.NumericScrambler
 import org.prismus.scrambler.Data
 import org.prismus.scrambler.data.AbstractRandomRange
 import org.prismus.scrambler.data.ConstantData
@@ -109,7 +109,7 @@ private static Map<String, List<String>> loadStateCitiesMap() {
 
 @CompileStatic
 class BuildingNumberValue extends ConstantData<String> {
-    private Data<Integer> randomNumberValue = NumberScrambler.random(1, 99999)
+    private Data<Integer> randomNumberValue = NumericScrambler.random(1, 99999)
 
     @Override
     protected String doNext() {
@@ -122,8 +122,8 @@ class StreetValue extends ConstantData<String> {
     private static Map<Integer, String> sideMap = [1: 'NE', 2: 'NW', 3: 'SE', 4: 'SW'] as Map<Integer, String>
     private static Map<Integer, String> suffixMap = [1: 'st', 2: 'nd', 3: 'rd',] as Map<Integer, String>
 
-    private Data<Integer> randomNumber = NumberScrambler.random(1, 24)
-    private Data<Integer> randomStreetNumber = NumberScrambler.random(1, 270)
+    private Data<Integer> randomNumber = NumericScrambler.random(1, 24)
+    private Data<Integer> randomStreetNumber = NumericScrambler.random(1, 270)
 
     @Override
     protected String doNext() {
@@ -192,7 +192,7 @@ class CityCodeValue extends ReferenceData {
 @CompileStatic
 class PostalCodeValue extends ReferenceData {
     private final Map<String, Map<String, String>> stateInfoMap
-    private AbstractRandomRange<Integer> randomRange = NumberScrambler.random(1, 1000) as AbstractRandomRange<Integer>
+    private AbstractRandomRange<Integer> randomRange = NumericScrambler.random(1, 1000) as AbstractRandomRange<Integer>
 
     PostalCodeValue(Map<String, Map<String, String>> stateInfoMap) {
         super(~/(?i)state/)

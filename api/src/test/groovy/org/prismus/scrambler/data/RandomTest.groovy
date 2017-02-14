@@ -4,7 +4,7 @@ import org.junit.Assert
 import org.prismus.scrambler.ArrayScrambler
 import org.prismus.scrambler.CollectionScrambler
 import org.prismus.scrambler.DateScrambler
-import org.prismus.scrambler.NumberScrambler
+import org.prismus.scrambler.NumericScrambler
 import org.prismus.scrambler.ObjectScrambler
 import org.prismus.scrambler.StringScrambler
 import org.prismus.scrambler.Data
@@ -21,17 +21,17 @@ class RandomTest extends Specification {
 
     void 'verify random number generation'(Number minimum, Number maximum, Integer count) {
         given:
-        Data<Number> randomNumber = NumberScrambler.random(minimum, maximum)
+        Data<Number> randomNumber = NumericScrambler.random(minimum, maximum)
 
         expect:
-        null != NumberScrambler.random(maximum).next()
+        null != NumericScrambler.random(maximum).next()
 
         for (int i = 0; i < 100; i++) {
             Assert.assertTrue(isBetween(minimum, maximum, randomNumber.next()))
         }
 
         and: "verify array creation"
-        Number[] numberValues = NumberScrambler.randomArray(null, minimum, maximum, count).next()
+        Number[] numberValues = NumericScrambler.randomArray(null, minimum, maximum, count).next()
         for (int i = 0; i < numberValues.length; i++) {
             Assert.assertTrue(isBetween(minimum, maximum, numberValues[i]))
         }
@@ -48,7 +48,7 @@ class RandomTest extends Specification {
 
     void 'verify random primitives generation'(Class type, Number minimum, Number maximum, Integer count) {
         given:
-        Data numberValues = NumberScrambler.randomArray(type, minimum, maximum, count)
+        Data numberValues = NumericScrambler.randomArray(type, minimum, maximum, count)
 
         expect:
         for (int i = 0; i < 5; i++) {

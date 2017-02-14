@@ -28,7 +28,7 @@ import java.math.BigInteger;
  *
  * @author Serge Pruteanu
  */
-public class NumberScrambler {
+public class NumericScrambler {
 
     public static Data<Byte> increment(byte self) {
         return new IncrementalByte(self);

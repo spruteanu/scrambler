@@ -1,6 +1,6 @@
 package org.prismus.scrambler.data
 
-import org.prismus.scrambler.NumberScrambler
+import org.prismus.scrambler.NumericScrambler
 import spock.lang.Specification
 
 /**
@@ -41,7 +41,7 @@ class CombinationsTest extends Specification {
     }
 
     void 'verify values and list combinations'() {
-        def combinations = Combinations.dataOf(Integer, NumberScrambler.random(1, 100), NumberScrambler.random(200, 400), NumberScrambler.random(-100, -10))
+        def combinations = Combinations.dataOf(Integer, NumericScrambler.random(1, 100), NumericScrambler.random(200, 400), NumericScrambler.random(-100, -10))
 
         expect: 'check array array generation'
         combinations.next().length > 0
@@ -51,7 +51,7 @@ class CombinationsTest extends Specification {
 
         and: 'check list array generation'
         Combinations.dataOf(
-                [NumberScrambler.random(1, 100), NumberScrambler.random(200, 400), NumberScrambler.random(-100, -10)]
+                [NumericScrambler.random(1, 100), NumericScrambler.random(200, 400), NumericScrambler.random(-100, -10)]
         ).next().size() > 0
     }
 

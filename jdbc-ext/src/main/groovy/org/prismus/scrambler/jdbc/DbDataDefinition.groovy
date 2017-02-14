@@ -19,7 +19,7 @@ import java.sql.*
 @CompileStatic
 class DbDataDefinition extends DataDefinition {
 
-    private Map<Integer, Class> typeClassMap = [
+    private static Map<Integer, Class> defaultTypeClassMap = [
             (Types.BIT)          : Boolean,
             (Types.TINYINT)      : Byte,
             (Types.SMALLINT)     : Short,
@@ -48,8 +48,13 @@ class DbDataDefinition extends DataDefinition {
             (Types.NCLOB)        : String,
     ] as Map<Integer, Class>
 
+    private Map<Integer, Class> typeMap = new LinkedHashMap<Integer, Class>(defaultTypeClassMap)
+
     protected Map<String, TableMeta> tableMap
     private Map<String, DataDefinition> tableDefinitionMap = [:]
+
+    private boolean generateAutoFields
+    private boolean generateNullable
 
     private final DataSource dataSource
 
@@ -62,13 +67,24 @@ class DbDataDefinition extends DataDefinition {
         this.tableMap = tableMap
     }
 
-    DbDataDefinition registerTypeClass(int type, Class clazzType) {
-        typeClassMap.put(type, clazzType)
+    DbDataDefinition generateNullable() {
+        generateNullable = true
         return this
     }
 
-    Map<Integer, Class> getTypeClassMap() {
-        return typeClassMap
+    DbDataDefinition generateAutoFields() {
+        generateAutoFields = true
+        return this
+    }
+
+    DbDataDefinition registerType(int type, Class clazzType) {
+        typeMap.put(type, clazzType)
+        return this
+    }
+
+    DbDataDefinition withTypeMap(int type, Class clazzType) {
+        typeMap.put(type, clazzType)
+        return this
     }
 
     DataSource getDataSource() {
@@ -100,64 +116,56 @@ class DbDataDefinition extends DataDefinition {
         return this
     }
 
-    Data lookupValue(String tableName, DataPredicate predicate) {
+    Data lookupData(String tableName, DataPredicate predicate) {
         return tableDefinitionMap.containsKey(tableName) ? tableDefinitionMap.get(tableName).lookupData(predicate) : null
     }
 
-    Data lookupValue(String tableName, String property, Class type) {
+    Data lookupData(String tableName, String property, Class type) {
         return tableDefinitionMap.containsKey(tableName) ? tableDefinitionMap.get(tableName).lookupData(property, type) : null
     }
 
-    Map<String, Data> toMapValue(TableMeta tableMeta, boolean generateNullable) {
+    Map<String, Data> toDataMap(TableMeta tableMeta) {
         final columnMap = tableMeta.columnMap
         final List<String> keys = new ArrayList<String>(columnMap.size())
-        final valueMap = new LinkedHashMap<String, Data>()
-        for (Map.Entry<String, ColumnMeta> entry : columnMap.entrySet()) {
-            final columnMeta = entry.value
-            if (columnMeta.isAutoIncrement()) {
-                // todo Serge: add option to simulate auto-incremented columns
-                continue
-            } else if (columnMeta.isNullable() && !generateNullable) {
-                continue
-            }
+        final dataMap = new LinkedHashMap<String, Data>()
+        for (final entry : columnMap.entrySet()) {
             final columnName = entry.key
-            final boolean fkColumn = columnMeta.isFk()
-            Data value
-            if (fkColumn) {
-                value = lookupFkValue(columnMeta, generateNullable)
-            } else {
-                value = lookupData(columnName, columnMeta.classType)
+            final columnMeta = entry.value
+            if ((columnMeta.nullable && !generateNullable) || (columnMeta.autoIncrement && !generateAutoFields)) {
+                continue
             }
-            if (value) {
+            final Data data
+            if (columnMeta.isFk()) {
+                data = lookupFkData(columnMeta)
+            } else {
+                // todo Serge: if field is autoincremental and is not defined, lookupIncrementalData
+                data = lookupData(columnName, columnMeta.classType)
+            }
+            if (data) {
                 keys.add(columnName)
-                valueMap.put(columnName, value)
-            } else if (fkColumn) {
-                value = lookupFkValue(columnMeta, generateNullable)
-                if (value) {
-                    valueMap.put(columnName, value)
-                }
+                dataMap.put(columnName, data)
             }
         }
 
         Collections.sort(keys)
         final map = new LinkedHashMap<String, Data>()
         for (String column : keys) {
-            map.put(column, valueMap.get(column))
+            map.put(column, dataMap.get(column))
         }
         return map
     }
 
     @PackageScope
-    Data lookupFkValue(ColumnMeta columnMeta, boolean generateNullable) {
+    Data lookupFkData(ColumnMeta columnMeta) {
         final primaryTableName = columnMeta.primaryTableName
         final primaryColumnName = columnMeta.primaryColumnName
         final primaryTableMeta = tableMap.get(primaryTableName)
         final primaryColumnMeta = primaryTableMeta.columnMap.get(primaryColumnName)
-        Data value = lookupValue(primaryTableName, primaryColumnName, primaryColumnMeta.classType)
-        if (value == null) {
+        Data data = lookupData(primaryTableName, primaryColumnName, primaryColumnMeta.classType)
+        if (data == null) {
             // todo Serge: add a strategy to generate FK keys: pickup object from DB or from generated, cached array
         }
-        return value
+        return data
     }
 
     protected List<String> listMssqlTables() {
@@ -211,7 +219,7 @@ class DbDataDefinition extends DataDefinition {
                 final String columnName = rs.getString(4)
                 final int columnType = rs.getInt(5)
                 result.columnMap.put(columnName, new ColumnMeta(name: columnName, type: columnType,
-                        columnProperties: Util.asMap(rs), classType: typeClassMap.get(columnType)))
+                        columnProperties: Util.asMap(rs), classType: typeMap.get(columnType)))
             }
             result.ids = getPrimaryKeys(table)
             result.relationshipMap = getForeignKeys(table, fkTableMap)
