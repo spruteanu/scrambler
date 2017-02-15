@@ -33,6 +33,6 @@ public interface DataPredicate {
      * @param data object to be matched
      * @return true if it should be applicable
      */
-    boolean apply(String property, Object data);
+    boolean matches(String property, Object data);
 
 }

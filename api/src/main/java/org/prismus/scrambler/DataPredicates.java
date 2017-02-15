@@ -72,7 +72,7 @@ public class DataPredicates {
     public static DataPredicate isNull() {
         return new DataPredicate() {
             @Override
-            public boolean apply(String property, Object data) {
+            public boolean matches(String property, Object data) {
                 return null == data;
             }
 
@@ -86,7 +86,7 @@ public class DataPredicates {
     public static DataPredicate isNotNull() {
         return new DataPredicate() {
             @Override
-            public boolean apply(String property, Object data) {
+            public boolean matches(String property, Object data) {
                 return null != data;
             }
 
@@ -100,7 +100,7 @@ public class DataPredicates {
     public static DataPredicate equalsTo(final Object object) {
         return new DataPredicate() {
             @Override
-            public boolean apply(String property, Object data) {
+            public boolean matches(String property, Object data) {
                 return object.equals(data);
             }
 
@@ -114,7 +114,7 @@ public class DataPredicates {
     public static DataPredicate isSame(final Object object) {
         return new DataPredicate() {
             @Override
-            public boolean apply(String property, Object data) {
+            public boolean matches(String property, Object data) {
                 return object == data;
             }
 
@@ -128,7 +128,7 @@ public class DataPredicates {
     public static DataPredicate isAny(final Set<Object> dataSet) {
         return new DataPredicate() {
             @Override
-            public boolean apply(String property, Object data) {
+            public boolean matches(String property, Object data) {
                 return dataSet.contains(data);
             }
 
@@ -151,7 +151,7 @@ public class DataPredicates {
         return new DataPredicate() {
             @SuppressWarnings("unchecked")
             @Override
-            public boolean apply(String property, Object data) {
+            public boolean matches(String property, Object data) {
                 Comparable comparedData = (Comparable) data;
                 return (min == null || min.compareTo(comparedData) >= 0) && (max == null || max.compareTo(comparedData) >= 0);
             }

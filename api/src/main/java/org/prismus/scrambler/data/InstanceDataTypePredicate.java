@@ -13,7 +13,7 @@ public class InstanceDataTypePredicate implements DataPredicate {
     private Pattern pattern = Pattern.compile("^(?!java).+");
 
     @Override
-    public boolean apply(String property, Object data) {
+    public boolean matches(String property, Object data) {
         if (data == null) {
             return false;
         }

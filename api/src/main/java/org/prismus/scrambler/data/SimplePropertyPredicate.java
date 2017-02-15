@@ -33,7 +33,7 @@ public class SimplePropertyPredicate implements DataPredicate {
     }
 
     @Override
-    public boolean apply(String property, Object data) {
+    public boolean matches(String property, Object data) {
         return this.property.equalsIgnoreCase(property);
     }
 

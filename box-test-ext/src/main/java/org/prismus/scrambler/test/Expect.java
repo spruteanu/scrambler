@@ -48,7 +48,7 @@ public class Expect {
         boolean result = true;
         final Object inspected = expectationContext.getInspected();
         for (final DataPredicate predicate : predicates) {
-            final boolean predicateResult = predicate.apply(null, inspected);
+            final boolean predicateResult = predicate.matches(null, inspected);
             resultContext.add(new TestContext(inspected, predicate.toString()).verified(predicateResult));
             result &= predicateResult;
         }
@@ -137,7 +137,7 @@ public class Expect {
     public Expect executedIn(final long expectedTime) {
         predicates.add(new DataPredicate() {
             @Override
-            public boolean apply(String property, Object data) {
+            public boolean matches(String property, Object data) {
                 final MethodContext executionContext = (MethodContext) data;
                 final long inspected = executionContext.getExecutionTime();
                 return expectedTime <= inspected;
@@ -159,9 +159,9 @@ public class Expect {
         }
 
         @Override
-        public boolean apply(String property, Object data) {
+        public boolean matches(String property, Object data) {
             final TestContext testContext = (TestContext) data;
-            return predicate.apply(property, testContext.getInspected());
+            return predicate.matches(property, testContext.getInspected());
         }
 
         @Override

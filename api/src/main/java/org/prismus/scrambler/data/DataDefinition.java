@@ -43,6 +43,8 @@ public class DataDefinition implements Cloneable {
     public static final String META_INF_ANCHOR = "META-INF/dictionary.desc";
     public static final String WILDCARD_STRING = "*";
 
+    protected String defaultDefinitionsResource = DEFAULT_DEFINITIONS_RESOURCE;
+
     private DataDefinition parent;
 
     private Map<DataPredicate, Data> definitionMap = new LinkedHashMap<DataPredicate, Data>();
@@ -84,6 +86,11 @@ public class DataDefinition implements Cloneable {
     //------------------------------------------------------------------------------------------------------------------
     // Definitions Builder Methods
     //------------------------------------------------------------------------------------------------------------------
+    public DataDefinition usingDefaultDefinitionResource(String defaultDefinitionsResource) {
+        this.defaultDefinitionsResource = defaultDefinitionsResource;
+        return this;
+    }
+
     public DataDefinition definition(Data data) {
         Util.checkNull(data);
         final Object obj = data.get();
@@ -94,7 +101,7 @@ public class DataDefinition implements Cloneable {
 
     public DataDefinition definition(InstanceData instanceData) {
         Util.checkNull(instanceData);
-        registerDataPredicate(new TypePredicate((Class) instanceData.lookupType()), instanceData);
+        registerDataPredicate(new TypePredicate(instanceData.lookupType()), instanceData);
         return this;
     }
 
@@ -411,16 +418,16 @@ public class DataDefinition implements Cloneable {
     }
 
     public boolean hasDefinitions() {
-        return definitionMap.isEmpty();
+        return definitionMap.size() > 0;
     }
 
     public Data lookupData(String property, Class type) {
-        if (hasDefinitions()) {
-            scanDefinitions(DEFAULT_DEFINITIONS_RESOURCE);
+        if (!hasDefinitions()) {
+            scanDefinitions(defaultDefinitionsResource);
         }
         Data data = null;
         for (Map.Entry<DataPredicate, Data> entry : definitionMap.entrySet()) {
-            if (!isIterableOrMap(type) && entry.getKey().apply(property, type)) {
+            if (!isIterableOrMap(type) && entry.getKey().matches(property, type)) {
                 data = entry.getValue();
                 break;
             }

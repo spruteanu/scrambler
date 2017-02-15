@@ -37,7 +37,7 @@ public class TypePredicate implements DataPredicate {
 
     @SuppressWarnings("unchecked")
     @Override
-    public boolean apply(String property, Object data) {
+    public boolean matches(String property, Object data) {
         return data instanceof Class ? type.isAssignableFrom((Class<?>) data) : type.isInstance(data);
     }
 

@@ -82,7 +82,7 @@ public class MapScrambler {
             for (K key : self) {
                 final DataPredicate predicate = entry.getKey();
                 final Data data = entry.getValue();
-                if (predicate.apply(key.toString(), data.get())) {
+                if (predicate.matches(key.toString(), data.get())) {
                     keyDataMap.put(key, data);
                     dataMap.put(key, data.get());
                     break;

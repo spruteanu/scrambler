@@ -178,8 +178,8 @@ System.out.println(Arrays.asList(StringScrambler.randomArray("My Random String 1
 Assert.assertEquals(1, ObjectScrambler.constant(1).next().longValue());
 
 // declare a data instance that will return randomly generated array
-final Data<Long[]> longValues = ArrayScrambler.randomArray(1L, 10);
-Assert.assertEquals(10, longValues.next().length);
+final Data<Long[]> longData = ArrayScrambler.randomArray(1L, 10);
+Assert.assertEquals(10, longData.next().length);
 
 // declare a data instance that will generate an array of short primitives randomly in a specified range
 final Data<short[]> primitivesInRange = ArrayScrambler.arrayOf(new short[10], NumberScrambler.random((short) 900, (short) 1000));
@@ -275,7 +275,7 @@ public interface DataPredicate {
      * @param data data to be matched
      * @return true if it should be applicable
      */
-    boolean apply(String property, Object data);
+    boolean matches(String property, Object data);
 }
 ```
 
@@ -340,20 +340,20 @@ final school = instance.next()
 ```java
 // create an instance of Person.class with fields default generation rules. If in classpath there is a ``Person-definition.groovy`` script,
 // fields will be generated using definitions from it
-final InstanceData<Person> personValue = InstanceScrambler.instanceOf(Person.class);
-Person person = personValue.next();
+final InstanceData<Person> personInstance = InstanceScrambler.instanceOf(Person.class);
+Person person = personInstance.next();
 
 //...
 // create an instance of Person.class using /person-definition.groovy definitions script
-final InstanceData<Person> personValue = InstanceScrambler.instanceOf(Person.class, "/person-definition.groovy");
-Person person = personValue.next();
+final InstanceData<Person> personInstance = InstanceScrambler.instanceOf(Person.class, "/person-definition.groovy");
+Person person = personInstance.next();
 
 //...
 // Create an instance of Address.class using /address-definition.groovy and injected into script context properties
-final InstanceData<Address> addressValue = InstanceScrambler.instanceOf(Address.class, new HashMap<String, Object>() {{
+final InstanceData<Address> addressInstance = InstanceScrambler.instanceOf(Address.class, new HashMap<String, Object>() {{
     put("state", "Washington");
 }}, "/address-definition.groovy");
-Address address = addressValue.next();
+Address address = addressInstance.next();
 Assert.assertTrue("Washington".equals(address.getState()));
 
 ```
@@ -472,7 +472,7 @@ predicates matching, time is spent only on invoking data generation and fields p
 
 #### IDE support
 Currently DataScrambler has support for highlighting and completion only for IntelliJ IDEA by 
-``org.prismus.scrambler.data.DataDefinition.gdsl`` file shipped with library. 
+``org.prismus.scrambler.data.DataDefinitionIntellij.gdsl`` file shipped with library. 
 Eclipse support will be added in near future.
 
 ## DataScrambler extensions

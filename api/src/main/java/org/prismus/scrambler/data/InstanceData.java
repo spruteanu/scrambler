@@ -242,7 +242,7 @@ public class InstanceData<T> extends ConstantData<T> implements Data<T> {
         for (final Map.Entry<InstanceFieldPredicate, Data> entry : fieldDataMap.entrySet()) {
             final String fieldName = entry.getKey().getProperty();
             final Data data = entry.getValue();
-            if (fieldPredicate.apply(fieldName, data)) {
+            if (fieldPredicate.matches(fieldName, data)) {
                 result = data;
                 break;
             }
@@ -273,7 +273,7 @@ public class InstanceData<T> extends ConstantData<T> implements Data<T> {
             for (final Field field : fieldMap.values()) {
                 final String propertyName = field.getName();
                 if (!fieldDataMap.containsKey(new InstanceFieldPredicate(propertyName))) {
-                    if (predicate.apply(propertyName, field.getDataType())) {
+                    if (predicate.matches(propertyName, field.getDataType())) {
                         definition(propertyName, entry.getValue());
                         break;
                     }

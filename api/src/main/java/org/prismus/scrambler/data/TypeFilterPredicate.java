@@ -17,7 +17,7 @@ public class TypeFilterPredicate implements DataPredicate {
     }
 
     @Override
-    public boolean apply(String property, Object data) {
+    public boolean matches(String property, Object data) {
         final Class clazzType = data instanceof Class ? (Class<?>) data : data.getClass();
         return pattern.matcher(clazzType.getName()).matches();
     }

@@ -51,8 +51,8 @@ public class TypePropertyPredicate extends PropertyPredicate {
     }
 
     @Override
-    public boolean apply(String property, Object data) {
-        return super.apply(property, data) && type.isInstance(data);
+    public boolean matches(String property, Object data) {
+        return super.matches(property, data) && type.isInstance(data);
     }
 
     @Override
