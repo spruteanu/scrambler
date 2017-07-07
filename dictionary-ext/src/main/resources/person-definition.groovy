@@ -50,8 +50,8 @@ private static List loadNames() {
             inputStream?.close()
         } catch (Exception ignore) { }
 
-        allFirstNames += femaleFirstNames
-        allFirstNames += maleFirstNames
+        allFirstNames.addAll(femaleFirstNames)
+        allFirstNames.addAll(maleFirstNames)
 
 //http://deron.meranda.us/data/census-dist-2500-last.txt
         inputStream = zip.getInputStream(zip.getEntry('census-dist-2500-last.txt'))

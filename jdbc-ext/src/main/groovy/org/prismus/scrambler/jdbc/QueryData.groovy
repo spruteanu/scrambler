@@ -75,22 +75,24 @@ class QueryData extends ConstantData<Map<String, Object>> {
 
     protected List<Map<String, Object>> queryRows() {
         final sql = new Sql(dataSource)
+        List<Map<String, Object>> resultList = Collections.emptyList()
         try {
             if (whereClosure) {
-                return sql.rows(query, whereClosure)
+                resultList = sql.rows(query, whereClosure) as List<Map<String, Object>>
             }
             if (params) {
                 if (params instanceof Map) {
-                    return sql.rows((Map) params, query)
+                    resultList = sql.rows((Map) params, query) as List<Map<String, Object>>
                 } else {
-                    return sql.rows(query, params)
+                    resultList = sql.rows(query, params) as List<Map<String, Object>>
                 }
             } else {
-                return sql.rows(query)
+                resultList = sql.rows(query) as List<Map<String, Object>>
             }
         } finally {
             sql.close()
         }
+        return resultList
     }
 
     /**

@@ -53,7 +53,7 @@ class IncrementalTest extends Specification {
         expect:
         dataNumber.get() == start
         for (int i = 0; i < 5; i++) {
-            Assert.assertEquals((float) dataNumber.get() + step, dataNumber.next(), 0.0f)
+            Assert.assertEquals(Float.sum(dataNumber.get(), step), dataNumber.next(), 0.0f)
         }
 
         and: "verify array creation"

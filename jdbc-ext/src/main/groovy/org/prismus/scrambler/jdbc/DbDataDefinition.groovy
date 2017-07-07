@@ -280,7 +280,7 @@ class DbDataDefinition extends DataDefinition {
             } else if (databaseProductName.contains('H2')) {
                 result = listH2Tables()
             } else {
-                final String[] types = { 'TABLE' }
+                final String[] types = { 'TABLE' } as String[]
                 rs = databaseMetaData.getTables(connection.catalog, null, null, types)
                 while (rs.next()) {
                     result.add(rs.getString("TABLE_NAME"))
