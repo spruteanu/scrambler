@@ -6,28 +6,53 @@ import groovy.transform.CompileStatic
  * @author Serge Pruteanu
  */
 @CompileStatic
-abstract class EntryReader {
+abstract class EntryReader implements Closeable {
+    private static final String LINE_BREAK = System.getProperty('line.separator')
+
     protected Object source
     protected Queue<String> lineQueue
+    protected LogEntry currentEntry
     protected LogContext context
-    private int currentRow
+    protected int currentRow
+
+    boolean multiline = true
 
     EntryReader(LogContext context) {
         this.context = context
         lineQueue = new LinkedList<String>()
     }
 
-    protected abstract LogEntry doRead()
+    protected abstract String readLine()
+    protected abstract void doClose()
 
     LogEntry read() {
-        final logEntry = doRead()
-        if (logEntry) {
-            currentRow++
-            logEntry.row = currentRow
-            logEntry.source = source
-            context.handle(logEntry)
+        String line = readLine()
+        if (line) {
+            final logEntry = new LogEntry(source, line, ++currentRow)
+            final lineEntry = context.handle(logEntry)
+            if (!lineEntry || lineEntry.isEmpty()) {
+                if (multiline && currentEntry) {
+                    currentEntry.line += line + LINE_BREAK
+                    currentEntry = context.handle(currentEntry)
+                }
+            } else {
+                currentEntry = lineEntry
+            }
+        } else {
+            close()
         }
-        return logEntry
+        return currentEntry
+    }
+
+    @Override
+    void close() throws IOException {
+        currentEntry = null
+        doClose()
+    }
+
+    EntryReader oneLineEntry() {
+        multiline = false
+        return this
     }
 
 }

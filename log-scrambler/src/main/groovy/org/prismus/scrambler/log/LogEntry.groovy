@@ -7,13 +7,13 @@ import groovy.transform.CompileStatic
  */
 @CompileStatic
 class LogEntry {
-    private final String line
+    String line
 
     Object source
     Object row
     String id
 
-    private Map entryValueMap
+    Map entryValueMap
 
     LogEntry(String line) {
         this(null, line, 0)
@@ -23,19 +23,11 @@ class LogEntry {
         this(null, line, row)
     }
 
-    LogEntry(String source, String line, int row) {
+    LogEntry(Object source, String line, int row) {
         this.source = source
         this.line = line
         this.row = row
         entryValueMap = [:]
-    }
-
-    String getLine() {
-        return line
-    }
-
-    String getId() {
-        return id
     }
 
     LogEntry putEntryValue(Object entryKey, Object value) {
@@ -47,22 +39,12 @@ class LogEntry {
         return entryValueMap.get(entryKey)
     }
 
+    void clearEntryValueMap() {
+        entryValueMap.clear()
+    }
+
     boolean isEmpty() {
-        return id == null || entryValueMap.isEmpty()
-    }
-
-    LogEntry merge(LogEntry entry) {
-        if (entry) {
-            entryValueMap.putAll(entry.entryValueMap)
-            if (entry.id) {
-                id = entry.id
-            }
-        }
-        return this
-    }
-
-    Map asEntryValueMap() {
-        return Collections.unmodifiableMap(entryValueMap)
+        return entryValueMap.isEmpty()
     }
 
 }

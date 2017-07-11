@@ -36,17 +36,9 @@ class LogScrambler {
             }
             throw new RuntimeException('implement me')
         } finally {
-            closeQuietly(reader)
+            Utils.closeQuietly(reader)
         }
         return context
-    }
-
-    static closeQuietly(Closeable inputStream) {
-        if (inputStream != null) {
-            try {
-                inputStream.close()
-            } catch (Exception ignore) { }
-        }
     }
 
 }

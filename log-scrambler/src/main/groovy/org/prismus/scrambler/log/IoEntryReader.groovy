@@ -8,7 +8,7 @@ import groovy.transform.PackageScope
  */
 @CompileStatic
 @PackageScope
-class IoEntryReader extends EntryReader implements Closeable {
+class IoEntryReader extends EntryReader {
     private Reader reader
 
     IoEntryReader(LogContext context, Reader reader, Object source = null) {
@@ -18,22 +18,13 @@ class IoEntryReader extends EntryReader implements Closeable {
     }
 
     @Override
-    protected LogEntry doRead() {
-        LogEntry logEntry = null
-        try {
-            throw new RuntimeException()
-        } finally {
-            if (logEntry == null) {
-                close()
-            }
-        }
+    protected String readLine() {
+        return reader.readLine()
     }
 
     @Override
-    void close() throws IOException {
-        if (reader) {
-            reader.close()
-        }
+    protected void doClose() {
+        Utils.closeQuietly(reader)
     }
 
     static IoEntryReader of(LogContext context, Reader reader, String source = null) {
@@ -44,8 +35,8 @@ class IoEntryReader extends EntryReader implements Closeable {
         return new IoEntryReader(context, new BufferedReader(new InputStreamReader(inputStream)), source)
     }
 
-    static IoEntryReader of(LogContext context, File file, String source = null) {
-        return new IoEntryReader(context, new BufferedReader(new FileReader(file)), source)
+    static IoEntryReader of(LogContext context, File file) {
+        return new IoEntryReader(context, new BufferedReader(new FileReader(file)), file)
     }
 
     static IoEntryReader of(LogContext context, String content, String source = null) {

@@ -10,12 +10,10 @@ import groovy.transform.CompileStatic
 @CompileStatic
 class LogContext {
     private Cache<Object, LogEntry> cache
-    private List<LineParser> lineParsers
     private List<EntryProcessor> entryProcessors
 
     LogContext() {
         withCache(1024 * 1024)
-        lineParsers = new ArrayList<LineParser>()
         entryProcessors = new ArrayList<EntryProcessor>()
     }
 
@@ -23,11 +21,6 @@ class LogContext {
         cache = CacheBuilder.newBuilder()
                 .maximumSize(cacheSize)
                 .build()
-        return this
-    }
-
-    LogContext register(LineParser parser) {
-        lineParsers.add(parser)
         return this
     }
 
@@ -42,12 +35,8 @@ class LogContext {
     }
 
     LogEntry handle(LogEntry entry) {
-        final line = entry.line
-        for (LineParser lineParser : lineParsers) {
-            entry = entry.merge(lineParser.parse(line))
-        }
         for (EntryProcessor entryProcessor : entryProcessors) {
-            entry = entry.merge(entryProcessor.process(entry))
+            entry = entryProcessor.process(entry)
         }
         if (entry.id) {
             cache.put(entry.id, entry)
