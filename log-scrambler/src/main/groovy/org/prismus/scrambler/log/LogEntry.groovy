@@ -7,26 +7,35 @@ import groovy.transform.CompileStatic
  */
 @CompileStatic
 class LogEntry {
-    private String message
-    private String id
+    private final String line
+
+    Object source
+    Object row
+    String id
+
     private Map entryValueMap
 
-    LogEntry(String message) {
-        this.message = message
+    LogEntry(String line) {
+        this(null, line, 0)
+    }
+
+    LogEntry(String line, int row) {
+        this(null, line, row)
+    }
+
+    LogEntry(String source, String line, int row) {
+        this.source = source
+        this.line = line
+        this.row = row
         entryValueMap = [:]
     }
 
-    String getMessage() {
-        return message
+    String getLine() {
+        return line
     }
 
     String getId() {
         return id
-    }
-
-    LogEntry registerId(String id) {
-        this.id = id
-        return this
     }
 
     LogEntry putEntryValue(Object entryKey, Object value) {
@@ -36,6 +45,20 @@ class LogEntry {
 
     Object getEntryValue(Object entryKey) {
         return entryValueMap.get(entryKey)
+    }
+
+    boolean isEmpty() {
+        return id == null || entryValueMap.isEmpty()
+    }
+
+    LogEntry merge(LogEntry entry) {
+        if (entry) {
+            entryValueMap.putAll(entry.entryValueMap)
+            if (entry.id) {
+                id = entry.id
+            }
+        }
+        return this
     }
 
     Map asEntryValueMap() {

@@ -25,7 +25,9 @@ class LogScrambler {
             reader = new BufferedReader(new InputStreamReader(inputStream))
             String line
             final pattern = Pattern.compile('')
+            int count = 0
             while ((line = reader.readLine()) != null) {
+                count++
                 final matcher = pattern.matcher(line)
                 final groupCount = matcher.groupCount()
                 if (groupCount) {
