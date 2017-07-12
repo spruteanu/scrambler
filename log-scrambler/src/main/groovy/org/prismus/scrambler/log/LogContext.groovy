@@ -24,13 +24,13 @@ class LogContext {
         return this
     }
 
-    LogContext register(EntryProcessor processor) {
-        entryProcessors.add(processor)
+    LogContext withCache(Cache cache) {
+        this.cache = cache
         return this
     }
 
-    LogContext withCache(Cache cache) {
-        this.cache = cache
+    LogContext register(EntryProcessor processor) {
+        entryProcessors.add(processor)
         return this
     }
 

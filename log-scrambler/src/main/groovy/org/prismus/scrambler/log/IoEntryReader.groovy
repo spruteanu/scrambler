@@ -25,6 +25,7 @@ class IoEntryReader extends EntryReader {
     @Override
     protected void doClose() {
         Utils.closeQuietly(reader)
+        reader = null
     }
 
     static IoEntryReader of(LogContext context, Reader reader, String source = null) {

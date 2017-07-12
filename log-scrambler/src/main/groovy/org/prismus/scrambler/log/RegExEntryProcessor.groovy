@@ -3,6 +3,7 @@ package org.prismus.scrambler.log
 import com.google.common.collect.ArrayListMultimap
 import groovy.transform.CompileStatic
 
+import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 /**
@@ -10,10 +11,16 @@ import java.util.regex.Pattern
  */
 @CompileStatic
 class RegExEntryProcessor implements EntryProcessor {
+    private static final String DEFAULT_LOG4J_DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss.SSS' // ISO8601DateFormat
+
     Pattern pattern
     private final ArrayListMultimap<Object, EntryProcessor> groupProcessorMap = ArrayListMultimap.create()
 
     RegExEntryProcessor() {
+    }
+
+    RegExEntryProcessor(String regEx, int flags = 0) {
+        this(Pattern.compile(regEx, flags))
     }
 
     RegExEntryProcessor(Pattern pattern) {
@@ -54,6 +61,26 @@ class RegExEntryProcessor implements EntryProcessor {
             }
         }
         return entry
+    }
+
+    static String replaceTextByGroups(Map<String, String> replacements, String text, String regEx) {
+        final sb = new StringBuffer()
+        final matcher = Pattern.compile(regEx).matcher(text)
+        while (matcher.find()) {
+            matcher.appendReplacement(sb, replacements.get(matcher.group()))
+        }
+        matcher.appendTail(sb)
+    }
+
+    static String dateFormatToRegEx(String dateFormat) {
+        String result = dateFormat
+        result = result.replaceAll('[w]+', '\\\\w+')
+        result = result.replaceAll('[WDdFuHkKhmsSyYGMEazZX]+', '\\\\w+')
+        return result
+    }
+
+    static String log4jConversionPatternToRegEx(String conversionPatter) {
+        throw new RuntimeException('https://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PatternLayout.html')
     }
 
 }
