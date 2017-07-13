@@ -12,10 +12,8 @@ import java.util.regex.Pattern
  */
 @CompileStatic
 class RegExEntryProcessor implements EntryProcessor {
-    private static final String DEFAULT_LOG4J_DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss.SSS' // ISO8601DateFormat
-
     @PackageScope
-    static final String EXCEPTION_REGEX = '(^.+Exception[^\\n]++(?:\\s+at .++)+)'
+    static final String EXCEPTION_REGEX = '^.+Exception[^\\n]++(?:\\s+at .++)+'
 
     Pattern pattern
     private final ArrayListMultimap<Object, EntryProcessor> groupProcessorMap = ArrayListMultimap.create()
@@ -99,12 +97,12 @@ class RegExEntryProcessor implements EntryProcessor {
         return result
     }
 
-    static String log4jConversionPatternToRegEx(String conversionPatter) {
-        throw new RuntimeException('https://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PatternLayout.html')
-    }
-
     static RegExEntryProcessor of(Pattern pattern) {
         return new RegExEntryProcessor(pattern)
+    }
+
+    static RegExEntryProcessor of(String regEx, int flags = 0) {
+        return new RegExEntryProcessor(Pattern.compile(regEx, flags))
     }
 
 }

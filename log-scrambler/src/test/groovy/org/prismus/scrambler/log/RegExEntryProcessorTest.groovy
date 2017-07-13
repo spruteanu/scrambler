@@ -110,7 +110,7 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
                 .register(3, 'Caller')
                 .register(4, 'Line')
                 .register(5, 'Message')
-                .register(5, new RegExEntryProcessor(~/(?ms)${RegExEntryProcessor.EXCEPTION_REGEX}/).register(1, 'Exception'))
+                .register(5, new RegExEntryProcessor(~/(?ms)(${RegExEntryProcessor.EXCEPTION_REGEX})/).register(1, 'Exception'))
                 .process(logEntry)
                 .isEmpty()
         """OMG, Something bad happened

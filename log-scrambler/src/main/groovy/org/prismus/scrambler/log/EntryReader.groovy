@@ -7,7 +7,7 @@ import groovy.transform.CompileStatic
  */
 @CompileStatic
 abstract class EntryReader implements Closeable {
-    private static final String LINE_BREAK = System.getProperty('line.separator')
+    static final String LINE_BREAK = System.getProperty('line.separator')
 
     protected Object source
     protected Queue<String> lineQueue
