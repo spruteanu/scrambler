@@ -9,12 +9,18 @@ class RegExEntryProcessorTest extends Specification {
 
     void 'verify date format parser'() {
         expect:
-        RegExEntryProcessor.dateFormatToRegEx('yyyy/MM/dd HH:mm:ss.SSS') == '\\w+/\\w+/\\w+ \\w+:\\w+:\\w+.\\w+'
-        RegExEntryProcessor.dateFormatToRegEx('yyyy-MM-dd HH:mm:ss.SSS') == '\\w+-\\w+-\\w+ \\w+:\\w+:\\w+.\\w+'
+        '\\w+/\\w+/\\w+ \\w+:\\w+:\\w+.\\w+' == RegExEntryProcessor.dateFormatToRegEx('yyyy/MM/dd HH:mm:ss.SSS')
+        '\\w+-\\w+-\\w+ \\w+:\\w+:\\w+.\\w+' == RegExEntryProcessor.dateFormatToRegEx('yyyy-MM-dd HH:mm:ss.SSS')
+
+        '\\w+:\\w+:\\w+,\\w+' == RegExEntryProcessor.dateFormatToRegEx('HH:mm:ss,SSS')
+        '\\w+ \\w+ \\w+ \\w+:\\w+:\\w+,\\w+' == RegExEntryProcessor.dateFormatToRegEx('dd MMM yyyy HH:mm:ss,SSS')
 
         and: 'check converted regex matches value'
         '2008-09-06 10:51:45,473' =~ /${RegExEntryProcessor.dateFormatToRegEx('yyyy-MM-dd HH:mm:ss.SSS')}/
         !('2008-09-06 wrong time' =~ /${RegExEntryProcessor.dateFormatToRegEx('yyyy-MM-dd HH:mm:ss.SSS')}/)
+
+        '15:49:37,459' =~ /${RegExEntryProcessor.dateFormatToRegEx('HH:mm:ss,SSS')}/
+        '06 Nov 1994 08:49:37,459' =~ /${RegExEntryProcessor.dateFormatToRegEx('dd MMM yyyy HH:mm:ss,SSS')}/
     }
 
     void 'verify reg ex parser'() {
