@@ -7,6 +7,7 @@ import com.google.common.collect.HashBiMap
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 
+import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 /**
@@ -21,15 +22,18 @@ class RegexEntryProcessor implements EntryProcessor {
     protected final ArrayListMultimap<Object, EntryProcessor> groupProcessorMap = ArrayListMultimap.create()
     protected final BiMap<Object, String> groupValueMap = HashBiMap.create()
 
+    Object entryValueKey
+
     RegexEntryProcessor() {
     }
 
-    RegexEntryProcessor(String regEx, int flags = 0) {
-        this(Pattern.compile(regEx, flags))
+    RegexEntryProcessor(String regEx, int flags = 0, Object entryValueKey = null) {
+        this(Pattern.compile(regEx, flags), entryValueKey)
     }
 
-    RegexEntryProcessor(Pattern pattern) {
+    RegexEntryProcessor(Pattern pattern, Object entryValueKey = null) {
         this.pattern = pattern
+        this.entryValueKey = entryValueKey
     }
 
     RegexEntryProcessor register(int group, String groupNameValue) {
@@ -76,7 +80,16 @@ class RegexEntryProcessor implements EntryProcessor {
 
     @Override
     LogEntry process(LogEntry entry) {
-        final matcher = pattern.matcher(entry.line)
+        final Matcher matcher
+        if (entryValueKey) {
+            final value = entry.getEntryValue(entryValueKey)
+            if (!value) {
+                return entry
+            }
+            matcher = pattern.matcher(value.toString())
+        } else {
+            matcher = pattern.matcher(entry.line)
+        }
         while (matcher.find()) {
             for (final key : (groupProcessorMap.keySet() + groupValueMap.keySet())) {
                 String groupValue = null
