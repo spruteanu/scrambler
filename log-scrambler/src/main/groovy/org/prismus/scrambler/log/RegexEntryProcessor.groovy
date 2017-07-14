@@ -2,6 +2,8 @@ package org.prismus.scrambler.log
 
 import com.google.common.base.Preconditions
 import com.google.common.collect.ArrayListMultimap
+import com.google.common.collect.BiMap
+import com.google.common.collect.HashBiMap
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 
@@ -11,50 +13,57 @@ import java.util.regex.Pattern
  * @author Serge Pruteanu
  */
 @CompileStatic
-class RegExEntryProcessor implements EntryProcessor {
+class RegexEntryProcessor implements EntryProcessor {
     @PackageScope
     static final String EXCEPTION_REGEX = '^.+Exception[^\\n]++(?:\\s+at .++)+'
 
     Pattern pattern
-    private final ArrayListMultimap<Object, EntryProcessor> groupProcessorMap = ArrayListMultimap.create()
-    private final Map<Object, String> groupNameValueMap = [:]
+    protected final ArrayListMultimap<Object, EntryProcessor> groupProcessorMap = ArrayListMultimap.create()
+    protected final BiMap<Object, String> groupValueMap = HashBiMap.create()
 
-    RegExEntryProcessor() {
+    RegexEntryProcessor() {
     }
 
-    RegExEntryProcessor(String regEx, int flags = 0) {
+    RegexEntryProcessor(String regEx, int flags = 0) {
         this(Pattern.compile(regEx, flags))
     }
 
-    RegExEntryProcessor(Pattern pattern) {
+    RegexEntryProcessor(Pattern pattern) {
         this.pattern = pattern
     }
 
-    RegExEntryProcessor register(String groupName, EntryProcessor entryProcessor) {
-        Preconditions.checkNotNull(groupName, "Group Name can't be null")
-        Preconditions.checkNotNull(entryProcessor, 'Entry Processor instance should be provided')
-        groupProcessorMap.put(groupName, entryProcessor)
-        groupNameValueMap.put(groupName, groupName)
-        return this
-    }
-
-    RegExEntryProcessor register(int groupIndex, String groupNameValue) {
-        Preconditions.checkArgument(groupIndex > 0, 'Group index should be a positive number')
+    RegexEntryProcessor register(int group, String groupNameValue) {
+        Preconditions.checkArgument(group > 0, 'Group index should be a positive number')
         Preconditions.checkNotNull(groupNameValue, 'Group value name should be provided')
-        groupNameValueMap.put(groupIndex, groupNameValue)
+        groupValueMap.put(group, groupNameValue)
         return this
     }
 
-    RegExEntryProcessor register(int groupIndex, EntryProcessor entryProcessor) {
-        Preconditions.checkArgument(groupIndex > 0, 'Group index should be a positive number')
+    RegexEntryProcessor register(int group, EntryProcessor entryProcessor) {
+        Preconditions.checkArgument(group > 0, 'Group index should be a positive number')
         Preconditions.checkNotNull(entryProcessor, 'Entry Processor instance should be provided')
-        groupProcessorMap.put(groupIndex, entryProcessor)
+        groupProcessorMap.put(group, entryProcessor)
         return this
     }
 
-    RegExEntryProcessor registerAll(Map<Object, String> groupNameValueMap) {
+    RegexEntryProcessor register(String group, EntryProcessor entryProcessor) {
+        Preconditions.checkNotNull(group, "Group Name can't be null")
+        Preconditions.checkNotNull(entryProcessor, 'Entry Processor instance should be provided')
+        groupProcessorMap.put(group, entryProcessor)
+        groupValueMap.put(group, group)
+        return this
+    }
+
+    RegexEntryProcessor registerProcessor(String group, EntryProcessor entryProcessor) {
+        Preconditions.checkNotNull(group, "Group Name can't be null")
+        Preconditions.checkNotNull(entryProcessor, 'Entry Processor instance should be provided')
+        groupProcessorMap.put(group, entryProcessor)
+        return this
+    }
+
+    RegexEntryProcessor registerAll(Map<Object, String> groupNameValueMap) {
         Preconditions.checkNotNull(groupNameValueMap, 'Group value map should not be null')
-        this.groupNameValueMap.putAll(groupNameValueMap)
+        this.groupValueMap.putAll(groupNameValueMap)
         return this
     }
 
@@ -62,7 +71,7 @@ class RegExEntryProcessor implements EntryProcessor {
     LogEntry process(LogEntry entry) {
         final matcher = pattern.matcher(entry.line)
         while (matcher.find()) {
-            for (final key : (groupProcessorMap.keySet() + groupNameValueMap.keySet())) {
+            for (final key : (groupProcessorMap.keySet() + groupValueMap.keySet())) {
                 String groupValue = null
                 try {
                     if (key instanceof String) {
@@ -72,15 +81,15 @@ class RegExEntryProcessor implements EntryProcessor {
                     }
                 } catch (Exception ignore) { }
                 if (groupValue) {
-                    if (groupNameValueMap.containsKey(key)) {
-                        entry.putEntryValue(groupNameValueMap.get(key), groupValue)
+                    if (groupValueMap.containsKey(key)) {
+                        entry.putEntryValue(groupValueMap.get(key), groupValue)
                     }
                     LogEntry groupEntry = new LogEntry(groupValue)
                     final List<EntryProcessor> entryProcessors = groupProcessorMap.get(key)
                     for (EntryProcessor processor : entryProcessors) {
                         groupEntry = processor.process(groupEntry)
                         if (groupEntry) {
-                            // todo Serge: investigate if there is a need in merge method for logEntry
+                            // todo Serge: investigate if there is a need in a merge method for logEntry
                             entry.entryValueMap.putAll(groupEntry.entryValueMap)
                         }
                     }
@@ -97,12 +106,12 @@ class RegExEntryProcessor implements EntryProcessor {
         return result
     }
 
-    static RegExEntryProcessor of(Pattern pattern) {
-        return new RegExEntryProcessor(pattern)
+    static RegexEntryProcessor of(Pattern pattern) {
+        return new RegexEntryProcessor(pattern)
     }
 
-    static RegExEntryProcessor of(String regEx, int flags = 0) {
-        return new RegExEntryProcessor(Pattern.compile(regEx, flags))
+    static RegexEntryProcessor of(String regEx, int flags = 0) {
+        return new RegexEntryProcessor(Pattern.compile(regEx, flags))
     }
 
 }

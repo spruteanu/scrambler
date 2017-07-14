@@ -1,5 +1,6 @@
 package org.prismus.scrambler.log
 
+import com.google.common.base.Preconditions
 import groovy.transform.CompileStatic
 
 import java.util.regex.Pattern
@@ -8,24 +9,52 @@ import java.util.regex.Pattern
  * @author Serge Pruteanu
  */
 @CompileStatic
-class Log4jScrambler {
+class Log4jEntryProcessor extends RegexEntryProcessor {
+    private static final String ABSOLUTE_DATE_FORMAT = '{ABSOLUTE}'
+    private static final String DATE_FORMAT = '{DATE}'
+    private static final String ISO8601_DATE_FORMAT = '{ISO8601}'
     private static final String DEFAULT_LOG4J_DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss.SSS' // ISO8601DateFormat
+
     private static final Set<Character> REG_EX_CHARS_SET = toSet('[]{}\\^$|?*+()')
     private static Pattern SPEC_PATTERN = ~/([-\d]*)([\.\d]*)[cCdFlLmMnprtxX]/
 
-    protected
-    static int appendNonSpecifierChar(LogContext logContext, StringBuilder sb, char ch, int index, String specString) {
+    static final String EVENT_CATEGORY_SP = 'EventCategory'
+    static final String CALLER_CLASS_SP = 'CallerClass'
+    static final String TIMESTAMP_SP = 'Timestamp'
+    static final String CALLER_FILE_NAME_SP = 'CallerFileName'
+    static final String CALLER_LOCATION_SP = 'CallerLocation'
+    static final String CALLER_LINE_SP = 'CallerLine'
+    static final String MESSAGE_SP = 'Message'
+    static final String CALLER_METHOD_SP = 'Method'
+    static final String PRIORITY_SP = 'Priority'
+    static final String LOGGING_DURATION_SP = 'LoggingDuration'
+    static final String THREAD_NAME_SP = 'Thread'
+    static final String THREAD_MDC_SP = 'ThreadMdc'
+    static final String THREAD_NDC_SP = 'ThreadNdc'
+
+    Log4jEntryProcessor register(String groupNameValue) {
+        Preconditions.checkNotNull(groupNameValue, "Group Name Value can't be null")
+        register(groupValueMap.size() + 1, groupNameValue)
+        return this
+    }
+
+    static Log4jEntryProcessor ofPattern(String conversionPattern) {
+        final processor = new Log4jEntryProcessor()
+        conversionPatternToRegex(processor, conversionPattern)
+        return processor
+    }
+
+    protected static void appendNonSpecifierChar(StringBuilder sb, char ch) {
         if (REG_EX_CHARS_SET.contains(ch)) {
             sb.append('\\' as char)
             sb.append(ch)
         } else {
             sb.append(ch)
         }
-        return index
     }
 
     protected
-    static int appendDateFormatRegEx(LogContext logContext, StringBuilder sb, char ch, int index, String specString) {
+    static int appendDateFormatRegex(Log4jEntryProcessor processor, StringBuilder sb, int index, String specString) {
         final pattern = ~/d(\{.+\})*/
         final matcher = pattern.matcher(specString.substring(index + 1))
         if (!matcher.find()) {
@@ -35,17 +64,17 @@ class Log4jScrambler {
         String dateFormat = matcher.group(1)
         if (format) {
             switch (format.trim()) {
-                case '{ABSOLUTE}':
+                case ABSOLUTE_DATE_FORMAT:
                     dateFormat = 'HH:mm:ss,SSS'
-                    index += '{ABSOLUTE}'.length()
+                    index += ABSOLUTE_DATE_FORMAT.length()
                     break
-                case '{DATE}':
+                case DATE_FORMAT:
                     dateFormat = 'dd MMM yyyy HH:mm:ss,SSS'
-                    index += '{DATE}'.length()
+                    index += DATE_FORMAT.length()
                     break
-                case '{ISO8601}':
+                case ISO8601_DATE_FORMAT:
                     dateFormat = DEFAULT_LOG4J_DATE_FORMAT
-                    index += '{ISO8601}'.length()
+                    index += ISO8601_DATE_FORMAT.length()
                     break
                 default:
                     dateFormat = format.substring(1, format.length() - 1)
@@ -56,15 +85,16 @@ class Log4jScrambler {
         if (!dateFormat) {
             dateFormat = DEFAULT_LOG4J_DATE_FORMAT
         }
-        sb.append('(').append(RegExEntryProcessor.dateFormatToRegEx(dateFormat)).append(')')
+        sb.append('(').append(dateFormatToRegEx(dateFormat)).append(')')
+        processor.register(TIMESTAMP_SP)
         return index
     }
 
     protected
-    static int appendSpecifierRegEx(LogContext logContext, StringBuilder sb, char ch, int i, String conversionPattern) {
+    static int appendSpecifierRegex(Log4jEntryProcessor processor, StringBuilder sb, char ch, int i, String conversionPattern) {
         final matcher = SPEC_PATTERN.matcher(conversionPattern.substring(i + 1))
         if (!matcher.find()) {
-            throw new UnsupportedOperationException("Unsupported/unknown logging conversion pattern: ${conversionPattern.substring(i + 1)}; of $conversionPattern")
+            throw new UnsupportedOperationException("Unsupported/unknown logging conversion pattern: '${conversionPattern.substring(i + 1)}'; of '$conversionPattern'")
         }
         String regEx = ''
         String spec = matcher.group(0)
@@ -74,47 +104,59 @@ class Log4jScrambler {
         switch (ch) {
             case 'c': // logging event category
                 regEx = '[^ ]+'
+                processor.register(EVENT_CATEGORY_SP)
                 break
             case 'C': // fully qualified class name of the caller
                 regEx = '[^ ]+'
+                processor.register(CALLER_CLASS_SP)
                 break
             case 'd': // date of the logging event. The date conversion specifier may be followed by a date format specifier enclosed between braces. For example, %d{HH:mm:ss,SSS} or %d{dd MMM yyyy HH:mm:ss,SSS}. If no date format specifier is given then ISO8601 format is assumed.
-                i = appendDateFormatRegEx(logContext, sb, ch, i, conversionPattern)
+                i = appendDateFormatRegex(processor, sb, i, conversionPattern)
                 break
             case 'F': // file name where the logging request was issued.
                 regEx = '[^ ]+'
+                processor.register(CALLER_FILE_NAME_SP)
                 break
             case 'l': // file name where the logging request was issued. The location information depends on the JVM implementation but usually consists of the fully qualified name of the calling method followed by the callers source the file name and line number between parentheses.
                 regEx = '[^ ]+'
+                processor.register(CALLER_LOCATION_SP)
                 break
             case 'L': // line number from where the logging request was issued.
                 regEx = '[\\d^ ]+'
+                processor.register(CALLER_LINE_SP)
                 break
             case 'm': // message
                 regEx = '.+'
+                processor.register(MESSAGE_SP)
                 break
             case 'M': // method name where the logging request was issued.
                 regEx = '[^ ]+'
+                processor.register(CALLER_METHOD_SP)
                 break
             case 'n': // line break, skip it
                 return i + 2
             case 'p': // priority of the logging event.
                 regEx = '\\w+'
+                processor.register(PRIORITY_SP)
                 break
             case 'r': // number of milliseconds
                 regEx = '[\\d^ ]+'
+                processor.register(LOGGING_DURATION_SP)
                 break
             case 't': // name of the thread that generated the logging event.
                 regEx = '[\\w^ ]+'
+                processor.register(THREAD_NAME_SP)
                 break
             case 'x': // NDC (nested diagnostic context) associated with the thread that generated the logging event.
                 regEx = '[\\w^ ]*'
+                processor.register(THREAD_NDC_SP)
                 break
             case 'X': // MDC (mapped diagnostic context) associated with the thread that generated the logging event. The X conversion character must be followed by the key for the map placed between braces, as in %X{clientNumber} where clientNumber is the key. The value in the MDC corresponding to the key will be output.
                 regEx = '[[\\w^ ]*'
+                processor.register(THREAD_MDC_SP)
                 break
             default:
-                throw new UnsupportedOperationException("Unsupported/unknown logging conversion pattern: ${conversionPattern.substring(i + 1)}; of $conversionPattern")
+                throw new UnsupportedOperationException("Unsupported/unknown logging conversion pattern: '${conversionPattern.substring(i + 1)}'; of '$conversionPattern'")
         }
         String paddingRegEx = ''
         if (padding) {
@@ -142,31 +184,28 @@ class Log4jScrambler {
         return i + spec.length()
     }
 
-    static String conversionPatternToRegEx(final LogContext logContext, final String conversionPattern) {
-        final specClosure = { StringBuilder sb1, char ch, int i -> appendSpecifierRegEx(logContext, sb1, ch, i, conversionPattern) }
-        final charClosure = { StringBuilder sb1, char ch, int i -> appendNonSpecifierChar(logContext, sb1, ch, i, conversionPattern) }
-
+    static String conversionPatternToRegex(final Log4jEntryProcessor processor, final String conversionPattern) {
         final sb = new StringBuilder()
         final cs = '%' as char
         final length = conversionPattern.length()
         final chars = conversionPattern.toCharArray()
-        Closure closure
         for (int i = 0; i < length; i++) {
             char ch = chars[i]
             if (ch == cs) {
                 if (i < length && chars[i + 1] == cs) {
-                    charClosure.call(sb, '\\' as char, i)
-                    charClosure.call(sb, ch, i)
+                    appendNonSpecifierChar(sb, '\\' as char)
+                    appendNonSpecifierChar(sb, ch)
                     i++
                     continue
                 }
-                closure = specClosure
+                i = appendSpecifierRegex(processor, sb, ch, i, conversionPattern)
             } else {
-                closure = charClosure
+                appendNonSpecifierChar(sb, ch)
             }
-            i = closure.call(sb, ch, i) as int
         }
-        return sb.toString()
+        final regex = sb.toString()
+        processor.pattern = ~/(?ms)$regex/
+        return regex
     }
 
     private static Set<Character> toSet(String chString) {
@@ -176,4 +215,5 @@ class Log4jScrambler {
         }
         return set
     }
+
 }
