@@ -57,7 +57,14 @@ class RegexEntryProcessor implements EntryProcessor {
     RegexEntryProcessor registerProcessor(String group, EntryProcessor entryProcessor) {
         Preconditions.checkNotNull(group, "Group Name can't be null")
         Preconditions.checkNotNull(entryProcessor, 'Entry Processor instance should be provided')
-        groupProcessorMap.put(group, entryProcessor)
+        Object procId = group
+        if (!groupValueMap.containsKey(group)) {
+            final inverseMap = groupValueMap.inverse()
+            if (inverseMap.containsKey(group)) {
+                procId = inverseMap.get(group)
+            }
+        }
+        groupProcessorMap.put(procId, entryProcessor)
         return this
     }
 
@@ -84,14 +91,9 @@ class RegexEntryProcessor implements EntryProcessor {
                     if (groupValueMap.containsKey(key)) {
                         entry.putEntryValue(groupValueMap.get(key), groupValue)
                     }
-                    LogEntry groupEntry = new LogEntry(groupValue)
                     final List<EntryProcessor> entryProcessors = groupProcessorMap.get(key)
                     for (EntryProcessor processor : entryProcessors) {
-                        groupEntry = processor.process(groupEntry)
-                        if (groupEntry) {
-                            // todo Serge: investigate if there is a need in a merge method for logEntry
-                            entry.entryValueMap.putAll(groupEntry.entryValueMap)
-                        }
+                        entry = processor.process(entry)
                     }
                 }
             }
@@ -103,6 +105,7 @@ class RegexEntryProcessor implements EntryProcessor {
         String result = dateFormat
         result = result.replaceAll('[w]+', '\\\\w+')
         result = result.replaceAll('[WDdFuHkKhmsSyYGMEazZX]+', '\\\\w+')
+        result = result.replaceAll(',', '\\.')
         return result
     }
 

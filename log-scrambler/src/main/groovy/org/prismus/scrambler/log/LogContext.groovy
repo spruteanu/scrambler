@@ -14,8 +14,15 @@ class LogContext {
     private final List<EntryProcessor> entryProcessors = new ArrayList<EntryProcessor>()
     private final List<EntryProcessor> closeableProcessors = new ArrayList<EntryProcessor>()
 
+    EntryProcessorProvider provider
+
     LogContext() {
         withCache(1024 * 1024)
+    }
+
+    LogContext withProvider(EntryProcessorProvider provider) {
+        this.provider = provider
+        return this
     }
 
     LogContext withCache(int cacheSize) {
@@ -40,6 +47,10 @@ class LogContext {
             closeableProcessors.add(processor as EntryProcessor)
         }
         return this
+    }
+
+    EntryProcessor getProcessor(String processorId, Object... args) {
+        return provider.get(processorId, args)
     }
 
     LogEntry handle(LogEntry entry) {

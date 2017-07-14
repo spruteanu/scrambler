@@ -38,8 +38,8 @@ class Log4JEntryProcessorTest extends Specification {
                        '%d{ISO8601}',
         ]
         expected << ['([^ ]{20,})', '(\\s*[^ ]{20,})', '([^ ]{1,30})', '([^ ]{20,30})', '(\\s*[^ ]{20,30})', '([\\d^ ]+)',
-                     '(\\w+-\\w+-\\w+ \\w+:\\w+:\\w+.\\w+)', '(\\w+ \\w+ \\w+ \\w+:\\w+:\\w+,\\w+)',
-                     '(\\w+:\\w+:\\w+,\\w+)', '(\\w+ \\w+ \\w+ \\w+:\\w+:\\w+,\\w+)',
+                     '(\\w+-\\w+-\\w+ \\w+:\\w+:\\w+.\\w+)', '(\\w+ \\w+ \\w+ \\w+:\\w+:\\w+.\\w+)',
+                     '(\\w+:\\w+:\\w+.\\w+)', '(\\w+ \\w+ \\w+ \\w+:\\w+:\\w+.\\w+)',
                      '(\\w+-\\w+-\\w+ \\w+:\\w+:\\w+.\\w+)',
         ]
     }
@@ -214,11 +214,11 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
         final processor = ofPattern('%-4r [%t] %-5p %C %x - %m%n')
         expect:
         [
-                (LOGGING_DURATION_SP): '0   ',
-                (THREAD_NAME_SP)     : 'main',
-                (PRIORITY_SP)        : 'DEBUG',
-                (CALLER_CLASS_SP)    : 'com.vaannila.helloworld.HelloWorld',
-                (MESSAGE_SP)         : 'Sample debug message',
+                (LOGGING_DURATION): '0   ',
+                (THREAD_NAME)     : 'main',
+                (PRIORITY)        : 'DEBUG',
+                (CALLER_CLASS)    : 'com.vaannila.helloworld.HelloWorld',
+                (MESSAGE)         : 'Sample debug message',
         ] == processor.process(new LogEntry('0    [main] DEBUG com.vaannila.helloworld.HelloWorld  - Sample debug message')).entryValueMap
     }
 

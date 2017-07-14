@@ -10,6 +10,22 @@ class CsvOutputProcessor implements EntryProcessor, Closeable {
     Writer writer
     List<String> columns
 
+    int flushAt
+    int nOutput
+
+    CsvOutputProcessor() {
+    }
+
+    CsvOutputProcessor(Writer writer, List<String> columns) {
+        this.writer = writer
+        this.columns = columns
+    }
+
+    CsvOutputProcessor flushAt(int flushAt = 100) {
+        this.flushAt = flushAt
+        return this
+    }
+
     @Override
     LogEntry process(LogEntry entry) {
         final values = new ArrayList<String>(columns.size())
@@ -18,6 +34,11 @@ class CsvOutputProcessor implements EntryProcessor, Closeable {
         }
         writer.write(values.join(', '))
         writer.write(EntryReader.LINE_BREAK)
+
+        nOutput++
+        if (flushAt && (nOutput % flushAt) == 0) {
+            writer.flush()
+        }
         return entry
     }
 
