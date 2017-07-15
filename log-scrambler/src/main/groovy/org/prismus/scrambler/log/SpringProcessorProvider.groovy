@@ -12,7 +12,7 @@ import java.util.logging.Logger
  * @author Serge Pruteanu
  */
 @CompileStatic
-class SpringProcessorProvider implements EntryProcessorProvider {
+class SpringProcessorProvider implements ProcessorProvider {
     private  static final Logger logger = Logger.getLogger(SpringProcessorProvider.class.getName())
 
     ApplicationContext context

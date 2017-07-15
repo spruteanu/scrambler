@@ -1,6 +1,5 @@
 package org.prismus.scrambler.log
 
-import com.google.common.base.Preconditions
 import groovy.transform.CompileStatic
 
 import java.util.regex.Pattern
@@ -50,9 +49,11 @@ class Log4jEntryProcessor extends RegexEntryProcessor {
         return this
     }
 
-    Log4jEntryProcessor register(String groupNameValue) {
-        Preconditions.checkNotNull(groupNameValue, "Group Name Value can't be null")
-        register(groupValueMap.size() + 1, groupNameValue)
+    Log4jEntryProcessor register(String group, Integer index = null, EntryProcessor entryProcessor = null) {
+        if (index == null) {
+            index = groupIndexMap.size() + 1
+        }
+        super.register(group, index, entryProcessor)
         return this
     }
 

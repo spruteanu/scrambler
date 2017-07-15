@@ -11,7 +11,7 @@ import java.util.regex.Pattern
  * @author Serge Pruteanu
  */
 @CompileStatic
-class DefaultProcessorProvider implements EntryProcessorProvider {
+class DefaultProcessorProvider implements ProcessorProvider {
     private static final Logger logger = Logger.getLogger(DefaultProcessorProvider.class.getName())
     private static final Pattern CLASS_PATTERN = ~/([a-zA-Z_$][a-zA-Z\d_$]*\.)*[a-zA-Z_$][a-zA-Z\d_$]*/
 

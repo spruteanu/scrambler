@@ -8,7 +8,7 @@ import spock.lang.Specification
 /**
  * @author Serge Pruteanu
  */
-class EntryProcessorProviderTest extends Specification {
+class ProcessorProviderTest extends Specification {
 
     void 'verify default definition provider'() {
         expect:

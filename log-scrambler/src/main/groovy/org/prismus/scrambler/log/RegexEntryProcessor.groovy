@@ -2,8 +2,6 @@ package org.prismus.scrambler.log
 
 import com.google.common.base.Preconditions
 import com.google.common.collect.ArrayListMultimap
-import com.google.common.collect.BiMap
-import com.google.common.collect.HashBiMap
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 
@@ -19,34 +17,30 @@ class RegexEntryProcessor implements EntryProcessor {
     static final String EXCEPTION_REGEX = '^.+Exception[^\\n]++(?:\\s+at .++)+'
 
     Pattern pattern
-    protected final ArrayListMultimap<Object, EntryProcessor> groupProcessorMap = ArrayListMultimap.create()
-    protected final BiMap<Object, String> groupValueMap = HashBiMap.create()
+    protected final ArrayListMultimap<String, EntryProcessor> groupProcessorMap = ArrayListMultimap.create()
+    protected final Map<String, Integer> groupIndexMap = [:]
 
-    Object entryValueKey
+    String group
 
     RegexEntryProcessor() {
     }
 
-    RegexEntryProcessor(String regEx, int flags = 0, Object entryValueKey = null) {
-        this(Pattern.compile(regEx, flags), entryValueKey)
+    RegexEntryProcessor(String regEx, int flags = 0, Object group = null) {
+        this(Pattern.compile(regEx, flags), group)
     }
 
-    RegexEntryProcessor(Pattern pattern, Object entryValueKey = null) {
+    RegexEntryProcessor(Pattern pattern, Object group = null) {
         this.pattern = pattern
-        this.entryValueKey = entryValueKey
+        this.group = group
     }
 
-    RegexEntryProcessor register(int group, String groupNameValue) {
-        Preconditions.checkArgument(group > 0, 'Group index should be a positive number')
-        Preconditions.checkNotNull(groupNameValue, 'Group value name should be provided')
-        groupValueMap.put(group, groupNameValue)
-        return this
-    }
-
-    RegexEntryProcessor register(int group, EntryProcessor entryProcessor) {
-        Preconditions.checkArgument(group > 0, 'Group index should be a positive number')
-        Preconditions.checkNotNull(entryProcessor, 'Entry Processor instance should be provided')
-        groupProcessorMap.put(group, entryProcessor)
+    RegexEntryProcessor register(String group, Integer index = null, EntryProcessor entryProcessor = null) {
+        Preconditions.checkArgument(index > 0, 'Group index should be a positive number')
+        Preconditions.checkNotNull(group, 'Group value name should be provided')
+        groupIndexMap.put(group, index)
+        if (entryProcessor) {
+            groupProcessorMap.put(group, entryProcessor)
+        }
         return this
     }
 
@@ -54,35 +48,28 @@ class RegexEntryProcessor implements EntryProcessor {
         Preconditions.checkNotNull(group, "Group Name can't be null")
         Preconditions.checkNotNull(entryProcessor, 'Entry Processor instance should be provided')
         groupProcessorMap.put(group, entryProcessor)
-        groupValueMap.put(group, group)
+        groupIndexMap.put(group, null)
         return this
     }
 
     RegexEntryProcessor registerProcessor(String group, EntryProcessor entryProcessor) {
         Preconditions.checkNotNull(group, "Group Name can't be null")
         Preconditions.checkNotNull(entryProcessor, 'Entry Processor instance should be provided')
-        Object procId = group
-        if (!groupValueMap.containsKey(group)) {
-            final inverseMap = groupValueMap.inverse()
-            if (inverseMap.containsKey(group)) {
-                procId = inverseMap.get(group)
-            }
-        }
-        groupProcessorMap.put(procId, entryProcessor)
+        groupProcessorMap.put(group, entryProcessor)
         return this
     }
 
-    RegexEntryProcessor registerAll(Map<Object, String> groupNameValueMap) {
-        Preconditions.checkNotNull(groupNameValueMap, 'Group value map should not be null')
-        this.groupValueMap.putAll(groupNameValueMap)
+    RegexEntryProcessor registerAll(Map<String, Integer> groupIndexMap) {
+        Preconditions.checkNotNull(groupIndexMap, 'Group value map should not be null')
+        this.groupIndexMap.putAll(groupIndexMap)
         return this
     }
 
     @Override
     LogEntry process(LogEntry entry) {
         final Matcher matcher
-        if (entryValueKey) {
-            final value = entry.getEntryValue(entryValueKey)
+        if (group) {
+            final value = entry.getEntryValue(group)
             if (!value) {
                 return entry
             }
@@ -91,19 +78,19 @@ class RegexEntryProcessor implements EntryProcessor {
             matcher = pattern.matcher(entry.line)
         }
         while (matcher.find()) {
-            for (final key : (groupProcessorMap.keySet() + groupValueMap.keySet())) {
+            for (Map.Entry<String, Integer> enr : groupIndexMap.entrySet()) {
+                final key = enr.key
+                Integer idx = enr.value
                 String groupValue = null
                 try {
-                    if (key instanceof String) {
-                        groupValue = matcher.group(key as String)
-                    } else if (key instanceof Integer) {
-                        groupValue = matcher.group(key as Integer)
+                    if (idx) {
+                        groupValue = matcher.group(idx)
+                    } else {
+                        groupValue = matcher.group(key)
                     }
                 } catch (Exception ignore) { }
                 if (groupValue) {
-                    if (groupValueMap.containsKey(key)) {
-                        entry.putEntryValue(groupValueMap.get(key), groupValue)
-                    }
+                    entry.putEntryValue(key, groupValue)
                     final List<EntryProcessor> entryProcessors = groupProcessorMap.get(key)
                     for (EntryProcessor processor : entryProcessors) {
                         entry = processor.process(entry)
