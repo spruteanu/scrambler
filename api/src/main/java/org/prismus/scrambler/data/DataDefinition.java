@@ -86,11 +86,6 @@ public class DataDefinition implements Cloneable {
     //------------------------------------------------------------------------------------------------------------------
     // Definitions Builder Methods
     //------------------------------------------------------------------------------------------------------------------
-    public DataDefinition usingDefaultDefinitionResource(String defaultDefinitionsResource) {
-        this.defaultDefinitionsResource = defaultDefinitionsResource;
-        return this;
-    }
-
     public DataDefinition definition(Data data) {
         Util.checkNull(data);
         final Object obj = data.get();
@@ -305,6 +300,11 @@ public class DataDefinition implements Cloneable {
         return this;
     }
 
+    public DataDefinition defineDefaultDefinition(String defaultDefinitionsResource) {
+        this.defaultDefinitionsResource = defaultDefinitionsResource;
+        return this;
+    }
+
     public DataDefinition usingDefinition(DataDefinition definition) {
         contextMap.putAll(definition.contextMap);
         return usingDefinitions(definition.getDefinitionMap());
@@ -440,7 +440,7 @@ public class DataDefinition implements Cloneable {
             data = ((IncrementalTypeData) data).next(type);
         }
         if (data == null && parent != null) {
-            parent.lookupData(property, type);
+            data = parent.lookupData(property, type);
         }
         return data;
     }

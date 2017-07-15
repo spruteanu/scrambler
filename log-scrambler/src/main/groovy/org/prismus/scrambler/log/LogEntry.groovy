@@ -13,7 +13,7 @@ class LogEntry {
     Object row
     String id
 
-    Map entryValueMap
+    Map logValueMap
 
     LogEntry(String line) {
         this(null, line, 0)
@@ -27,24 +27,24 @@ class LogEntry {
         this.source = source
         this.line = line
         this.row = row
-        entryValueMap = [:]
+        logValueMap = [:]
     }
 
-    LogEntry putEntryValue(Object entryKey, Object value) {
-        entryValueMap.put(entryKey, value)
+    LogEntry putLogValue(Object entryKey, Object value) {
+        logValueMap.put(entryKey, value)
         return this
     }
 
-    Object getEntryValue(Object entryKey) {
-        return entryValueMap.get(entryKey)
+    Object getLogValue(Object entryKey) {
+        return logValueMap.get(entryKey)
     }
 
     void clearEntryValueMap() {
-        entryValueMap.clear()
+        logValueMap.clear()
     }
 
     boolean isEmpty() {
-        return entryValueMap.isEmpty()
+        return logValueMap.isEmpty()
     }
 
 }

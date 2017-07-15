@@ -3,13 +3,13 @@ package org.prismus.scrambler.log
 import spock.lang.Specification
 
 /**
- * Created by SergeP on 7/11/2017.
+ * @author Serge Pruteanu
  */
-class EntryReaderTest extends Specification {
+class LogReaderTest extends Specification {
 
     void 'verify read line/close'() {
         given:
-        final entryReader = IoEntryReader.of(new LogContext(), new StringReader("""
+        final entryReader = IoLogReader.of(new LogContext(), new StringReader("""
 line 1
 line 2
 line 3

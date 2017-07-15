@@ -11,8 +11,8 @@ import groovy.transform.CompileStatic
 class LogContext {
     private Cache<Object, LogEntry> cache
 
-    private final List<EntryProcessor> processors = new ArrayList<EntryProcessor>()
-    private final List<EntryProcessor> closeableProcessors = new ArrayList<EntryProcessor>()
+    private final List<LogProcessor> processors = new ArrayList<LogProcessor>()
+    private final List<LogProcessor> closeableProcessors = new ArrayList<LogProcessor>()
 
     ProcessorProvider provider
 
@@ -41,21 +41,21 @@ class LogContext {
         return this
     }
 
-    LogContext register(EntryProcessor processor) {
+    LogContext register(LogProcessor processor) {
         processors.add(processor)
         if (processor instanceof Closeable) {
-            closeableProcessors.add(processor as EntryProcessor)
+            closeableProcessors.add(processor as LogProcessor)
         }
         return this
     }
 
-    EntryProcessor getProcessor(String processorId, Object... args) {
+    LogProcessor getProcessor(String processorId, Object... args) {
         return provider.get(processorId, args)
     }
 
     LogEntry handle(LogEntry entry) {
-        for (EntryProcessor entryProcessor : processors) {
-            entry = entryProcessor.process(entry)
+        for (LogProcessor processor : processors) {
+            entry = processor.process(entry)
         }
         if (entry.id) {
             cache.put(entry.id, entry)
@@ -64,7 +64,7 @@ class LogContext {
     }
 
     LogContext close() {
-        for (EntryProcessor processor : closeableProcessors) {
+        for (LogProcessor processor : closeableProcessors) {
             if (processor instanceof Closeable) {
                 Utils.closeQuietly(processor as Closeable)
             }

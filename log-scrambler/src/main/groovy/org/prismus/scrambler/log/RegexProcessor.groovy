@@ -12,54 +12,52 @@ import java.util.regex.Pattern
  * @author Serge Pruteanu
  */
 @CompileStatic
-class RegexEntryProcessor implements EntryProcessor {
-    @PackageScope
-    static final String EXCEPTION_REGEX = '^.+Exception[^\\n]++(?:\\s+at .++)+'
+class RegexProcessor implements LogProcessor {
 
     Pattern pattern
-    protected final ArrayListMultimap<String, EntryProcessor> groupProcessorMap = ArrayListMultimap.create()
+    protected final ArrayListMultimap<String, LogProcessor> groupProcessorMap = ArrayListMultimap.create()
     protected final Map<String, Integer> groupIndexMap = [:]
 
     String group
 
-    RegexEntryProcessor() {
+    RegexProcessor() {
     }
 
-    RegexEntryProcessor(String regEx, int flags = 0, Object group = null) {
+    RegexProcessor(String regEx, int flags = 0, Object group = null) {
         this(Pattern.compile(regEx, flags), group)
     }
 
-    RegexEntryProcessor(Pattern pattern, Object group = null) {
+    RegexProcessor(Pattern pattern, Object group = null) {
         this.pattern = pattern
         this.group = group
     }
 
-    RegexEntryProcessor register(String group, Integer index = null, EntryProcessor entryProcessor = null) {
+    RegexProcessor register(String group, Integer index = null, LogProcessor processor = null) {
         Preconditions.checkArgument(index > 0, 'Group index should be a positive number')
         Preconditions.checkNotNull(group, 'Group value name should be provided')
         groupIndexMap.put(group, index)
-        if (entryProcessor) {
-            groupProcessorMap.put(group, entryProcessor)
+        if (processor) {
+            groupProcessorMap.put(group, processor)
         }
         return this
     }
 
-    RegexEntryProcessor register(String group, EntryProcessor entryProcessor) {
+    RegexProcessor register(String group, LogProcessor processor) {
         Preconditions.checkNotNull(group, "Group Name can't be null")
-        Preconditions.checkNotNull(entryProcessor, 'Entry Processor instance should be provided')
-        groupProcessorMap.put(group, entryProcessor)
+        Preconditions.checkNotNull(processor, 'Entry Processor instance should be provided')
+        groupProcessorMap.put(group, processor)
         groupIndexMap.put(group, null)
         return this
     }
 
-    RegexEntryProcessor registerProcessor(String group, EntryProcessor entryProcessor) {
+    RegexProcessor registerProcessor(String group, LogProcessor processor) {
         Preconditions.checkNotNull(group, "Group Name can't be null")
-        Preconditions.checkNotNull(entryProcessor, 'Entry Processor instance should be provided')
-        groupProcessorMap.put(group, entryProcessor)
+        Preconditions.checkNotNull(processor, 'Entry Processor instance should be provided')
+        groupProcessorMap.put(group, processor)
         return this
     }
 
-    RegexEntryProcessor registerAll(Map<String, Integer> groupIndexMap) {
+    RegexProcessor registerAll(Map<String, Integer> groupIndexMap) {
         Preconditions.checkNotNull(groupIndexMap, 'Group value map should not be null')
         this.groupIndexMap.putAll(groupIndexMap)
         return this
@@ -69,7 +67,7 @@ class RegexEntryProcessor implements EntryProcessor {
     LogEntry process(LogEntry entry) {
         final Matcher matcher
         if (group) {
-            final value = entry.getEntryValue(group)
+            final value = entry.getLogValue(group)
             if (!value) {
                 return entry
             }
@@ -90,9 +88,9 @@ class RegexEntryProcessor implements EntryProcessor {
                     }
                 } catch (Exception ignore) { }
                 if (groupValue) {
-                    entry.putEntryValue(key, groupValue)
-                    final List<EntryProcessor> entryProcessors = groupProcessorMap.get(key)
-                    for (EntryProcessor processor : entryProcessors) {
+                    entry.putLogValue(key, groupValue)
+                    final List<LogProcessor> processors = groupProcessorMap.get(key)
+                    for (LogProcessor processor : processors) {
                         entry = processor.process(entry)
                     }
                 }
@@ -109,12 +107,12 @@ class RegexEntryProcessor implements EntryProcessor {
         return result
     }
 
-    static RegexEntryProcessor of(Pattern pattern) {
-        return new RegexEntryProcessor(pattern)
+    static RegexProcessor of(Pattern pattern) {
+        return new RegexProcessor(pattern)
     }
 
-    static RegexEntryProcessor of(String regEx, int flags = 0) {
-        return new RegexEntryProcessor(Pattern.compile(regEx, flags))
+    static RegexProcessor of(String regEx, int flags = 0) {
+        return new RegexProcessor(Pattern.compile(regEx, flags))
     }
 
 }

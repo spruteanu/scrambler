@@ -6,7 +6,7 @@ import groovy.transform.CompileStatic
  * @author Serge Pruteanu
  */
 @CompileStatic
-class CsvOutputProcessor implements EntryProcessor, Closeable {
+class CsvOutputProcessor implements LogProcessor, Closeable {
     Writer writer
     List<String> columns
 
@@ -30,10 +30,10 @@ class CsvOutputProcessor implements EntryProcessor, Closeable {
     LogEntry process(LogEntry entry) {
         final values = new ArrayList<String>(columns.size())
         for (String column : columns) {
-            values.add(Objects.toString(entry.getEntryValue(column)?.toString(), ''))
+            values.add(Objects.toString(entry.getLogValue(column)?.toString(), ''))
         }
         writer.write(values.join(', '))
-        writer.write(EntryReader.LINE_BREAK)
+        writer.write(LogReader.LINE_BREAK)
 
         nOutput++
         if (flushAt && (nOutput % flushAt) == 0) {

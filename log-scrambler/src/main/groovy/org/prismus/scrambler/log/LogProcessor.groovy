@@ -3,6 +3,6 @@ package org.prismus.scrambler.log
 /**
  * @author Serge Pruteanu
  */
-interface EntryProcessor {
+interface LogProcessor {
     LogEntry process(LogEntry entry)
 }

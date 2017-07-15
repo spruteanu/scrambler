@@ -6,7 +6,7 @@ import groovy.transform.CompileStatic
  * @author Serge Pruteanu
  */
 @CompileStatic
-abstract class EntryReader implements Closeable {
+abstract class LogReader implements Closeable {
     static final String LINE_BREAK = System.getProperty('line.separator')
 
     protected Object source
@@ -17,7 +17,7 @@ abstract class EntryReader implements Closeable {
 
     boolean multiline = true
 
-    EntryReader(LogContext context) {
+    LogReader(LogContext context) {
         this.context = context
         lineQueue = new LinkedList<String>()
     }
@@ -50,7 +50,7 @@ abstract class EntryReader implements Closeable {
         doClose()
     }
 
-    EntryReader oneLineEntry() {
+    LogReader oneLineEntry() {
         multiline = false
         return this
     }

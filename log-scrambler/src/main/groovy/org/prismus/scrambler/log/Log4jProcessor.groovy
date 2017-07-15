@@ -8,7 +8,7 @@ import java.util.regex.Pattern
  * @author Serge Pruteanu
  */
 @CompileStatic
-class Log4jEntryProcessor extends RegexEntryProcessor {
+class Log4jProcessor extends RegexProcessor {
     private static final String ABSOLUTE = '{ABSOLUTE}'
     private static final String DATE = '{DATE}'
     private static final String ISO8601 = '{ISO8601}'
@@ -35,30 +35,30 @@ class Log4jEntryProcessor extends RegexEntryProcessor {
 
     String timestampFormat
 
-    Log4jEntryProcessor registerTimestamp(String timestampFormat) {
+    Log4jProcessor registerTimestamp(String timestampFormat) {
         register(TIMESTAMP)
         this.timestampFormat = timestampFormat
         return this
     }
 
-    Log4jEntryProcessor timestampProcessor(String timestampFormat = null) {
+    Log4jProcessor timestampProcessor(String timestampFormat = null) {
         if (!timestampFormat) {
             timestampFormat = this.timestampFormat
         }
-        registerProcessor(TIMESTAMP, DateValueProcessor.of(timestampFormat, TIMESTAMP))
+        registerProcessor(TIMESTAMP, DateFormatProcessor.of(timestampFormat, TIMESTAMP))
         return this
     }
 
-    Log4jEntryProcessor register(String group, Integer index = null, EntryProcessor entryProcessor = null) {
+    Log4jProcessor register(String group, Integer index = null, LogProcessor processor = null) {
         if (index == null) {
             index = groupIndexMap.size() + 1
         }
-        super.register(group, index, entryProcessor)
+        super.register(group, index, processor)
         return this
     }
 
-    static Log4jEntryProcessor ofPattern(String conversionPattern) {
-        final processor = new Log4jEntryProcessor()
+    static Log4jProcessor ofPattern(String conversionPattern) {
+        final processor = new Log4jProcessor()
         conversionPatternToRegex(processor, conversionPattern)
         return processor
     }
@@ -73,7 +73,7 @@ class Log4jEntryProcessor extends RegexEntryProcessor {
     }
 
     protected
-    static int appendDateFormatRegex(Log4jEntryProcessor processor, StringBuilder sb, int index, String specString) {
+    static int appendDateFormatRegex(Log4jProcessor processor, StringBuilder sb, int index, String specString) {
         final pattern = ~/d(\{.+\})*/
         final matcher = pattern.matcher(specString.substring(index + 1))
         if (!matcher.find()) {
@@ -110,7 +110,7 @@ class Log4jEntryProcessor extends RegexEntryProcessor {
     }
 
     protected
-    static int appendSpecifierRegex(Log4jEntryProcessor processor, StringBuilder sb, char ch, int i, String conversionPattern) {
+    static int appendSpecifierRegex(Log4jProcessor processor, StringBuilder sb, char ch, int i, String conversionPattern) {
         final matcher = SPEC_PATTERN.matcher(conversionPattern.substring(i + 1))
         if (!matcher.find()) {
             throw new UnsupportedOperationException("Unsupported/unknown logging conversion pattern: '${conversionPattern.substring(i + 1)}'; of '$conversionPattern'")
@@ -155,7 +155,7 @@ class Log4jEntryProcessor extends RegexEntryProcessor {
             case 'n': // line break, skip it
                 return i + 2
             case 'p': // priority of the logging event.
-                regEx = '\\w+'
+                regEx = '[\\w ]+'
                 processor.register(PRIORITY)
                 break
             case 'r': // number of milliseconds
@@ -163,15 +163,15 @@ class Log4jEntryProcessor extends RegexEntryProcessor {
                 processor.register(LOGGING_DURATION)
                 break
             case 't': // name of the thread that generated the logging event.
-                regEx = '[\\w^ ]+'
+                regEx = '[^ ]+'
                 processor.register(THREAD_NAME)
                 break
             case 'x': // NDC (nested diagnostic context) associated with the thread that generated the logging event.
-                regEx = '[\\w^ ]*'
+                regEx = '[^ ]*'
                 processor.register(THREAD_NDC)
                 break
             case 'X': // MDC (mapped diagnostic context) associated with the thread that generated the logging event. The X conversion character must be followed by the key for the map placed between braces, as in %X{clientNumber} where clientNumber is the key. The value in the MDC corresponding to the key will be output.
-                regEx = '[[\\w^ ]*'
+                regEx = '[^ ]*'
                 processor.register(THREAD_MDC)
                 break
             default:
@@ -203,7 +203,7 @@ class Log4jEntryProcessor extends RegexEntryProcessor {
         return i + spec.length()
     }
 
-    static String conversionPatternToRegex(final Log4jEntryProcessor processor, final String conversionPattern) {
+    static String conversionPatternToRegex(final Log4jProcessor processor, final String conversionPattern) {
         final sb = new StringBuilder()
         final cs = '%' as char
         final length = conversionPattern.length()

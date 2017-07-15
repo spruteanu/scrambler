@@ -25,14 +25,14 @@ class SpringProcessorProvider implements ProcessorProvider {
     }
 
     @Override
-    EntryProcessor get(String processorId, Object... args) {
-        EntryProcessor processor = null
+    LogProcessor get(String processorId, Object... args) {
+        LogProcessor processor = null
         try {
             if (context.containsBean(processorId)) {
-                processor = context.getBean(processorId, args) as EntryProcessor
+                processor = context.getBean(processorId, args) as LogProcessor
             } else {
                 if (DefaultProcessorProvider.isClassName(processorId)) {
-                    processor = context.getBean(DefaultProcessorProvider.resolveClass(processorId), args) as EntryProcessor
+                    processor = context.getBean(DefaultProcessorProvider.resolveClass(processorId), args) as LogProcessor
                 }
             }
         } catch (Exception ignore) {

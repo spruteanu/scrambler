@@ -25,7 +25,7 @@ class DefaultProcessorProvider implements ProcessorProvider {
     }
 
     @Override
-    EntryProcessor get(String processorId, Object... args) {
+    LogProcessor get(String processorId, Object... args) {
         Class clazz = null
         def clazzObj = processorIdClassMap.get(processorId)
         if (clazzObj instanceof Class) {
@@ -41,10 +41,10 @@ class DefaultProcessorProvider implements ProcessorProvider {
             clazz = resolveClass(processorId)
         }
 
-        EntryProcessor processor = null
+        LogProcessor processor = null
         if (clazz) {
             try {
-                processor = DefaultGroovyMethods.newInstance(clazz, args) as EntryProcessor
+                processor = DefaultGroovyMethods.newInstance(clazz, args) as LogProcessor
             } catch (Exception ignore) {
                 logger.log(Level.SEVERE, "Failed to get processor: '$processorId'${(args != null) ? '(' + Arrays.asList(args).toString() + ')' : ''}; null is returned", ignore)
             }

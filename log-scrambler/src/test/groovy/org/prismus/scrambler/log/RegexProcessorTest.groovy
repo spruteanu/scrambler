@@ -2,89 +2,59 @@ package org.prismus.scrambler.log
 
 import spock.lang.Specification
 
-import static org.prismus.scrambler.log.Log4jEntryProcessor.*
-import static org.prismus.scrambler.log.RegexEntryProcessor.of
-
 /**
  * @author Serge Pruteanu
  */
-class Log4JEntryProcessorTest extends Specification {
+class RegexProcessorTest extends Specification {
 
-    void 'verify adding non specifier char'() {
-        final sb = new StringBuilder()
-        appendNonSpecifierChar(sb, ch as char)
-
+    void 'verify date format parser'() {
         expect:
-        expected == sb.toString()
+        '\\w+/\\w+/\\w+ \\w+:\\w+:\\w+.\\w+' == RegexProcessor.dateFormatToRegEx('yyyy/MM/dd HH:mm:ss.SSS')
+        '\\w+-\\w+-\\w+ \\w+:\\w+:\\w+.\\w+' == RegexProcessor.dateFormatToRegEx('yyyy-MM-dd HH:mm:ss.SSS')
 
-        where:
-        ch << ['[', ']', '{', '}', '\\', '^', '$', '|', '?', '*', '+', '(', ')', '#', 'a', 'f', 'c', 's']
-        expected << ['\\[', '\\]', '\\{', '\\}', '\\\\', '\\^', '\\$', '\\|', '\\?', '\\*', '\\+', '\\(', '\\)', '#', 'a', 'f', 'c', 's']
+        '\\w+:\\w+:\\w+.\\w+' == RegexProcessor.dateFormatToRegEx('HH:mm:ss,SSS')
+        '\\w+ \\w+ \\w+ \\w+:\\w+:\\w+.\\w+' == RegexProcessor.dateFormatToRegEx('dd MMM yyyy HH:mm:ss,SSS')
+
+        and: 'check converted regex matches value'
+        '2008-09-06 10:51:45,473' =~ /${RegexProcessor.dateFormatToRegEx('yyyy-MM-dd HH:mm:ss.SSS')}/
+        !('2008-09-06 wrong time' =~ /${RegexProcessor.dateFormatToRegEx('yyyy-MM-dd HH:mm:ss.SSS')}/)
+
+        '15:49:37,459' =~ /${RegexProcessor.dateFormatToRegEx('HH:mm:ss,SSS')}/
+        '06 Nov 1994 08:49:37,459' =~ /${RegexProcessor.dateFormatToRegEx('dd MMM yyyy HH:mm:ss,SSS')}/
     }
 
-    void 'verify precision specifier'() {
-        final sb = new StringBuilder()
-        final entryProcessor = new Log4jEntryProcessor()
-        int idx = appendSpecifierRegex(entryProcessor, sb, '%' as char, 0, specString)
-
+    void 'verify reg ex parser'() {
+        LogEntry logEntry = new LogEntry('DEBUG | 2008-09-06 10:51:44,817 | DefaultBeanDefinitionDocumentReader.java | 86 | Loading bean definitions')
         expect:
-        expected == sb.toString()
-        idx == specString.length() - 1
+        false == RegexProcessor.of(~/(\w+) \| (\w+-\w+-\w+ \w+:\w+:\w+.\w+) \| (\w+\.\w+) \| (\d+) \| (.+)/)
+                    .register('LogLevel', 1)
+                    .register('Timestamp', 2)
+                    .register('Caller', 3)
+                    .register('Line', 4)
+                    .register('Message', 5)
+                    .process(logEntry)
+                    .isEmpty()
+        'DEBUG' == logEntry.getLogValue('LogLevel')
+        '2008-09-06 10:51:44,817' == logEntry.getLogValue('Timestamp')
+        'DefaultBeanDefinitionDocumentReader.java' == logEntry.getLogValue('Caller')
+        '86' == logEntry.getLogValue('Line')
+        'Loading bean definitions' == logEntry.getLogValue('Message')
 
-        where:
-        specString << ['%20c', '%-20c', '%.30c', '%20.30c', '%-20.30c', '%r',
-                       '%d', '%d{dd MMM yyyy HH:mm:ss,SSS}',
-                       '%d{ABSOLUTE}', '%d{DATE}',
-                       '%d{ISO8601}',
-        ]
-        expected << ['([^ ]{20,})', '(\\s*[^ ]{20,})', '([^ ]{1,30})', '([^ ]{20,30})', '(\\s*[^ ]{20,30})', '([\\d^ ]+)',
-                     '(\\w+-\\w+-\\w+ \\w+:\\w+:\\w+.\\w+)', '(\\w+ \\w+ \\w+ \\w+:\\w+:\\w+.\\w+)',
-                     '(\\w+:\\w+:\\w+.\\w+)', '(\\w+ \\w+ \\w+ \\w+:\\w+:\\w+.\\w+)',
-                     '(\\w+-\\w+-\\w+ \\w+:\\w+:\\w+.\\w+)',
-        ]
-    }
+        and: 'verify group entry processor'
+        null != (logEntry = new LogEntry('INFO | 2008-09-06 10:51:45,473 | SQLErrorCodesFactory.java | 128 | SQLErrorCodes loaded: [DB2, Derby, H2, HSQL, Informix, MS-SQL, MySQL, Oracle, PostgreSQL, Sybase]'))
+        false == RegexProcessor.of(~/(\w+) \| (\w+-\w+-\w+ \w+:\w+:\w+.\w+) \| (\w+\.\w+) \| (\d+) \| (.+)/)
+                .register('LogLevel', 1)
+                .register('Timestamp', 2)
+                .register('Caller', 3)
+                .register('Line', 4)
+                .register('Message', 5)
+                .registerProcessor('Message', new RegexProcessor(~/.+\[(.+)\]/, 'Message').register('SQLErrorCodes', 1))
+                .process(logEntry)
+                .isEmpty()
+        'SQLErrorCodes loaded: [DB2, Derby, H2, HSQL, Informix, MS-SQL, MySQL, Oracle, PostgreSQL, Sybase]' == logEntry.getLogValue('Message')
+        'DB2, Derby, H2, HSQL, Informix, MS-SQL, MySQL, Oracle, PostgreSQL, Sybase' == logEntry.getLogValue('SQLErrorCodes')
 
-    void 'verify conversionPatternToRegEx'() {
-        final entryProcessor = new Log4jEntryProcessor()
-        String patternRegEx = conversionPatternToRegex(entryProcessor, specString)
-
-        expect:
-        patternRegEx == expected
-
-        where:
-        specString << [
-                '%-6r [%15.15t] %-5p %30.30c %x - %m%n',
-                '%r [%t] %-5p %c %x - %m%n',
-                '%5p | %d | %F | %L | %m%n',
-        ]
-        expected << [
-                '(\\s*[\\d^ ]{6,}) \\[([\\w^ ]{15,15})\\] (\\s*\\w{5,}) ([^ ]{30,30}) ([\\w^ ]*) - (.+)',
-                '([\\d^ ]+) \\[([\\w^ ]+)\\] (\\s*\\w{5,}) ([^ ]+) ([\\w^ ]*) - (.+)',
-                '(\\w{5,}) \\| (\\w+-\\w+-\\w+ \\w+:\\w+:\\w+.\\w+) \\| ([^ ]+) \\| ([\\d^ ]+) \\| (.+)',
-        ]
-    }
-
-    void 'verify conversionPatternToRegEx with log entry parsing'() {
-        final conversionPattern = '%-4r [%t] %-5p %C %x - %m%n'
-        String patternRegEx = conversionPatternToRegex(new Log4jEntryProcessor(), conversionPattern)
-        LogEntry logEntry = of(~/${patternRegEx}/)
-                .register('logTime', 1)
-                .register('ThreadName', 2)
-                .register('LogLevel', 3)
-                .register('CallerClass', 4)
-                .register('NDC', 5)
-                .register('Message', 6)
-                .process(new LogEntry('0    [main] DEBUG com.vaannila.helloworld.HelloWorld  - Sample debug message'))
-
-        expect:
-        '0   ' == logEntry.getEntryValue('logTime')
-        'main' == logEntry.getEntryValue('ThreadName')
-        'DEBUG' == logEntry.getEntryValue('LogLevel')
-        'com.vaannila.helloworld.HelloWorld' == logEntry.getEntryValue('CallerClass')
-        null == logEntry.getEntryValue('NDC')
-        'Sample debug message' == logEntry.getEntryValue('Message')
-
-        and: 'with exception'
+        and: 'verify parsing log entry with exception'
         null != (logEntry = new LogEntry("""ERROR | 2008-09-06 10:51:45,473 | SQLErrorCodesFactory.java | 128 | OMG, Something bad happened
 javax.servlet.ServletException: Something bad happened
     at com.example.myproject.OpenSessionInViewFilter.doFilter(OpenSessionInViewFilter.java:60)
@@ -140,19 +110,15 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
     at org.hibernate.id.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:57)
     ... 54 more
 """))
-        false == of(~/(?ms)${conversionPatternToRegex(new Log4jEntryProcessor(), '%5p | %d | %F | %L | %m%n')}/)
+        false == RegexProcessor.of(~/(?ms)(\w+) \| (\w+-\w+-\w+ \w+:\w+:\w+.\w+) \| (\w+\.\w+) \| (\d+) \| (.+)/)
                 .register('LogLevel', 1)
                 .register('Timestamp', 2)
-                .register('CallerFileName', 3)
+                .register('Caller', 3)
                 .register('Line', 4)
                 .register('Message', 5)
+                .registerProcessor('Message', new RegexProcessor(~/(?ms)(${MessageProcessor.EXCEPTION_REGEX})/, 'Message').register('Exception', 1))
                 .process(logEntry)
                 .isEmpty()
-        'ERROR' == logEntry.getEntryValue('LogLevel')
-        '2008-09-06 10:51:45,473' == logEntry.getEntryValue('Timestamp')
-        'SQLErrorCodesFactory.java' == logEntry.getEntryValue('CallerFileName')
-        '128' == logEntry.getEntryValue('Line')
-
         """OMG, Something bad happened
 javax.servlet.ServletException: Something bad happened
     at com.example.myproject.OpenSessionInViewFilter.doFilter(OpenSessionInViewFilter.java:60)
@@ -207,19 +173,7 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
     at com.mchange.v2.c3p0.impl.NewProxyPreparedStatement.executeUpdate(NewProxyPreparedStatement.java:105)
     at org.hibernate.id.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:57)
     ... 54 more
-""" == logEntry.getEntryValue('Message')
-    }
-
-    void 'verify log4j entry processor'() {
-        final processor = ofPattern('%-4r [%t] %-5p %C %x - %m%n')
-        expect:
-        [
-                (LOGGING_DURATION): '0   ',
-                (THREAD_NAME)     : 'main',
-                (PRIORITY)        : 'DEBUG',
-                (CALLER_CLASS)    : 'com.vaannila.helloworld.HelloWorld',
-                (MESSAGE)         : 'Sample debug message',
-        ] == processor.process(new LogEntry('0    [main] DEBUG com.vaannila.helloworld.HelloWorld  - Sample debug message')).entryValueMap
+""" == logEntry.getLogValue('Exception')
     }
 
 }
