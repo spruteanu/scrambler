@@ -11,23 +11,23 @@ import java.util.regex.Pattern
  * @author Serge Pruteanu
  */
 @CompileStatic
-class DefaultProcessorProvider implements ProcessorProvider {
-    private static final Logger logger = Logger.getLogger(DefaultProcessorProvider.class.getName())
+class DefaultObjectProvider implements ObjectProvider {
+    private static final Logger logger = Logger.getLogger(DefaultObjectProvider.class.getName())
     private static final Pattern CLASS_PATTERN = ~/([a-zA-Z_$][a-zA-Z\d_$]*\.)*[a-zA-Z_$][a-zA-Z\d_$]*/
 
-    Map<String, Object> processorIdClassMap = [:]
+    Map<String, Object> objectIdClassMap = [:]
 
-    DefaultProcessorProvider() {
+    DefaultObjectProvider() {
     }
 
-    DefaultProcessorProvider(Map<String, Object> processorIdClassMap) {
-        this.processorIdClassMap = processorIdClassMap
+    DefaultObjectProvider(Map<String, Object> objectIdClassMap) {
+        this.objectIdClassMap = objectIdClassMap
     }
 
     @Override
-    LogProcessor get(String processorId, Object... args) {
+    Object get(String objectId, Object... args) {
         Class clazz = null
-        def clazzObj = processorIdClassMap.get(processorId)
+        def clazzObj = objectIdClassMap.get(objectId)
         if (clazzObj instanceof Class) {
             clazz = clazzObj
         } else {
@@ -37,23 +37,23 @@ class DefaultProcessorProvider implements ProcessorProvider {
                 }
             }
         }
-        if (clazz == null && isClassName(processorId)) {
-            clazz = resolveClass(processorId)
+        if (clazz == null && isClassName(objectId)) {
+            clazz = resolveClass(objectId)
         }
 
-        LogProcessor processor = null
+        Object object = null
         if (clazz) {
             try {
-                processor = DefaultGroovyMethods.newInstance(clazz, args) as LogProcessor
+                object = DefaultGroovyMethods.newInstance(clazz, args)
             } catch (Exception ignore) {
-                logger.log(Level.SEVERE, "Failed to get processor: '$processorId'${(args != null) ? '(' + Arrays.asList(args).toString() + ')' : ''}; null is returned", ignore)
+                logger.log(Level.SEVERE, "Failed to get object: '$objectId'${(args != null) ? '(' + Arrays.asList(args).toString() + ')' : ''}; null is returned", ignore)
             }
         } else {
             if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "No processor: '$processorId'${(args != null) ? '(' + Arrays.asList(args).toString() + ')' : ''} found; null is returned")
+                logger.log(Level.FINE, "No object: '$objectId'${(args != null) ? '(' + Arrays.asList(args).toString() + ')' : ''} found; null is returned")
             }
         }
-        return processor
+        return object
     }
 
     static boolean isClassName(String className) {

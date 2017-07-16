@@ -14,13 +14,13 @@ class LogContext {
     private final List<LogProcessor> processors = new ArrayList<LogProcessor>()
     private final List<LogProcessor> closeableProcessors = new ArrayList<LogProcessor>()
 
-    ProcessorProvider provider
+    ObjectProvider provider
 
     LogContext() {
         withCache(1024 * 1024)
     }
 
-    LogContext withProvider(ProcessorProvider provider) {
+    LogContext withProvider(ObjectProvider provider) {
         this.provider = provider
         return this
     }
@@ -50,15 +50,21 @@ class LogContext {
     }
 
     LogProcessor getProcessor(String processorId, Object... args) {
-        return provider.get(processorId, args)
+        return provider.get(processorId, args) as LogProcessor
     }
 
     LogEntry handle(LogEntry entry) {
         for (LogProcessor processor : processors) {
-            entry = processor.process(entry)
+            processor.process(entry)
         }
-        if (entry.id) {
-            cache.put(entry.id, entry)
+        if (entry.isCacheable()) {
+            final cacheKey = entry.cacheKey
+            final cachedEntry = cache.getIfPresent(cacheKey)
+            if (cachedEntry) {
+                cachedEntry.logValueMap.putAll(entry.logValueMap)
+            } else {
+                cache.put(cacheKey, entry)
+            }
         }
         return entry
     }

@@ -91,7 +91,7 @@ class RegexProcessor implements LogProcessor {
                     entry.putLogValue(key, groupValue)
                     final List<LogProcessor> processors = groupProcessorMap.get(key)
                     for (LogProcessor processor : processors) {
-                        entry = processor.process(entry)
+                        processor.process(entry)
                     }
                 }
             }

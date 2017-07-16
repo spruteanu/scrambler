@@ -9,17 +9,23 @@ import groovy.transform.CompileStatic
 abstract class LogReader implements Closeable {
     static final String LINE_BREAK = System.getProperty('line.separator')
 
-    protected Object source
-    protected Queue<String> lineQueue
-    protected LogEntry currentEntry
     protected LogContext context
+    protected Object source
+    protected LogEntry currentEntry
     protected int currentRow
 
     boolean multiline = true
 
+    LogReader() {
+    }
+
     LogReader(LogContext context) {
         this.context = context
-        lineQueue = new LinkedList<String>()
+    }
+
+    LogReader withContext(LogContext context) {
+        this.context = context
+        return this
     }
 
     protected abstract String readLine()
@@ -46,8 +52,10 @@ abstract class LogReader implements Closeable {
 
     @Override
     void close() throws IOException {
-        currentEntry = null
         doClose()
+        currentEntry = null
+        currentRow = 0
+        source = null
     }
 
     LogReader oneLineEntry() {

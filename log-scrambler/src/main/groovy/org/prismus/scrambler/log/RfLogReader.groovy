@@ -9,12 +9,20 @@ import groovy.transform.PackageScope
 @CompileStatic
 @PackageScope
 class RfLogReader extends LogReader {
-    private RandomAccessFile rf
+    RandomAccessFile rf
 
-    RfLogReader(LogContext context, RandomAccessFile rf) {
+    RfLogReader() {
+    }
+
+    RfLogReader(LogContext context, RandomAccessFile rf, Object source = null) {
         super(context)
         this.rf = rf
         this.source = source
+    }
+
+    RfLogReader withFile(RandomAccessFile rf) {
+        this.rf = rf
+        return this
     }
 
     @Override

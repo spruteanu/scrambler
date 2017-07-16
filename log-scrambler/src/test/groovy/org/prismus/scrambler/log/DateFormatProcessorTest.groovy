@@ -8,7 +8,7 @@ import spock.lang.Specification
 class DateFormatProcessorTest extends Specification {
 
     void 'verify date value processor'() {
-        final processor = Log4jProcessor.ofPattern('%5p | %d | %F | %L | %m%n')
+        final processor = Log4jProcessor.forPattern('%5p | %d | %F | %L | %m%n')
                 .timestampProcessor(Log4jProcessor.ISO8601_DATE_FORMAT)
 
         final entry = new LogEntry('ERROR | 2008-09-06 10:51:45,473 | SQLErrorCodesFactory.java | 128 | OMG, Something bad happened')

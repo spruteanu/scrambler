@@ -81,7 +81,7 @@ Caused by: com.example.myproject.MyProjectServletException
 Caused by: org.hibernate.exception.ConstraintViolationException: could not insert: [com.example.myproject.MyEntity]
     at org.hibernate.exception.SQLStateConverter.convert(SQLStateConverter.java:96)
     at org.hibernate.exception.JDBCExceptionHelper.convert(JDBCExceptionHelper.java:66)
-    at org.hibernate.id.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:64)
+    at org.hibernate.cacheKey.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:64)
     at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:2329)
     at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:2822)
     at org.hibernate.action.EntityIdentityInsertAction.execute(EntityIdentityInsertAction.java:71)
@@ -107,7 +107,7 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
     at org.hsqldb.jdbc.Util.throwError(Unknown Source)
     at org.hsqldb.jdbc.jdbcPreparedStatement.executeUpdate(Unknown Source)
     at com.mchange.v2.c3p0.impl.NewProxyPreparedStatement.executeUpdate(NewProxyPreparedStatement.java:105)
-    at org.hibernate.id.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:57)
+    at org.hibernate.cacheKey.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:57)
     ... 54 more
 """))
         false == RegexProcessor.of(~/(?ms)(\w+) \| (\w+-\w+-\w+ \w+:\w+:\w+.\w+) \| (\w+\.\w+) \| (\d+) \| (.+)/)
@@ -145,7 +145,7 @@ Caused by: com.example.myproject.MyProjectServletException
 Caused by: org.hibernate.exception.ConstraintViolationException: could not insert: [com.example.myproject.MyEntity]
     at org.hibernate.exception.SQLStateConverter.convert(SQLStateConverter.java:96)
     at org.hibernate.exception.JDBCExceptionHelper.convert(JDBCExceptionHelper.java:66)
-    at org.hibernate.id.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:64)
+    at org.hibernate.cacheKey.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:64)
     at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:2329)
     at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:2822)
     at org.hibernate.action.EntityIdentityInsertAction.execute(EntityIdentityInsertAction.java:71)
@@ -171,7 +171,7 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
     at org.hsqldb.jdbc.Util.throwError(Unknown Source)
     at org.hsqldb.jdbc.jdbcPreparedStatement.executeUpdate(Unknown Source)
     at com.mchange.v2.c3p0.impl.NewProxyPreparedStatement.executeUpdate(NewProxyPreparedStatement.java:105)
-    at org.hibernate.id.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:57)
+    at org.hibernate.cacheKey.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:57)
     ... 54 more
 """ == logEntry.getLogValue('Exception')
     }

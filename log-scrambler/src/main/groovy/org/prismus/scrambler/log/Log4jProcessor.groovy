@@ -57,7 +57,7 @@ class Log4jProcessor extends RegexProcessor {
         return this
     }
 
-    static Log4jProcessor ofPattern(String conversionPattern) {
+    static Log4jProcessor forPattern(String conversionPattern) {
         final processor = new Log4jProcessor()
         conversionPatternToRegex(processor, conversionPattern)
         return processor

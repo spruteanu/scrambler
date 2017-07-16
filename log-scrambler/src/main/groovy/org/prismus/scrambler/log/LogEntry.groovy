@@ -11,7 +11,7 @@ class LogEntry {
 
     Object source
     Object row
-    String id
+    String cacheKey
 
     Map logValueMap
 
@@ -39,12 +39,16 @@ class LogEntry {
         return logValueMap.get(entryKey)
     }
 
-    void clearEntryValueMap() {
+    void clearLogValueMap() {
         logValueMap.clear()
     }
 
     boolean isEmpty() {
         return logValueMap.isEmpty()
+    }
+
+    boolean isCacheable() {
+        return cacheKey != null
     }
 
 }

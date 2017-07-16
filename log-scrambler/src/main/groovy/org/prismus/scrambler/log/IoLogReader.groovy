@@ -9,12 +9,17 @@ import groovy.transform.PackageScope
 @CompileStatic
 @PackageScope
 class IoLogReader extends LogReader {
-    private Reader reader
+    Reader reader
 
     IoLogReader(LogContext context, Reader reader, Object source = null) {
         super(context)
         this.reader = reader
         this.source = source
+    }
+
+    IoLogReader withReader(Reader reader) {
+        this.reader = reader
+        return this
     }
 
     @Override
