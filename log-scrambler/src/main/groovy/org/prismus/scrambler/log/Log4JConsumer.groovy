@@ -8,7 +8,7 @@ import java.util.regex.Pattern
  * @author Serge Pruteanu
  */
 @CompileStatic
-class Log4jProcessor extends RegexProcessor {
+class Log4JConsumer extends RegexConsumer {
     private static final String ABSOLUTE = '{ABSOLUTE}'
     private static final String DATE = '{DATE}'
     private static final String ISO8601 = '{ISO8601}'
@@ -35,21 +35,21 @@ class Log4jProcessor extends RegexProcessor {
 
     String timestampFormat
 
-    Log4jProcessor registerTimestamp(String timestampFormat) {
+    Log4JConsumer registerTimestamp(String timestampFormat) {
         register(TIMESTAMP)
         this.timestampFormat = timestampFormat
         return this
     }
 
-    Log4jProcessor timestampProcessor(String timestampFormat = null) {
+    Log4JConsumer timestampProcessor(String timestampFormat = null) {
         if (!timestampFormat) {
             timestampFormat = this.timestampFormat
         }
-        registerProcessor(TIMESTAMP, DateFormatProcessor.of(timestampFormat, TIMESTAMP))
+        registerProcessor(TIMESTAMP, DateFormatConsumer.of(timestampFormat, TIMESTAMP))
         return this
     }
 
-    Log4jProcessor register(String group, Integer index = null, LogProcessor processor = null) {
+    Log4JConsumer register(String group, Integer index = null, LogConsumer processor = null) {
         if (index == null) {
             index = groupIndexMap.size() + 1
         }
@@ -57,8 +57,8 @@ class Log4jProcessor extends RegexProcessor {
         return this
     }
 
-    static Log4jProcessor forPattern(String conversionPattern) {
-        final processor = new Log4jProcessor()
+    static Log4JConsumer forPattern(String conversionPattern) {
+        final processor = new Log4JConsumer()
         conversionPatternToRegex(processor, conversionPattern)
         return processor
     }
@@ -73,7 +73,7 @@ class Log4jProcessor extends RegexProcessor {
     }
 
     protected
-    static int appendDateFormatRegex(Log4jProcessor processor, StringBuilder sb, int index, String specString) {
+    static int appendDateFormatRegex(Log4JConsumer processor, StringBuilder sb, int index, String specString) {
         final pattern = ~/d(\{.+\})*/
         final matcher = pattern.matcher(specString.substring(index + 1))
         if (!matcher.find()) {
@@ -110,7 +110,7 @@ class Log4jProcessor extends RegexProcessor {
     }
 
     protected
-    static int appendSpecifierRegex(Log4jProcessor processor, StringBuilder sb, char ch, int i, String conversionPattern) {
+    static int appendSpecifierRegex(Log4JConsumer processor, StringBuilder sb, char ch, int i, String conversionPattern) {
         final matcher = SPEC_PATTERN.matcher(conversionPattern.substring(i + 1))
         if (!matcher.find()) {
             throw new UnsupportedOperationException("Unsupported/unknown logging conversion pattern: '${conversionPattern.substring(i + 1)}'; of '$conversionPattern'")
@@ -203,7 +203,7 @@ class Log4jProcessor extends RegexProcessor {
         return i + spec.length()
     }
 
-    static String conversionPatternToRegex(final Log4jProcessor processor, final String conversionPattern) {
+    static String conversionPatternToRegex(final Log4JConsumer processor, final String conversionPattern) {
         final sb = new StringBuilder()
         final cs = '%' as char
         final length = conversionPattern.length()

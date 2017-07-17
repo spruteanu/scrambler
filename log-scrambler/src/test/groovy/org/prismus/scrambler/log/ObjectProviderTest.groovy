@@ -13,20 +13,20 @@ class ObjectProviderTest extends Specification {
     void 'verify default definition provider'() {
         expect:
         true == DefaultObjectProvider.isClassName(DefaultObjectProvider.class.name)
-        null != new DefaultObjectProvider().get(CsvOutputProcessor.name)
-        null != new DefaultObjectProvider().get(CsvOutputProcessor.name, new StringWriter(), ['col1', 'col2', 'col3',])
+        null != new DefaultObjectProvider().get(CsvOutputConsumer.name)
+        null != new DefaultObjectProvider().get(CsvOutputConsumer.name, new StringWriter(), ['col1', 'col2', 'col3',])
 
         null == new DefaultObjectProvider().get('mumu')
-        null != new DefaultObjectProvider([mumu: CsvOutputProcessor.name]).get('mumu')
-        null != new DefaultObjectProvider([mumu: CsvOutputProcessor]).get('mumu')
+        null != new DefaultObjectProvider([mumu: CsvOutputConsumer.name]).get('mumu')
+        null != new DefaultObjectProvider([mumu: CsvOutputConsumer]).get('mumu')
     }
 
     void 'verify spring definition provider'() {
         final provider = new SpringObjectProvider(new AnnotationConfigApplicationContext(SpringConfig))
 
         expect:
-        null != provider.get(CsvOutputProcessor.name)
-        null != provider.get(CsvOutputProcessor.name, new StringWriter(), ['col1', 'col2', 'col3',])
+        null != provider.get(CsvOutputConsumer.name)
+        null != provider.get(CsvOutputConsumer.name, new StringWriter(), ['col1', 'col2', 'col3',])
         null != provider.get('mumu')
         null == provider.get('cucu')
 
@@ -39,8 +39,8 @@ class ObjectProviderTest extends Specification {
     static class SpringConfig {
 
         @Bean(name = 'mumu')
-        CsvOutputProcessor csvBean() {
-            return new CsvOutputProcessor()
+        CsvOutputConsumer csvBean() {
+            return new CsvOutputConsumer()
         }
 
     }

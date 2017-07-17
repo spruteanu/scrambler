@@ -9,31 +9,31 @@ class RegexProcessorTest extends Specification {
 
     void 'verify date format parser'() {
         expect:
-        '\\w+/\\w+/\\w+ \\w+:\\w+:\\w+.\\w+' == RegexProcessor.dateFormatToRegEx('yyyy/MM/dd HH:mm:ss.SSS')
-        '\\w+-\\w+-\\w+ \\w+:\\w+:\\w+.\\w+' == RegexProcessor.dateFormatToRegEx('yyyy-MM-dd HH:mm:ss.SSS')
+        '\\w+/\\w+/\\w+ \\w+:\\w+:\\w+.\\w+' == RegexConsumer.dateFormatToRegEx('yyyy/MM/dd HH:mm:ss.SSS')
+        '\\w+-\\w+-\\w+ \\w+:\\w+:\\w+.\\w+' == RegexConsumer.dateFormatToRegEx('yyyy-MM-dd HH:mm:ss.SSS')
 
-        '\\w+:\\w+:\\w+.\\w+' == RegexProcessor.dateFormatToRegEx('HH:mm:ss,SSS')
-        '\\w+ \\w+ \\w+ \\w+:\\w+:\\w+.\\w+' == RegexProcessor.dateFormatToRegEx('dd MMM yyyy HH:mm:ss,SSS')
+        '\\w+:\\w+:\\w+.\\w+' == RegexConsumer.dateFormatToRegEx('HH:mm:ss,SSS')
+        '\\w+ \\w+ \\w+ \\w+:\\w+:\\w+.\\w+' == RegexConsumer.dateFormatToRegEx('dd MMM yyyy HH:mm:ss,SSS')
 
         and: 'check converted regex matches value'
-        '2008-09-06 10:51:45,473' =~ /${RegexProcessor.dateFormatToRegEx('yyyy-MM-dd HH:mm:ss.SSS')}/
-        !('2008-09-06 wrong time' =~ /${RegexProcessor.dateFormatToRegEx('yyyy-MM-dd HH:mm:ss.SSS')}/)
+        '2008-09-06 10:51:45,473' =~ /${RegexConsumer.dateFormatToRegEx('yyyy-MM-dd HH:mm:ss.SSS')}/
+        !('2008-09-06 wrong time' =~ /${RegexConsumer.dateFormatToRegEx('yyyy-MM-dd HH:mm:ss.SSS')}/)
 
-        '15:49:37,459' =~ /${RegexProcessor.dateFormatToRegEx('HH:mm:ss,SSS')}/
-        '06 Nov 1994 08:49:37,459' =~ /${RegexProcessor.dateFormatToRegEx('dd MMM yyyy HH:mm:ss,SSS')}/
+        '15:49:37,459' =~ /${RegexConsumer.dateFormatToRegEx('HH:mm:ss,SSS')}/
+        '06 Nov 1994 08:49:37,459' =~ /${RegexConsumer.dateFormatToRegEx('dd MMM yyyy HH:mm:ss,SSS')}/
     }
 
     void 'verify reg ex parser'() {
         LogEntry logEntry = new LogEntry('DEBUG | 2008-09-06 10:51:44,817 | DefaultBeanDefinitionDocumentReader.java | 86 | Loading bean definitions')
         expect:
-        false == RegexProcessor.of(~/(\w+) \| (\w+-\w+-\w+ \w+:\w+:\w+.\w+) \| (\w+\.\w+) \| (\d+) \| (.+)/)
-                    .register('LogLevel', 1)
-                    .register('Timestamp', 2)
-                    .register('Caller', 3)
-                    .register('Line', 4)
-                    .register('Message', 5)
-                    .process(logEntry)
-                    .isEmpty()
+        RegexConsumer.of(~/(\w+) \| (\w+-\w+-\w+ \w+:\w+:\w+.\w+) \| (\w+\.\w+) \| (\d+) \| (.+)/)
+                .register('LogLevel', 1)
+                .register('Timestamp', 2)
+                .register('Caller', 3)
+                .register('Line', 4)
+                .register('Message', 5)
+                .process(logEntry)
+        false == logEntry.isEmpty()
         'DEBUG' == logEntry.getLogValue('LogLevel')
         '2008-09-06 10:51:44,817' == logEntry.getLogValue('Timestamp')
         'DefaultBeanDefinitionDocumentReader.java' == logEntry.getLogValue('Caller')
@@ -42,15 +42,15 @@ class RegexProcessorTest extends Specification {
 
         and: 'verify group entry processor'
         null != (logEntry = new LogEntry('INFO | 2008-09-06 10:51:45,473 | SQLErrorCodesFactory.java | 128 | SQLErrorCodes loaded: [DB2, Derby, H2, HSQL, Informix, MS-SQL, MySQL, Oracle, PostgreSQL, Sybase]'))
-        false == RegexProcessor.of(~/(\w+) \| (\w+-\w+-\w+ \w+:\w+:\w+.\w+) \| (\w+\.\w+) \| (\d+) \| (.+)/)
+        RegexConsumer.of(~/(\w+) \| (\w+-\w+-\w+ \w+:\w+:\w+.\w+) \| (\w+\.\w+) \| (\d+) \| (.+)/)
                 .register('LogLevel', 1)
                 .register('Timestamp', 2)
                 .register('Caller', 3)
                 .register('Line', 4)
                 .register('Message', 5)
-                .registerProcessor('Message', new RegexProcessor(~/.+\[(.+)\]/, 'Message').register('SQLErrorCodes', 1))
+                .registerProcessor('Message', new RegexConsumer(~/.+\[(.+)\]/, 'Message').register('SQLErrorCodes', 1))
                 .process(logEntry)
-                .isEmpty()
+        false == logEntry.isEmpty()
         'SQLErrorCodes loaded: [DB2, Derby, H2, HSQL, Informix, MS-SQL, MySQL, Oracle, PostgreSQL, Sybase]' == logEntry.getLogValue('Message')
         'DB2, Derby, H2, HSQL, Informix, MS-SQL, MySQL, Oracle, PostgreSQL, Sybase' == logEntry.getLogValue('SQLErrorCodes')
 
@@ -60,22 +60,22 @@ javax.servlet.ServletException: Something bad happened
     at com.example.myproject.OpenSessionInViewFilter.doFilter(OpenSessionInViewFilter.java:60)
     at com.example.myproject.ExceptionHandlerFilter.doFilter(ExceptionHandlerFilter.java:28)
     at com.example.myproject.OutputBufferFilter.doFilter(OutputBufferFilter.java:33)
-    at org.mortbay.jetty.servlet.ServletHandler.handle(ServletHandler.java:388)
-    at org.mortbay.jetty.security.SecurityHandler.handle(SecurityHandler.java:216)
-    at org.mortbay.jetty.servlet.SessionHandler.handle(SessionHandler.java:182)
-    at org.mortbay.jetty.handler.ContextHandler.handle(ContextHandler.java:765)
-    at org.mortbay.jetty.webapp.WebAppContext.handle(WebAppContext.java:418)
-    at org.mortbay.jetty.handler.HandlerWrapper.handle(HandlerWrapper.java:152)
-    at org.mortbay.jetty.Server.handle(Server.java:326)
+    at org.mortbay.jetty.servlet.ServletHandler.process(ServletHandler.java:388)
+    at org.mortbay.jetty.security.SecurityHandler.process(SecurityHandler.java:216)
+    at org.mortbay.jetty.servlet.SessionHandler.process(SessionHandler.java:182)
+    at org.mortbay.jetty.handler.ContextHandler.process(ContextHandler.java:765)
+    at org.mortbay.jetty.webapp.WebAppContext.process(WebAppContext.java:418)
+    at org.mortbay.jetty.handler.HandlerWrapper.process(HandlerWrapper.java:152)
+    at org.mortbay.jetty.Server.process(Server.java:326)
     at org.mortbay.jetty.HttpConnection.handleRequest(HttpConnection.java:542)
     at org.mortbay.jetty.HttpParser.parseNext(HttpParser.java:756)
     at org.mortbay.jetty.HttpParser.parseAvailable(HttpParser.java:218)
-    at org.mortbay.jetty.HttpConnection.handle(HttpConnection.java:404)
+    at org.mortbay.jetty.HttpConnection.process(HttpConnection.java:404)
 Caused by: com.example.myproject.MyProjectServletException
     at com.example.myproject.MyServlet.doPost(MyServlet.java:169)
     at javax.servlet.http.HttpServlet.service(HttpServlet.java:727)
     at javax.servlet.http.HttpServlet.service(HttpServlet.java:820)
-    at org.mortbay.jetty.servlet.ServletHolder.handle(ServletHolder.java:511)
+    at org.mortbay.jetty.servlet.ServletHolder.process(ServletHolder.java:511)
     at com.example.myproject.OpenSessionInViewFilter.doFilter(OpenSessionInViewFilter.java:30)
     ... 27 more
 Caused by: org.hibernate.exception.ConstraintViolationException: could not insert: [com.example.myproject.MyEntity]
@@ -110,36 +110,36 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
     at org.hibernate.cacheKey.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:57)
     ... 54 more
 """))
-        false == RegexProcessor.of(~/(?ms)(\w+) \| (\w+-\w+-\w+ \w+:\w+:\w+.\w+) \| (\w+\.\w+) \| (\d+) \| (.+)/)
+        RegexConsumer.of(~/(?ms)(\w+) \| (\w+-\w+-\w+ \w+:\w+:\w+.\w+) \| (\w+\.\w+) \| (\d+) \| (.+)/)
                 .register('LogLevel', 1)
                 .register('Timestamp', 2)
                 .register('Caller', 3)
                 .register('Line', 4)
                 .register('Message', 5)
-                .registerProcessor('Message', new RegexProcessor(~/(?ms)(${MessageProcessor.EXCEPTION_REGEX})/, 'Message').register('Exception', 1))
+                .registerProcessor('Message', new RegexConsumer(~/(?ms)(${MessageConsumer.EXCEPTION_REGEX})/, 'Message').register('Exception', 1))
                 .process(logEntry)
-                .isEmpty()
+        false == logEntry.isEmpty()
         """OMG, Something bad happened
 javax.servlet.ServletException: Something bad happened
     at com.example.myproject.OpenSessionInViewFilter.doFilter(OpenSessionInViewFilter.java:60)
     at com.example.myproject.ExceptionHandlerFilter.doFilter(ExceptionHandlerFilter.java:28)
     at com.example.myproject.OutputBufferFilter.doFilter(OutputBufferFilter.java:33)
-    at org.mortbay.jetty.servlet.ServletHandler.handle(ServletHandler.java:388)
-    at org.mortbay.jetty.security.SecurityHandler.handle(SecurityHandler.java:216)
-    at org.mortbay.jetty.servlet.SessionHandler.handle(SessionHandler.java:182)
-    at org.mortbay.jetty.handler.ContextHandler.handle(ContextHandler.java:765)
-    at org.mortbay.jetty.webapp.WebAppContext.handle(WebAppContext.java:418)
-    at org.mortbay.jetty.handler.HandlerWrapper.handle(HandlerWrapper.java:152)
-    at org.mortbay.jetty.Server.handle(Server.java:326)
+    at org.mortbay.jetty.servlet.ServletHandler.process(ServletHandler.java:388)
+    at org.mortbay.jetty.security.SecurityHandler.process(SecurityHandler.java:216)
+    at org.mortbay.jetty.servlet.SessionHandler.process(SessionHandler.java:182)
+    at org.mortbay.jetty.handler.ContextHandler.process(ContextHandler.java:765)
+    at org.mortbay.jetty.webapp.WebAppContext.process(WebAppContext.java:418)
+    at org.mortbay.jetty.handler.HandlerWrapper.process(HandlerWrapper.java:152)
+    at org.mortbay.jetty.Server.process(Server.java:326)
     at org.mortbay.jetty.HttpConnection.handleRequest(HttpConnection.java:542)
     at org.mortbay.jetty.HttpParser.parseNext(HttpParser.java:756)
     at org.mortbay.jetty.HttpParser.parseAvailable(HttpParser.java:218)
-    at org.mortbay.jetty.HttpConnection.handle(HttpConnection.java:404)
+    at org.mortbay.jetty.HttpConnection.process(HttpConnection.java:404)
 Caused by: com.example.myproject.MyProjectServletException
     at com.example.myproject.MyServlet.doPost(MyServlet.java:169)
     at javax.servlet.http.HttpServlet.service(HttpServlet.java:727)
     at javax.servlet.http.HttpServlet.service(HttpServlet.java:820)
-    at org.mortbay.jetty.servlet.ServletHolder.handle(ServletHolder.java:511)
+    at org.mortbay.jetty.servlet.ServletHolder.process(ServletHolder.java:511)
     at com.example.myproject.OpenSessionInViewFilter.doFilter(OpenSessionInViewFilter.java:30)
     ... 27 more
 Caused by: org.hibernate.exception.ConstraintViolationException: could not insert: [com.example.myproject.MyEntity]

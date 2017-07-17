@@ -7,6 +7,7 @@ import groovy.transform.CompileStatic
  */
 @CompileStatic
 class Utils {
+    static final String LINE_BREAK = System.getProperty('line.separator')
 
     static closeQuietly(Closeable inputStream) {
         if (inputStream != null) {

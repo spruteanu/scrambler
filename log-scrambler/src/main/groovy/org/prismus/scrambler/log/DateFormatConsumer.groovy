@@ -5,36 +5,35 @@ import java.text.SimpleDateFormat
 /**
  * @author Serge Pruteanu
  */
-class DateFormatProcessor implements LogProcessor {
+class DateFormatConsumer implements LogConsumer {
     private static final String TIMESTAMP = 'Timestamp'
 
     String group = TIMESTAMP
     SimpleDateFormat dateFormat
 
-    DateFormatProcessor() {
+    DateFormatConsumer() {
     }
 
-    DateFormatProcessor(SimpleDateFormat dateFormat, String group = TIMESTAMP) {
+    DateFormatConsumer(SimpleDateFormat dateFormat, String group = TIMESTAMP) {
         this.dateFormat = dateFormat
         this.group = group
     }
 
     @Override
-    LogEntry process(LogEntry entry) {
+    void process(LogEntry entry) {
         if (entry.logValueMap.containsKey(group)) {
             final dateString = entry.getLogValue(group)
             final date = dateFormat.parse(dateString.toString())
             entry.putLogValue(group, date)
         }
-        return entry
     }
 
-    static DateFormatProcessor of(SimpleDateFormat dateFormat, String group = TIMESTAMP) {
-        return new DateFormatProcessor(dateFormat, group)
+    static DateFormatConsumer of(SimpleDateFormat dateFormat, String group = TIMESTAMP) {
+        return new DateFormatConsumer(dateFormat, group)
     }
 
-    static DateFormatProcessor of(String dateFormat, String group = TIMESTAMP) {
-        return new DateFormatProcessor(new SimpleDateFormat(dateFormat), group)
+    static DateFormatConsumer of(String dateFormat, String group = TIMESTAMP) {
+        return new DateFormatConsumer(new SimpleDateFormat(dateFormat), group)
     }
 
 }

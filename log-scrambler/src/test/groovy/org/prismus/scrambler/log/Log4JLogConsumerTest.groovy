@@ -2,13 +2,13 @@ package org.prismus.scrambler.log
 
 import spock.lang.Specification
 
-import static Log4jProcessor.*
-import static RegexProcessor.of
+import static Log4JConsumer.*
+import static RegexConsumer.of
 
 /**
  * @author Serge Pruteanu
  */
-class Log4jLogProcessorTest extends Specification {
+class Log4JLogConsumerTest extends Specification {
 
     void 'verify adding non specifier char'() {
         final sb = new StringBuilder()
@@ -24,7 +24,7 @@ class Log4jLogProcessorTest extends Specification {
 
     void 'verify precision specifier'() {
         final sb = new StringBuilder()
-        final entryProcessor = new Log4jProcessor()
+        final entryProcessor = new Log4JConsumer()
         int idx = appendSpecifierRegex(entryProcessor, sb, '%' as char, 0, specString)
 
         expect:
@@ -45,7 +45,7 @@ class Log4jLogProcessorTest extends Specification {
     }
 
     void 'verify conversionPatternToRegEx'() {
-        final entryProcessor = new Log4jProcessor()
+        final entryProcessor = new Log4JConsumer()
         String patternRegEx = conversionPatternToRegex(entryProcessor, specString)
 
         expect:
@@ -66,15 +66,16 @@ class Log4jLogProcessorTest extends Specification {
 
     void 'verify conversionPatternToRegEx with log entry parsing'() {
         final conversionPattern = '%-4r [%t] %-5p %C %x - %m%n'
-        String patternRegEx = conversionPatternToRegex(new Log4jProcessor(), conversionPattern)
-        LogEntry logEntry = of(~/${patternRegEx}/)
+        String patternRegEx = conversionPatternToRegex(new Log4JConsumer(), conversionPattern)
+        def processor = of(~/${patternRegEx}/)
                 .register('logTime', 1)
                 .register('ThreadName', 2)
                 .register('LogLevel', 3)
                 .register('CallerClass', 4)
                 .register('NDC', 5)
                 .register('Message', 6)
-                .process(new LogEntry('0    [main] DEBUG com.vaannila.helloworld.HelloWorld  - Sample debug message'))
+        LogEntry logEntry = new LogEntry('0    [main] DEBUG com.vaannila.helloworld.HelloWorld  - Sample debug message')
+        processor.process(logEntry)
 
         expect:
         '0   ' == logEntry.getLogValue('logTime')
@@ -90,22 +91,22 @@ javax.servlet.ServletException: Something bad happened
     at com.example.myproject.OpenSessionInViewFilter.doFilter(OpenSessionInViewFilter.java:60)
     at com.example.myproject.ExceptionHandlerFilter.doFilter(ExceptionHandlerFilter.java:28)
     at com.example.myproject.OutputBufferFilter.doFilter(OutputBufferFilter.java:33)
-    at org.mortbay.jetty.servlet.ServletHandler.handle(ServletHandler.java:388)
-    at org.mortbay.jetty.security.SecurityHandler.handle(SecurityHandler.java:216)
-    at org.mortbay.jetty.servlet.SessionHandler.handle(SessionHandler.java:182)
-    at org.mortbay.jetty.handler.ContextHandler.handle(ContextHandler.java:765)
-    at org.mortbay.jetty.webapp.WebAppContext.handle(WebAppContext.java:418)
-    at org.mortbay.jetty.handler.HandlerWrapper.handle(HandlerWrapper.java:152)
-    at org.mortbay.jetty.Server.handle(Server.java:326)
+    at org.mortbay.jetty.servlet.ServletHandler.process(ServletHandler.java:388)
+    at org.mortbay.jetty.security.SecurityHandler.process(SecurityHandler.java:216)
+    at org.mortbay.jetty.servlet.SessionHandler.process(SessionHandler.java:182)
+    at org.mortbay.jetty.handler.ContextHandler.process(ContextHandler.java:765)
+    at org.mortbay.jetty.webapp.WebAppContext.process(WebAppContext.java:418)
+    at org.mortbay.jetty.handler.HandlerWrapper.process(HandlerWrapper.java:152)
+    at org.mortbay.jetty.Server.process(Server.java:326)
     at org.mortbay.jetty.HttpConnection.handleRequest(HttpConnection.java:542)
     at org.mortbay.jetty.HttpParser.parseNext(HttpParser.java:756)
     at org.mortbay.jetty.HttpParser.parseAvailable(HttpParser.java:218)
-    at org.mortbay.jetty.HttpConnection.handle(HttpConnection.java:404)
+    at org.mortbay.jetty.HttpConnection.process(HttpConnection.java:404)
 Caused by: com.example.myproject.MyProjectServletException
     at com.example.myproject.MyServlet.doPost(MyServlet.java:169)
     at javax.servlet.http.HttpServlet.service(HttpServlet.java:727)
     at javax.servlet.http.HttpServlet.service(HttpServlet.java:820)
-    at org.mortbay.jetty.servlet.ServletHolder.handle(ServletHolder.java:511)
+    at org.mortbay.jetty.servlet.ServletHolder.process(ServletHolder.java:511)
     at com.example.myproject.OpenSessionInViewFilter.doFilter(OpenSessionInViewFilter.java:30)
     ... 27 more
 Caused by: org.hibernate.exception.ConstraintViolationException: could not insert: [com.example.myproject.MyEntity]
@@ -140,14 +141,14 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
     at org.hibernate.cacheKey.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:57)
     ... 54 more
 """))
-        false == of(~/(?ms)${conversionPatternToRegex(new Log4jProcessor(), '%5p | %d | %F | %L | %m%n')}/)
+        null != (processor = of(~/(?ms)${conversionPatternToRegex(new Log4JConsumer(), '%5p | %d | %F | %L | %m%n')}/)
                 .register('LogLevel', 1)
                 .register('Timestamp', 2)
                 .register('CallerFileName', 3)
                 .register('Line', 4)
-                .register('Message', 5)
-                .process(logEntry)
-                .isEmpty()
+                .register('Message', 5))
+        processor.process(logEntry)
+        false == logEntry.isEmpty()
         'ERROR' == logEntry.getLogValue('LogLevel')
         '2008-09-06 10:51:45,473' == logEntry.getLogValue('Timestamp')
         'SQLErrorCodesFactory.java' == logEntry.getLogValue('CallerFileName')
@@ -158,22 +159,22 @@ javax.servlet.ServletException: Something bad happened
     at com.example.myproject.OpenSessionInViewFilter.doFilter(OpenSessionInViewFilter.java:60)
     at com.example.myproject.ExceptionHandlerFilter.doFilter(ExceptionHandlerFilter.java:28)
     at com.example.myproject.OutputBufferFilter.doFilter(OutputBufferFilter.java:33)
-    at org.mortbay.jetty.servlet.ServletHandler.handle(ServletHandler.java:388)
-    at org.mortbay.jetty.security.SecurityHandler.handle(SecurityHandler.java:216)
-    at org.mortbay.jetty.servlet.SessionHandler.handle(SessionHandler.java:182)
-    at org.mortbay.jetty.handler.ContextHandler.handle(ContextHandler.java:765)
-    at org.mortbay.jetty.webapp.WebAppContext.handle(WebAppContext.java:418)
-    at org.mortbay.jetty.handler.HandlerWrapper.handle(HandlerWrapper.java:152)
-    at org.mortbay.jetty.Server.handle(Server.java:326)
+    at org.mortbay.jetty.servlet.ServletHandler.process(ServletHandler.java:388)
+    at org.mortbay.jetty.security.SecurityHandler.process(SecurityHandler.java:216)
+    at org.mortbay.jetty.servlet.SessionHandler.process(SessionHandler.java:182)
+    at org.mortbay.jetty.handler.ContextHandler.process(ContextHandler.java:765)
+    at org.mortbay.jetty.webapp.WebAppContext.process(WebAppContext.java:418)
+    at org.mortbay.jetty.handler.HandlerWrapper.process(HandlerWrapper.java:152)
+    at org.mortbay.jetty.Server.process(Server.java:326)
     at org.mortbay.jetty.HttpConnection.handleRequest(HttpConnection.java:542)
     at org.mortbay.jetty.HttpParser.parseNext(HttpParser.java:756)
     at org.mortbay.jetty.HttpParser.parseAvailable(HttpParser.java:218)
-    at org.mortbay.jetty.HttpConnection.handle(HttpConnection.java:404)
+    at org.mortbay.jetty.HttpConnection.process(HttpConnection.java:404)
 Caused by: com.example.myproject.MyProjectServletException
     at com.example.myproject.MyServlet.doPost(MyServlet.java:169)
     at javax.servlet.http.HttpServlet.service(HttpServlet.java:727)
     at javax.servlet.http.HttpServlet.service(HttpServlet.java:820)
-    at org.mortbay.jetty.servlet.ServletHolder.handle(ServletHolder.java:511)
+    at org.mortbay.jetty.servlet.ServletHolder.process(ServletHolder.java:511)
     at com.example.myproject.OpenSessionInViewFilter.doFilter(OpenSessionInViewFilter.java:30)
     ... 27 more
 Caused by: org.hibernate.exception.ConstraintViolationException: could not insert: [com.example.myproject.MyEntity]
@@ -212,14 +213,16 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
 
     void 'verify log4j entry processor'() {
         final processor = forPattern('%-4r [%t] %-5p %C %x - %m%n')
+        final logEntry = new LogEntry('0    [main] DEBUG com.vaannila.helloworld.HelloWorld  - Sample debug message')
         expect:
+        processor.process(logEntry)
         [
                 (LOGGING_DURATION): '0   ',
                 (THREAD_NAME)     : 'main',
                 (PRIORITY)        : 'DEBUG',
                 (CALLER_CLASS)    : 'com.vaannila.helloworld.HelloWorld',
                 (MESSAGE)         : 'Sample debug message',
-        ] == processor.process(new LogEntry('0    [main] DEBUG com.vaannila.helloworld.HelloWorld  - Sample debug message')).logValueMap
+        ] == logEntry.logValueMap
     }
 
 }

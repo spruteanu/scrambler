@@ -9,31 +9,17 @@ import groovy.transform.CompileStatic
  */
 @CompileStatic
 class LogContext {
-    private Cache<Object, LogEntry> cache
-
-    private final List<LogProcessor> processors = new ArrayList<LogProcessor>()
-    private final List<LogProcessor> closeableProcessors = new ArrayList<LogProcessor>()
-
-    ObjectProvider provider
+    Cache<Object, LogEntry> cache
+    List<LogConsumer> processors = new ArrayList<LogConsumer>()
 
     LogContext() {
-        withCache(1024 * 1024)
     }
 
-    LogContext withProvider(ObjectProvider provider) {
-        this.provider = provider
-        return this
-    }
-
-    LogContext withCache(int cacheSize) {
+    LogContext cacheable(int cacheSize = 1024 * 1024) {
         cache = CacheBuilder.newBuilder()
                 .maximumSize(cacheSize)
                 .build()
         return this
-    }
-
-    LogContext withHugeCache() {
-        return withCache(50 * 1024 * 1024)
     }
 
     LogContext withCache(Cache cache) {
@@ -41,41 +27,28 @@ class LogContext {
         return this
     }
 
-    LogContext register(LogProcessor processor) {
+    LogContext register(LogConsumer processor) {
         processors.add(processor)
-        if (processor instanceof Closeable) {
-            closeableProcessors.add(processor as LogProcessor)
-        }
         return this
     }
 
-    LogProcessor getProcessor(String processorId, Object... args) {
-        return provider.get(processorId, args) as LogProcessor
+    synchronized void cacheEntry(LogEntry entry) {
+        final cacheKey = entry.cacheKey
+        final cachedEntry = cache.getIfPresent(cacheKey)
+        if (cachedEntry) {
+            cachedEntry.logValueMap.putAll(entry.logValueMap)
+        } else {
+            cache.put(cacheKey, entry)
+        }
     }
 
-    LogEntry handle(LogEntry entry) {
-        for (LogProcessor processor : processors) {
+    void process(LogEntry entry) {
+        for (LogConsumer processor : processors) {
             processor.process(entry)
         }
-        if (entry.isCacheable()) {
-            final cacheKey = entry.cacheKey
-            final cachedEntry = cache.getIfPresent(cacheKey)
-            if (cachedEntry) {
-                cachedEntry.logValueMap.putAll(entry.logValueMap)
-            } else {
-                cache.put(cacheKey, entry)
-            }
+        if (entry.isCacheable() && cache) {
+            cacheEntry(entry)
         }
-        return entry
-    }
-
-    LogContext close() {
-        for (LogProcessor processor : closeableProcessors) {
-            if (processor instanceof Closeable) {
-                Utils.closeQuietly(processor as Closeable)
-            }
-        }
-        return this
     }
 
 }

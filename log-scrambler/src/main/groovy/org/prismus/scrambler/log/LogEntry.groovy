@@ -6,7 +6,7 @@ import groovy.transform.CompileStatic
  * @author Serge Pruteanu
  */
 @CompileStatic
-class LogEntry {
+class LogEntry implements Cloneable {
     String line
 
     Object source
@@ -14,6 +14,9 @@ class LogEntry {
     String cacheKey
 
     Map logValueMap
+
+    LogEntry() {
+    }
 
     LogEntry(String line) {
         this(null, line, 0)
@@ -49,6 +52,11 @@ class LogEntry {
 
     boolean isCacheable() {
         return cacheKey != null
+    }
+
+    @Override
+    Object clone() {
+        return super.clone()
     }
 
 }

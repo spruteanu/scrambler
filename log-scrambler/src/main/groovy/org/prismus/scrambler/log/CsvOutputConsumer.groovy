@@ -6,40 +6,39 @@ import groovy.transform.CompileStatic
  * @author Serge Pruteanu
  */
 @CompileStatic
-class CsvOutputProcessor implements LogProcessor, Closeable {
+class CsvOutputConsumer implements LogConsumer, Closeable {
     Writer writer
     List<String> columns
 
     int flushAt
     int nOutput
 
-    CsvOutputProcessor() {
+    CsvOutputConsumer() {
     }
 
-    CsvOutputProcessor(Writer writer, List<String> columns) {
+    CsvOutputConsumer(Writer writer, List<String> columns) {
         this.writer = writer
         this.columns = columns
     }
 
-    CsvOutputProcessor flushAt(int flushAt = 100) {
+    CsvOutputConsumer flushAt(int flushAt = 100) {
         this.flushAt = flushAt
         return this
     }
 
     @Override
-    LogEntry process(LogEntry entry) {
+    void process(LogEntry entry) {
         final values = new ArrayList<String>(columns.size())
         for (String column : columns) {
             values.add(Objects.toString(entry.getLogValue(column)?.toString(), ''))
         }
         writer.write(values.join(', '))
-        writer.write(LogReader.LINE_BREAK)
+        writer.write(Utils.LINE_BREAK)
 
         nOutput++
         if (flushAt && (nOutput % flushAt) == 0) {
             writer.flush()
         }
-        return entry
     }
 
     @Override
@@ -47,15 +46,15 @@ class CsvOutputProcessor implements LogProcessor, Closeable {
         Utils.closeQuietly(writer)
     }
 
-    static CsvOutputProcessor of(Writer writer, String... columns) {
-        return new CsvOutputProcessor(writer: writer, columns: Arrays.asList(columns))
+    static CsvOutputConsumer of(Writer writer, String... columns) {
+        return new CsvOutputConsumer(writer: writer, columns: Arrays.asList(columns))
     }
 
-    static CsvOutputProcessor of(File file, String... columns) {
-        return new CsvOutputProcessor(writer: new BufferedWriter(new FileWriter(file)), columns: Arrays.asList(columns))
+    static CsvOutputConsumer of(File file, String... columns) {
+        return new CsvOutputConsumer(writer: new BufferedWriter(new FileWriter(file)), columns: Arrays.asList(columns))
     }
 
-    static CsvOutputProcessor of(String filePath, String... columns) {
+    static CsvOutputConsumer of(String filePath, String... columns) {
         return of(new File(filePath), columns)
     }
 
