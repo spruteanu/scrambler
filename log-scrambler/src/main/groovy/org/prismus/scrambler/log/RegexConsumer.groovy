@@ -13,7 +13,7 @@ import java.util.regex.Pattern
 class RegexConsumer implements LogConsumer {
 
     Pattern pattern
-    protected final Map<String, List<LogConsumer>> groupProcessorMap = new LinkedHashMap<>()
+    protected final Map<String, List<LogConsumer>> groupConsumerMap = new LinkedHashMap<>()
     protected final Map<String, Integer> groupIndexMap = [:]
 
     String group
@@ -30,46 +30,46 @@ class RegexConsumer implements LogConsumer {
         this.group = group
     }
 
-    private void addProcessor(String group, LogConsumer processor) {
-        if (!groupProcessorMap.containsKey(group)) {
-            groupProcessorMap.put(group, new ArrayList<LogConsumer>())
+    private void addConsumer(String group, LogConsumer consumer) {
+        if (!groupConsumerMap.containsKey(group)) {
+            groupConsumerMap.put(group, new ArrayList<LogConsumer>())
         }
-        groupProcessorMap.get(group).add(processor)
+        groupConsumerMap.get(group).add(consumer)
     }
 
-    RegexConsumer register(String group, Integer index = null, LogConsumer processor = null) {
+    RegexConsumer group(String group, Integer index = null, LogConsumer consumer = null) {
         Preconditions.checkArgument(index > 0, 'Group index should be a positive number')
         Preconditions.checkNotNull(group, 'Group value name should be provided')
         groupIndexMap.put(group, index)
-        if (processor) {
-            addProcessor(group, processor)
+        if (consumer) {
+            addConsumer(group, consumer)
         }
         return this
     }
 
-    RegexConsumer register(String group, LogConsumer processor) {
+    RegexConsumer group(String group, LogConsumer consumer) {
         Preconditions.checkNotNull(group, "Group Name can't be null")
-        Preconditions.checkNotNull(processor, 'Entry Processor instance should be provided')
-        addProcessor(group, processor)
+        Preconditions.checkNotNull(consumer, 'Entry consumer instance should be provided')
+        addConsumer(group, consumer)
         groupIndexMap.put(group, null)
         return this
     }
 
-    RegexConsumer registerProcessor(String group, LogConsumer processor) {
+    RegexConsumer groupConsumer(String group, LogConsumer consumer) {
         Preconditions.checkNotNull(group, "Group Name can't be null")
-        Preconditions.checkNotNull(processor, 'Entry Processor instance should be provided')
-        addProcessor(group, processor)
+        Preconditions.checkNotNull(consumer, 'Entry consumer instance should be provided')
+        addConsumer(group, consumer)
         return this
     }
 
-    RegexConsumer registerAll(Map<String, Integer> groupIndexMap) {
+    RegexConsumer indexedGroups(Map<String, Integer> groupIndexMap) {
         Preconditions.checkNotNull(groupIndexMap, 'Group value map should not be null')
         this.groupIndexMap.putAll(groupIndexMap)
         return this
     }
 
-    private List<LogConsumer> getProcessor(String key) {
-        return groupProcessorMap.containsKey(key) ? groupProcessorMap.get(key) : Collections.<LogConsumer>emptyList()
+    private List<LogConsumer> getConsumer(String key) {
+        return groupConsumerMap.containsKey(key) ? groupConsumerMap.get(key) : Collections.<LogConsumer>emptyList()
     }
 
     @Override
@@ -98,9 +98,9 @@ class RegexConsumer implements LogConsumer {
                 } catch (Exception ignore) { }
                 if (groupValue) {
                     entry.putLogValue(key, groupValue)
-                    final List<LogConsumer> processors = getProcessor(key)
-                    for (LogConsumer processor : processors) {
-                        processor.process(entry)
+                    final List<LogConsumer> processors = getConsumer(key)
+                    for (LogConsumer consumer : processors) {
+                        consumer.process(entry)
                     }
                 }
             }

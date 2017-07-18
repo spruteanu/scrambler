@@ -8,7 +8,7 @@ import java.util.regex.Pattern
  * @author Serge Pruteanu
  */
 @CompileStatic
-class Log4JConsumer extends RegexConsumer {
+class Log4jConsumer extends RegexConsumer {
     private static final String ABSOLUTE = '{ABSOLUTE}'
     private static final String DATE = '{DATE}'
     private static final String ISO8601 = '{ISO8601}'
@@ -35,30 +35,30 @@ class Log4JConsumer extends RegexConsumer {
 
     String timestampFormat
 
-    Log4JConsumer registerTimestamp(String timestampFormat) {
-        register(TIMESTAMP)
+    Log4jConsumer registerTimestamp(String timestampFormat) {
+        group(TIMESTAMP)
         this.timestampFormat = timestampFormat
         return this
     }
 
-    Log4JConsumer timestampProcessor(String timestampFormat = null) {
+    Log4jConsumer timestampProcessor(String timestampFormat = null) {
         if (!timestampFormat) {
             timestampFormat = this.timestampFormat
         }
-        registerProcessor(TIMESTAMP, DateFormatConsumer.of(timestampFormat, TIMESTAMP))
+        groupConsumer(TIMESTAMP, DateFormatConsumer.of(timestampFormat, TIMESTAMP))
         return this
     }
 
-    Log4JConsumer register(String group, Integer index = null, LogConsumer processor = null) {
+    Log4jConsumer group(String group, Integer index = null, LogConsumer processor = null) {
         if (index == null) {
             index = groupIndexMap.size() + 1
         }
-        super.register(group, index, processor)
+        super.group(group, index, processor)
         return this
     }
 
-    static Log4JConsumer forPattern(String conversionPattern) {
-        final processor = new Log4JConsumer()
+    static Log4jConsumer forPattern(String conversionPattern) {
+        final processor = new Log4jConsumer()
         conversionPatternToRegex(processor, conversionPattern)
         return processor
     }
@@ -73,7 +73,7 @@ class Log4JConsumer extends RegexConsumer {
     }
 
     protected
-    static int appendDateFormatRegex(Log4JConsumer processor, StringBuilder sb, int index, String specString) {
+    static int appendDateFormatRegex(Log4jConsumer processor, StringBuilder sb, int index, String specString) {
         final pattern = ~/d(\{.+\})*/
         final matcher = pattern.matcher(specString.substring(index + 1))
         if (!matcher.find()) {
@@ -110,7 +110,7 @@ class Log4JConsumer extends RegexConsumer {
     }
 
     protected
-    static int appendSpecifierRegex(Log4JConsumer processor, StringBuilder sb, char ch, int i, String conversionPattern) {
+    static int appendSpecifierRegex(Log4jConsumer processor, StringBuilder sb, char ch, int i, String conversionPattern) {
         final matcher = SPEC_PATTERN.matcher(conversionPattern.substring(i + 1))
         if (!matcher.find()) {
             throw new UnsupportedOperationException("Unsupported/unknown logging conversion pattern: '${conversionPattern.substring(i + 1)}'; of '$conversionPattern'")
@@ -123,56 +123,56 @@ class Log4JConsumer extends RegexConsumer {
         switch (ch) {
             case 'c': // logging event category
                 regEx = '[^ ]+'
-                processor.register(EVENT_CATEGORY)
+                processor.group(EVENT_CATEGORY)
                 break
             case 'C': // fully qualified class name of the caller
                 regEx = '[^ ]+'
-                processor.register(CALLER_CLASS)
+                processor.group(CALLER_CLASS)
                 break
             case 'd': // date of the logging event. The date conversion specifier may be followed by a date format specifier enclosed between braces. For example, %d{HH:mm:ss,SSS} or %d{dd MMM yyyy HH:mm:ss,SSS}. If no date format specifier is given then ISO8601 format is assumed.
                 i = appendDateFormatRegex(processor, sb, i, conversionPattern)
                 break
             case 'F': // file name where the logging request was issued.
                 regEx = '[^ ]+'
-                processor.register(CALLER_FILE_NAME)
+                processor.group(CALLER_FILE_NAME)
                 break
             case 'l': // file name where the logging request was issued. The location information depends on the JVM implementation but usually consists of the fully qualified name of the calling method followed by the callers source the file name and line number between parentheses.
                 regEx = '[^ ]+'
-                processor.register(CALLER_LOCATION)
+                processor.group(CALLER_LOCATION)
                 break
             case 'L': // line number from where the logging request was issued.
                 regEx = '[\\d^ ]+'
-                processor.register(CALLER_LINE)
+                processor.group(CALLER_LINE)
                 break
             case 'm': // message
                 regEx = '.+'
-                processor.register(MESSAGE)
+                processor.group(MESSAGE)
                 break
             case 'M': // method name where the logging request was issued.
                 regEx = '[^ ]+'
-                processor.register(CALLER_METHOD)
+                processor.group(CALLER_METHOD)
                 break
             case 'n': // line break, skip it
                 return i + 2
             case 'p': // priority of the logging event.
                 regEx = '[\\w ]+'
-                processor.register(PRIORITY)
+                processor.group(PRIORITY)
                 break
             case 'r': // number of milliseconds
                 regEx = '[\\d^ ]+'
-                processor.register(LOGGING_DURATION)
+                processor.group(LOGGING_DURATION)
                 break
             case 't': // name of the thread that generated the logging event.
                 regEx = '[^ ]+'
-                processor.register(THREAD_NAME)
+                processor.group(THREAD_NAME)
                 break
             case 'x': // NDC (nested diagnostic context) associated with the thread that generated the logging event.
                 regEx = '[^ ]*'
-                processor.register(THREAD_NDC)
+                processor.group(THREAD_NDC)
                 break
             case 'X': // MDC (mapped diagnostic context) associated with the thread that generated the logging event. The X conversion character must be followed by the key for the map placed between braces, as in %X{clientNumber} where clientNumber is the key. The value in the MDC corresponding to the key will be output.
                 regEx = '[^ ]*'
-                processor.register(THREAD_MDC)
+                processor.group(THREAD_MDC)
                 break
             default:
                 throw new UnsupportedOperationException("Unsupported/unknown logging conversion pattern: '${conversionPattern.substring(i + 1)}'; of '$conversionPattern'")
@@ -203,7 +203,7 @@ class Log4JConsumer extends RegexConsumer {
         return i + spec.length()
     }
 
-    static String conversionPatternToRegex(final Log4JConsumer processor, final String conversionPattern) {
+    static String conversionPatternToRegex(final Log4jConsumer processor, final String conversionPattern) {
         final sb = new StringBuilder()
         final cs = '%' as char
         final length = conversionPattern.length()

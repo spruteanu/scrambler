@@ -8,24 +8,26 @@ import java.util.concurrent.TimeUnit
  * @author Serge Pruteanu
  */
 @CompileStatic
-class ConsumerBuilder<T extends LogConsumer> {
+class ConsumerBuilder {
     ContextBuilder contextBuilder
     Map<String, Object> consumerProperties
     boolean asynchronous
     int timeout
     TimeUnit unit = TimeUnit.MILLISECONDS
 
-    private T consumer
+    private def consumer
+    private Object[] args
 
     ConsumerBuilder() {
     }
 
-    ConsumerBuilder(ContextBuilder contextBuilder, T consumer) {
+    ConsumerBuilder(ContextBuilder contextBuilder, def consumer, Object... args) {
+        this.args = args
         this.contextBuilder = contextBuilder
         this.consumer = consumer
     }
 
-    ConsumerBuilder forConsumer(T consumer) {
+    ConsumerBuilder forConsumer(def consumer) {
         this.consumer = consumer
         return this
     }
@@ -44,11 +46,32 @@ class ConsumerBuilder<T extends LogConsumer> {
         return contextBuilder
     }
 
-    LogConsumer build() {
-        if (consumerProperties) {
-            DefaultObjectProvider.setInstanceProperties(consumer, consumerProperties)
+    protected LogConsumer newConsumer(def object, Object[] objArgs) {
+        LogConsumer result
+        if (object instanceof LogConsumer) {
+            result = object as LogConsumer
+        } else if (object instanceof ConsumerBuilder) {
+            result = ((ConsumerBuilder) object).build()
+        } else {
+            result = contextBuilder.getConsumer(object, objArgs)
         }
-        return (asynchronous ? contextBuilder.newAsychronousConsumer(consumer, timeout, unit) : consumer) as T
+        return result
+    }
+
+    protected LogConsumer buildConsumer() {
+        LogConsumer result = newConsumer(consumer, args)
+        if (consumerProperties) {
+            DefaultObjectProvider.setInstanceProperties(result, consumerProperties)
+        }
+        return result
+    }
+
+    protected LogConsumer checkAsynchronousConsumer(LogConsumer result) {
+        return (asynchronous ? contextBuilder.newAsychronousConsumer(result, timeout, unit) : result)
+    }
+
+    LogConsumer build() {
+        return checkAsynchronousConsumer(buildConsumer())
     }
 
 }

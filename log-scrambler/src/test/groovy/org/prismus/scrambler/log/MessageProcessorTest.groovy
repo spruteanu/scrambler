@@ -9,14 +9,14 @@ import spock.lang.Specification
 class MessageProcessorTest extends Specification {
 
     void 'verify message processor'() {
-        final processor = Log4JConsumer.forPattern('%5p | %d | %F | %L | %m%n')
-                .registerProcessor(Log4JConsumer.MESSAGE, new MessageConsumer(Log4JConsumer.MESSAGE))
+        final processor = Log4jConsumer.forPattern('%5p | %d | %F | %L | %m%n')
+                .groupConsumer(Log4jConsumer.MESSAGE, new MessageConsumer(Log4jConsumer.MESSAGE))
 
         LogEntry logEntry
         expect:
         null != (logEntry = new LogEntry('INFO  | 2008-09-06 10:51:44,848 | XmlBeanDefinitionReader.java | 323 | Loading XML bean definitions from class path resource [tmfContext.xml]'))
         processor.process(logEntry)
-        'Loading XML bean definitions from class path resource [tmfContext.xml]' == logEntry.getLogValue(Log4JConsumer.MESSAGE)
+        'Loading XML bean definitions from class path resource [tmfContext.xml]' == logEntry.getLogValue(Log4jConsumer.MESSAGE)
 
         and: 'verify processing message with exception'
         null != (logEntry = new LogEntry("""ERROR | 2008-09-06 10:51:45,473 | SQLErrorCodesFactory.java | 128 | OMG, Something bad happened

@@ -2,7 +2,7 @@ package org.prismus.scrambler.log
 
 import spock.lang.Specification
 
-import static Log4JConsumer.*
+import static Log4jConsumer.*
 import static RegexConsumer.of
 
 /**
@@ -24,7 +24,7 @@ class Log4JLogConsumerTest extends Specification {
 
     void 'verify precision specifier'() {
         final sb = new StringBuilder()
-        final entryProcessor = new Log4JConsumer()
+        final entryProcessor = new Log4jConsumer()
         int idx = appendSpecifierRegex(entryProcessor, sb, '%' as char, 0, specString)
 
         expect:
@@ -45,7 +45,7 @@ class Log4JLogConsumerTest extends Specification {
     }
 
     void 'verify conversionPatternToRegEx'() {
-        final entryProcessor = new Log4JConsumer()
+        final entryProcessor = new Log4jConsumer()
         String patternRegEx = conversionPatternToRegex(entryProcessor, specString)
 
         expect:
@@ -66,14 +66,14 @@ class Log4JLogConsumerTest extends Specification {
 
     void 'verify conversionPatternToRegEx with log entry parsing'() {
         final conversionPattern = '%-4r [%t] %-5p %C %x - %m%n'
-        String patternRegEx = conversionPatternToRegex(new Log4JConsumer(), conversionPattern)
+        String patternRegEx = conversionPatternToRegex(new Log4jConsumer(), conversionPattern)
         def processor = of(~/${patternRegEx}/)
-                .register('logTime', 1)
-                .register('ThreadName', 2)
-                .register('LogLevel', 3)
-                .register('CallerClass', 4)
-                .register('NDC', 5)
-                .register('Message', 6)
+                .group('logTime', 1)
+                .group('ThreadName', 2)
+                .group('LogLevel', 3)
+                .group('CallerClass', 4)
+                .group('NDC', 5)
+                .group('Message', 6)
         LogEntry logEntry = new LogEntry('0    [main] DEBUG com.vaannila.helloworld.HelloWorld  - Sample debug message')
         processor.process(logEntry)
 
@@ -141,12 +141,12 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
     at org.hibernate.cacheKey.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:57)
     ... 54 more
 """))
-        null != (processor = of(~/(?ms)${conversionPatternToRegex(new Log4JConsumer(), '%5p | %d | %F | %L | %m%n')}/)
-                .register('LogLevel', 1)
-                .register('Timestamp', 2)
-                .register('CallerFileName', 3)
-                .register('Line', 4)
-                .register('Message', 5))
+        null != (processor = of(~/(?ms)${conversionPatternToRegex(new Log4jConsumer(), '%5p | %d | %F | %L | %m%n')}/)
+                .group('LogLevel', 1)
+                .group('Timestamp', 2)
+                .group('CallerFileName', 3)
+                .group('Line', 4)
+                .group('Message', 5))
         processor.process(logEntry)
         false == logEntry.isEmpty()
         'ERROR' == logEntry.getLogValue('LogLevel')

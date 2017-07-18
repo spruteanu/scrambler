@@ -62,7 +62,7 @@ class ContextBuilder {
         return this
     }
 
-    LogConsumer getProcessor(String processorId, Object... args) {
+    LogConsumer getConsumer(Object processorId, Object... args) {
         return provider.get(processorId, args) as LogConsumer
     }
 

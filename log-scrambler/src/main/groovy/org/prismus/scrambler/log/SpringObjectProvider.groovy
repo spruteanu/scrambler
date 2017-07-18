@@ -5,16 +5,11 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.support.ClassPathXmlApplicationContext
 
-import java.util.logging.Level
-import java.util.logging.Logger
-
 /**
  * @author Serge Pruteanu
  */
 @CompileStatic
 class SpringObjectProvider implements ObjectProvider {
-    private  static final Logger logger = Logger.getLogger(SpringObjectProvider.class.getName())
-
     ApplicationContext context
 
     SpringObjectProvider() {
@@ -25,21 +20,26 @@ class SpringObjectProvider implements ObjectProvider {
     }
 
     @Override
-    Object get(String objectId, Object... args) {
+    Object get(Object objectId, Object... args) {
         Object object = null
         try {
-            if (context.containsBean(objectId)) {
-                object = context.getBean(objectId, args)
+            if (objectId instanceof Class) {
+                object = context.getBean(objectId as Class, args)
             } else {
-                if (DefaultObjectProvider.isClassName(objectId)) {
-                    object = context.getBean(DefaultObjectProvider.resolveClass(objectId), args)
+                String strId = objectId.toString()
+                if (context.containsBean(strId)) {
+                    object = context.getBean(objectId.toString(), args)
+                } else if (DefaultObjectProvider.isClassName(strId)) {
+                    object = context.getBean(Class.forName(strId), args)
                 }
             }
             if (object) {
                 context.autowireCapableBeanFactory.autowireBean(object)
+            } else {
+                throw new IllegalArgumentException("No object: '$objectId'${(args != null) ? '(' + Arrays.asList(args).toString() + ')' : ''} found")
             }
-        } catch (Exception ignore) {
-            logger.log(Level.SEVERE, "Failed to get object: '$objectId'${(args != null) ? '(' + Arrays.asList(args).toString() + ')' : ''}; null is returned", ignore)
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get object: '$objectId'${(args != null) ? '(' + Arrays.asList(args).toString() + ')' : ''}", e)
         }
         return object
     }
