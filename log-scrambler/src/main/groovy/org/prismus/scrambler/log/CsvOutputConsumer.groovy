@@ -1,6 +1,7 @@
 package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
+import org.apache.commons.lang3.StringUtils
 
 /**
  * @author Serge Pruteanu
@@ -11,7 +12,12 @@ class CsvOutputConsumer implements LogConsumer, Closeable {
     List<String> columns
 
     int flushAt
-    int nOutput
+    private int nOutput
+
+    boolean writeHeader
+    boolean includeSource
+    String separator = ', '
+    String fieldSeparator = ''
 
     CsvOutputConsumer() {
     }
@@ -21,9 +27,67 @@ class CsvOutputConsumer implements LogConsumer, Closeable {
         this.columns = columns
     }
 
+    protected void adjustSeparator(String fieldSeparator) {
+        this.separator = fieldSeparator + separator + fieldSeparator
+    }
+
+    void setFieldSeparator(String fieldSeparator) {
+        this.fieldSeparator = fieldSeparator
+        adjustSeparator(fieldSeparator)
+    }
+
+    CsvOutputConsumer withSeparators(String separator, String fieldSeparator = '') {
+        this.separator = separator
+        setFieldSeparator(fieldSeparator)
+        return this
+    }
+
+    CsvOutputConsumer writeHeader() {
+        writeHeader = true
+        return this
+    }
+
+    CsvOutputConsumer includeSource() {
+        includeSource
+        return this
+    }
+
     CsvOutputConsumer flushAt(int flushAt = 100) {
         this.flushAt = flushAt
         return this
+    }
+
+    protected void writeLine(String line) {
+        if (fieldSeparator) {
+            writer.write(fieldSeparator)
+            writer.write(line)
+            writer.write(fieldSeparator)
+        } else {
+            writer.write(line)
+        }
+        writer.write(LineReader.LINE_BREAK)
+    }
+
+    protected String buildLine(List<String> values) {
+        List<String> result = values
+        if (fieldSeparator) {
+            result = new ArrayList<String>(values.size())
+            for (String value : values) {
+                result.add(StringUtils.replaceChars(value, fieldSeparator, fieldSeparator + fieldSeparator))
+            }
+        }
+        return result.join(separator)
+    }
+
+    protected synchronized void doWrite(ArrayList<String> values) {
+        if (writeHeader && !nOutput) {
+            writeLine(buildLine(columns))
+        }
+        writeLine(buildLine(values))
+        nOutput++
+        if (flushAt && (nOutput % flushAt) == 0) {
+            writer.flush()
+        }
     }
 
     @Override
@@ -32,13 +96,10 @@ class CsvOutputConsumer implements LogConsumer, Closeable {
         for (String column : columns) {
             values.add(Objects.toString(entry.getLogValue(column)?.toString(), ''))
         }
-        writer.write(values.join(', '))
-        writer.write(Utils.LINE_BREAK)
-
-        nOutput++
-        if (flushAt && (nOutput % flushAt) == 0) {
-            writer.flush()
+        if (includeSource) {
+            values.add("Line: $entry.line; Source: ${Objects.toString(entry.source?.toString(), 'unspecified')}".toString())
         }
+        doWrite(values)
     }
 
     @Override

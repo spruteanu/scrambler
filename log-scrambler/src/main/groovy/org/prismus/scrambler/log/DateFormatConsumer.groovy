@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat
  * @author Serge Pruteanu
  */
 class DateFormatConsumer implements LogConsumer {
-    private static final String TIMESTAMP = 'Timestamp'
+    static final String TIMESTAMP = 'Timestamp'
 
     String group = TIMESTAMP
     SimpleDateFormat dateFormat

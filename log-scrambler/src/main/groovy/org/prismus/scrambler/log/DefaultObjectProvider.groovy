@@ -2,6 +2,7 @@ package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
+import org.codehaus.groovy.runtime.InvokerHelper
 
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -54,6 +55,24 @@ class DefaultObjectProvider implements ObjectProvider {
             }
         }
         return object
+    }
+
+    static void setInstanceProperties(Object instance, Map<String, Object> instanceProperties) {
+        List<String> errors =  new ArrayList<>()
+        for (Map.Entry<String, Object> entry : instanceProperties.entrySet()) {
+            final name = entry.key
+            final value = entry.value
+            try {
+                InvokerHelper.setProperty(instance, name, value)
+            } catch (Exception e) {
+                final String message = "Failed to set property: '$name'; value: '$value', error: ${e.message}"
+                errors.add(message)
+                Logger.getLogger(DefaultObjectProvider.name).log(Level.SEVERE, message, e)
+            }
+        }
+        if (errors.size() > 0) {
+            throw new RuntimeException(errors.join(LineReader.LINE_BREAK))
+        }
     }
 
     static boolean isClassName(String className) {

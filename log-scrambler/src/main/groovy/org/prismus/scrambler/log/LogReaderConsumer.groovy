@@ -37,7 +37,7 @@ class LogReaderConsumer implements LogConsumer {
                 context.process(logEntry)
                 if (!logEntry || logEntry.isEmpty()) {
                     if (multiline && lastEntry) {
-                        lastEntry.line += line + Utils.LINE_BREAK
+                        lastEntry.line += line + LineReader.LINE_BREAK
                         context.process(lastEntry)
                     }
                 } else {
