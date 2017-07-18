@@ -57,7 +57,7 @@ class Log4jConsumer extends RegexConsumer {
         return this
     }
 
-    static Log4jConsumer forPattern(String conversionPattern) {
+    static Log4jConsumer ofPattern(String conversionPattern) {
         final processor = new Log4jConsumer()
         conversionPatternToRegex(processor, conversionPattern)
         return processor

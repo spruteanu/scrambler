@@ -9,7 +9,7 @@ import spock.lang.Specification
 class MessageProcessorTest extends Specification {
 
     void 'verify message processor'() {
-        final processor = Log4jConsumer.forPattern('%5p | %d | %F | %L | %m%n')
+        final processor = Log4jConsumer.ofPattern('%5p | %d | %F | %L | %m%n')
                 .groupConsumer(Log4jConsumer.MESSAGE, new MessageConsumer(Log4jConsumer.MESSAGE))
 
         LogEntry logEntry

@@ -212,7 +212,7 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
     }
 
     void 'verify log4j entry processor'() {
-        final processor = forPattern('%-4r [%t] %-5p %C %x - %m%n')
+        final processor = ofPattern('%-4r [%t] %-5p %C %x - %m%n')
         final logEntry = new LogEntry('0    [main] DEBUG com.vaannila.helloworld.HelloWorld  - Sample debug message')
         expect:
         processor.process(logEntry)

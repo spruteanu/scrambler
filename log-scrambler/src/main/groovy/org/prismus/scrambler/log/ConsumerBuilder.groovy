@@ -42,8 +42,13 @@ class ConsumerBuilder {
         return this
     }
 
-    ContextBuilder end() {
+    ContextBuilder endContext() {
+        contextBuilder.endContext()
         return contextBuilder
+    }
+
+    ConsumerBuilder endConsumer() {
+        return this
     }
 
     protected LogConsumer newConsumer(def object, Object[] objArgs) {
@@ -67,7 +72,7 @@ class ConsumerBuilder {
     }
 
     protected LogConsumer checkAsynchronousConsumer(LogConsumer result) {
-        return (asynchronous ? contextBuilder.newAsychronousConsumer(result, timeout, unit) : result)
+        return (asynchronous ? contextBuilder.newAsynchronousConsumer(result) : result)
     }
 
     LogConsumer build() {
