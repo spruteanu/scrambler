@@ -2,6 +2,7 @@ package org.prismus.scrambler.log
 
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
+import groovy.io.FileType
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 
@@ -153,17 +154,21 @@ class ContextBuilder {
         throw new RuntimeException()
     }
 
-    RegexConsumerBuilder regexSourceDirectory(File file, String conversionPattern, String fileFilter = null) {
+    RegexConsumerBuilder regexSourceDirectory(File file, Pattern pattern,
+                                              String fileFilter = null, Comparator<File> fileSorter = null) {
+        file.eachFileRecurse {}
+        file.eachFileMatch(FileType.FILES, fileFilter) {}
+        throw new RuntimeException()
+    }
+
+    Log4jConsumerBuilder log4jSourceDirectory(File file, String conversionPattern,
+                                              String fileFilter = null, Comparator<File> fileSorter = null) {
         file.eachFileRecurse {}
         throw new RuntimeException()
     }
 
-    Log4jConsumerBuilder log4jSourceDirectory(File file, String conversionPattern, String fileFilter = null) {
-        file.eachFileRecurse {}
-        throw new RuntimeException()
-    }
-
-    ContextBuilder sourceDirectory(String path, LogReaderConsumer readerConsumer) {
+    ContextBuilder sourceDirectory(String path, LogReaderConsumer readerConsumer,
+                                   String fileFilter = null, Comparator<File> fileSorter = null) {
         throw new RuntimeException()
     }
 
