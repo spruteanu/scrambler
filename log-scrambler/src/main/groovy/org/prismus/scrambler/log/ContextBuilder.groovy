@@ -2,10 +2,14 @@ package org.prismus.scrambler.log
 
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
-import groovy.io.FileType
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 
+import java.nio.file.FileVisitOption
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.attribute.BasicFileAttributes
 import java.text.SimpleDateFormat
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -13,12 +17,19 @@ import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern
+import java.util.stream.Collectors
 
 /**
  * @author Serge Pruteanu
  */
 @CompileStatic
 class ContextBuilder {
+    static final Comparator<Path> CREATED_DT_COMPARATOR = { Path l, Path r ->
+        final leftCreated = Files.readAttributes(l, BasicFileAttributes.class).creationTime()
+        final rightCreated = Files.readAttributes(r, BasicFileAttributes.class).creationTime()
+        return leftCreated.compareTo(rightCreated)
+    } as Comparator<Path>
+
     ObjectProvider provider
 
     private LogContext currentContext
@@ -154,25 +165,52 @@ class ContextBuilder {
         throw new RuntimeException()
     }
 
-    RegexConsumerBuilder regexSourceDirectory(File file, Pattern pattern,
-                                              String fileFilter = null, Comparator<File> fileSorter = null) {
-        file.eachFileRecurse {}
-        file.eachFileMatch(FileType.FILES, fileFilter) {}
-        throw new RuntimeException()
+    protected static String fileFilterToRegex(String fileFilter) {
+        String result = fileFilter.replaceAll('\\*', '.*')
+        result = result.replaceAll('\\?', '.')
+        result = result.replaceAll('\\\\', '\\\\')
+        return result
     }
 
-    Log4jConsumerBuilder log4jSourceDirectory(File file, String conversionPattern,
-                                              String fileFilter = null, Comparator<File> fileSorter = null) {
-        file.eachFileRecurse {}
-        throw new RuntimeException()
+    static List<File> listFolderFiles(File folder, String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+        final Pattern filePattern = ~/${fileFilterToRegex(fileFilter)}/
+        return Files.find(Paths.get(folder.toURI()), 999,
+                { Path p, BasicFileAttributes bfa -> bfa.isRegularFile() && filePattern.matcher(p.getFileName().toString()).matches() }, FileVisitOption.FOLLOW_LINKS
+        ).sorted(fileSorter).collect(Collectors.toList())
     }
 
-    ContextBuilder sourceDirectory(String path, LogReaderConsumer readerConsumer,
-                                   String fileFilter = null, Comparator<File> fileSorter = null) {
-        throw new RuntimeException()
+    RegexConsumerBuilder regexSourceFolder(File folder, Pattern pattern,
+                                           String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+        final files = listFolderFiles(folder, fileFilter, fileSorter)
+        for (File file : files) {
+            final sourceEntry = LogReaderConsumer.addSourceName(new LogEntry(source: folder), file.path)
+        }
+        return withRegexConsumer(pattern)
+    }
+
+    Log4jConsumerBuilder log4jSourceFolder(File folder, String conversionPattern,
+                                           String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+        final files = listFolderFiles(folder, fileFilter, fileSorter)
+        for (File file : files) {
+            final sourceEntry = LogReaderConsumer.addSourceName(new LogEntry(source: folder), file.path)
+        }
+        return withLog4jConsumer(conversionPattern)
+    }
+
+    ContextBuilder sourceFolder(String path, LogConsumer consumer,
+                                String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+        final folder = new File(path)
+        final files = listFolderFiles(folder, fileFilter, fileSorter)
+        for (File file : files) {
+            final sourceEntry = LogReaderConsumer.addSourceName(new LogEntry(source: folder), file.path)
+        }
+        return withConsumer(consumer)
     }
 
     ContextBuilder build() {
+        while (currentContext) {
+            endContext()
+        }
         throw new RuntimeException()
     }
 

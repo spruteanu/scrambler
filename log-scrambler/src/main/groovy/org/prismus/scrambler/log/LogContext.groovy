@@ -33,7 +33,7 @@ class LogContext {
         return this
     }
 
-    LogContext cacheable(int cacheSize = 1024 * 1024) {
+    LogContext withCache(int cacheSize = 1024 * 1024) {
         cache = CacheBuilder.newBuilder()
                 .maximumSize(cacheSize)
                 .build()

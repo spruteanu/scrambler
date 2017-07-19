@@ -27,7 +27,7 @@ class LogReaderConsumer implements LogConsumer {
     @CompileStatic
     void process(LogEntry entry) {
         final lineReader = toLineReader(entry)
-        final source = toSource(entry)
+        final source = toSourceName(entry)
         try {
             LogEntry lastEntry = null
             int currentRow = 0
@@ -79,8 +79,14 @@ class LogReaderConsumer implements LogConsumer {
     }
 
     @CompileStatic
-    static private Object toSource(LogEntry entry) {
-        return entry.getLogValue('Source')
+    static LogEntry addSourceName(LogEntry entry, Object source) {
+        entry.putLogValue('SourceName', source)
+        return entry
+    }
+
+    @CompileStatic
+    static Object toSourceName(LogEntry entry) {
+        return entry.getLogValue('SourceName')
     }
 
     @CompileStatic
