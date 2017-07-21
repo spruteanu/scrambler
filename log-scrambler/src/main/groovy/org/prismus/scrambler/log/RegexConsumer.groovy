@@ -73,7 +73,7 @@ class RegexConsumer implements LogConsumer {
     }
 
     @Override
-    void process(LogEntry entry) {
+    void consume(LogEntry entry) {
         final Matcher matcher
         if (group) {
             final value = entry.getLogValue(group)
@@ -100,7 +100,7 @@ class RegexConsumer implements LogConsumer {
                     entry.putLogValue(key, groupValue)
                     final List<LogConsumer> processors = getConsumer(key)
                     for (LogConsumer consumer : processors) {
-                        consumer.process(entry)
+                        consumer.consume(entry)
                     }
                 }
             }

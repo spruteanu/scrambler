@@ -5,5 +5,5 @@ package org.prismus.scrambler.log
  */
 @FunctionalInterface
 interface LogConsumer {
-    void process(LogEntry entry)
+    void consume(LogEntry entry)
 }

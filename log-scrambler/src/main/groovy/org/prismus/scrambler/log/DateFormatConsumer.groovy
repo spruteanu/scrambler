@@ -20,7 +20,7 @@ class DateFormatConsumer implements LogConsumer {
     }
 
     @Override
-    void process(LogEntry entry) {
+    void consume(LogEntry entry) {
         if (entry.logValueMap.containsKey(group)) {
             final dateString = entry.getLogValue(group)
             final date = dateFormat.parse(dateString.toString())

@@ -24,7 +24,7 @@ class MessageConsumer implements LogConsumer {
     }
 
     @Override
-    void process(LogEntry entry) {
+    void consume(LogEntry entry) {
         final value = entry.getLogValue(group)
         if (value && EXCEPTION_PATTERN.matcher(value.toString()).matches()) {
             String errorMessage = null

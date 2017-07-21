@@ -145,24 +145,33 @@ class ContextBuilder {
         return builder
     }
 
+    protected LogContext addSource(LogEntry logEntry) {
+        return currentContext.addSource(logEntry)
+    }
+
     ContextBuilder logSource(RandomAccessFile rf, String sourceName = null) {
-        throw new RuntimeException()
+        addSource(LineReader.newLodSource(rf, sourceName))
+        return this
     }
 
     ContextBuilder logSource(InputStream inputStream, String sourceName = null) {
-        throw new RuntimeException()
+        addSource(LineReader.newLodSource(inputStream, sourceName))
+        return this
     }
 
     ContextBuilder logSource(Reader reader, String sourceName = null) {
-        throw new RuntimeException()
+        addSource(LineReader.newLodSource(reader, sourceName))
+        return this
     }
 
     ContextBuilder logSource(File file, String sourceName = null) {
-        throw new RuntimeException()
+        addSource(LineReader.newLodSource(file, sourceName ?: file.path))
+        return this
     }
 
     ContextBuilder logSource(String content, String sourceName = null) {
-        throw new RuntimeException()
+        addSource(LineReader.newLodSource(content, sourceName))
+        return this
     }
 
     protected static String fileFilterToRegex(String fileFilter) {
@@ -183,7 +192,7 @@ class ContextBuilder {
                                            String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
         final files = listFolderFiles(folder, fileFilter, fileSorter)
         for (File file : files) {
-            final sourceEntry = LogReaderConsumer.addSourceName(new LogEntry(source: folder), file.path)
+            addSource(LineReader.newLodSource(new LogEntry(source: folder), file.path))
         }
         return withRegexConsumer(pattern)
     }
@@ -192,7 +201,7 @@ class ContextBuilder {
                                            String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
         final files = listFolderFiles(folder, fileFilter, fileSorter)
         for (File file : files) {
-            final sourceEntry = LogReaderConsumer.addSourceName(new LogEntry(source: folder), file.path)
+            currentContext.addSource(LineReader.newLodSource(new LogEntry(source: folder), file.path))
         }
         return withLog4jConsumer(conversionPattern)
     }
@@ -202,7 +211,7 @@ class ContextBuilder {
         final folder = new File(path)
         final files = listFolderFiles(folder, fileFilter, fileSorter)
         for (File file : files) {
-            final sourceEntry = LogReaderConsumer.addSourceName(new LogEntry(source: folder), file.path)
+            currentContext.addSource(LineReader.newLodSource(new LogEntry(source: folder), file.path))
         }
         return withConsumer(consumer)
     }

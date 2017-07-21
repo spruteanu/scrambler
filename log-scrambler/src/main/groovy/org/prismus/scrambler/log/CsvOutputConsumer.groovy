@@ -91,7 +91,7 @@ class CsvOutputConsumer implements LogConsumer, Closeable {
     }
 
     @Override
-    void process(LogEntry entry) {
+    void consume(LogEntry entry) {
         final values = new ArrayList<String>(columns.size())
         for (String column : columns) {
             values.add(Objects.toString(entry.getLogValue(column)?.toString(), ''))

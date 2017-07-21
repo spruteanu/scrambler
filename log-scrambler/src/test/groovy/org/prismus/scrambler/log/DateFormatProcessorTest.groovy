@@ -12,7 +12,7 @@ class DateFormatProcessorTest extends Specification {
                 .timestampProcessor(Log4jConsumer.ISO8601_DATE_FORMAT)
 
         final entry = new LogEntry('ERROR | 2008-09-06 10:51:45,473 | SQLErrorCodesFactory.java | 128 | OMG, Something bad happened')
-        processor.process(entry)
+        processor.consume(entry)
 
         expect:
         Date.isInstance(entry.getLogValue(Log4jConsumer.TIMESTAMP))

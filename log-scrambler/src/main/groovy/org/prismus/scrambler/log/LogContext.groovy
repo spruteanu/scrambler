@@ -16,14 +16,21 @@ import java.util.concurrent.TimeoutException
 @CompileStatic
 class LogContext {
     Cache<Object, LogEntry> cache
+    private Queue<LogEntry> sources = []
     List<LogConsumer> consumers = new ArrayList<LogConsumer>()
 
     ExecutorService executorService
     boolean processContext = true
     private int asynchTimeout
     private TimeUnit asynchUnit
+    boolean multiline = true
 
     LogContext() {
+    }
+
+    LogContext oneLineEntry() {
+        multiline = false
+        return this
     }
 
     LogContext withExecutorService(ExecutorService executorService, int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
@@ -45,8 +52,13 @@ class LogContext {
         return this
     }
 
-    LogContext addConsumer(LogConsumer processor) {
-        consumers.add(processor)
+    LogContext addSource(LogEntry source) {
+        sources.add(source)
+        return this
+    }
+
+    LogContext addConsumer(LogConsumer consumer) {
+        consumers.add(consumer)
         return this
     }
 
@@ -60,9 +72,33 @@ class LogContext {
         }
     }
 
-    void process(LogEntry entry) {
-        for (LogConsumer processor : consumers) {
-            processor.process(entry)
+    protected void consumeSource(LogEntry entry) {
+        final lineReader = LineReader.toLineReader(entry)
+        final sourceName = LineReader.toSourceName(entry)
+        try {
+            LogEntry lastEntry = null
+            int currentRow = 0
+            String line
+            while ((line = lineReader.readLine()) != null) {
+                final logEntry = new LogEntry(sourceName, line, ++currentRow)
+                consumeEntry(logEntry)
+                if (!logEntry || logEntry.isEmpty()) {
+                    if (multiline && lastEntry) {
+                        lastEntry.line += line + LineReader.LINE_BREAK
+                        consumeEntry(lastEntry)
+                    }
+                } else {
+                    lastEntry = logEntry
+                }
+            }
+        } finally {
+            Utils.closeQuietly(lineReader)
+        }
+    }
+
+    protected void consumeEntry(LogEntry entry) {
+        for (LogConsumer consumer : consumers) {
+            consumer.consume(entry)
         }
         if (entry.isCacheable() && cache) {
             cacheEntry(entry)

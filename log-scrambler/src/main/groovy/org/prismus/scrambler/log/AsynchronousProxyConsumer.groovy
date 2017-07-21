@@ -29,8 +29,8 @@ class AsynchronousProxyConsumer implements LogConsumer {
     }
 
     @Override
-    void process(final LogEntry entry) {
-        final work = logContext.submitAsynchronous({ consumer.process(entry) })
+    void consume(final LogEntry entry) {
+        final work = logContext.submitAsynchronous({ consumer.consume(entry) })
         if (awaitConsumption) {
             while (logContext.processContext) {
                 try {
