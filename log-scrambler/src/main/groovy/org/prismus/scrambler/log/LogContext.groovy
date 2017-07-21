@@ -4,11 +4,7 @@ import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import groovy.transform.CompileStatic
 
-import java.util.concurrent.Callable
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
+import java.util.concurrent.*
 
 /**
  * @author Serge Pruteanu
@@ -19,7 +15,7 @@ class LogContext {
     private Map<LogEntry, LogConsumer> sourceConsumerMap = [:]
     List<LogConsumer> consumers = new ArrayList<LogConsumer>()
 
-    ExecutorService executorService
+    CompletionService completionService
     boolean processContext = true
     private int asynchTimeout
     private TimeUnit asynchUnit
@@ -36,7 +32,9 @@ class LogContext {
     LogContext withExecutorService(ExecutorService executorService, int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
         this.asynchUnit = unit
         this.asynchTimeout = timeout
-        this.executorService = executorService
+        if (executorService) {
+            completionService = new ExecutorCompletionService<Void>(executorService)
+        }
         return this
     }
 
@@ -72,30 +70,6 @@ class LogContext {
         }
     }
 
-    protected void consumeSource(LogEntry entry) {
-        final lineReader = LineReader.toLineReader(entry)
-        final sourceName = LineReader.toSourceName(entry)
-        try {
-            LogEntry lastEntry = null
-            int currentRow = 0
-            String line
-            while ((line = lineReader.readLine()) != null) {
-                final logEntry = new LogEntry(sourceName, line, ++currentRow)
-                consumeEntry(logEntry)
-                if (!logEntry || logEntry.isEmpty()) {
-                    if (multiline && lastEntry) {
-                        lastEntry.line += line + LineReader.LINE_BREAK
-                        consumeEntry(lastEntry)
-                    }
-                } else {
-                    lastEntry = logEntry
-                }
-            }
-        } finally {
-            Utils.closeQuietly(lineReader)
-        }
-    }
-
     protected void consumeEntry(LogEntry entry) {
         for (LogConsumer consumer : consumers) {
             consumer.consume(entry)
@@ -105,8 +79,72 @@ class LogContext {
         }
     }
 
+    protected void consumeSource(LogEntry entry, LogConsumer sourceConsumer) {
+        final lineReader = LineReader.toLineReader(entry)
+        final sourceName = LineReader.toSourceName(entry)
+        try {
+            LogEntry lastEntry = null
+            int currentRow = 0
+            String line
+            while ((line = lineReader.readLine()) != null) {
+                final logEntry = new LogEntry(sourceName, line, ++currentRow)
+                sourceConsumer.consume(logEntry)
+                if (!logEntry || logEntry.isEmpty()) {
+                    if (multiline && lastEntry) {
+                        lastEntry.line += line + LineReader.LINE_BREAK
+                        sourceConsumer.consume(lastEntry)
+                    }
+                } else {
+                    consumeEntry(logEntry)
+                    lastEntry = logEntry
+                }
+            }
+        } finally {
+            Utils.closeQuietly(lineReader)
+        }
+    }
+
+    void consume() {
+        final Set<Future<Void>> jobs = [] as Set
+        for (final entry : sourceConsumerMap.entrySet()) {
+            final sourceLogEntry = entry.key
+            final sourceConsumer = entry.value
+            if (sourceConsumer instanceof AsynchronousProxyConsumer) {
+                submitAsynchronous({consumeSource(sourceLogEntry, sourceConsumer)})
+            } else {
+                consumeSource(sourceLogEntry, sourceConsumer)
+            }
+        }
+        List<Throwable> errors = []
+        while (jobs.size()) {
+            Future<Void> future
+            if (asynchTimeout) {
+                future = completionService.poll(asynchTimeout, asynchUnit)
+            } else {
+                future = completionService.poll()
+            }
+            if (future) {
+                try {
+                    future.get()
+                } catch (ExecutionException ignore) {
+                    errors.add(ignore.getCause())
+                } finally {
+                    jobs.remove(future)
+                }
+            }
+        }
+        if (errors) {
+            final resultError = new RuntimeException('Failed to execute asychnronous jobs')
+            // todo Serge: implement a container exception with all traces
+            for (Throwable throwable : errors) {
+                resultError.setStackTrace(throwable.getStackTrace())
+            }
+            throw resultError
+        }
+    }
+
     Future submitAsynchronous(Callable<Void> callable) {
-        final work = executorService.submit(callable)
+        final work = completionService.submit(callable)
         try {
             work.get(1, TimeUnit.MILLISECONDS) // make sure that job is submitted
         } catch (TimeoutException ignore) { }

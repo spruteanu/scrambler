@@ -50,6 +50,11 @@ class LogEntry implements Cloneable {
         return logValueMap.isEmpty()
     }
 
+    LogEntry cacheable(Object cacheKey) {
+        this.cacheKey = cacheKey
+        return this
+    }
+
     boolean isCacheable() {
         return cacheKey != null
     }

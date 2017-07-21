@@ -61,24 +61,30 @@ class ContextBuilder {
     }
 
     @PackageScope
-    protected LogConsumer checkAsynchronousConsumer(LogConsumer result) {
+    LogConsumer checkAsynchronousConsumer(LogConsumer result) {
         return (asynchronousAll ? newAsynchronousConsumer(result) : result)
     }
 
     @PackageScope
-    ContextBuilder endContext() {
+    void buildSourceConsumers() {
         for (Map.Entry<LogEntry, Object> entry : sourceConsumerMap.entrySet()) {
             final value = entry.value
             LogConsumer sourceConsumer = null
             if (value instanceof LogConsumer) {
-                sourceConsumer =  value as LogConsumer
+                sourceConsumer = value as LogConsumer
             } else if (value instanceof ConsumerBuilder) {
                 sourceConsumer = value.build()
             }
             if (sourceConsumer) {
-                currentContext.addSource(entry.key, sourceConsumer)
+                currentContext.addSource(entry.key, checkAsynchronousConsumer(sourceConsumer))
             }
         }
+    }
+
+    @PackageScope
+    ContextBuilder endContext() {
+        currentContext.withExecutorService(executorService, defaultTimeout, defaultUnit)
+        buildSourceConsumers()
         for (ConsumerBuilder builder : consumerBuilders) {
             currentContext.addConsumer(checkAsynchronousConsumer(builder.build()))
         }
@@ -90,7 +96,7 @@ class ContextBuilder {
     }
 
     protected AsynchronousProxyConsumer newAsynchronousConsumer(LogConsumer consumer) {
-        if (executorService == null && currentContext.executorService == null) {
+        if (executorService == null && currentContext.completionService == null) {
             executorService = Executors.newCachedThreadPool(new ContextThreadFactory())
             currentContext.withExecutorService(executorService, defaultTimeout, defaultUnit)
         }
