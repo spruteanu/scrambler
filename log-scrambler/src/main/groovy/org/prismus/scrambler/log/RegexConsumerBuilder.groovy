@@ -87,15 +87,16 @@ class RegexConsumerBuilder extends ConsumerBuilder {
             this.group = group
         }
 
-        RegexConsumerBuilder endConsumer() {
+        RegexConsumerBuilder endGroup() {
             RegexConsumerBuilder.this.groupConsumer(group, build())
             return RegexConsumerBuilder.this
         }
 
-        @Override
-        ContextBuilder endContext() {
-            throw new UnsupportedOperationException("Context can't be finished here, call endConsumer to finish group consumer creation")
+        ContextBuilder endConsumer() {
+            RegexConsumerBuilder.this.groupConsumer(group, build())
+            return contextBuilder
         }
+
     }
 
 }

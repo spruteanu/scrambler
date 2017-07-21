@@ -16,7 +16,7 @@ import java.util.concurrent.TimeoutException
 @CompileStatic
 class LogContext {
     Cache<Object, LogEntry> cache
-    private Queue<LogEntry> sources = []
+    private Map<LogEntry, LogConsumer> sourceConsumerMap = [:]
     List<LogConsumer> consumers = new ArrayList<LogConsumer>()
 
     ExecutorService executorService
@@ -52,8 +52,8 @@ class LogContext {
         return this
     }
 
-    LogContext addSource(LogEntry source) {
-        sources.add(source)
+    LogContext addSource(LogEntry source, LogConsumer sourceConsumer) {
+        sourceConsumerMap.put(source, sourceConsumer)
         return this
     }
 

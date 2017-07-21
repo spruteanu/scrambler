@@ -35,6 +35,7 @@ class ContextBuilder {
     private LogContext currentContext
     private final Stack<LogContext> contextStack = new Stack<>()
     private final List<LogContext> contextList = []
+    private final Map<LogEntry, Object> sourceConsumerMap = [:]
     private final List<ConsumerBuilder> consumerBuilders = []
 
     boolean asynchronousAll
@@ -60,7 +61,30 @@ class ContextBuilder {
     }
 
     @PackageScope
+    protected LogConsumer checkAsynchronousConsumer(LogConsumer result) {
+        return (asynchronousAll ? newAsynchronousConsumer(result) : result)
+    }
+
+    @PackageScope
     ContextBuilder endContext() {
+        for (Map.Entry<LogEntry, Object> entry : sourceConsumerMap.entrySet()) {
+            final value = entry.value
+            LogConsumer sourceConsumer = null
+            if (value instanceof LogConsumer) {
+                sourceConsumer =  value as LogConsumer
+            } else if (value instanceof ConsumerBuilder) {
+                sourceConsumer = value.build()
+            }
+            if (sourceConsumer) {
+                currentContext.addSource(entry.key, sourceConsumer)
+            }
+        }
+        for (ConsumerBuilder builder : consumerBuilders) {
+            currentContext.addConsumer(checkAsynchronousConsumer(builder.build()))
+        }
+        sourceConsumerMap.clear()
+        consumerBuilders.clear()
+
         currentContext = contextStack.size() > 0 ? contextStack.pop() : null
         return this
     }
@@ -90,7 +114,7 @@ class ContextBuilder {
     }
 
     ContextBuilder withConsumer(LogConsumer consumer) {
-        currentContext.addConsumer(newAsynchronousConsumer(consumer))
+        currentContext.addConsumer(consumer)
         return this
     }
 
@@ -99,19 +123,19 @@ class ContextBuilder {
         return this
     }
 
-    ConsumerBuilder withCsvOutputConsumer(Writer writer, String... columns) {
+    ConsumerBuilder withCsvCollector(Writer writer, String... columns) {
         final builder = new ConsumerBuilder(this, CsvOutputConsumer.of(writer, columns))
         consumerBuilders.add(builder)
         return builder
     }
 
-    ConsumerBuilder withCsvOutputConsumer(File file, String... columns) {
+    ConsumerBuilder withCsvCollector(File file, String... columns) {
         final builder = new ConsumerBuilder(this, CsvOutputConsumer.of(file, columns))
         consumerBuilders.add(builder)
         return builder
     }
 
-    ConsumerBuilder withCsvOutputConsumer(String filePath, String... columns) {
+    ConsumerBuilder withCsvCollector(String filePath, String... columns) {
         final builder = new ConsumerBuilder(this, CsvOutputConsumer.of(filePath, columns))
         consumerBuilders.add(builder)
         return builder
@@ -127,51 +151,61 @@ class ContextBuilder {
         return this
     }
 
-    RegexConsumerBuilder withRegexConsumer(Pattern pattern) {
-        final builder = new RegexConsumerBuilder(this, RegexConsumer.of(pattern))
-        consumerBuilders.add(builder)
-        return builder
-    }
-
-    RegexConsumerBuilder withRegexConsumer(String regEx, int flags = 0) {
-        final builder = new RegexConsumerBuilder(this, RegexConsumer.of(regEx, flags))
-        consumerBuilders.add(builder)
-        return builder
-    }
-
-    Log4jConsumerBuilder withLog4jConsumer(String conversionPattern) {
-        final builder = new Log4jConsumerBuilder(this, Log4jConsumer.ofPattern(conversionPattern))
-        consumerBuilders.add(builder)
-        return builder
-    }
-
-    protected LogContext addSource(LogEntry logEntry) {
-        return currentContext.addSource(logEntry)
+    protected void addSource(LogEntry logEntry) {
+        sourceConsumerMap.put(logEntry, null)
     }
 
     ContextBuilder logSource(RandomAccessFile rf, String sourceName = null) {
-        addSource(LineReader.newLodSource(rf, sourceName))
+        addSource(LineReader.newLogSource(rf, sourceName))
         return this
     }
 
     ContextBuilder logSource(InputStream inputStream, String sourceName = null) {
-        addSource(LineReader.newLodSource(inputStream, sourceName))
+        addSource(LineReader.newLogSource(inputStream, sourceName))
         return this
     }
 
     ContextBuilder logSource(Reader reader, String sourceName = null) {
-        addSource(LineReader.newLodSource(reader, sourceName))
+        addSource(LineReader.newLogSource(reader, sourceName))
         return this
     }
 
     ContextBuilder logSource(File file, String sourceName = null) {
-        addSource(LineReader.newLodSource(file, sourceName ?: file.path))
+        addSource(LineReader.newLogSource(file, sourceName ?: file.path))
         return this
     }
 
     ContextBuilder logSource(String content, String sourceName = null) {
-        addSource(LineReader.newLodSource(content, sourceName))
+        addSource(LineReader.newLogSource(content, sourceName))
         return this
+    }
+
+    protected ContextBuilder sourceConsumer(Object sourceConsumer) {
+        for (LogEntry source : sourceConsumerMap.keySet()) {
+            final sc = sourceConsumerMap.get(source)
+            if (sc == null) {
+                sourceConsumerMap.put(source, sourceConsumer)
+            }
+        }
+        return this
+    }
+
+    RegexConsumerBuilder sourceRegexConsumer(Pattern pattern) {
+        final builder = new RegexConsumerBuilder(this, RegexConsumer.of(pattern))
+        sourceConsumer(builder)
+        return builder
+    }
+
+    RegexConsumerBuilder sourceRegexConsumer(String regEx, int flags = 0) {
+        final builder = new RegexConsumerBuilder(this, RegexConsumer.of(regEx, flags))
+        sourceConsumer(builder)
+        return builder
+    }
+
+    Log4jConsumerBuilder sourceLog4jConsumer(String conversionPattern) {
+        final builder = new Log4jConsumerBuilder(this, Log4jConsumer.ofPattern(conversionPattern))
+        sourceConsumer(builder)
+        return builder
     }
 
     protected static String fileFilterToRegex(String fileFilter) {
@@ -191,29 +225,32 @@ class ContextBuilder {
     RegexConsumerBuilder regexSourceFolder(File folder, Pattern pattern,
                                            String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
         final files = listFolderFiles(folder, fileFilter, fileSorter)
+        final builder = sourceRegexConsumer(pattern)
         for (File file : files) {
-            addSource(LineReader.newLodSource(new LogEntry(source: folder), file.path))
+            sourceConsumerMap.put(LineReader.newLogSource(new LogEntry(source: folder), file.path), builder)
         }
-        return withRegexConsumer(pattern)
+        return builder
     }
 
     Log4jConsumerBuilder log4jSourceFolder(File folder, String conversionPattern,
                                            String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
         final files = listFolderFiles(folder, fileFilter, fileSorter)
+        final builder = sourceLog4jConsumer(conversionPattern)
         for (File file : files) {
-            currentContext.addSource(LineReader.newLodSource(new LogEntry(source: folder), file.path))
+            sourceConsumerMap.put(LineReader.newLogSource(new LogEntry(source: folder), file.path), builder)
         }
-        return withLog4jConsumer(conversionPattern)
+        return builder
     }
 
     ContextBuilder sourceFolder(String path, LogConsumer consumer,
                                 String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
         final folder = new File(path)
         final files = listFolderFiles(folder, fileFilter, fileSorter)
+        final builder = withConsumer(consumer)
         for (File file : files) {
-            currentContext.addSource(LineReader.newLodSource(new LogEntry(source: folder), file.path))
+            sourceConsumerMap.put(LineReader.newLogSource(new LogEntry(source: folder), file.path), builder)
         }
-        return withConsumer(consumer)
+        return builder
     }
 
     ContextBuilder build() {

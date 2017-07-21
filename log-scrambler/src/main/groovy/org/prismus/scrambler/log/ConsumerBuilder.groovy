@@ -42,13 +42,8 @@ class ConsumerBuilder {
         return this
     }
 
-    ContextBuilder endContext() {
-        contextBuilder.endContext()
+    ContextBuilder endConsumer() {
         return contextBuilder
-    }
-
-    ConsumerBuilder endConsumer() {
-        return this
     }
 
     protected LogConsumer newConsumer(def object, Object[] objArgs) {

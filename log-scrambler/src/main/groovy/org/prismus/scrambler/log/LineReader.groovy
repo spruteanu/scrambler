@@ -39,7 +39,7 @@ abstract class LineReader implements Closeable {
     }
 
     @CompileStatic
-    static LogEntry newLodSource(Object source, Object sourceName) {
+    static LogEntry newLogSource(Object source, Object sourceName) {
         return addSourceName(new LogEntry(source: source), sourceName)
     }
 
