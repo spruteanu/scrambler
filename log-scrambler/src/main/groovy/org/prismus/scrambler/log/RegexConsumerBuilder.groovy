@@ -92,7 +92,7 @@ class RegexConsumerBuilder extends ConsumerBuilder {
             return RegexConsumerBuilder.this
         }
 
-        ContextBuilder endConsumer() {
+        ContextBuilder endBuilder() {
             RegexConsumerBuilder.this.groupConsumer(group, build())
             return contextBuilder
         }

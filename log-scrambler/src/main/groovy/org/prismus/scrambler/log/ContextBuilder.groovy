@@ -32,19 +32,17 @@ class ContextBuilder {
 
     ObjectProvider provider
 
-    private LogContext currentContext
-    private final Stack<LogContext> contextStack = new Stack<>()
-    private final List<LogContext> contextList = []
+    private LogContext context
     private final Map<LogEntry, Object> sourceConsumerMap = [:]
     private final List<ConsumerBuilder> consumerBuilders = []
 
-    boolean asynchronousAll
+    private boolean asynchronousSources
     private ExecutorService executorService
     private int defaultTimeout
     private TimeUnit defaultUnit = TimeUnit.MILLISECONDS
 
     ContextBuilder() {
-        newContext()
+        context = new LogContext()
     }
 
     private Cache newCache(int cacheSize = 1024 * 1024) {
@@ -53,16 +51,9 @@ class ContextBuilder {
                 .build()
     }
 
-    private ContextBuilder newContext() {
-        currentContext = new LogContext()
-        contextStack.push(currentContext)
-        contextList.add(currentContext)
-        return this
-    }
-
     @PackageScope
     LogConsumer checkAsynchronousConsumer(LogConsumer result) {
-        return (asynchronousAll ? newAsynchronousConsumer(result) : result)
+        return (asynchronousSources ? newAsynchronousConsumer(result) : result)
     }
 
     @PackageScope
@@ -76,39 +67,32 @@ class ContextBuilder {
                 sourceConsumer = value.build()
             }
             if (sourceConsumer) {
-                currentContext.addSource(entry.key, checkAsynchronousConsumer(sourceConsumer))
+                context.addSource(entry.key, checkAsynchronousConsumer(sourceConsumer))
             }
         }
     }
 
     @PackageScope
-    ContextBuilder endContext() {
-        currentContext.withExecutorService(executorService, defaultTimeout, defaultUnit)
-        buildSourceConsumers()
+    void buildLogEntryConsumers() {
         for (ConsumerBuilder builder : consumerBuilders) {
-            currentContext.addConsumer(checkAsynchronousConsumer(builder.build()))
+            context.addConsumer(builder.build())
         }
-        sourceConsumerMap.clear()
-        consumerBuilders.clear()
-
-        currentContext = contextStack.size() > 0 ? contextStack.pop() : null
-        return this
     }
 
-    protected AsynchronousProxyConsumer newAsynchronousConsumer(LogConsumer consumer) {
-        if (executorService == null && currentContext.completionService == null) {
+    protected AsynchronousProxyConsumer newAsynchronousConsumer(LogConsumer consumer, int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
+        if (executorService == null) {
             executorService = Executors.newCachedThreadPool(new ContextThreadFactory())
-            currentContext.withExecutorService(executorService, defaultTimeout, defaultUnit)
+            context.withExecutorService(executorService, defaultTimeout, defaultUnit)
         }
-        return new AsynchronousProxyConsumer(currentContext, consumer)
+        return consumer instanceof AsynchronousProxyConsumer ? consumer as AsynchronousProxyConsumer : new AsynchronousProxyConsumer(context, consumer).awaitConsumption(timeout, unit)
     }
 
     LogConsumer getConsumer(Object processorId, Object... args) {
         return provider.get(processorId, args) as LogConsumer
     }
 
-    ContextBuilder asynchronousAll(int defaultTimeout = this.defaultTimeout, TimeUnit defaultUnit = this.defaultUnit) {
-        asynchronousAll = true
+    ContextBuilder asynchronousSources(int defaultTimeout = this.defaultTimeout, TimeUnit defaultUnit = this.defaultUnit) {
+        asynchronousSources = true
         this.defaultTimeout = defaultTimeout
         this.defaultUnit = defaultUnit
         return this
@@ -120,12 +104,12 @@ class ContextBuilder {
     }
 
     ContextBuilder withConsumer(LogConsumer consumer) {
-        currentContext.addConsumer(consumer)
+        context.addConsumer(consumer)
         return this
     }
 
     ContextBuilder asynchronousConsumer(LogConsumer consumer) {
-        currentContext.addConsumer(newAsynchronousConsumer(consumer))
+        context.addConsumer(newAsynchronousConsumer(consumer))
         return this
     }
 
@@ -148,12 +132,12 @@ class ContextBuilder {
     }
 
     ContextBuilder withDateFormatConsumer(SimpleDateFormat dateFormat, String group = DateFormatConsumer.TIMESTAMP) {
-        currentContext.addConsumer(DateFormatConsumer.of(dateFormat, group))
+        context.addConsumer(DateFormatConsumer.of(dateFormat, group))
         return this
     }
 
     ContextBuilder withDateFormatConsumer(String dateFormat, String group = DateFormatConsumer.TIMESTAMP) {
-        currentContext.addConsumer(DateFormatConsumer.of(dateFormat, group))
+        context.addConsumer(DateFormatConsumer.of(dateFormat, group))
         return this
     }
 
@@ -259,11 +243,15 @@ class ContextBuilder {
         return builder
     }
 
-    ContextBuilder build() {
-        while (currentContext) {
-            endContext()
-        }
-        throw new RuntimeException()
+    LogContext build() {
+        context.withExecutorService(executorService, defaultTimeout, defaultUnit)
+        context.withCache(newCache())
+
+        buildSourceConsumers()
+        buildLogEntryConsumers()
+        sourceConsumerMap.clear()
+        consumerBuilders.clear()
+        return context
     }
 
     static class ContextThreadFactory implements ThreadFactory {

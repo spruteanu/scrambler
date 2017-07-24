@@ -2,6 +2,8 @@ package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
 
+import java.util.concurrent.ConcurrentHashMap
+
 /**
  * @author Serge Pruteanu
  */
@@ -30,7 +32,7 @@ class LogEntry implements Cloneable {
         this.source = source
         this.line = line
         this.row = row
-        logValueMap = [:]
+        logValueMap = new ConcurrentHashMap()
     }
 
     LogEntry putLogValue(Object entryKey, Object value) {

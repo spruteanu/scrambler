@@ -1,10 +1,11 @@
 package org.prismus.scrambler.log
 
 import com.google.common.cache.Cache
-import com.google.common.cache.CacheBuilder
 import groovy.transform.CompileStatic
 
 import java.util.concurrent.*
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.function.Predicate
 
 /**
  * @author Serge Pruteanu
@@ -13,12 +14,14 @@ import java.util.concurrent.*
 class LogContext {
     Cache<Object, LogEntry> cache
     private Map<LogEntry, LogConsumer> sourceConsumerMap = [:]
-    List<LogConsumer> consumers = new ArrayList<LogConsumer>()
+    private List<LogConsumer> consumers = new ArrayList<LogConsumer>()
 
-    CompletionService completionService
-    boolean processContext = true
+    private CompletionService completionService
     private int asynchTimeout
     private TimeUnit asynchUnit
+    private AtomicInteger jobsCount
+    boolean processContext = true
+
     boolean multiline = true
 
     LogContext() {
@@ -34,14 +37,8 @@ class LogContext {
         this.asynchTimeout = timeout
         if (executorService) {
             completionService = new ExecutorCompletionService<Void>(executorService)
+            jobsCount = new AtomicInteger()
         }
-        return this
-    }
-
-    LogContext withCache(int cacheSize = 1024 * 1024) {
-        cache = CacheBuilder.newBuilder()
-                .maximumSize(cacheSize)
-                .build()
         return this
     }
 
@@ -60,6 +57,10 @@ class LogContext {
         return this
     }
 
+    LogContext addPredicateConsumer(LogConsumer consumer, Predicate predicate) {
+        return addConsumer(new PredicateConsumer(consumer, predicate))
+    }
+
     synchronized void cacheEntry(LogEntry entry) {
         final cacheKey = entry.cacheKey
         final cachedEntry = cache.getIfPresent(cacheKey)
@@ -70,12 +71,41 @@ class LogContext {
         }
     }
 
-    protected void consumeEntry(LogEntry entry) {
+    protected void checkCacheable(LogEntry entry) {
+        if (entry.isCacheable() && cache) {
+            cacheEntry(entry)
+        }
+    }
+
+    protected LogEntry consumeEntry(LogEntry entry) {
         for (LogConsumer consumer : consumers) {
             consumer.consume(entry)
         }
-        if (entry.isCacheable() && cache) {
-            cacheEntry(entry)
+        checkCacheable(entry)
+        return entry
+    }
+
+    protected void awaitJobsCompletion() {
+        List<Throwable> errors = []
+        while (jobsCount.get()) {
+            Future<Void> future
+            if (asynchTimeout) {
+                future = completionService.poll(asynchTimeout, asynchUnit)
+            } else {
+                future = completionService.poll()
+            }
+            if (future) {
+                try {
+                    future.get()
+                } catch (ExecutionException ignore) {
+                    errors.add(ignore.getCause())
+                } finally {
+                    jobsCount.decrementAndGet()
+                }
+            }
+        }
+        if (errors) {
+            throw new ContextException('Failed to execute asychnronous jobs', errors)
         }
     }
 
@@ -95,7 +125,7 @@ class LogContext {
                         sourceConsumer.consume(lastEntry)
                     }
                 } else {
-                    consumeEntry(logEntry)
+                    consumeEntry(lastEntry)
                     lastEntry = logEntry
                 }
             }
@@ -105,50 +135,55 @@ class LogContext {
     }
 
     void consume() {
-        final Set<Future<Void>> jobs = [] as Set
         for (final entry : sourceConsumerMap.entrySet()) {
-            final sourceLogEntry = entry.key
-            final sourceConsumer = entry.value
-            if (sourceConsumer instanceof AsynchronousProxyConsumer) {
-                submitAsynchronous({consumeSource(sourceLogEntry, sourceConsumer)})
-            } else {
-                consumeSource(sourceLogEntry, sourceConsumer)
-            }
+            consumeSource(entry.key, entry.value)
         }
-        List<Throwable> errors = []
-        while (jobs.size()) {
-            Future<Void> future
-            if (asynchTimeout) {
-                future = completionService.poll(asynchTimeout, asynchUnit)
-            } else {
-                future = completionService.poll()
-            }
-            if (future) {
-                try {
-                    future.get()
-                } catch (ExecutionException ignore) {
-                    errors.add(ignore.getCause())
-                } finally {
-                    jobs.remove(future)
-                }
-            }
-        }
-        if (errors) {
-            final resultError = new RuntimeException('Failed to execute asychnronous jobs')
-            // todo Serge: implement a container exception with all traces
-            for (Throwable throwable : errors) {
-                resultError.setStackTrace(throwable.getStackTrace())
-            }
-            throw resultError
-        }
+        awaitJobsCompletion()
     }
 
     Future submitAsynchronous(Callable<Void> callable) {
         final work = completionService.submit(callable)
+        jobsCount.incrementAndGet()
         try {
             work.get(1, TimeUnit.MILLISECONDS) // make sure that job is submitted
         } catch (TimeoutException ignore) { }
         return work
+    }
+
+    Future submitAsynchronous(LogConsumer consumer, LogEntry logEntry) {
+        return submitAsynchronous(new LogConsumerCallable(consumer, logEntry))
+    }
+
+    private class LogConsumerCallable implements Callable<Void> {
+        final LogConsumer consumer
+        final LogEntry logEntry
+
+        LogConsumerCallable(LogConsumer consumer, LogEntry logEntry) {
+            this.consumer = consumer
+            this.logEntry = logEntry
+        }
+
+        @Override
+        Void call() throws Exception {
+            consumer.consume(logEntry)
+            checkCacheable(logEntry)
+            return null
+        }
+    }
+
+    private static class ContextException extends RuntimeException implements Iterable<Throwable> {
+        private List<Throwable> throwables
+
+        ContextException(String message, List<Throwable> throwables) {
+            super(message)
+            this.throwables = throwables
+        }
+
+        @Override
+        Iterator<Throwable> iterator() {
+            return throwables.iterator()
+        }
+
     }
 
 }
