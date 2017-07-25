@@ -32,6 +32,8 @@ class ContextBuilderTest extends Specification {
         expect:
         0 < stringWriter.toString().length()
         21 == listCollector.size()
+        null != listCollector[20].getLogValue(MessageConsumer.ERROR_MESSAGE)
+        null != listCollector[20].getLogValue(MessageConsumer.EXCEPTION)
 
         and: 'verify csv collector columns are populated with groups defined in source consumer'
         null != (logContext = new ContextBuilder()
