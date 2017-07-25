@@ -132,9 +132,7 @@ class LogContext {
         }
     }
 
-    protected void consumeSource(LogEntry entry, LogConsumer sourceConsumer) {
-        final lineReader = LineReader.toLineReader(entry)
-        final sourceName = LineReader.toSourceName(entry)
+    protected void consumeSource(LineReader lineReader, Object sourceName, LogConsumer sourceConsumer) {
         try {
             LogEntry lastEntry = null
             int currentRow = 0
@@ -160,7 +158,7 @@ class LogContext {
 
     void consume() {
         for (final entry : sourceConsumerMap.entrySet()) {
-            consumeSource(entry.key, entry.value)
+            consumeSource(LineReader.toLineReader(entry.key), LineReader.toSourceName(entry.key), entry.value)
         }
         awaitJobsCompletion()
         for (Closeable closeable: closeables) {
