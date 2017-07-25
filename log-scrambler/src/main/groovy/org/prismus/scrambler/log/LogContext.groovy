@@ -207,10 +207,10 @@ class LogContext implements Iterable<LogEntry> {
         return new LogEntryIterator()
     }
 
-    Stream<LogEntry> stream() {
-        throw new UnsupportedOperationException()
-//        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(), 0), false)
-    }
+//    Stream<LogEntry> stream() {
+//        throw new UnsupportedOperationException()
+////        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(), 0), false)
+//    }
 
     private class LogEntryIterator implements Iterator<LogEntry> {
         private Queue<Tuple> sources = []
@@ -225,7 +225,6 @@ class LogContext implements Iterable<LogEntry> {
             for (Map.Entry<LogEntry, LogConsumer> entry : sourceConsumerMap.entrySet()) {
                 sources.add(new Tuple(LineReader.toLineReader(entry.key), LineReader.toSourceName(entry.key), entry.value))
             }
-            sources.poll()
             nextSource()
         }
 
