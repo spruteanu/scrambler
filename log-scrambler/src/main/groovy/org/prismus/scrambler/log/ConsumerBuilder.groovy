@@ -1,7 +1,6 @@
 package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
-import groovy.transform.PackageScope
 
 import java.util.concurrent.TimeUnit
 

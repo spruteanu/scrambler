@@ -15,7 +15,7 @@ class LogEntry implements Cloneable {
     Object row
     String cacheKey
 
-    Map logValueMap
+    Map logValueMap = new ConcurrentHashMap()
 
     LogEntry() {
     }
@@ -32,7 +32,6 @@ class LogEntry implements Cloneable {
         this.source = source
         this.line = line
         this.row = row
-        logValueMap = new ConcurrentHashMap()
     }
 
     LogEntry putLogValue(Object entryKey, Object value) {

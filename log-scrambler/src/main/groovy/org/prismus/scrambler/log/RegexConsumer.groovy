@@ -14,7 +14,7 @@ class RegexConsumer implements LogConsumer {
 
     Pattern pattern
     protected final Map<String, List<LogConsumer>> groupConsumerMap = new LinkedHashMap<>()
-    protected final Map<String, Integer> groupIndexMap = [:]
+    protected final Map<String, Integer> groupIndexMap = new LinkedHashMap<>()
 
     String group
 

@@ -15,6 +15,7 @@ class LogContext {
     Cache<Object, LogEntry> cache
     private Map<LogEntry, LogConsumer> sourceConsumerMap = [:]
     private List<LogConsumer> consumers = new ArrayList<LogConsumer>()
+    private List<Closeable> closeables = []
 
     private CompletionService completionService
     private int asynchTimeout
@@ -54,6 +55,22 @@ class LogContext {
 
     LogContext addConsumer(LogConsumer consumer) {
         consumers.add(consumer)
+        if (consumer instanceof Closeable) {
+            closeables.add(consumer as Closeable)
+        }
+        if (consumer instanceof CsvOutputConsumer) {
+            final csvOutputConsumer = (CsvOutputConsumer) consumer
+            if (!csvOutputConsumer.columns) {
+                for (LogConsumer sourceConsumer : sourceConsumerMap.values()) {
+                    if (sourceConsumer instanceof RegexConsumer) {
+                        csvOutputConsumer.columns = ((RegexConsumer) sourceConsumer).groupIndexMap.keySet().toList()
+                    }
+                }
+                if (!csvOutputConsumer.columns) {
+                    throw new RuntimeException('Columns are not defined for CsvOutputConsumer')
+                }
+            }
+        }
         return this
     }
 
@@ -78,6 +95,9 @@ class LogContext {
     }
 
     protected LogEntry consumeEntry(LogEntry entry) {
+        if (!entry) {
+            return entry
+        }
         for (LogConsumer consumer : consumers) {
             consumer.consume(entry)
         }
@@ -86,6 +106,9 @@ class LogContext {
     }
 
     protected void awaitJobsCompletion() {
+        if (jobsCount == null) {
+            return
+        }
         List<Throwable> errors = []
         while (jobsCount.get()) {
             Future<Void> future
@@ -119,9 +142,9 @@ class LogContext {
             while ((line = lineReader.readLine()) != null) {
                 final logEntry = new LogEntry(sourceName, line, ++currentRow)
                 sourceConsumer.consume(logEntry)
-                if (!logEntry || logEntry.isEmpty()) {
+                if (logEntry.isEmpty()) {
                     if (multiline && lastEntry) {
-                        lastEntry.line += line + LineReader.LINE_BREAK
+                        lastEntry.line += LineReader.LINE_BREAK + line
                         sourceConsumer.consume(lastEntry)
                     }
                 } else {
@@ -129,6 +152,7 @@ class LogContext {
                     lastEntry = logEntry
                 }
             }
+            consumeEntry(lastEntry)
         } finally {
             Utils.closeQuietly(lineReader)
         }
@@ -139,6 +163,9 @@ class LogContext {
             consumeSource(entry.key, entry.value)
         }
         awaitJobsCompletion()
+        for (Closeable closeable: closeables) {
+            Utils.closeQuietly(closeable)
+        }
     }
 
     Future submitAsynchronous(Callable<Void> callable) {

@@ -4,6 +4,7 @@ import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
+import org.springframework.context.ApplicationContext
 
 import java.nio.file.FileVisitOption
 import java.nio.file.Files
@@ -30,7 +31,7 @@ class ContextBuilder {
         return leftCreated.compareTo(rightCreated)
     } as Comparator<Path>
 
-    ObjectProvider provider
+    ObjectProvider provider = new DefaultObjectProvider()
 
     private LogContext context
     private final Map<LogEntry, Object> sourceConsumerMap = [:]
@@ -98,13 +99,28 @@ class ContextBuilder {
         return this
     }
 
-    ContextBuilder withProvider(ObjectProvider provider) {
+    ContextBuilder withObjectProvider(ObjectProvider provider) {
         this.provider = provider
         return this
     }
 
+    ContextBuilder withSpringObjectProvider(ApplicationContext context) {
+        this.provider = SpringObjectProvider.of(context)
+        return this
+    }
+
+    ContextBuilder withSpringObjectProvider(Class... contextClass) {
+        this.provider = SpringObjectProvider.of(contextClass)
+        return this
+    }
+
+    ContextBuilder withSpringObjectProvider(String... contextXml) {
+        this.provider = SpringObjectProvider.of(contextXml)
+        return this
+    }
+
     ContextBuilder withConsumer(LogConsumer consumer) {
-        context.addConsumer(consumer)
+        consumerBuilders.add(new ConsumerBuilder().forConsumer(consumer))
         return this
     }
 
@@ -113,32 +129,42 @@ class ContextBuilder {
         return this
     }
 
-    ConsumerBuilder withCsvCollector(Writer writer, String... columns) {
+    ContextBuilder csvCollector(Writer writer, String... columns) {
+        return withConsumer(CsvOutputConsumer.of(writer, columns))
+    }
+
+    ContextBuilder csvCollector(File file, String... columns) {
+        return withConsumer(CsvOutputConsumer.of(file, columns))
+    }
+
+    ContextBuilder csvCollector(String filePath, String... columns) {
+        return withConsumer(CsvOutputConsumer.of(filePath, columns))
+    }
+
+    ConsumerBuilder csvCollectorBuilder(Writer writer, String... columns) {
         final builder = new ConsumerBuilder(this, CsvOutputConsumer.of(writer, columns))
         consumerBuilders.add(builder)
         return builder
     }
 
-    ConsumerBuilder withCsvCollector(File file, String... columns) {
+    ConsumerBuilder csvCollectorBuilder(File file, String... columns) {
         final builder = new ConsumerBuilder(this, CsvOutputConsumer.of(file, columns))
         consumerBuilders.add(builder)
         return builder
     }
 
-    ConsumerBuilder withCsvCollector(String filePath, String... columns) {
+    ConsumerBuilder csvCollectorBuilder(String filePath, String... columns) {
         final builder = new ConsumerBuilder(this, CsvOutputConsumer.of(filePath, columns))
         consumerBuilders.add(builder)
         return builder
     }
 
-    ContextBuilder withDateFormatConsumer(SimpleDateFormat dateFormat, String group = DateFormatConsumer.TIMESTAMP) {
-        context.addConsumer(DateFormatConsumer.of(dateFormat, group))
-        return this
+    ContextBuilder dateFormatConsumer(SimpleDateFormat dateFormat, String group = DateFormatConsumer.TIMESTAMP) {
+        return withConsumer(DateFormatConsumer.of(dateFormat, group))
     }
 
-    ContextBuilder withDateFormatConsumer(String dateFormat, String group = DateFormatConsumer.TIMESTAMP) {
-        context.addConsumer(DateFormatConsumer.of(dateFormat, group))
-        return this
+    ContextBuilder dateFormatConsumer(String dateFormat, String group = DateFormatConsumer.TIMESTAMP) {
+        return withConsumer(DateFormatConsumer.of(dateFormat, group))
     }
 
     protected void addSource(LogEntry logEntry) {
@@ -209,7 +235,7 @@ class ContextBuilder {
         final Pattern filePattern = ~/${fileFilterToRegex(fileFilter)}/
         return Files.find(Paths.get(folder.toURI()), 999,
                 { Path p, BasicFileAttributes bfa -> bfa.isRegularFile() && filePattern.matcher(p.getFileName().toString()).matches() }, FileVisitOption.FOLLOW_LINKS
-        ).sorted(fileSorter).collect(Collectors.toList())
+        ).sorted(fileSorter).map({ it.toFile() }).collect(Collectors.toList())
     }
 
     RegexConsumerBuilder regexSourceFolder(File folder, Pattern pattern,
@@ -227,7 +253,7 @@ class ContextBuilder {
         final files = listFolderFiles(folder, fileFilter, fileSorter)
         final builder = sourceLog4jConsumer(conversionPattern)
         for (File file : files) {
-            sourceConsumerMap.put(LineReader.newLogSource(new LogEntry(source: folder), file.path), builder)
+            sourceConsumerMap.put(LineReader.newLogSource(new LogEntry(source: file), file.path), builder)
         }
         return builder
     }
@@ -244,9 +270,7 @@ class ContextBuilder {
     }
 
     LogContext build() {
-        context.withExecutorService(executorService, defaultTimeout, defaultUnit)
-        context.withCache(newCache())
-
+        context.withExecutorService(executorService, defaultTimeout, defaultUnit).withCache(newCache())
         buildSourceConsumers()
         buildLogEntryConsumers()
         sourceConsumerMap.clear()

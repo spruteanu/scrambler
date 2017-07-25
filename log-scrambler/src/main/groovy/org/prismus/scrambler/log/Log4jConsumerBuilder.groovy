@@ -29,11 +29,14 @@ class Log4jConsumerBuilder extends RegexConsumerBuilder {
     protected void buildGroupConsumers(RegexConsumer instance) {
         Log4jConsumer result = instance as Log4jConsumer
         for (Map.Entry<String, List> entry : groupProcessorMap.entrySet()) {
-            final consumer = newConsumer(entry.value)
-            if (consumer instanceof DateFormatConsumer) {
-                consumer.setDateFormat(new SimpleDateFormat(result.timestampFormat))
+            final consumers = entry.value
+            for (Object obj : consumers) {
+                final consumer = newConsumer(obj)
+                if (consumer instanceof DateFormatConsumer) {
+                    consumer.setDateFormat(new SimpleDateFormat(result.timestampFormat))
+                }
+                result.groupConsumer(entry.key, consumer)
             }
-            result.groupConsumer(entry.key, consumer)
         }
     }
 
