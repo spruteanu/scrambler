@@ -15,7 +15,7 @@ class RegexConsumerBuilder extends ConsumerBuilder {
     RegexConsumerBuilder() {
     }
 
-    RegexConsumerBuilder(ContextBuilder contextBuilder, def consumer) {
+    RegexConsumerBuilder(LogContext.Builder contextBuilder, def consumer) {
         super(contextBuilder, consumer)
     }
 
@@ -92,7 +92,7 @@ class RegexConsumerBuilder extends ConsumerBuilder {
             return RegexConsumerBuilder.this
         }
 
-        ContextBuilder endBuilder() {
+        LogContext.Builder endBuilder() {
             RegexConsumerBuilder.this.groupConsumer(group, build())
             return contextBuilder
         }

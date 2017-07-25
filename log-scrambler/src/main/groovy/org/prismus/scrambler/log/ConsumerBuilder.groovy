@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
  */
 @CompileStatic
 class ConsumerBuilder {
-    ContextBuilder contextBuilder
+    LogContext.Builder contextBuilder
     private def consumer
     private Object[] args
 
@@ -21,7 +21,7 @@ class ConsumerBuilder {
     ConsumerBuilder() {
     }
 
-    ConsumerBuilder(ContextBuilder contextBuilder, def consumer, Object... args) {
+    ConsumerBuilder(LogContext.Builder contextBuilder, def consumer, Object... args) {
         this.args = args
         this.contextBuilder = contextBuilder
         this.consumer = consumer
@@ -44,7 +44,7 @@ class ConsumerBuilder {
         return this
     }
 
-    ContextBuilder endBuilder() {
+    LogContext.Builder endBuilder() {
         return contextBuilder
     }
 
