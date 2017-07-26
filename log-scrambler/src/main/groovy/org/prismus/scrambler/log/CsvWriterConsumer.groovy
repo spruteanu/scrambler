@@ -106,7 +106,7 @@ class CsvWriterConsumer implements LogConsumer, Closeable {
             }
         }
         if (includeSource) {
-            values.add("$entry.line;${Objects.toString(entry.source?.toString(), 'not defined')}".toString())
+            values.add("${Objects.toString(entry.source?.toString(), 'not defined')}:$entry.line".toString())
         }
         doWrite(values)
     }

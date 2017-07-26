@@ -2,6 +2,10 @@ package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
+import groovy.util.logging.Log
+import org.apache.commons.lang3.StringUtils
+import org.codehaus.groovy.control.CompilerConfiguration
+import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.springframework.context.ApplicationContext
 
 import java.nio.file.FileVisitOption
@@ -13,6 +17,7 @@ import java.text.SimpleDateFormat
 import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Predicate
+import java.util.logging.Level
 import java.util.regex.Pattern
 import java.util.stream.Collectors
 
@@ -20,6 +25,7 @@ import java.util.stream.Collectors
  * @author Serge Pruteanu
  */
 @CompileStatic
+@Log
 class LogContext implements Iterable<LogEntry> {
     private Map<LogEntry, LogConsumer> sourceConsumerMap = [:]
     private List<LogConsumer> consumers = new ArrayList<LogConsumer>()
@@ -77,7 +83,7 @@ class LogContext implements Iterable<LogEntry> {
         return this
     }
 
-    LogContext addPredicateConsumer(LogConsumer consumer, Predicate predicate) {
+    LogContext predicateConsumer(LogConsumer consumer, Predicate predicate) {
         return addConsumer(new PredicateConsumer(consumer, predicate))
     }
 
@@ -122,11 +128,14 @@ class LogContext implements Iterable<LogEntry> {
         }
     }
 
-    protected void consumeSource(LineReader lineReader, Object sourceName, LogConsumer sourceConsumer) {
+    protected void consumeSource(LineReader lineReader, String sourceName, LogConsumer sourceConsumer) {
         try {
             LogEntry lastEntry = null
             int currentRow = 0
             String line
+            if (sourceName) {
+                log.log(Level.INFO, "Consuming '$sourceName' using: '$sourceConsumer'")
+            }
             while ((line = lineReader.readLine()) != null) {
                 final logEntry = new LogEntry(sourceName, line, ++currentRow)
                 sourceConsumer.consume(logEntry)
@@ -140,6 +149,9 @@ class LogContext implements Iterable<LogEntry> {
                 }
             }
             consumeEntry(sourceConsumer, lastEntry)
+            if (sourceName) {
+                log.log(Level.INFO, "Done consuming '$sourceName' using: '$sourceConsumer'")
+            }
         } finally {
             Utils.closeQuietly(lineReader)
         }
@@ -153,7 +165,7 @@ class LogContext implements Iterable<LogEntry> {
 
     void consume() {
         for (final entry : sourceConsumerMap.entrySet()) {
-            consumeSource(LineReader.toLineReader(entry.key), LineReader.toSourceName(entry.key), entry.value)
+            consumeSource(LineReader.toLineReader(entry.key), LineReader.getSourceName(entry.key), entry.value)
         }
         awaitJobsCompletion()
         closeConsumers()
@@ -190,13 +202,13 @@ class LogContext implements Iterable<LogEntry> {
 
         private LineReader lineReader
         private LogConsumer sourceConsumer
-        private Object sourceName
+        private String sourceName
         private LogEntry lastEntry
         private int currentRow
 
         LogEntryIterator() {
             for (Map.Entry<LogEntry, LogConsumer> entry : sourceConsumerMap.entrySet()) {
-                sources.add(new Tuple(LineReader.toLineReader(entry.key), LineReader.toSourceName(entry.key), entry.value))
+                sources.add(new Tuple(LineReader.toLineReader(entry.key), LineReader.getSourceName(entry.key), entry.value))
             }
         }
 
@@ -302,10 +314,17 @@ class LogContext implements Iterable<LogEntry> {
     }
 
     protected static List<File> listFolderFiles(File folder, String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+        log.log(Level.INFO, "Scanning '$folder.path' for logging sources using: '$fileFilter' filter")
         final Pattern filePattern = ~/${fileFilterToRegex(fileFilter)}/
-        return Files.find(Paths.get(folder.toURI()), 999,
+        final results = Files.find(Paths.get(folder.toURI()), 999,
                 { Path p, BasicFileAttributes bfa -> bfa.isRegularFile() && filePattern.matcher(p.getFileName().toString()).matches() }, FileVisitOption.FOLLOW_LINKS
         ).sorted(fileSorter).map({ it.toFile() }).collect(Collectors.toList())
+        if (results) {
+            log.log(Level.INFO, "Scanning '$folder.path' for logging sources using: '$fileFilter' filter")
+        } else {
+            log.log(Level.WARNING, "No files found in '$folder.path' using '$fileFilter' filter")
+        }
+        return results
     }
 
     /**
@@ -335,6 +354,7 @@ class LogContext implements Iterable<LogEntry> {
 
         @PackageScope
         void buildSourceConsumers() {
+            final List<String> sourceNames = new ArrayList<>()
             for (Map.Entry<LogEntry, Object> entry : sourceConsumerMap.entrySet()) {
                 final value = entry.value
                 LogConsumer sourceConsumer = null
@@ -344,9 +364,39 @@ class LogContext implements Iterable<LogEntry> {
                     sourceConsumer = value.build()
                 }
                 if (sourceConsumer) {
-                    context.addSource(entry.key, checkAsynchronousConsumer(sourceConsumer))
+                    final logEntry = entry.key
+                    context.addSource(logEntry, checkAsynchronousConsumer(sourceConsumer))
+                    final sourceName = LineReader.getSourceName(logEntry)
+                    if (sourceName) {
+                        sourceNames.add(sourceName)
+                    }
                 }
             }
+            int difference = StringUtils.indexOfDifference(sourceNames.toArray() as String[])
+            if (difference > 0) {
+                for (LogEntry logEntry : sourceConsumerMap.keySet()) {
+                    final sourceName = LineReader.getSourceName(logEntry)
+                    if (sourceName) {
+                        int idx = indexOfLastFolderSeparator(sourceName)
+                        if (idx > 0) {
+                            LineReader.addSourceName(logEntry, sourceName.substring(Math.min(idx + 1, Math.max(difference, indexOfLastFolderSeparator(sourceName, difference)))))
+                        }
+                    }
+                }
+            }
+        }
+
+        protected static int indexOfLastFolderSeparator(String sourceName, int sidx = -1) {
+            if (sidx < 0) {
+                sidx = sourceName.length()
+            }
+            def ch = '\\'
+            int idx = sourceName.lastIndexOf(ch, sidx)
+            if (idx < 0) {
+                ch = '/'
+                idx = sourceName.lastIndexOf(ch, sidx)
+            }
+            return idx
         }
 
         @PackageScope
@@ -520,6 +570,11 @@ class LogContext implements Iterable<LogEntry> {
             return builder
         }
 
+        Log4jConsumerBuilder log4jSourceFolder(String folder, String conversionPattern,
+                                               String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+            return log4jSourceFolder(new File(folder), conversionPattern, fileFilter, fileSorter)
+        }
+
         Builder sourceFolder(String path, LogConsumer consumer,
                              String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
             final folder = new File(path)
@@ -540,6 +595,24 @@ class LogContext implements Iterable<LogEntry> {
             return context
         }
 
+        private Builder init(String... args) {
+            if (!args) {
+                return this
+            }
+            final unknownArgs = []
+            for (String arg : args) {
+                if (arg.endsWith('groovy')) {
+                    initGroovyScriptBuilder(this, loadResourceText(arg))
+                } else {
+                    unknownArgs.add(arg)
+                }
+            }
+            if (unknownArgs) {
+                throw new IllegalArgumentException("Unsupported/unknown arguments: '${unknownArgs.join(', ')}'")
+            }
+            return this
+        }
+
         static class ContextThreadFactory implements ThreadFactory {
             private AtomicInteger count
 
@@ -553,8 +626,47 @@ class LogContext implements Iterable<LogEntry> {
         }
     }
 
-    static Builder builder() {
-        return new Builder()
+    private static GroovyShell checkCreateShell(Properties parserProperties = new Properties()) {
+        final compilerConfiguration = (parserProperties != null && parserProperties.size() > 0) ? new CompilerConfiguration(parserProperties) : new CompilerConfiguration()
+        compilerConfiguration.setScriptBaseClass(DelegatingScript.name)
+
+        final importCustomizer = new ImportCustomizer()
+        importCustomizer.addStarImports(LogContext.package.name)
+        compilerConfiguration.addCompilationCustomizers(importCustomizer)
+
+        return new GroovyShell(compilerConfiguration)
+    }
+
+    private static String loadResourceText(String resource) {
+        final String text
+        if (resource.endsWith('groovy')) {
+            final URL url = LogContext.getResource(resource)
+            if (url == null) {
+                final file = new File(resource)
+                if (!file.exists()) {
+                    throw new IllegalArgumentException(String.format("Not found resource for: %s", resource))
+                } else {
+                    text = file.text
+                }
+            } else {
+                text = url.text
+            }
+        } else {
+            text = resource
+        }
+        return text
+    }
+
+    private static Builder initGroovyScriptBuilder(Builder builder, String definitionText) {
+        final shell = checkCreateShell()
+        final script = (DelegatingScript) shell.parse(definitionText)
+        script.setDelegate(builder)
+        script.run()
+        return builder
+    }
+
+    static Builder builder(String... args) {
+        return new Builder().init(args)
     }
 
 }

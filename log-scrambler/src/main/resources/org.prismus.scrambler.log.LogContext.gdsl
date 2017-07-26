@@ -1,0 +1,12 @@
+/**
+ * @author Serge Pruteanu
+ */
+contributor context(scope: scriptScope(name: ~/(?:.+log).groovy/)), {
+
+    findClass('org.prismus.scrambler.log.LogContext.Builder')?.methods?.each {
+        if (!it.isConstructor()) {
+            add it
+        }
+    }
+
+}

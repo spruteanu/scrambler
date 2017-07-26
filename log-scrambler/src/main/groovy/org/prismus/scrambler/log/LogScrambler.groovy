@@ -7,5 +7,10 @@ import groovy.transform.CompileStatic
  */
 @CompileStatic
 class LogScrambler {
+    // todo Serge: is facade needed?
+
+    static void main(String[] args) {
+        LogContext.builder(args).build().consume()
+    }
 
 }

@@ -45,7 +45,7 @@ class LogContextTest extends Specification {
          Log4jConsumer.MESSAGE] == logContext.consumers.get(0).columns
     }
 
-    void 'verify log entry iterator one/multiple sources'() {
+    void 'log entry iterator from one/multiple source(s)'() {
         final folder = new File(LogContextTest.protectionDomain.codeSource.location.path)
         final stringWriter = new StringWriter()
 
@@ -71,10 +71,19 @@ class LogContextTest extends Specification {
                 .log4jSourceFolder(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).endBuilder()
                 .csvWriter(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.TIMESTAMP, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .build())
+        ['sample-1.log', 'sample-2.log'] == logContext.sourceConsumerMap.keySet().collect { LineReader.getSourceName(it)}.sort()
         null != (iterator = logContext.iterator())
         null != (result = iterator.toList())
         29 == result.size()
     }
 
+    void 'parse log entries using groovy script definition'() {
+        given:
+        final logContext = LogContext.builder('/sample-log.groovy').build()
+        def iterator = logContext.iterator()
+
+        expect:
+        29 == iterator.toList().size()
+    }
 
 }

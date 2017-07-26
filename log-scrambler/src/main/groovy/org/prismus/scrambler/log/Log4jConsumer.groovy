@@ -163,7 +163,7 @@ class Log4jConsumer extends RegexConsumer {
                 processor.group(LOGGING_DURATION)
                 break
             case 't': // name of the thread that generated the logging event.
-                regEx = '[^ ]+'
+                regEx = '.+'
                 processor.group(THREAD_NAME)
                 break
             case 'x': // NDC (nested diagnostic context) associated with the thread that generated the logging event.

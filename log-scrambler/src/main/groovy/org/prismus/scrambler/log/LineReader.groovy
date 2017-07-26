@@ -9,6 +9,7 @@ abstract class LineReader implements Closeable {
     static final String LINE_BREAK = System.getProperty('line.separator')
     abstract String readLine()
 
+    @SuppressWarnings("GroovyAssignabilityCheck")
     static LineReader toLineReader(LogEntry entry) {
         return toLineReader(entry.source)
     }
@@ -39,18 +40,18 @@ abstract class LineReader implements Closeable {
     }
 
     @CompileStatic
-    static LogEntry newLogSource(Object source, Object sourceName) {
+    static LogEntry newLogSource(Object source, String sourceName) {
         return addSourceName(new LogEntry(source: source), sourceName)
     }
 
     @CompileStatic
-    private static LogEntry addSourceName(LogEntry entry, Object sourceName) {
+    static LogEntry addSourceName(LogEntry entry, String sourceName) {
         entry.putLogValue('SourceName', sourceName)
         return entry
     }
 
     @CompileStatic
-    static Object toSourceName(LogEntry entry) {
+    static String getSourceName(LogEntry entry) {
         return entry.getLogValue('SourceName')
     }
 
