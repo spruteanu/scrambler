@@ -320,7 +320,7 @@ class LogContext implements Iterable<LogEntry> {
                 { Path p, BasicFileAttributes bfa -> bfa.isRegularFile() && filePattern.matcher(p.getFileName().toString()).matches() }, FileVisitOption.FOLLOW_LINKS
         ).sorted(fileSorter).map({ it.toFile() }).collect(Collectors.toList())
         if (results) {
-            log.log(Level.INFO, "Scanning '$folder.path' for logging sources using: '$fileFilter' filter")
+            log.log(Level.INFO, "Found '${results.size()}' files in '$folder.path'")
         } else {
             log.log(Level.WARNING, "No files found in '$folder.path' using '$fileFilter' filter")
         }
