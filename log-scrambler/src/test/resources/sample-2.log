@@ -8,7 +8,7 @@ ConversionPattern=%-4r [%t] %-5p %c %x - %m%n
 0    [main] WARN  com.vaannila.helloworld.HelloWorld  - Sample warn message
 0    [main] ERROR com.vaannila.helloworld.HelloWorld  - Sample error message
 0    [main] FATAL com.vaannila.helloworld.HelloWorld  - Sample fatal message
-Exception in thread "main" java.lang.NullPointerException
-        at com.example.myproject.Book.getTitle(Book.java:16)
-        at com.example.myproject.Author.getBookTitles(Author.java:25)
-        at com.example.myproject.Bootstrap.main(Bootstrap.java:14)
+Exception in thread "main" java.lang.NullPointerException:
+    at com.example.myproject.Book.getTitle(Book.java:16)
+    at com.example.myproject.Author.getBookTitles(Author.java:25)
+    at com.example.myproject.Bootstrap.main(Bootstrap.java:14)

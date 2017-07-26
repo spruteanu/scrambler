@@ -116,7 +116,7 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
                 .group('Caller', 3)
                 .group('Line', 4)
                 .group('Message', 5)
-                .groupConsumer('Message', new RegexConsumer(~/(?ms)(${MessageConsumer.EXCEPTION_REGEX})/, 'Message').group('Exception', 1))
+                .groupConsumer('Message', new RegexConsumer(~/(?ms)(${MessageExceptionConsumer.EXCEPTION_REGEX})/, 'Message').group('Exception', 1))
                 .consume(logEntry)
         false == logEntry.isEmpty()
         """OMG, Something bad happened

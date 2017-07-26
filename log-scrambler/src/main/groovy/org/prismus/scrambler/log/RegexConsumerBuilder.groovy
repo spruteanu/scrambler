@@ -55,7 +55,7 @@ class RegexConsumerBuilder extends ConsumerBuilder {
 
     RegexConsumerBuilder messageGroup(String group) {
         indexedGroup(group, (Integer)null)
-        groupConsumer(group, new MessageConsumer(group))
+        groupConsumer(group, new MessageExceptionConsumer(group))
         return this
     }
 

@@ -17,8 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Predicate
 import java.util.regex.Pattern
 import java.util.stream.Collectors
-import java.util.stream.Stream
-import java.util.stream.StreamSupport
 
 /**
  * @author Serge Pruteanu
@@ -213,7 +211,7 @@ class LogContext implements Iterable<LogEntry> {
 //    }
 
     private class LogEntryIterator implements Iterator<LogEntry> {
-        private Queue<Tuple> sources = []
+        private Queue<Tuple> sources = new LinkedList<>()
 
         private LineReader lineReader
         private LogConsumer sourceConsumer
@@ -225,10 +223,9 @@ class LogContext implements Iterable<LogEntry> {
             for (Map.Entry<LogEntry, LogConsumer> entry : sourceConsumerMap.entrySet()) {
                 sources.add(new Tuple(LineReader.toLineReader(entry.key), LineReader.toSourceName(entry.key), entry.value))
             }
-            nextSource()
         }
 
-        protected void nextSource() {
+        protected void openNextSource() {
             lastEntry = null
             currentRow = 0
             if (sources.size()) {
@@ -236,12 +233,15 @@ class LogContext implements Iterable<LogEntry> {
                 lineReader = tuple.get(0) as LineReader
                 sourceName = tuple.get(1)
                 sourceConsumer = tuple.get(2) as LogConsumer
-                doNext()
+                doNext(true)
             }
         }
 
         @Override
         boolean hasNext() {
+            if (lastEntry == null && sources.size() > 0) {
+                openNextSource()
+            }
             boolean result = lastEntry != null
             if (!result) {
                 LogContext.this.closeConsumers()
@@ -249,10 +249,10 @@ class LogContext implements Iterable<LogEntry> {
             return result
         }
 
-        protected LogEntry doNext() {
+        protected LogEntry doNext(boolean sourceOpen = false) {
             LogEntry result = null
-            String line
-            while ((line = lineReader.readLine()) != null && result == null) {
+            String line = null
+            while (result == null && (line = lineReader.readLine()) != null) {
                 final logEntry = new LogEntry(sourceName, line, ++currentRow)
                 sourceConsumer.consume(logEntry)
                 if (logEntry.isEmpty()) {
@@ -261,16 +261,16 @@ class LogContext implements Iterable<LogEntry> {
                     }
                 } else {
                     consumeEntry(sourceConsumer, lastEntry)
-                    result = lastEntry
+                    result = sourceOpen ? logEntry : lastEntry
                     lastEntry = logEntry
                 }
             }
             if (result == null) {
                 consumeEntry(sourceConsumer, lastEntry)
                 result = lastEntry
-                nextSource()
-                if (lastEntry) {
-                    result = doNext()
+                if (line == null) {
+                    Utils.closeQuietly(lineReader)
+                    lastEntry = null
                 }
             }
             return result

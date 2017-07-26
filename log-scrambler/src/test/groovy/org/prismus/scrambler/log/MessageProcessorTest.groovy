@@ -10,7 +10,7 @@ class MessageProcessorTest extends Specification {
 
     void 'verify message processor'() {
         final processor = Log4jConsumer.ofPattern('%5p | %d | %F | %L | %m%n')
-                .groupConsumer(Log4jConsumer.MESSAGE, new MessageConsumer(Log4jConsumer.MESSAGE))
+                .groupConsumer(Log4jConsumer.MESSAGE, new MessageExceptionConsumer(Log4jConsumer.MESSAGE))
 
         LogEntry logEntry
         expect:
@@ -76,7 +76,7 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
 """))
         processor.consume(logEntry)
 
-        'OMG, Something bad happened' == logEntry.getLogValue(MessageConsumer.ERROR_MESSAGE)
+        'OMG, Something bad happened' == logEntry.getLogValue(MessageExceptionConsumer.ERROR_MESSAGE)
         """javax.servlet.ServletException: Something bad happened
     at com.example.myproject.OpenSessionInViewFilter.doFilter(OpenSessionInViewFilter.java:60)
     at com.example.myproject.ExceptionHandlerFilter.doFilter(ExceptionHandlerFilter.java:28)
@@ -130,7 +130,7 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
     at com.mchange.v2.c3p0.impl.NewProxyPreparedStatement.executeUpdate(NewProxyPreparedStatement.java:105)
     at org.hibernate.cacheKey.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:57)
     ... 54 more
-""" == logEntry.getLogValue(MessageConsumer.EXCEPTION)
+""" == logEntry.getLogValue(MessageExceptionConsumer.EXCEPTION)
     }
 
 }

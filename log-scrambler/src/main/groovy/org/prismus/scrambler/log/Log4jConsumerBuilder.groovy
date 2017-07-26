@@ -22,7 +22,7 @@ class Log4jConsumerBuilder extends RegexConsumerBuilder {
     }
 
     Log4jConsumerBuilder messageGroup() {
-        groupConsumer(Log4jConsumer.MESSAGE, new MessageConsumer(Log4jConsumer.MESSAGE))
+        groupConsumer(Log4jConsumer.MESSAGE, new MessageExceptionConsumer(Log4jConsumer.MESSAGE))
         return this
     }
 
