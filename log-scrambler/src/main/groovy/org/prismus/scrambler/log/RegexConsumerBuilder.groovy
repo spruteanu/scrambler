@@ -69,9 +69,8 @@ class RegexConsumerBuilder extends ConsumerBuilder {
         }
     }
 
-    @Override
-    protected RegexConsumer buildConsumer() {
-        final result = super.buildConsumer() as RegexConsumer
+    RegexConsumer build() {
+        final result = super.build() as RegexConsumer
         if (groupIndexMap) {
             result.indexedGroups(groupIndexMap)
         }

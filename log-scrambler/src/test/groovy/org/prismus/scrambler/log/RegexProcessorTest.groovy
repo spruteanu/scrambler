@@ -108,8 +108,7 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
     at org.hsqldb.jdbc.jdbcPreparedStatement.executeUpdate(Unknown Source)
     at com.mchange.v2.c3p0.impl.NewProxyPreparedStatement.executeUpdate(NewProxyPreparedStatement.java:105)
     at org.hibernate.cacheKey.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:57)
-    ... 54 more
-"""))
+    ... 54 more"""))
         RegexConsumer.of(~/(?ms)(\w+) \| (\w+-\w+-\w+ \w+:\w+:\w+.\w+) \| (\w+\.\w+) \| (\d+) \| (.+)/)
                 .group('LogLevel', 1)
                 .group('Timestamp', 2)
@@ -172,8 +171,7 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
     at org.hsqldb.jdbc.jdbcPreparedStatement.executeUpdate(Unknown Source)
     at com.mchange.v2.c3p0.impl.NewProxyPreparedStatement.executeUpdate(NewProxyPreparedStatement.java:105)
     at org.hibernate.cacheKey.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:57)
-    ... 54 more
-""" == logEntry.getLogValue('Exception')
+    ... 54 more""" == logEntry.getLogValue('Exception')
     }
 
 }

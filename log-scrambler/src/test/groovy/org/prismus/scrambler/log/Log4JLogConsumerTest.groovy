@@ -78,7 +78,7 @@ class Log4JLogConsumerTest extends Specification {
         processor.consume(logEntry)
 
         expect:
-        '0   ' == logEntry.getLogValue('logTime')
+        '0' == logEntry.getLogValue('logTime')
         'main' == logEntry.getLogValue('ThreadName')
         'DEBUG' == logEntry.getLogValue('LogLevel')
         'com.vaannila.helloworld.HelloWorld' == logEntry.getLogValue('CallerClass')
@@ -207,8 +207,7 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
     at org.hsqldb.jdbc.jdbcPreparedStatement.executeUpdate(Unknown Source)
     at com.mchange.v2.c3p0.impl.NewProxyPreparedStatement.executeUpdate(NewProxyPreparedStatement.java:105)
     at org.hibernate.cacheKey.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:57)
-    ... 54 more
-""" == logEntry.getLogValue('Message')
+    ... 54 more""" == logEntry.getLogValue('Message')
     }
 
     void 'verify log4j entry processor'() {
@@ -217,7 +216,7 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
         expect:
         processor.consume(logEntry)
         [
-                (LOGGING_DURATION): '0   ',
+                (LOGGING_DURATION): '0',
                 (THREAD_NAME)     : 'main',
                 (PRIORITY)        : 'DEBUG',
                 (CALLER_CLASS)    : 'com.vaannila.helloworld.HelloWorld',

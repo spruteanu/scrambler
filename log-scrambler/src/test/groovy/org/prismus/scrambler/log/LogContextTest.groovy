@@ -1,6 +1,5 @@
 package org.prismus.scrambler.log
 
-import com.google.common.collect.Lists
 import spock.lang.Specification
 
 /**
@@ -25,7 +24,7 @@ class LogContextTest extends Specification {
         def logContext = new LogContext.Builder()
                 .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',)
                 .dateFormatGroup().messageGroup().endBuilder()
-                .csvCollector(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.TIMESTAMP, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .csvWriter(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.TIMESTAMP, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .withConsumer({ LogEntry logEntry -> listCollector.add(logEntry) })
                 .build()
         logContext.consume()
@@ -39,7 +38,7 @@ class LogContextTest extends Specification {
         and: 'verify csv collector columns are populated with groups defined in source consumer'
         null != (logContext = new LogContext.Builder()
                 .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).endBuilder()
-                .csvCollector(stringWriter)
+                .csvWriter(stringWriter)
                 .build())
         [Log4jConsumer.PRIORITY, Log4jConsumer.TIMESTAMP,
          Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE,
@@ -54,10 +53,10 @@ class LogContextTest extends Specification {
         def logContext = new LogContext.Builder()
                 .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',)
                 .dateFormatGroup().messageGroup().endBuilder()
-                .csvCollector(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.TIMESTAMP, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .csvWriter(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.TIMESTAMP, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .build()
         def iterator = logContext.iterator()
-        List result = Lists.newArrayList(iterator)
+        List result = iterator.toList()
 
         expect:
         0 < stringWriter.toString().length()
@@ -68,12 +67,12 @@ class LogContextTest extends Specification {
         and: 'verify multiple sources iterator'
         null != (logContext = new LogContext.Builder()
                 .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).endBuilder()
-                .csvCollector(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.TIMESTAMP, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .csvWriter(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.TIMESTAMP, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .log4jSourceFolder(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).endBuilder()
-                .csvCollector(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.TIMESTAMP, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .csvWriter(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.TIMESTAMP, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .build())
         null != (iterator = logContext.iterator())
-        null != (result = Lists.newArrayList(iterator))
+        null != (result = iterator.toList())
         29 == result.size()
     }
 

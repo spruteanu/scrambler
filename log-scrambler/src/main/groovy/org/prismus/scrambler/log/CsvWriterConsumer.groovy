@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils
  * @author Serge Pruteanu
  */
 @CompileStatic
-class CsvOutputConsumer implements LogConsumer, Closeable {
+class CsvWriterConsumer implements LogConsumer, Closeable {
     Writer writer
     List<String> columns
 
@@ -15,14 +15,15 @@ class CsvOutputConsumer implements LogConsumer, Closeable {
     private int nOutput
 
     boolean writeHeader
+    boolean allValues
     boolean includeSource
     String separator = ', '
     String fieldSeparator = ''
 
-    CsvOutputConsumer() {
+    CsvWriterConsumer() {
     }
 
-    CsvOutputConsumer(Writer writer, List<String> columns) {
+    CsvWriterConsumer(Writer writer, List<String> columns) {
         this.writer = writer
         this.columns = columns
     }
@@ -36,23 +37,23 @@ class CsvOutputConsumer implements LogConsumer, Closeable {
         adjustSeparator(fieldSeparator)
     }
 
-    CsvOutputConsumer withSeparators(String separator, String fieldSeparator = '') {
+    CsvWriterConsumer withSeparators(String separator, String fieldSeparator = '') {
         this.separator = separator
         setFieldSeparator(fieldSeparator)
         return this
     }
 
-    CsvOutputConsumer writeHeader() {
+    CsvWriterConsumer writeHeader() {
         writeHeader = true
         return this
     }
 
-    CsvOutputConsumer includeSource() {
+    CsvWriterConsumer includeSource() {
         includeSource
         return this
     }
 
-    CsvOutputConsumer flushAt(int flushAt = 100) {
+    CsvWriterConsumer flushAt(int flushAt = 100) {
         this.flushAt = flushAt
         return this
     }
@@ -79,9 +80,9 @@ class CsvOutputConsumer implements LogConsumer, Closeable {
         return result.join(separator)
     }
 
-    protected synchronized void doWrite(ArrayList<String> values) {
+    protected synchronized void doWrite(List<String> values) {
         if (writeHeader && !nOutput) {
-            writeLine(buildLine(columns))
+            writeLine(buildLine(columns + (includeSource ? 'Source': '')))
         }
         writeLine(buildLine(values))
         nOutput++
@@ -93,11 +94,19 @@ class CsvOutputConsumer implements LogConsumer, Closeable {
     @Override
     void consume(LogEntry entry) {
         final values = new ArrayList<String>(columns.size())
+        final logValueMap = entry.logValueMap
         for (String column : columns) {
-            values.add(Objects.toString(entry.getLogValue(column)?.toString(), ''))
+            values.add(Objects.toString(logValueMap.get(column)?.toString(), ''))
+        }
+        if (allValues) {
+            final notIncludedColumns = new LinkedHashSet(logValueMap.keySet())
+            notIncludedColumns.removeAll(columns)
+            if (notIncludedColumns) {
+                values.addAll(logValueMap.subMap(notIncludedColumns).values())
+            }
         }
         if (includeSource) {
-            values.add("Line: $entry.line; Source: ${Objects.toString(entry.source?.toString(), 'unspecified')}".toString())
+            values.add("$entry.line;${Objects.toString(entry.source?.toString(), 'not defined')}".toString())
         }
         doWrite(values)
     }
@@ -107,15 +116,15 @@ class CsvOutputConsumer implements LogConsumer, Closeable {
         Utils.closeQuietly(writer)
     }
 
-    static CsvOutputConsumer of(Writer writer, String... columns) {
-        return new CsvOutputConsumer(writer: writer, columns: Arrays.asList(columns))
+    static CsvWriterConsumer of(Writer writer, String... columns) {
+        return new CsvWriterConsumer(writer: writer, columns: Arrays.asList(columns))
     }
 
-    static CsvOutputConsumer of(File file, String... columns) {
-        return new CsvOutputConsumer(writer: new BufferedWriter(new FileWriter(file)), columns: Arrays.asList(columns))
+    static CsvWriterConsumer of(File file, String... columns) {
+        return new CsvWriterConsumer(writer: new BufferedWriter(new FileWriter(file)), columns: Arrays.asList(columns))
     }
 
-    static CsvOutputConsumer of(String filePath, String... columns) {
+    static CsvWriterConsumer of(String filePath, String... columns) {
         return of(new File(filePath), columns)
     }
 

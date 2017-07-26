@@ -46,6 +46,7 @@ class MessageExceptionConsumer implements LogConsumer {
 
     @PackageScope
     Throwable toException(String exception) {
+        // todo Serge: is it needed to convert to exception object? possible yes, if to lookup for an exception of specific type
         Throwable result = null
         if (!exception) {
             return result

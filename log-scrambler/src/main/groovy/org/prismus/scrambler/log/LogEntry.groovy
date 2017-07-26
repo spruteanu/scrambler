@@ -13,7 +13,6 @@ class LogEntry implements Cloneable {
 
     Object source
     Object row
-    String cacheKey
 
     Map logValueMap = new ConcurrentHashMap()
 
@@ -49,15 +48,6 @@ class LogEntry implements Cloneable {
 
     boolean isEmpty() {
         return logValueMap.isEmpty()
-    }
-
-    LogEntry cacheable(Object cacheKey) {
-        this.cacheKey = cacheKey
-        return this
-    }
-
-    boolean isCacheable() {
-        return cacheKey != null
     }
 
     @Override

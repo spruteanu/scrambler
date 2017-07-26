@@ -1,7 +1,5 @@
 package org.prismus.scrambler.log
 
-import com.google.common.cache.Cache
-import com.google.common.cache.CacheBuilder
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 import org.springframework.context.ApplicationContext
@@ -23,7 +21,6 @@ import java.util.stream.Collectors
  */
 @CompileStatic
 class LogContext implements Iterable<LogEntry> {
-    Cache<Object, LogEntry> cache
     private Map<LogEntry, LogConsumer> sourceConsumerMap = [:]
     private List<LogConsumer> consumers = new ArrayList<LogConsumer>()
     private List<Closeable> closeables = []
@@ -54,11 +51,6 @@ class LogContext implements Iterable<LogEntry> {
         return this
     }
 
-    LogContext withCache(Cache cache) {
-        this.cache = cache
-        return this
-    }
-
     LogContext addSource(LogEntry source, LogConsumer sourceConsumer) {
         sourceConsumerMap.put(source, sourceConsumer)
         return this
@@ -69,8 +61,8 @@ class LogContext implements Iterable<LogEntry> {
         if (consumer instanceof Closeable) {
             closeables.add(consumer as Closeable)
         }
-        if (consumer instanceof CsvOutputConsumer) {
-            final csvOutputConsumer = (CsvOutputConsumer) consumer
+        if (consumer instanceof CsvWriterConsumer) {
+            final csvOutputConsumer = (CsvWriterConsumer) consumer
             if (!csvOutputConsumer.columns) {
                 for (LogConsumer sourceConsumer : sourceConsumerMap.values()) {
                     if (sourceConsumer instanceof RegexConsumer) {
@@ -89,27 +81,10 @@ class LogContext implements Iterable<LogEntry> {
         return addConsumer(new PredicateConsumer(consumer, predicate))
     }
 
-    protected synchronized void cacheEntry(LogEntry entry) {
-        final cacheKey = entry.cacheKey
-        final cachedEntry = cache.getIfPresent(cacheKey)
-        if (cachedEntry) {
-            cachedEntry.logValueMap.putAll(entry.logValueMap)
-        } else {
-            cache.put(cacheKey, entry)
-        }
-    }
-
-    protected void checkCacheable(LogEntry entry) {
-        if (entry.isCacheable() && cache) {
-            cacheEntry(entry)
-        }
-    }
-
     protected LogEntry consumeEntry(LogEntry entry) {
         for (LogConsumer consumer : consumers) {
             consumer.consume(entry)
         }
-        checkCacheable(entry)
         return entry
     }
 
@@ -294,7 +269,6 @@ class LogContext implements Iterable<LogEntry> {
         @Override
         Void call() throws Exception {
             consumer.consume(logEntry)
-            checkCacheable(logEntry)
             return null
         }
     }
@@ -352,12 +326,6 @@ class LogContext implements Iterable<LogEntry> {
 
         Builder() {
             context = new LogContext()
-        }
-
-        private Cache newCache(int cacheSize = 1024 * 1024) {
-            return CacheBuilder.newBuilder()
-                    .maximumSize(cacheSize)
-                    .build()
         }
 
         @PackageScope
@@ -437,32 +405,32 @@ class LogContext implements Iterable<LogEntry> {
             return this
         }
 
-        Builder csvCollector(Writer writer, String... columns) {
-            return withConsumer(CsvOutputConsumer.of(writer, columns))
+        Builder csvWriter(Writer writer, String... columns) {
+            return withConsumer(CsvWriterConsumer.of(writer, columns))
         }
 
-        Builder csvCollector(File file, String... columns) {
-            return withConsumer(CsvOutputConsumer.of(file, columns))
+        Builder csvWriter(File file, String... columns) {
+            return withConsumer(CsvWriterConsumer.of(file, columns))
         }
 
-        Builder csvCollector(String filePath, String... columns) {
-            return withConsumer(CsvOutputConsumer.of(filePath, columns))
+        Builder csvWriter(String filePath, String... columns) {
+            return withConsumer(CsvWriterConsumer.of(filePath, columns))
         }
 
-        ConsumerBuilder csvCollectorBuilder(Writer writer, String... columns) {
-            final builder = new ConsumerBuilder(this, CsvOutputConsumer.of(writer, columns))
+        ConsumerBuilder csvWriterBuilder(Writer writer, String... columns) {
+            final builder = new ConsumerBuilder(this, CsvWriterConsumer.of(writer, columns))
             consumerBuilders.add(builder)
             return builder
         }
 
-        ConsumerBuilder csvCollectorBuilder(File file, String... columns) {
-            final builder = new ConsumerBuilder(this, CsvOutputConsumer.of(file, columns))
+        ConsumerBuilder csvWriterBuilder(File file, String... columns) {
+            final builder = new ConsumerBuilder(this, CsvWriterConsumer.of(file, columns))
             consumerBuilders.add(builder)
             return builder
         }
 
-        ConsumerBuilder csvCollectorBuilder(String filePath, String... columns) {
-            final builder = new ConsumerBuilder(this, CsvOutputConsumer.of(filePath, columns))
+        ConsumerBuilder csvWriterBuilder(String filePath, String... columns) {
+            final builder = new ConsumerBuilder(this, CsvWriterConsumer.of(filePath, columns))
             consumerBuilders.add(builder)
             return builder
         }
@@ -564,7 +532,7 @@ class LogContext implements Iterable<LogEntry> {
         }
 
         LogContext build() {
-            context.withExecutorService(executorService, defaultTimeout, defaultUnit).withCache(newCache())
+            context.withExecutorService(executorService, defaultTimeout, defaultUnit)
             buildSourceConsumers()
             buildLogEntryConsumers()
             sourceConsumerMap.clear()

@@ -1,6 +1,5 @@
 package org.prismus.scrambler.log
 
-import com.google.common.base.Preconditions
 import groovy.transform.CompileStatic
 
 import java.util.regex.Matcher
@@ -38,8 +37,8 @@ class RegexConsumer implements LogConsumer {
     }
 
     RegexConsumer group(String group, Integer index = null, LogConsumer consumer = null) {
-        Preconditions.checkArgument(index > 0, 'Group index should be a positive number')
-        Preconditions.checkNotNull(group, 'Group value name should be provided')
+        assert index > 0, 'Group index should be a positive number'
+        Objects.requireNonNull(group, 'Group value name should be provided')
         groupIndexMap.put(group, index)
         if (consumer) {
             addConsumer(group, consumer)
@@ -48,22 +47,22 @@ class RegexConsumer implements LogConsumer {
     }
 
     RegexConsumer group(String group, LogConsumer consumer) {
-        Preconditions.checkNotNull(group, "Group Name can't be null")
-        Preconditions.checkNotNull(consumer, 'Entry consumer instance should be provided')
+        Objects.requireNonNull(group, "Group Name can't be null")
+        Objects.requireNonNull(consumer, 'Entry consumer instance should be provided')
         addConsumer(group, consumer)
         groupIndexMap.put(group, null)
         return this
     }
 
     RegexConsumer groupConsumer(String group, LogConsumer consumer) {
-        Preconditions.checkNotNull(group, "Group Name can't be null")
-        Preconditions.checkNotNull(consumer, 'Entry consumer instance should be provided')
+        Objects.requireNonNull(group, "Group Name can't be null")
+        Objects.requireNonNull(consumer, 'Entry consumer instance should be provided')
         addConsumer(group, consumer)
         return this
     }
 
     RegexConsumer indexedGroups(Map<String, Integer> groupIndexMap) {
-        Preconditions.checkNotNull(groupIndexMap, 'Group value map should not be null')
+        Objects.requireNonNull(groupIndexMap, 'Group value map should not be null')
         this.groupIndexMap.putAll(groupIndexMap)
         return this
     }
@@ -97,7 +96,7 @@ class RegexConsumer implements LogConsumer {
                     }
                 } catch (Exception ignore) { }
                 if (groupValue) {
-                    entry.putLogValue(key, groupValue)
+                    entry.putLogValue(key, groupValue.trim())
                     final List<LogConsumer> processors = getConsumer(key)
                     for (LogConsumer consumer : processors) {
                         consumer.consume(entry)

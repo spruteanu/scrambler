@@ -2,8 +2,6 @@ package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
 
-import java.util.concurrent.TimeUnit
-
 /**
  * @author Serge Pruteanu
  */
@@ -14,9 +12,6 @@ class ConsumerBuilder {
     private Object[] args
 
     Map<String, Object> consumerProperties
-    boolean asynchronous
-    int timeout
-    TimeUnit unit = TimeUnit.MILLISECONDS
 
     ConsumerBuilder() {
     }
@@ -29,13 +24,6 @@ class ConsumerBuilder {
 
     ConsumerBuilder forConsumer(def consumer) {
         this.consumer = consumer
-        return this
-    }
-
-    ConsumerBuilder asynchronous(int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
-        this.timeout = timeout
-        this.unit = unit
-        asynchronous = true
         return this
     }
 
@@ -60,20 +48,12 @@ class ConsumerBuilder {
         return result
     }
 
-    protected LogConsumer buildConsumer() {
+    LogConsumer build() {
         LogConsumer result = newConsumer(consumer, args)
         if (consumerProperties) {
             DefaultObjectProvider.setInstanceProperties(result, consumerProperties)
         }
         return result
-    }
-
-    protected LogConsumer checkAsynchronousConsumer(LogConsumer result) {
-        return (asynchronous ? contextBuilder.newAsynchronousConsumer(result, timeout, unit) : result)
-    }
-
-    LogConsumer build() {
-        return checkAsynchronousConsumer(buildConsumer())
     }
 
 }
