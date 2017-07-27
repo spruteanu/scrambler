@@ -17,7 +17,7 @@ class CsvWriterConsumer implements LogConsumer, Closeable {
     boolean writeHeader
     boolean allValues
     boolean includeSource
-    String separator = ', '
+    String separator = ','
     String fieldSeparator = ''
 
     CsvWriterConsumer() {
@@ -26,15 +26,6 @@ class CsvWriterConsumer implements LogConsumer, Closeable {
     CsvWriterConsumer(Writer writer, List<String> columns) {
         this.writer = writer
         this.columns = columns
-    }
-
-    protected void adjustSeparator(String fieldSeparator) {
-        this.separator = fieldSeparator + separator + fieldSeparator
-    }
-
-    void setFieldSeparator(String fieldSeparator) {
-        this.fieldSeparator = fieldSeparator
-        adjustSeparator(fieldSeparator)
     }
 
     CsvWriterConsumer withSeparators(String separator, String fieldSeparator = '') {
@@ -59,13 +50,7 @@ class CsvWriterConsumer implements LogConsumer, Closeable {
     }
 
     protected void writeLine(String line) {
-        if (fieldSeparator) {
-            writer.write(fieldSeparator)
-            writer.write(line)
-            writer.write(fieldSeparator)
-        } else {
-            writer.write(line)
-        }
+        writer.write(line)
         writer.write(LineReader.LINE_BREAK)
     }
 
@@ -74,7 +59,12 @@ class CsvWriterConsumer implements LogConsumer, Closeable {
         if (fieldSeparator) {
             result = new ArrayList<String>(values.size())
             for (String value : values) {
-                result.add(StringUtils.replaceChars(value, fieldSeparator, fieldSeparator + fieldSeparator))
+                if (value.contains(separator)) {
+                    value = fieldSeparator + value + fieldSeparator
+                } else if (value.contains(fieldSeparator)) {
+                    value = StringUtils.replaceChars(value, fieldSeparator, fieldSeparator + fieldSeparator)
+                }
+                result.add(value)
             }
         }
         return result.join(separator)

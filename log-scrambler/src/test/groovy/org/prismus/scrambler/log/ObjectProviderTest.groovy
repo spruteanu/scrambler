@@ -35,7 +35,6 @@ class ObjectProviderTest extends Specification {
         100 == instance.flushAt
         ['t1', 't2', 't3'] == instance.columns
         '"' == instance.fieldSeparator
-        '", "' == instance.separator
 
         and: 'verify unknown property setting'
         try {

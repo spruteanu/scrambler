@@ -395,12 +395,7 @@ class LogContext implements Iterable<LogEntry> {
                 ch = '/'
                 idx = sourceName.lastIndexOf(ch, sidx)
             }
-            if (idx < 0) {
-                idx = sidx
-            } else {
-                idx++
-            }
-            return idx
+            return idx < 0 ? sidx : idx + 1
         }
 
         @PackageScope
