@@ -378,9 +378,8 @@ class LogContext implements Iterable<LogEntry> {
                     final sourceName = LineReader.getSourceName(logEntry)
                     if (sourceName) {
                         int idx = indexOfLastFolderSeparator(sourceName)
-                        if (idx > 0) {
-                            LineReader.addSourceName(logEntry, sourceName.substring(Math.min(idx + 1, Math.max(difference, indexOfLastFolderSeparator(sourceName, difference)))))
-                        }
+                        difference = Math.min(difference, indexOfLastFolderSeparator(sourceName, difference))
+                        LineReader.addSourceName(logEntry, sourceName.substring(Math.min(idx, difference)))
                     }
                 }
             }
@@ -395,6 +394,11 @@ class LogContext implements Iterable<LogEntry> {
             if (idx < 0) {
                 ch = '/'
                 idx = sourceName.lastIndexOf(ch, sidx)
+            }
+            if (idx < 0) {
+                idx = sidx
+            } else {
+                idx++
             }
             return idx
         }
