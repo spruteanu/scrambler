@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat
  */
 @CompileStatic
 class Log4jConsumerBuilder extends RegexConsumerBuilder {
+
     Log4jConsumerBuilder() {
     }
 
@@ -16,13 +17,31 @@ class Log4jConsumerBuilder extends RegexConsumerBuilder {
         super(contextBuilder, consumer)
     }
 
-    Log4jConsumerBuilder dateFormatGroup() {
-        groupConsumer(Log4jConsumer.TIMESTAMP, new DateFormatConsumer())
+    Log4jConsumerBuilder withDateConsumer(String dateFormat = null) {
+        withConsumer(Log4jConsumer.DATE, dateFormat ? DateConsumer.of(dateFormat) : new DateConsumer())
         return this
     }
 
-    Log4jConsumerBuilder messageGroup() {
-        groupConsumer(Log4jConsumer.MESSAGE, new MessageExceptionConsumer(Log4jConsumer.MESSAGE))
+    Log4jConsumerBuilder withDateConsumer(SimpleDateFormat dateFormat) {
+        withConsumer(Log4jConsumer.DATE, DateConsumer.of(dateFormat))
+        return this
+    }
+
+    Log4jConsumerBuilder withMessageExceptionConsumer() {
+        withConsumer(Log4jConsumer.MESSAGE, new MessageExceptionConsumer(Log4jConsumer.MESSAGE))
+        return this
+    }
+
+    Log4jConsumerBuilder withMessageConsumer(Closure closure) {
+        withConsumer(Log4jConsumer.MESSAGE, closure)
+        return this
+    }
+
+    Log4jConsumerBuilder withMessageConsumer(LogConsumer consumer) {
+        withConsumer(Log4jConsumer.MESSAGE, consumer)
+        if (consumer instanceof RegexConsumer) {
+            ((RegexConsumer) consumer).group = Log4jConsumer.MESSAGE
+        }
         return this
     }
 
@@ -32,7 +51,7 @@ class Log4jConsumerBuilder extends RegexConsumerBuilder {
             final consumers = entry.value
             for (Object obj : consumers) {
                 final consumer = newConsumer(obj)
-                if (consumer instanceof DateFormatConsumer) {
+                if (consumer instanceof DateConsumer) {
                     consumer.setDateFormat(new SimpleDateFormat(result.timestampFormat))
                 }
                 result.groupConsumer(entry.key, consumer)

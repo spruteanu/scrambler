@@ -36,8 +36,16 @@ class RegexConsumer implements LogConsumer {
         groupConsumerMap.get(group).add(consumer)
     }
 
+    RegexConsumer groups(String... groups) {
+        Objects.requireNonNull(groups, 'Groups must be provided')
+        for (int i = 0; i < groups.length; i++) {
+            group(groups[i], i + 1)
+        }
+        return this
+    }
+
     RegexConsumer group(String group, Integer index = null, LogConsumer consumer = null) {
-        assert index > 0, 'Group index should be a positive number'
+        assert index == null || index > 0, 'Group index should be a positive number'
         Objects.requireNonNull(group, 'Group value name should be provided')
         groupIndexMap.put(group, index)
         if (consumer) {
@@ -54,11 +62,19 @@ class RegexConsumer implements LogConsumer {
         return this
     }
 
+    RegexConsumer group(String groupName, Closure closure) {
+        return group(groupName, new ClosureConsumer(closure))
+    }
+
     RegexConsumer groupConsumer(String group, LogConsumer consumer) {
         Objects.requireNonNull(group, "Group Name can't be null")
         Objects.requireNonNull(consumer, 'Entry consumer instance should be provided')
         addConsumer(group, consumer)
         return this
+    }
+
+    RegexConsumer groupConsumer(String group, Closure closure) {
+        return groupConsumer(group, new ClosureConsumer(closure))
     }
 
     RegexConsumer indexedGroups(Map<String, Integer> groupIndexMap) {
@@ -97,8 +113,8 @@ class RegexConsumer implements LogConsumer {
                 } catch (Exception ignore) { }
                 if (groupValue) {
                     entry.putLogValue(key, groupValue.trim())
-                    final List<LogConsumer> processors = getConsumer(key)
-                    for (LogConsumer consumer : processors) {
+                    final List<LogConsumer> consumers = getConsumer(key)
+                    for (LogConsumer consumer : consumers) {
                         consumer.consume(entry)
                     }
                 }

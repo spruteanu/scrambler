@@ -22,17 +22,17 @@ class ConsumerBuilder {
         this.consumer = consumer
     }
 
-    ConsumerBuilder forConsumer(def consumer) {
+    ConsumerBuilder withConsumer(def consumer) {
         this.consumer = consumer
         return this
     }
 
-    ConsumerBuilder withConsumerProperties(Map<String, Object> consumerProperties) {
+    ConsumerBuilder withProperties(Map<String, Object> consumerProperties) {
         this.consumerProperties = consumerProperties
         return this
     }
 
-    LogContext.Builder endBuilder() {
+    LogContext.Builder recurContext() {
         return contextBuilder
     }
 

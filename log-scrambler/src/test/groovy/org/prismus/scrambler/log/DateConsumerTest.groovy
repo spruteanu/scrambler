@@ -5,9 +5,9 @@ import spock.lang.Specification
 /**
  * @author Serge Pruteanu
  */
-class DateFormatProcessorTest extends Specification {
+class DateConsumerTest extends Specification {
 
-    void 'verify date value processor'() {
+    void 'verify date value consumer'() {
         final processor = Log4jConsumer.ofPattern('%5p | %d | %F | %L | %m%n')
                 .timestampProcessor(Log4jConsumer.ISO8601_DATE_FORMAT)
 
@@ -15,7 +15,7 @@ class DateFormatProcessorTest extends Specification {
         processor.consume(entry)
 
         expect:
-        Date.isInstance(entry.getLogValue(Log4jConsumer.TIMESTAMP))
+        Date.isInstance(entry.getLogValue(Log4jConsumer.DATE))
     }
 
 }

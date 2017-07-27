@@ -17,7 +17,6 @@ import java.text.SimpleDateFormat
 import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Predicate
-import java.util.logging.Level
 import java.util.regex.Pattern
 import java.util.stream.Collectors
 
@@ -57,12 +56,12 @@ class LogContext implements Iterable<LogEntry> {
         return this
     }
 
-    LogContext addSource(LogEntry source, LogConsumer sourceConsumer) {
+    LogContext forSource(LogEntry source, LogConsumer sourceConsumer) {
         sourceConsumerMap.put(source, sourceConsumer)
         return this
     }
 
-    LogContext addConsumer(LogConsumer consumer) {
+    LogContext withConsumer(LogConsumer consumer) {
         consumers.add(consumer)
         if (consumer instanceof Closeable) {
             closeables.add(consumer as Closeable)
@@ -84,7 +83,7 @@ class LogContext implements Iterable<LogEntry> {
     }
 
     LogContext predicateConsumer(LogConsumer consumer, Predicate predicate) {
-        return addConsumer(new PredicateConsumer(consumer, predicate))
+        return withConsumer(new PredicateConsumer(consumer, predicate))
     }
 
     protected LogEntry consumeEntry(LogEntry entry) {
@@ -121,10 +120,11 @@ class LogContext implements Iterable<LogEntry> {
         }
     }
 
-    protected void consumeEntry(LogConsumer sourceConsumer, LogEntry lastEntry) {
-        if (lastEntry) {
-            sourceConsumer.consume(lastEntry)
-            consumeEntry(lastEntry)
+    protected void consumeEntry(LogConsumer sourceConsumer, LogEntry logEntry) {
+        if (logEntry) {
+            logEntry.sourceInfo("${Objects.toString(logEntry.source, '')}:($logEntry.row)".toString())
+            sourceConsumer.consume(logEntry)
+            consumeEntry(logEntry)
         }
     }
 
@@ -132,10 +132,9 @@ class LogContext implements Iterable<LogEntry> {
         try {
             LogEntry lastEntry = null
             int currentRow = 0
+            int nEntries = 0
             String line
-            if (sourceName) {
-                log.log(Level.INFO, "Consuming '$sourceName' using: '$sourceConsumer'")
-            }
+            log.finest("Consuming '$sourceName' using: '$sourceConsumer'")
             while ((line = lineReader.readLine()) != null) {
                 final logEntry = new LogEntry(sourceName, line, ++currentRow)
                 sourceConsumer.consume(logEntry)
@@ -144,14 +143,13 @@ class LogContext implements Iterable<LogEntry> {
                         lastEntry.line += LineReader.LINE_BREAK + line
                     }
                 } else {
+                    nEntries++
                     consumeEntry(sourceConsumer, lastEntry)
                     lastEntry = logEntry
                 }
             }
             consumeEntry(sourceConsumer, lastEntry)
-            if (sourceName) {
-                log.log(Level.INFO, "Done consuming '$sourceName' using: '$sourceConsumer'")
-            }
+            log.finest("Done consuming '$sourceName' using: '$sourceConsumer'. Processed '$currentRow' rows, consumed '$nEntries' entries")
         } finally {
             Utils.closeQuietly(lineReader)
         }
@@ -205,6 +203,7 @@ class LogContext implements Iterable<LogEntry> {
         private String sourceName
         private LogEntry lastEntry
         private int currentRow
+        private int nEntries
 
         LogEntryIterator() {
             for (Map.Entry<LogEntry, LogConsumer> entry : sourceConsumerMap.entrySet()) {
@@ -214,12 +213,13 @@ class LogContext implements Iterable<LogEntry> {
 
         protected void openNextSource() {
             lastEntry = null
-            currentRow = 0
+            currentRow = nEntries = 0
             if (sources.size()) {
                 final tuple = sources.poll()
                 lineReader = tuple.get(0) as LineReader
                 sourceName = tuple.get(1)
                 sourceConsumer = tuple.get(2) as LogConsumer
+                log.finest("Consuming '$sourceName' using: '$sourceConsumer'")
                 doNext(true)
             }
         }
@@ -247,6 +247,7 @@ class LogContext implements Iterable<LogEntry> {
                         lastEntry.line += LineReader.LINE_BREAK + line
                     }
                 } else {
+                    nEntries++
                     consumeEntry(sourceConsumer, lastEntry)
                     result = sourceOpen ? logEntry : lastEntry
                     lastEntry = logEntry
@@ -256,6 +257,7 @@ class LogContext implements Iterable<LogEntry> {
                 consumeEntry(sourceConsumer, lastEntry)
                 result = lastEntry
                 if (line == null) {
+                    log.finest("Done consuming '$sourceName' using: '$sourceConsumer'. Processed '$currentRow' rows, consumed '$nEntries' entries")
                     Utils.closeQuietly(lineReader)
                     lastEntry = null
                 }
@@ -297,7 +299,6 @@ class LogContext implements Iterable<LogEntry> {
         Iterator<Throwable> iterator() {
             return throwables.iterator()
         }
-
     }
 
     static final Comparator<Path> CREATED_DT_COMPARATOR = { Path l, Path r ->
@@ -314,15 +315,15 @@ class LogContext implements Iterable<LogEntry> {
     }
 
     protected static List<File> listFolderFiles(File folder, String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
-        log.log(Level.INFO, "Scanning '$folder.path' for logging sources using: '$fileFilter' filter")
+        log.finest("Scanning '$folder.path' for logging sources using: '$fileFilter' filter")
         final Pattern filePattern = ~/${fileFilterToRegex(fileFilter)}/
         final results = Files.find(Paths.get(folder.toURI()), 999,
                 { Path p, BasicFileAttributes bfa -> bfa.isRegularFile() && filePattern.matcher(p.getFileName().toString()).matches() }, FileVisitOption.FOLLOW_LINKS
         ).sorted(fileSorter).map({ it.toFile() }).collect(Collectors.toList())
         if (results) {
-            log.log(Level.INFO, "Found '${results.size()}' files in '$folder.path'")
+            log.finest("Found '${results.size()}' files in '$folder.path'")
         } else {
-            log.log(Level.WARNING, "No files found in '$folder.path' using '$fileFilter' filter")
+            log.finest("No files found in '$folder.path' using '$fileFilter' filter")
         }
         return results
     }
@@ -355,17 +356,23 @@ class LogContext implements Iterable<LogEntry> {
         @PackageScope
         void buildSourceConsumers() {
             final List<String> sourceNames = new ArrayList<>()
+            final Map<Object, LogConsumer> builtConsumers = [:]
             for (Map.Entry<LogEntry, Object> entry : sourceConsumerMap.entrySet()) {
                 final value = entry.value
                 LogConsumer sourceConsumer = null
                 if (value instanceof LogConsumer) {
                     sourceConsumer = value as LogConsumer
                 } else if (value instanceof ConsumerBuilder) {
-                    sourceConsumer = value.build()
+                    if (builtConsumers.containsKey(value)) {
+                        sourceConsumer = builtConsumers.get(value)
+                    } else {
+                        sourceConsumer = value.build()
+                        builtConsumers.put(value, sourceConsumer)
+                    }
                 }
                 if (sourceConsumer) {
                     final logEntry = entry.key
-                    context.addSource(logEntry, checkAsynchronousConsumer(sourceConsumer))
+                    context.forSource(logEntry, checkAsynchronousConsumer(sourceConsumer))
                     final sourceName = LineReader.getSourceName(logEntry)
                     if (sourceName) {
                         sourceNames.add(sourceName)
@@ -401,7 +408,7 @@ class LogContext implements Iterable<LogEntry> {
         @PackageScope
         void buildLogEntryConsumers() {
             for (ConsumerBuilder builder : consumerBuilders) {
-                context.addConsumer(builder.build())
+                context.withConsumer(builder.build())
             }
         }
 
@@ -445,12 +452,16 @@ class LogContext implements Iterable<LogEntry> {
         }
 
         Builder withConsumer(LogConsumer consumer) {
-            consumerBuilders.add(new ConsumerBuilder().forConsumer(consumer))
+            consumerBuilders.add(new ConsumerBuilder().withConsumer(consumer))
             return this
         }
 
+        Builder withConsumer(Closure logEntryClosure) {
+            return withConsumer(new ClosureConsumer(logEntryClosure))
+        }
+
         Builder asynchronousConsumer(LogConsumer consumer) {
-            context.addConsumer(newAsynchronousConsumer(consumer))
+            context.withConsumer(newAsynchronousConsumer(consumer))
             return this
         }
 
@@ -484,12 +495,12 @@ class LogContext implements Iterable<LogEntry> {
             return builder
         }
 
-        Builder dateFormatConsumer(SimpleDateFormat dateFormat, String group = DateFormatConsumer.TIMESTAMP) {
-            return withConsumer(DateFormatConsumer.of(dateFormat, group))
+        Builder dateFormatConsumer(SimpleDateFormat dateFormat, String group = DateConsumer.TIMESTAMP) {
+            return withConsumer(DateConsumer.of(dateFormat, group))
         }
 
-        Builder dateFormatConsumer(String dateFormat, String group = DateFormatConsumer.TIMESTAMP) {
-            return withConsumer(DateFormatConsumer.of(dateFormat, group))
+        Builder dateFormatConsumer(String dateFormat, String group = DateConsumer.TIMESTAMP) {
+            return withConsumer(DateConsumer.of(dateFormat, group))
         }
 
         protected void addSource(LogEntry logEntry) {

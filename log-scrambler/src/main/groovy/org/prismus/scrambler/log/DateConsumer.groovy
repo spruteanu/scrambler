@@ -5,16 +5,16 @@ import java.text.SimpleDateFormat
 /**
  * @author Serge Pruteanu
  */
-class DateFormatConsumer implements LogConsumer {
+class DateConsumer implements LogConsumer {
     static final String TIMESTAMP = 'Timestamp'
 
     String group = TIMESTAMP
     SimpleDateFormat dateFormat
 
-    DateFormatConsumer() {
+    DateConsumer() {
     }
 
-    DateFormatConsumer(SimpleDateFormat dateFormat, String group = TIMESTAMP) {
+    DateConsumer(SimpleDateFormat dateFormat, String group = TIMESTAMP) {
         this.dateFormat = dateFormat
         this.group = group
     }
@@ -28,12 +28,12 @@ class DateFormatConsumer implements LogConsumer {
         }
     }
 
-    static DateFormatConsumer of(SimpleDateFormat dateFormat, String group = TIMESTAMP) {
-        return new DateFormatConsumer(dateFormat, group)
+    static DateConsumer of(SimpleDateFormat dateFormat, String group = TIMESTAMP) {
+        return new DateConsumer(dateFormat, group)
     }
 
-    static DateFormatConsumer of(String dateFormat, String group = TIMESTAMP) {
-        return new DateFormatConsumer(new SimpleDateFormat(dateFormat), group)
+    static DateConsumer of(String dateFormat, String group = TIMESTAMP) {
+        return new DateConsumer(new SimpleDateFormat(dateFormat), group)
     }
 
 }

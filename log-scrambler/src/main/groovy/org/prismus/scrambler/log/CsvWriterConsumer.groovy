@@ -14,9 +14,8 @@ class CsvWriterConsumer implements LogConsumer, Closeable {
     int flushAt
     private int nOutput
 
-    boolean writeHeader
+    boolean writeHeader = true
     boolean allValues
-    boolean includeSource
     String separator = ','
     String fieldSeparator = ''
 
@@ -36,11 +35,6 @@ class CsvWriterConsumer implements LogConsumer, Closeable {
 
     CsvWriterConsumer writeHeader() {
         writeHeader = true
-        return this
-    }
-
-    CsvWriterConsumer includeSource() {
-        includeSource
         return this
     }
 
@@ -72,7 +66,7 @@ class CsvWriterConsumer implements LogConsumer, Closeable {
 
     protected synchronized void doWrite(List<String> values) {
         if (writeHeader && !nOutput) {
-            writeLine(buildLine(columns + (includeSource ? 'Source': '')))
+            writeLine(buildLine(columns))
         }
         writeLine(buildLine(values))
         nOutput++
@@ -94,9 +88,6 @@ class CsvWriterConsumer implements LogConsumer, Closeable {
             if (notIncludedColumns) {
                 values.addAll(logValueMap.subMap(notIncludedColumns).values())
             }
-        }
-        if (includeSource) {
-            values.add("${Objects.toString(entry.source?.toString(), 'not defined')}:$entry.line".toString())
         }
         doWrite(values)
     }

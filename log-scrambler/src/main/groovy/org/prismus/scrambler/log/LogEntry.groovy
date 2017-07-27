@@ -9,10 +9,11 @@ import java.util.concurrent.ConcurrentHashMap
  */
 @CompileStatic
 class LogEntry implements Cloneable {
+    public static final String SOURCE_INFO = 'Source'
     String line
 
     Object source
-    Object row
+    int row
 
     Map logValueMap = new ConcurrentHashMap()
 
@@ -42,8 +43,18 @@ class LogEntry implements Cloneable {
         return logValueMap.get(entryKey)
     }
 
-    void clearLogValueMap() {
-        logValueMap.clear()
+    LogEntry removeLogValue(Object entryKey) {
+        logValueMap.remove(entryKey)
+        return this
+    }
+
+    LogEntry sourceInfo(String value) {
+        putLogValue(SOURCE_INFO, value)
+        return this
+    }
+
+    String getSourceInfo() {
+        return getLogValue(SOURCE_INFO)
     }
 
     boolean isEmpty() {
@@ -54,5 +65,4 @@ class LogEntry implements Cloneable {
     Object clone() {
         return super.clone()
     }
-
 }

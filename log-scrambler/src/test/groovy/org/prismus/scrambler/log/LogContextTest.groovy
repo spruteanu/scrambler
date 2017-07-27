@@ -23,8 +23,8 @@ class LogContextTest extends Specification {
         given:
         def logContext = new LogContext.Builder()
                 .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',)
-                .dateFormatGroup().messageGroup().endBuilder()
-                .csvWriter(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.TIMESTAMP, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .withDateConsumer().withMessageExceptionConsumer().recurContext()
+                .csvWriter(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .withConsumer({ LogEntry logEntry -> listCollector.add(logEntry) })
                 .build()
         logContext.consume()
@@ -37,10 +37,10 @@ class LogContextTest extends Specification {
 
         and: 'verify csv collector columns are populated with groups defined in source consumer'
         null != (logContext = new LogContext.Builder()
-                .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).endBuilder()
+                .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).recurContext()
                 .csvWriter(stringWriter)
                 .build())
-        [Log4jConsumer.PRIORITY, Log4jConsumer.TIMESTAMP,
+        [Log4jConsumer.PRIORITY, Log4jConsumer.DATE,
          Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE,
          Log4jConsumer.MESSAGE] == logContext.consumers.get(0).columns
     }
@@ -52,8 +52,8 @@ class LogContextTest extends Specification {
         given:
         def logContext = new LogContext.Builder()
                 .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',)
-                .dateFormatGroup().messageGroup().endBuilder()
-                .csvWriter(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.TIMESTAMP, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .withDateConsumer().withMessageExceptionConsumer().recurContext()
+                .csvWriter(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .build()
         def iterator = logContext.iterator()
         List result = iterator.toList()
@@ -66,10 +66,10 @@ class LogContextTest extends Specification {
 
         and: 'verify multiple sources iterator'
         null != (logContext = new LogContext.Builder()
-                .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).endBuilder()
-                .csvWriter(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.TIMESTAMP, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
-                .log4jSourceFolder(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).endBuilder()
-                .csvWriter(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.TIMESTAMP, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).recurContext()
+                .csvWriter(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .log4jSourceFolder(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).recurContext()
+                .csvWriter(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .build())
         ['sample-1.log', 'sample-2.log'] == logContext.sourceConsumerMap.keySet().collect { LineReader.getSourceName(it)}.sort()
         null != (iterator = logContext.iterator())

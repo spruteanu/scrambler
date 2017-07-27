@@ -10,7 +10,7 @@ import java.text.SimpleDateFormat
 @CompileStatic
 class RegexConsumerBuilder extends ConsumerBuilder {
     protected final Map<String, List> groupProcessorMap = new LinkedHashMap<>()
-    private Map<String, Integer> groupIndexMap
+    private final Map<String, Integer> groupIndexMap  = new LinkedHashMap<>()
 
     RegexConsumerBuilder() {
     }
@@ -19,17 +19,24 @@ class RegexConsumerBuilder extends ConsumerBuilder {
         super(contextBuilder, consumer)
     }
 
-    RegexConsumerBuilder indexedGroup(String group, Integer index = null) {
+    RegexConsumerBuilder indexedGroup(String group, Integer index = null, LogConsumer consumer = null) {
         groupIndexMap.put(group, index)
+        if (consumer) {
+            withConsumer(group, consumer)
+        }
         return this
     }
 
-    RegexConsumerBuilder registerAll(Map<String, Integer> groupIndexMap) {
-        this.groupIndexMap = groupIndexMap
+    RegexConsumerBuilder group(String group, LogConsumer consumer = null) {
+        return indexedGroup(group, null, consumer)
+    }
+
+    RegexConsumerBuilder withGroups(Map<String, Integer> groupIndexMap) {
+        this.groupIndexMap.putAll(groupIndexMap)
         return this
     }
 
-    RegexConsumerBuilder groupConsumer(String group, LogConsumer consumer) {
+    RegexConsumerBuilder withConsumer(String group, LogConsumer consumer) {
         if (!groupProcessorMap.containsKey(group)) {
             groupProcessorMap.put(group, new ArrayList())
         }
@@ -37,30 +44,28 @@ class RegexConsumerBuilder extends ConsumerBuilder {
         return this
     }
 
-    RegexConsumerBuilder group(String group, LogConsumer consumer) {
-        indexedGroup(group, null)
-        groupConsumer(group, consumer)
-        return this
+    RegexConsumerBuilder withConsumer(String group, Closure logEntryClosure) {
+        return withConsumer(group, new ClosureConsumer(logEntryClosure))
     }
 
-    RegexConsumerBuilder dateFormatGroup(String group, String dateFormat) {
-        return dateFormatGroup(group, new SimpleDateFormat(dateFormat))
-    }
-
-    RegexConsumerBuilder dateFormatGroup(String group, SimpleDateFormat dateFormat) {
-        indexedGroup(group, (Integer)null)
-        groupConsumer(group, new DateFormatConsumer(dateFormat, group))
-        return this
-    }
-
-    RegexConsumerBuilder messageGroup(String group) {
-        indexedGroup(group, (Integer)null)
-        groupConsumer(group, new MessageExceptionConsumer(group))
-        return this
-    }
-
-    GroupConsumerBuilder newBuilder(String group, def consumer, Object... args) {
+    GroupConsumerBuilder withConsumerBuilder(String group, def consumer, Object... args) {
         return new GroupConsumerBuilder(group, consumer, args)
+    }
+
+    RegexConsumerBuilder withDateConsumer(String group, String dateFormat) {
+        return withDateConsumer(group, new SimpleDateFormat(dateFormat))
+    }
+
+    RegexConsumerBuilder withDateConsumer(String group, SimpleDateFormat dateFormat) {
+        indexedGroup(group, (Integer)null)
+        withConsumer(group, new DateConsumer(dateFormat, group))
+        return this
+    }
+
+    RegexConsumerBuilder withMessageExceptionConsumer(String group) {
+        indexedGroup(group, (Integer)null)
+        withConsumer(group, new MessageExceptionConsumer(group))
+        return this
     }
 
     protected void buildGroupConsumers(RegexConsumer result) {
@@ -86,13 +91,13 @@ class RegexConsumerBuilder extends ConsumerBuilder {
             this.group = group
         }
 
-        RegexConsumerBuilder endGroup() {
-            RegexConsumerBuilder.this.groupConsumer(group, build())
+        RegexConsumerBuilder recurBuilder() {
+            RegexConsumerBuilder.this.withConsumer(group, build())
             return RegexConsumerBuilder.this
         }
 
-        LogContext.Builder endBuilder() {
-            RegexConsumerBuilder.this.groupConsumer(group, build())
+        LogContext.Builder recurContext() {
+            RegexConsumerBuilder.this.withConsumer(group, build())
             return contextBuilder
         }
 

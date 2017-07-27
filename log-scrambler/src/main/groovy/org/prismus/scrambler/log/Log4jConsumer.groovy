@@ -9,9 +9,9 @@ import java.util.regex.Pattern
  */
 @CompileStatic
 class Log4jConsumer extends RegexConsumer {
-    private static final String ABSOLUTE = '{ABSOLUTE}'
-    private static final String DATE = '{DATE}'
-    private static final String ISO8601 = '{ISO8601}'
+    private static final String ABSOLUTE_LDF = '{ABSOLUTE}'
+    private static final String DATE_LDF = '{DATE}'
+    private static final String ISO8601_LDF = '{ISO8601}'
     static final String ABSOLUTE_DATE_FORMAT = 'HH:mm:ss,SSS'
     static final String ISO8601_DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss,SSS' // ISO8601DateFormat
     static final String DATE_FORMAT = 'dd MMM yyyy HH:mm:ss,SSS'
@@ -21,7 +21,7 @@ class Log4jConsumer extends RegexConsumer {
 
     static final String EVENT_CATEGORY = 'EventCategory'
     static final String CALLER_CLASS = 'CallerClass'
-    static final String TIMESTAMP = 'Timestamp'
+    static final String DATE = 'Date'
     static final String CALLER_FILE_NAME = 'CallerFileName'
     static final String CALLER_LOCATION = 'CallerLocation'
     static final String CALLER_LINE = 'CallerLine'
@@ -36,7 +36,7 @@ class Log4jConsumer extends RegexConsumer {
     String timestampFormat
 
     Log4jConsumer registerTimestamp(String timestampFormat) {
-        group(TIMESTAMP)
+        group(DATE)
         this.timestampFormat = timestampFormat
         return this
     }
@@ -45,7 +45,7 @@ class Log4jConsumer extends RegexConsumer {
         if (!timestampFormat) {
             timestampFormat = this.timestampFormat
         }
-        groupConsumer(TIMESTAMP, DateFormatConsumer.of(timestampFormat, TIMESTAMP))
+        groupConsumer(DATE, DateConsumer.of(timestampFormat, DATE))
         return this
     }
 
@@ -83,17 +83,17 @@ class Log4jConsumer extends RegexConsumer {
         String dateFormat = matcher.group(1)
         if (format) {
             switch (format.trim()) {
-                case ABSOLUTE:
+                case ABSOLUTE_LDF:
                     dateFormat = ABSOLUTE_DATE_FORMAT
-                    index += ABSOLUTE.length()
+                    index += ABSOLUTE_LDF.length()
                     break
-                case DATE:
+                case DATE_LDF:
                     dateFormat = DATE_FORMAT
-                    index += DATE.length()
+                    index += DATE_LDF.length()
                     break
-                case ISO8601:
+                case ISO8601_LDF:
                     dateFormat = ISO8601_DATE_FORMAT
-                    index += ISO8601.length()
+                    index += ISO8601_LDF.length()
                     break
                 default:
                     dateFormat = format.substring(1, format.length() - 1)
