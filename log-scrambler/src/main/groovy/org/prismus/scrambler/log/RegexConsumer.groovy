@@ -44,6 +44,23 @@ class RegexConsumer implements LogConsumer {
         return this
     }
 
+    RegexConsumer groups(Map<String, Object> groups) {
+        Objects.requireNonNull(groups, 'Groups must be provided')
+        int i = 0
+        for (Map.Entry<String, Object> entry : groups.entrySet()) {
+            final consumer = entry.value
+            final groupName = entry.key
+            if (consumer instanceof Closure) {
+                group(groupName, i + 1, new ClosureConsumer(consumer as Closure))
+            } else if (consumer instanceof LogConsumer) {
+                group(groupName, i + 1, consumer as LogConsumer)
+            } else {
+                group(groupName, i + 1)
+            }
+        }
+        return this
+    }
+
     RegexConsumer group(String group, Integer index = null, LogConsumer consumer = null) {
         assert index == null || index > 0, 'Group index should be a positive number'
         Objects.requireNonNull(group, 'Group value name should be provided')

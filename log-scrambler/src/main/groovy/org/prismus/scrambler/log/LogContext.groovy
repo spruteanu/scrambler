@@ -585,6 +585,15 @@ class LogContext implements Iterable<LogEntry> {
             return log4jSourceFolder(new File(folder), conversionPattern, fileFilter, fileSorter)
         }
 
+        Builder log4jConfigSource(File folder, String log4jConfig, Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+            // todo
+            throw new RuntimeException('Implement me')
+        }
+
+        Builder log4jConfigSource(String folder, String log4jConfig, Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+            return log4jConfigSource(new File(folder), log4jConfig, fileSorter)
+        }
+
         Builder sourceFolder(String path, LogConsumer consumer,
                              String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
             final folder = new File(path)
@@ -677,6 +686,10 @@ class LogContext implements Iterable<LogEntry> {
 
     static Builder builder(String... args) {
         return new Builder().init(args)
+    }
+
+    static void main(String[] args) {
+        builder(args).build().consume()
     }
 
 }
