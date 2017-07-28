@@ -25,7 +25,7 @@ import java.util.stream.Collectors
  */
 @CompileStatic
 @Log
-class LogContext implements Iterable<LogEntry> {
+class LogScrambler implements Iterable<LogEntry> {
     private Map<LogEntry, LogConsumer> sourceConsumerMap = [:]
     private List<LogConsumer> consumers = new ArrayList<LogConsumer>()
     private List<Closeable> closeables = []
@@ -38,15 +38,15 @@ class LogContext implements Iterable<LogEntry> {
 
     boolean multiline = true
 
-    private LogContext() {
+    private LogScrambler() {
     }
 
-    LogContext oneLineEntry() {
+    LogScrambler oneLineEntry() {
         multiline = false
         return this
     }
 
-    LogContext withExecutorService(ExecutorService executorService, int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
+    LogScrambler withExecutorService(ExecutorService executorService, int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
         this.asynchUnit = unit
         this.asynchTimeout = timeout
         if (executorService) {
@@ -56,12 +56,12 @@ class LogContext implements Iterable<LogEntry> {
         return this
     }
 
-    LogContext forSource(LogEntry source, LogConsumer sourceConsumer) {
+    LogScrambler forSource(LogEntry source, LogConsumer sourceConsumer) {
         sourceConsumerMap.put(source, sourceConsumer)
         return this
     }
 
-    LogContext withConsumer(LogConsumer consumer) {
+    LogScrambler withConsumer(LogConsumer consumer) {
         consumers.add(consumer)
         if (consumer instanceof Closeable) {
             closeables.add(consumer as Closeable)
@@ -82,7 +82,7 @@ class LogContext implements Iterable<LogEntry> {
         return this
     }
 
-    LogContext predicateConsumer(LogConsumer consumer, Predicate predicate) {
+    LogScrambler predicateConsumer(LogConsumer consumer, Predicate predicate) {
         return withConsumer(new PredicateConsumer(consumer, predicate))
     }
 
@@ -231,7 +231,7 @@ class LogContext implements Iterable<LogEntry> {
             }
             boolean result = lastEntry != null
             if (!result) {
-                LogContext.this.closeConsumers()
+                LogScrambler.this.closeConsumers()
             }
             return result
         }
@@ -335,7 +335,7 @@ class LogContext implements Iterable<LogEntry> {
     static class Builder {
         ObjectProvider provider = new DefaultObjectProvider()
 
-        private LogContext context
+        private LogScrambler context
         private final Map<LogEntry, Object> sourceConsumerMap = [:]
         private final List<ConsumerBuilder> consumerBuilders = []
 
@@ -345,7 +345,7 @@ class LogContext implements Iterable<LogEntry> {
         private TimeUnit defaultUnit = TimeUnit.MILLISECONDS
 
         Builder() {
-            context = new LogContext()
+            context = new LogScrambler()
         }
 
         @PackageScope
@@ -605,7 +605,7 @@ class LogContext implements Iterable<LogEntry> {
             return builder
         }
 
-        LogContext build() {
+        LogScrambler build() {
             context.withExecutorService(executorService, defaultTimeout, defaultUnit)
             buildSourceConsumers()
             buildLogEntryConsumers()
@@ -650,7 +650,7 @@ class LogContext implements Iterable<LogEntry> {
         compilerConfiguration.setScriptBaseClass(DelegatingScript.name)
 
         final importCustomizer = new ImportCustomizer()
-        importCustomizer.addStarImports(LogContext.package.name)
+        importCustomizer.addStarImports(LogScrambler.package.name)
         compilerConfiguration.addCompilationCustomizers(importCustomizer)
 
         return new GroovyShell(compilerConfiguration)
@@ -659,7 +659,7 @@ class LogContext implements Iterable<LogEntry> {
     private static String loadResourceText(String resource) {
         final String text
         if (resource.endsWith('groovy')) {
-            final URL url = LogContext.getResource(resource)
+            final URL url = LogScrambler.getResource(resource)
             if (url == null) {
                 final file = new File(resource)
                 if (!file.exists()) {

@@ -12,12 +12,12 @@ import java.util.concurrent.TimeoutException
 class AsynchronousProxyConsumer implements LogConsumer {
     final LogConsumer consumer
 
-    private final LogContext logContext
+    private final LogScrambler logContext
     private boolean awaitConsumption
     private int timeout
     private TimeUnit unit = TimeUnit.MILLISECONDS
 
-    AsynchronousProxyConsumer(LogContext logContext, LogConsumer consumer) {
+    AsynchronousProxyConsumer(LogScrambler logContext, LogConsumer consumer) {
         this.logContext = logContext
         this.consumer = consumer
     }
