@@ -2,8 +2,8 @@ package org.prismus.scrambler.log
 
 import spock.lang.Specification
 
-import static Log4jConsumer.*
 import static RegexConsumer.of
+import static org.prismus.scrambler.log.Log4jConsumer.*
 
 /**
  * @author Serge Pruteanu
@@ -222,6 +222,54 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
                 (CALLER_CLASS)    : 'com.vaannila.helloworld.HelloWorld',
                 (MESSAGE)         : 'Sample debug message',
         ] == logEntry.logValueMap
+    }
+
+    void 'verify log4j toFileFilterConversionMap conversion'() {
+        given:
+        final filterConversionMap = toFileFilterConversionMap("""# Root logger option
+log4j.rootLogger=INFO, file, stdout
+
+# Direct log messages to a log file
+log4j.appender.file=org.apache.log4j.RollingFileAppender
+log4j.appender.file.File=log-file.log
+log4j.appender.file.MaxFileSize=10MB
+log4j.appender.file.MaxBackupIndex=10
+log4j.appender.file.layout=org.apache.log4j.PatternLayout
+log4j.appender.file.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n
+
+# Direct log messages to stdout
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.Target=System.out
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n
+
+log4j.appender.file1=org.apache.log4j.RollingFileAppender
+log4j.appender.file1.File=log-file1.log
+log4j.appender.file1.MaxFileSize=10MB
+log4j.appender.file1.MaxBackupIndex=10
+log4j.appender.file1.layout=org.apache.log4j.PatternLayout
+log4j.appender.file1.layout.ConversionPattern=%d %5p %37c - %m%n
+
+log4j.appender.file2=org.apache.log4j.RollingFileAppender
+log4j.appender.file2.File=log-file2.log
+log4j.appender.file2.MaxFileSize=10MB
+log4j.appender.file2.MaxBackupIndex=10
+log4j.appender.file2.layout=org.apache.log4j.PatternLayout
+log4j.appender.file2.layout.ConversionPattern=%d %5p %37c - %m%n
+
+log4j.appender.file3=org.apache.log4j.RollingFileAppender
+log4j.appender.file3.File=log-file3.log
+log4j.appender.file3.MaxFileSize=10MB
+log4j.appender.file3.MaxBackupIndex=10
+log4j.appender.file3.layout=org.apache.log4j.PatternLayout
+log4j.appender.file3.layout.ConversionPattern=%d - %p - %m%n
+""".readLines())
+
+        expect:
+        ["log-file.log*" : "%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n",
+         "log-file1.log*": "%d %5p %37c - %m%n",
+         "log-file2.log*": "%d %5p %37c - %m%n",
+         "log-file3.log*": "%d - %p - %m%n"] == filterConversionMap
     }
 
 }

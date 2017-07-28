@@ -227,6 +227,40 @@ class Log4jConsumer extends RegexConsumer {
         return regex
     }
 
+    protected static Map<String, String> toFileFilterConversionMap(List<String> lines) {
+        final Map<String, Map<String, String>> appenderProps = [:]
+        final Set<String> log4jSet = ['File', 'ConversionPattern'] as Set
+        for (String line : lines) {
+            if (!line.startsWith('log4j.appender.')) {
+                continue
+            }
+            line = line.substring('log4j.appender.'.length())
+            final keys = line.split('=')
+            final apps = keys[0].split('\\.')
+            if (apps.length == 1) {
+                appenderProps.put(apps[0], [:])
+            } else {
+                final cat = apps.length == 2 && log4jSet.contains(apps[1]) ? apps[1] : apps.length == 3 && log4jSet.contains(apps[2]) ? apps[2] : null
+                if (cat) {
+                    appenderProps.get(apps[0])?.put(cat, keys[1])
+                }
+            }
+        }
+        final filterMap = [:]
+        final filePattern = ~/([^\/\\]+\..+)/
+        for (Map<String, String> log4jProps : appenderProps.values()) {
+            final file = log4jProps.get('File')
+            final conversionPattern = log4jProps.get('ConversionPattern')
+            if (file && conversionPattern) {
+                final fileFilter = toMap(filePattern, file, [fileFilter: 1]).get('fileFilter')
+                if (fileFilter) {
+                    filterMap.put(fileFilter + '*', conversionPattern)
+                }
+            }
+        }
+        return filterMap
+    }
+
     private static Set<Character> toSet(String chString) {
         final set = new HashSet<Character>(chString.length())
         for (char ch : chString.toCharArray()) {

@@ -315,6 +315,7 @@ class LogScrambler implements Iterable<LogEntry> {
     }
 
     protected static List<File> listFolderFiles(File folder, String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+        assert folder.exists() && folder.isDirectory(), "Folder: '$folder.path' doesn't exists"
         log.finest("Scanning '$folder.path' for logging sources using: '$fileFilter' filter")
         final Pattern filePattern = ~/${fileFilterToRegex(fileFilter)}/
         final results = Files.find(Paths.get(folder.toURI()), 999,
@@ -586,8 +587,11 @@ class LogScrambler implements Iterable<LogEntry> {
         }
 
         Builder log4jConfigSource(File folder, String log4jConfig, Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
-            // todo
-            throw new RuntimeException('Implement me')
+            final filterConversionMap = Log4jConsumer.toFileFilterConversionMap(readResourceText(log4jConfig).readLines())
+            for (Map.Entry<String, String> entry : filterConversionMap.entrySet()) {
+                log4jSourceFolder(folder, entry.value, entry.key, fileSorter)
+            }
+            return this
         }
 
         Builder log4jConfigSource(String folder, String log4jConfig, Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
@@ -621,7 +625,7 @@ class LogScrambler implements Iterable<LogEntry> {
             final unknownArgs = []
             for (String arg : args) {
                 if (arg.endsWith('groovy')) {
-                    initGroovyScriptBuilder(this, loadResourceText(arg))
+                    initGroovyScriptBuilder(this, readGroovyResourceText(arg))
                 } else {
                     unknownArgs.add(arg)
                 }
@@ -656,24 +660,24 @@ class LogScrambler implements Iterable<LogEntry> {
         return new GroovyShell(compilerConfiguration)
     }
 
-    private static String loadResourceText(String resource) {
-        final String text
-        if (resource.endsWith('groovy')) {
-            final URL url = LogScrambler.getResource(resource)
-            if (url == null) {
-                final file = new File(resource)
-                if (!file.exists()) {
-                    throw new IllegalArgumentException(String.format("Not found resource for: %s", resource))
-                } else {
-                    text = file.text
-                }
+    protected static String readResourceText(String resource) {
+        final URL url = LogScrambler.getResource(resource)
+        String text
+        if (url == null) {
+            final file = new File(resource)
+            if (!file.exists()) {
+                throw new IllegalArgumentException(String.format("Not found resource for: %s", resource))
             } else {
-                text = url.text
+                text = file.text
             }
         } else {
-            text = resource
+            text = url.text
         }
         return text
+    }
+
+    private static String readGroovyResourceText(String resource) {
+        return resource.endsWith('groovy') ? readResourceText(resource) : resource
     }
 
     private static Builder initGroovyScriptBuilder(Builder builder, String definitionText) {

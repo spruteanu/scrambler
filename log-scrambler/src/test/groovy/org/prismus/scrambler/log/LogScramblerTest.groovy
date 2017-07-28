@@ -86,4 +86,14 @@ class LogScramblerTest extends Specification {
         29 == iterator.toList().size()
     }
 
+    void 'parse log entries using log4j config file'() {
+        given:
+        final folder = new File(LogScramblerTest.protectionDomain.codeSource.location.path)
+        final logContext = LogScrambler.builder().log4jConfigSource(folder, '/log4j.properties').build()
+        def iterator = logContext.iterator()
+
+        expect:
+        29 == iterator.toList().size()
+    }
+
 }

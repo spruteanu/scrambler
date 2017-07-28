@@ -147,6 +147,28 @@ class RegexConsumer implements LogConsumer {
         return result
     }
 
+    protected static Map<String, String> toMap(Pattern pattern, String line, Map<String, Integer> groupIndexMap) {
+        final resultMap = [:]
+        final Matcher matcher
+        matcher = pattern.matcher(line)
+        while (matcher.find()) {
+            for (Map.Entry<String, Integer> enr : groupIndexMap.entrySet()) {
+                final key = enr.key
+                Integer idx = enr.value
+                String groupValue
+                if (idx) {
+                    groupValue = matcher.group(idx)
+                } else {
+                    groupValue = matcher.group(key)
+                }
+                if (groupValue) {
+                    resultMap.put(key, groupValue.trim())
+                }
+            }
+        }
+        return resultMap
+    }
+
     static RegexConsumer of(Pattern pattern) {
         return new RegexConsumer(pattern)
     }
