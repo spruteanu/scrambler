@@ -6,6 +6,7 @@ import groovy.util.logging.Log
 import org.apache.commons.lang3.StringUtils
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
+import org.codehaus.groovy.runtime.InvokerHelper
 import org.springframework.context.ApplicationContext
 
 import java.nio.file.FileVisitOption
@@ -654,13 +655,60 @@ class LogScrambler implements Iterable<LogEntry> {
             return context
         }
 
+        private List toMethodTuple(String[] args, Queue<List> configTuple, int currentIdx, File file) {
+            if (configTuple.isEmpty()) {
+                throw new IllegalArgumentException("Illegal arguments provided: '${args.join(', ')}'; source type is unknown")
+            }
+
+            List cTuple
+            while (((cTuple = configTuple.peek())[1] as int) > currentIdx) configTuple.poll()
+            final String configType = cTuple[0] as String
+            final int configIdx = cTuple[1] as int
+            final configValue = args[configIdx]
+            final boolean configFile = new File(configValue).exists()
+
+            final List result = []
+            if (file.isDirectory()) {
+                switch (configType) {
+                    case LOG4J_ARG:
+                        if (configFile) {
+                            result.add(['log4jConfigSource', [file, configValue] as Object[]])
+                        } else {
+                            result.add(['log4jSourceFolder', [file, configValue] as Object[]])
+                        }
+                        break
+                    case REGEX_ARG:
+                        result.add(['regexSourceFolder', [file, configValue] as Object[]])
+                        break
+                }
+            } else {
+                final sourceEntry = LineReader.newLogSource(new LogEntry(source: file), file.path)
+                switch (configType) {
+                    case LOG4J_ARG:
+                        if (configFile) {
+                            throw new UnsupportedOperationException("Unsupported log4j config file option: '$configValue' for a single file: '$file.path'. Only conversion pattern is supported here")
+                        }
+                        final builder = sourceLog4jConsumer(configValue)
+                        result.add(['registerSourceConsumer', [sourceEntry, builder, configValue] as Object[]])
+                        break
+                    case REGEX_ARG:
+                        result.add(['registerSourceConsumer', [sourceEntry, sourceRegexConsumer(configValue), configValue] as Object[]])
+                        break
+                }
+            }
+            if (result.isEmpty()) {
+                throw new IllegalArgumentException("Illegal arguments provided: '${args.join(', ')}'; source type is unknown")
+            }
+            return result
+        }
+
         private Builder init(String... args) {
             if (!args) {
+                usage()
                 return this
             }
+            final List<List> sourceMethodTuple = []
             final configTypes = [LOG4J_ARG, REGEX_ARG] as Set
-            final log4j_prop = 'log4j.properties'
-            final List<File> files = []
             final Queue<List> configTuple = new LinkedList<List>()
             final Collection<String> scripts = []
             final unknownArgs = []
@@ -670,42 +718,24 @@ class LogScrambler implements Iterable<LogEntry> {
                     scripts.add(arg)
                 } else {
                     if (configTypes.contains(arg.toLowerCase())) {
-                        configTuple.add([arg, i == args.length - 1 ? i : ++i])
+                        if (args.length > i + 1) {
+                            configTuple.add([arg, ++i])
+                        } else {
+                            unknownArgs.add("$arg argument must be followed by option")
+                        }
                         continue
                     }
                     final file = new File(arg)
                     if (file.exists()) {
-                        if (log4j_prop.equalsIgnoreCase(arg)) {
-                            configTuple.add([LOG4J_ARG, i])
-                        } else {
-                            files.add(file)
-                        }
+                        sourceMethodTuple.add(toMethodTuple(args, configTuple, i, file))
                     } else {
                         unknownArgs.add(arg)
                     }
                 }
             }
-            for (final i = 0; i < files.size(); i++) {
-                final file = files.get(i)
-                List tuple = configTuple.peek() ?: [LOG4J_ARG, 0]
-                final configType = tuple[0]
-                if (file.isDirectory()) {
-                    switch (configType) {
-                        case LOG4J_ARG:
-//                            log4jConfigSource(file, )
-                            break
-                        case REGEX_ARG:
-//                            regexSourceFolder(file, )
-                            break
-                    }
-                } else {
-                    switch (configType) {
-                        case LOG4J_ARG:
-                            break
-                        case REGEX_ARG:
-                            break
-                    }
-                }
+            for (final i = 0; i < sourceMethodTuple.size(); i++) {
+                final tuple = sourceMethodTuple.get(i)
+                InvokerHelper.invokeMethod(this, tuple[0].toString(), tuple[1])
             }
             for (final script : scripts) {
                 initGroovyScriptBuilder(this, readGroovyResourceText(script))
@@ -772,8 +802,30 @@ class LogScrambler implements Iterable<LogEntry> {
         return new Builder().init(args)
     }
 
+    private static String usage() {
+        return """
+Crawls files/folder based on definitions in <builder script>-log.groovy script(s)
+
+Usage:
+logCrawler [$LOG4J_ARG/$REGEX_ARG option] [sourceFiles/sourceFolders...] [<builder script>-log.groovy]
+
+WHERE:
+    [$LOG4J_ARG/$REGEX_ARG option]
+        Logging configuration option; option is required before file/folder definition.
+        '$LOG4J_ARG option' can be either a log4j config file (applied ONLY for folder) OR a log4j conversion pattern.
+        '$REGEX_ARG option' regular expression string used to match logging entry line
+    [<builder script>-log.groovy]
+        Logging crawler builder Groovy configuration script.
+"""
+    }
+
     static void main(String[] args) {
-        builder(args).build().consume()
+        try {
+            builder(args).build().consume()
+        } catch (IllegalArgumentException | UnsupportedOperationException ignore) {
+            System.err.println(ignore)
+            usage()
+        }
     }
 
 }
