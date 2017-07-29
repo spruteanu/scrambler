@@ -462,6 +462,14 @@ class LogCrawler implements Iterable<LogEntry> {
             return this
         }
 
+        Builder withPredicateConsumer(LogConsumer consumer, Predicate predicate) {
+            return withConsumer(new PredicateConsumer(consumer, predicate))
+        }
+
+        Builder withPredicateConsumer(Closure consumer, Closure predicate) {
+            return withPredicateConsumer(new ClosureConsumer(consumer), new ClosurePredicate(predicate))
+        }
+
         Builder withConsumer(Closure logEntryClosure) {
             return withConsumer(new ClosureConsumer(logEntryClosure))
         }
