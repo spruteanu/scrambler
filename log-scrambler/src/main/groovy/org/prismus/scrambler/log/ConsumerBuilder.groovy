@@ -7,7 +7,7 @@ import groovy.transform.CompileStatic
  */
 @CompileStatic
 class ConsumerBuilder {
-    LogScrambler.Builder contextBuilder
+    LogCrawler.Builder contextBuilder
     private def consumer
     private Object[] args
 
@@ -16,7 +16,7 @@ class ConsumerBuilder {
     ConsumerBuilder() {
     }
 
-    ConsumerBuilder(LogScrambler.Builder contextBuilder, def consumer, Object... args) {
+    ConsumerBuilder(LogCrawler.Builder contextBuilder, def consumer, Object... args) {
         this.args = args
         this.contextBuilder = contextBuilder
         this.consumer = consumer
@@ -32,7 +32,7 @@ class ConsumerBuilder {
         return this
     }
 
-    LogScrambler.Builder recurContext() {
+    LogCrawler.Builder recurContext() {
         return contextBuilder
     }
 

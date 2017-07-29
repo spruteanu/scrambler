@@ -15,7 +15,7 @@ class RegexConsumerBuilder extends ConsumerBuilder {
     RegexConsumerBuilder() {
     }
 
-    RegexConsumerBuilder(LogScrambler.Builder contextBuilder, def consumer) {
+    RegexConsumerBuilder(LogCrawler.Builder contextBuilder, def consumer) {
         super(contextBuilder, consumer)
     }
 
@@ -121,7 +121,7 @@ class RegexConsumerBuilder extends ConsumerBuilder {
             return RegexConsumerBuilder.this
         }
 
-        LogScrambler.Builder recurContext() {
+        LogCrawler.Builder recurContext() {
             RegexConsumerBuilder.this.withConsumer(group, build())
             return contextBuilder
         }

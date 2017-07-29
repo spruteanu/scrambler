@@ -26,7 +26,7 @@ import java.util.stream.Collectors
  */
 @CompileStatic
 @Log
-class LogScrambler implements Iterable<LogEntry> {
+class LogCrawler implements Iterable<LogEntry> {
     protected static final String LOG4J_ARG = '-log4j'
     protected static final String REGEX_ARG = '-regex'
 
@@ -42,20 +42,20 @@ class LogScrambler implements Iterable<LogEntry> {
 
     boolean multiline = true
 
-    private LogScrambler() {
+    private LogCrawler() {
     }
 
-    LogScrambler oneLineEntry() {
+    LogCrawler oneLineEntry() {
         multiline = false
         return this
     }
 
-    LogScrambler forSource(LogEntry source, LogConsumer sourceConsumer) {
+    LogCrawler forSource(LogEntry source, LogConsumer sourceConsumer) {
         sourceConsumerMap.put(source, sourceConsumer)
         return this
     }
 
-    LogScrambler withExecutorService(ExecutorService executorService, int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
+    LogCrawler withExecutorService(ExecutorService executorService, int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
         this.asynchUnit = unit
         this.asynchTimeout = timeout
         if (executorService) {
@@ -65,7 +65,7 @@ class LogScrambler implements Iterable<LogEntry> {
         return this
     }
 
-    LogScrambler withConsumer(LogConsumer consumer) {
+    LogCrawler withConsumer(LogConsumer consumer) {
         consumers.add(consumer)
         if (consumer instanceof Closeable) {
             closeables.add(consumer as Closeable)
@@ -86,7 +86,7 @@ class LogScrambler implements Iterable<LogEntry> {
         return this
     }
 
-    LogScrambler withPredicateConsumer(LogConsumer consumer, Predicate predicate) {
+    LogCrawler withPredicateConsumer(LogConsumer consumer, Predicate predicate) {
         return withConsumer(new PredicateConsumer(consumer, predicate))
     }
 
@@ -235,7 +235,7 @@ class LogScrambler implements Iterable<LogEntry> {
             }
             boolean result = lastEntry != null
             if (!result) {
-                LogScrambler.this.closeConsumers()
+                LogCrawler.this.closeConsumers()
             }
             return result
         }
@@ -340,7 +340,7 @@ class LogScrambler implements Iterable<LogEntry> {
     static class Builder {
         ObjectProvider provider = new DefaultObjectProvider()
 
-        private LogScrambler context
+        private LogCrawler context
         private final Map<String, Object> sourceNameConsumerMap = [:]
         private final Map<LogEntry, Object> sourceConsumerMap = [:]
         private final List<ConsumerBuilder> consumerBuilders = []
@@ -351,7 +351,7 @@ class LogScrambler implements Iterable<LogEntry> {
         private TimeUnit defaultUnit = TimeUnit.MILLISECONDS
 
         Builder() {
-            context = new LogScrambler()
+            context = new LogCrawler()
         }
 
         @PackageScope
@@ -645,7 +645,7 @@ class LogScrambler implements Iterable<LogEntry> {
             return getSourceConsumer(sourceName)
         }
 
-        LogScrambler build() {
+        LogCrawler build() {
             context.withExecutorService(executorService, defaultTimeout, defaultUnit)
             buildSourceConsumers()
             buildLogEntryConsumers()
@@ -764,14 +764,14 @@ class LogScrambler implements Iterable<LogEntry> {
         compilerConfiguration.setScriptBaseClass(DelegatingScript.name)
 
         final importCustomizer = new ImportCustomizer()
-        importCustomizer.addStarImports(LogScrambler.package.name)
+        importCustomizer.addStarImports(LogCrawler.package.name)
         compilerConfiguration.addCompilationCustomizers(importCustomizer)
 
         return new GroovyShell(compilerConfiguration)
     }
 
     protected static String readResourceText(String resource) {
-        final URL url = LogScrambler.getResource(resource)
+        final URL url = LogCrawler.getResource(resource)
         String text
         if (url == null) {
             final file = new File(resource)

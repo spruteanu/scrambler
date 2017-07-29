@@ -13,7 +13,7 @@ class Log4jConsumerBuilder extends RegexConsumerBuilder {
     Log4jConsumerBuilder() {
     }
 
-    Log4jConsumerBuilder(LogScrambler.Builder contextBuilder, def consumer) {
+    Log4jConsumerBuilder(LogCrawler.Builder contextBuilder, def consumer) {
         super(contextBuilder, consumer)
     }
 
