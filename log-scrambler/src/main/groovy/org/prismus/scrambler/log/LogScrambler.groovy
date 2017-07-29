@@ -804,7 +804,7 @@ class LogScrambler implements Iterable<LogEntry> {
 
     private static String usage() {
         return """
-Crawls files/folder based on definitions in <builder script>-log.groovy script(s)
+Crawls files/folder based on logging consumer definitions
 
 Usage:
 logCrawler [$LOG4J_ARG/$REGEX_ARG option] [sourceFiles/sourceFolders...] [<builder script>-log.groovy]
