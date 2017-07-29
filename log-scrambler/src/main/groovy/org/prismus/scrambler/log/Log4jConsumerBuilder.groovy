@@ -52,9 +52,9 @@ class Log4jConsumerBuilder extends RegexConsumerBuilder {
             for (Object obj : consumers) {
                 final consumer = newConsumer(obj)
                 if (consumer instanceof DateConsumer) {
-                    consumer.setDateFormat(new SimpleDateFormat(result.timestampFormat))
+                    consumer.setDateFormat(new SimpleDateFormat(result.dateFormat))
                 }
-                result.groupConsumer(entry.key, consumer)
+                result.withGroupConsumer(entry.key, consumer)
             }
         }
     }

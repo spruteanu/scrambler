@@ -48,7 +48,7 @@ class RegexProcessorTest extends Specification {
                 .group('Caller', 3)
                 .group('Line', 4)
                 .group('Message', 5)
-                .groupConsumer('Message', new RegexConsumer(~/.+\[(.+)\]/, 'Message').group('SQLErrorCodes', 1))
+                .withGroupConsumer('Message', new RegexConsumer(~/.+\[(.+)\]/, 'Message').group('SQLErrorCodes', 1))
                 .consume(logEntry)
         false == logEntry.isEmpty()
         'SQLErrorCodes loaded: [DB2, Derby, H2, HSQL, Informix, MS-SQL, MySQL, Oracle, PostgreSQL, Sybase]' == logEntry.getLogValue('Message')
@@ -115,7 +115,7 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
                 .group('Caller', 3)
                 .group('Line', 4)
                 .group('Message', 5)
-                .groupConsumer('Message', new RegexConsumer(~/(?ms)(${MessageExceptionConsumer.EXCEPTION_REGEX})/, 'Message').group('Exception', 1))
+                .withGroupConsumer('Message', new RegexConsumer(~/(?ms)(${MessageExceptionConsumer.EXCEPTION_REGEX})/, 'Message').group('Exception', 1))
                 .consume(logEntry)
         false == logEntry.isEmpty()
         """OMG, Something bad happened

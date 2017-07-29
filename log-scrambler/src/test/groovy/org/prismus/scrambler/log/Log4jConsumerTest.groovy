@@ -2,17 +2,14 @@ package org.prismus.scrambler.log
 
 import spock.lang.Specification
 
-import static RegexConsumer.of
-import static org.prismus.scrambler.log.Log4jConsumer.*
-
 /**
  * @author Serge Pruteanu
  */
-class Log4JLogConsumerTest extends Specification {
+class Log4jConsumerTest extends Specification {
 
-    void 'verify adding non specifier char'() {
+    void 'verify conversion of non specifier char'() {
         final sb = new StringBuilder()
-        appendNonSpecifierChar(sb, ch as char)
+        Log4jConsumer.appendNonSpecifierChar(sb, ch as char)
 
         expect:
         expected == sb.toString()
@@ -22,10 +19,9 @@ class Log4JLogConsumerTest extends Specification {
         expected << ['\\[', '\\]', '\\{', '\\}', '\\\\', '\\^', '\\$', '\\|', '\\?', '\\*', '\\+', '\\(', '\\)', '#', 'a', 'f', 'c', 's']
     }
 
-    void 'verify precision specifier'() {
+    void 'verify precision specifier to regex'() {
         final sb = new StringBuilder()
-        final entryProcessor = new Log4jConsumer()
-        int idx = appendSpecifierRegex(entryProcessor, sb, '%' as char, 0, specString)
+        int idx = Log4jConsumer.appendSpecifierRegex(new Log4jConsumer(), sb, '%' as char, 0, specString)
 
         expect:
         expected == sb.toString()
@@ -45,8 +41,8 @@ class Log4JLogConsumerTest extends Specification {
     }
 
     void 'verify conversionPatternToRegEx'() {
-        final entryProcessor = new Log4jConsumer()
-        String patternRegEx = conversionPatternToRegex(entryProcessor, specString)
+        final consumer = new Log4jConsumer()
+        String patternRegEx = Log4jConsumer.conversionPatternToRegex(consumer, specString)
 
         expect:
         expected == patternRegEx
@@ -66,16 +62,16 @@ class Log4JLogConsumerTest extends Specification {
 
     void 'verify conversionPatternToRegEx with log entry parsing'() {
         final conversionPattern = '%-4r [%t] %-5p %C %x - %m%n'
-        String patternRegEx = conversionPatternToRegex(new Log4jConsumer(), conversionPattern)
-        def processor = of(~/${patternRegEx}/)
+        final patternRegEx = Log4jConsumer.conversionPatternToRegex(new Log4jConsumer(), conversionPattern)
+        LogEntry logEntry = new LogEntry('0    [main] DEBUG com.vaannila.helloworld.HelloWorld  - Sample debug message')
+        Log4jConsumer.of(~/${patternRegEx}/)
                 .group('logTime', 1)
                 .group('ThreadName', 2)
                 .group('LogLevel', 3)
                 .group('CallerClass', 4)
                 .group('NDC', 5)
                 .group('Message', 6)
-        LogEntry logEntry = new LogEntry('0    [main] DEBUG com.vaannila.helloworld.HelloWorld  - Sample debug message')
-        processor.consume(logEntry)
+                .consume(logEntry)
 
         expect:
         '0' == logEntry.getLogValue('logTime')
@@ -141,13 +137,9 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
     at org.hibernate.cacheKey.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:57)
     ... 54 more
 """))
-        null != (processor = of(~/(?ms)${conversionPatternToRegex(new Log4jConsumer(), '%5p | %d | %F | %L | %m%n')}/)
-                .group('LogLevel', 1)
-                .group('Timestamp', 2)
-                .group('CallerFileName', 3)
-                .group('Line', 4)
-                .group('Message', 5))
-        processor.consume(logEntry)
+        Log4jConsumer.of(~/(?ms)${Log4jConsumer.conversionPatternToRegex(new Log4jConsumer(), '%5p | %d | %F | %L | %m%n')}/)
+                .groups('LogLevel', 'Timestamp', 'CallerFileName', 'Line', 'Message')
+                .consume(logEntry)
         false == logEntry.isEmpty()
         'ERROR' == logEntry.getLogValue('LogLevel')
         '2008-09-06 10:51:45,473' == logEntry.getLogValue('Timestamp')
@@ -210,23 +202,24 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
     ... 54 more""" == logEntry.getLogValue('Message')
     }
 
-    void 'verify log4j entry processor'() {
-        final processor = ofPattern('%-4r [%t] %-5p %C %x - %m%n')
+    void 'verify log4j entry consumer'() {
+        final consumer = Log4jConsumer.of('%-4r [%t] %-5p %C %x - %m%n')
         final logEntry = new LogEntry('0    [main] DEBUG com.vaannila.helloworld.HelloWorld  - Sample debug message')
+
         expect:
-        processor.consume(logEntry)
+        consumer.consume(logEntry)
         [
-                (LOGGING_DURATION): '0',
-                (THREAD_NAME)     : 'main',
-                (PRIORITY)        : 'DEBUG',
-                (CALLER_CLASS)    : 'com.vaannila.helloworld.HelloWorld',
-                (MESSAGE)         : 'Sample debug message',
+                (Log4jConsumer.LOGGING_DURATION): '0',
+                (Log4jConsumer.THREAD_NAME)     : 'main',
+                (Log4jConsumer.PRIORITY)        : 'DEBUG',
+                (Log4jConsumer.CALLER_CLASS)    : 'com.vaannila.helloworld.HelloWorld',
+                (Log4jConsumer.MESSAGE)         : 'Sample debug message',
         ] == logEntry.logValueMap
     }
 
-    void 'verify log4j toFileFilterConversionMap conversion'() {
+    void 'verify extractLog4jConsumerProperties'() {
         given:
-        final filterConversionMap = toFileFilterConversionMap("""# Root logger option
+        final log4jConsumerProperties = Log4jConsumer.extractLog4jConsumerProperties("""# Root logger option
 log4j.rootLogger=INFO, file, stdout
 
 # Direct log messages to a log file
@@ -263,13 +256,24 @@ log4j.appender.file3.MaxFileSize=10MB
 log4j.appender.file3.MaxBackupIndex=10
 log4j.appender.file3.layout=org.apache.log4j.PatternLayout
 log4j.appender.file3.layout.ConversionPattern=%d - %p - %m%n
+
+log4j.logger.sample3=TRACE, sample3
+log4j.appender.sample3=org.apache.log4j.RollingFileAppender
+log4j.appender.sample3.File=target/sample-3.log
+log4j.appender.sample3.MaxFileSize=10MB
+log4j.appender.sample3.MaxBackupIndex=10
+log4j.appender.sample3.layout=org.apache.log4j.PatternLayout
+log4j.appender.sample3.layout.ConversionPattern=%d %5p %c [%t] - %m%n
 """.readLines())
+        final filterConversionMap = Log4jConsumer.toLog4jFileConversionPattern(log4jConsumerProperties)
 
         expect:
         ["log-file.log*" : "%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n",
          "log-file1.log*": "%d %5p %37c - %m%n",
          "log-file2.log*": "%d %5p %37c - %m%n",
-         "log-file3.log*": "%d - %p - %m%n"] == filterConversionMap
+         "log-file3.log*": "%d - %p - %m%n",
+         "sample-3.log*" : "%d %5p %c [%t] - %m%n",
+        ] == filterConversionMap
     }
 
 }

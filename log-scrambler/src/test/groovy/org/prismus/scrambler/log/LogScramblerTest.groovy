@@ -89,11 +89,24 @@ class LogScramblerTest extends Specification {
     void 'parse log entries using log4j config file'() {
         given:
         final folder = new File(LogScramblerTest.protectionDomain.codeSource.location.path)
-        final logContext = LogScrambler.builder().log4jConfigSource(folder, '/log4j.properties').build()
-        def iterator = logContext.iterator()
+        final builder = LogScrambler.builder().log4jConfigSource(folder, '/log4j.properties')
 
-        expect:
-        29 == iterator.toList().size()
+        expect: 'verify registered builders'
+        null != builder.getLog4jBuilder('sample1')
+        null != builder.getLog4jBuilder('%5p | %d | %F | %L | %m%n')
+        null != builder.getLog4jBuilder('sample-1.log*')
+
+        null != builder.getLog4jBuilder('sample2')
+        null != builder.getLog4jBuilder('%-4r [%t] %-5p %c %x - %m%n')
+        null != builder.getLog4jBuilder('sample-2.log*')
+
+        and: 'verify no sources found cause there is no such log source file'
+        null == builder.getLog4jBuilder('sample3')
+        null == builder.getLog4jBuilder('%d %5p %c [%t] - %m%n')
+        null == builder.getLog4jBuilder('sample-3.log*')
+
+        and: 'verify context is consumed properly'
+        29 == builder.build().iterator().toList().size()
     }
 
 }

@@ -19,6 +19,35 @@ class RegexConsumerBuilder extends ConsumerBuilder {
         super(contextBuilder, consumer)
     }
 
+    RegexConsumerBuilder group(String group, LogConsumer consumer = null) {
+        return indexedGroup(group, null, consumer)
+    }
+
+    RegexConsumerBuilder groups(String... groups) {
+        Objects.requireNonNull(groups, 'Groups must be provided')
+        for (int i = 0; i < groups.length; i++) {
+            indexedGroup(groups[i], i + 1)
+        }
+        return this
+    }
+
+    RegexConsumerBuilder groups(Map<String, Object> groups) {
+        Objects.requireNonNull(groups, 'Groups must be provided')
+        int i = 0
+        for (Map.Entry<String, Object> entry : groups.entrySet()) {
+            final consumer = entry.value
+            final groupName = entry.key
+            if (consumer instanceof Closure) {
+                indexedGroup(groupName, i + 1, new ClosureConsumer(consumer as Closure))
+            } else if (consumer instanceof LogConsumer) {
+                indexedGroup(groupName, i + 1, consumer as LogConsumer)
+            } else {
+                indexedGroup(groupName, i + 1)
+            }
+        }
+        return this
+    }
+
     RegexConsumerBuilder indexedGroup(String group, Integer index = null, LogConsumer consumer = null) {
         groupIndexMap.put(group, index)
         if (consumer) {
@@ -27,11 +56,7 @@ class RegexConsumerBuilder extends ConsumerBuilder {
         return this
     }
 
-    RegexConsumerBuilder group(String group, LogConsumer consumer = null) {
-        return indexedGroup(group, null, consumer)
-    }
-
-    RegexConsumerBuilder withGroups(Map<String, Integer> groupIndexMap) {
+    RegexConsumerBuilder indexedGroups(Map<String, Integer> groupIndexMap) {
         this.groupIndexMap.putAll(groupIndexMap)
         return this
     }
@@ -70,7 +95,7 @@ class RegexConsumerBuilder extends ConsumerBuilder {
 
     protected void buildGroupConsumers(RegexConsumer result) {
         for (Map.Entry<String, List> entry : groupProcessorMap.entrySet()) {
-            result.groupConsumer(entry.key, newConsumer(entry.value))
+            result.withGroupConsumer(entry.key, newConsumer(entry.value))
         }
     }
 
@@ -100,7 +125,6 @@ class RegexConsumerBuilder extends ConsumerBuilder {
             RegexConsumerBuilder.this.withConsumer(group, build())
             return contextBuilder
         }
-
     }
 
 }

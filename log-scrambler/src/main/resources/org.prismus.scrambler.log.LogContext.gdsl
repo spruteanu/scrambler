@@ -4,7 +4,7 @@
 contributor context(scope: scriptScope(name: ~/(?:.+log).groovy/)), {
 
     findClass('org.prismus.scrambler.log.LogScrambler.Builder')?.methods?.each {
-        if (!it.isConstructor()) {
+        if (!it.isConstructor() && 'build' != it.name) {
             add it
         }
     }

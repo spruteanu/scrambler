@@ -61,6 +61,12 @@ class RegexConsumer implements LogConsumer {
         return this
     }
 
+    RegexConsumer indexedGroups(Map<String, Integer> groupIndexMap) {
+        Objects.requireNonNull(groupIndexMap, 'Group value map should not be null')
+        this.groupIndexMap.putAll(groupIndexMap)
+        return this
+    }
+
     RegexConsumer group(String group, Integer index = null, LogConsumer consumer = null) {
         assert index == null || index > 0, 'Group index should be a positive number'
         Objects.requireNonNull(group, 'Group value name should be provided')
@@ -83,21 +89,15 @@ class RegexConsumer implements LogConsumer {
         return group(groupName, new ClosureConsumer(closure))
     }
 
-    RegexConsumer groupConsumer(String group, LogConsumer consumer) {
+    RegexConsumer withGroupConsumer(String group, LogConsumer consumer) {
         Objects.requireNonNull(group, "Group Name can't be null")
         Objects.requireNonNull(consumer, 'Entry consumer instance should be provided')
         addConsumer(group, consumer)
         return this
     }
 
-    RegexConsumer groupConsumer(String group, Closure closure) {
-        return groupConsumer(group, new ClosureConsumer(closure))
-    }
-
-    RegexConsumer indexedGroups(Map<String, Integer> groupIndexMap) {
-        Objects.requireNonNull(groupIndexMap, 'Group value map should not be null')
-        this.groupIndexMap.putAll(groupIndexMap)
-        return this
+    RegexConsumer withGroupConsumer(String group, Closure closure) {
+        return withGroupConsumer(group, new ClosureConsumer(closure))
     }
 
     private List<LogConsumer> getConsumer(String key) {
@@ -139,7 +139,7 @@ class RegexConsumer implements LogConsumer {
         }
     }
 
-    static String dateFormatToRegEx(String dateFormat) {
+    protected static String dateFormatToRegEx(String dateFormat) {
         String result = dateFormat
         result = result.replaceAll('[w]+', '\\\\w+')
         result = result.replaceAll('[WDdFuHkKhmsSyYGMEazZX]+', '\\\\w+')
@@ -173,7 +173,7 @@ class RegexConsumer implements LogConsumer {
         return new RegexConsumer(pattern)
     }
 
-    static RegexConsumer of(String regEx, int flags = 0) {
+    static RegexConsumer of(String regEx, int flags) {
         return new RegexConsumer(Pattern.compile(regEx, flags))
     }
 

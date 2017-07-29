@@ -33,34 +33,51 @@ class Log4jConsumer extends RegexConsumer {
     static final String THREAD_MDC = 'ThreadMdc'
     static final String THREAD_NDC = 'ThreadNdc'
 
-    String timestampFormat
+    static final String APPENDER_FILE_PROPERTY = 'File'
+    static final String APPENDER_CONVERSION_PATTERN_PROPERTY = 'ConversionPattern'
 
-    Log4jConsumer registerTimestamp(String timestampFormat) {
-        group(DATE)
-        this.timestampFormat = timestampFormat
-        return this
-    }
+    String dateFormat
 
-    Log4jConsumer timestampProcessor(String timestampFormat = null) {
-        if (!timestampFormat) {
-            timestampFormat = this.timestampFormat
-        }
-        groupConsumer(DATE, DateConsumer.of(timestampFormat, DATE))
-        return this
-    }
-
-    Log4jConsumer group(String group, Integer index = null, LogConsumer processor = null) {
+    Log4jConsumer group(String group, Integer index = null, LogConsumer consumer = null) {
         if (index == null) {
             index = groupIndexMap.size() + 1
         }
-        super.group(group, index, processor)
+        super.group(group, index, consumer)
         return this
     }
 
-    static Log4jConsumer ofPattern(String conversionPattern) {
-        final processor = new Log4jConsumer()
-        conversionPatternToRegex(processor, conversionPattern)
-        return processor
+    Log4jConsumer dateGroup(String dateFormat) {
+        group(DATE)
+        this.dateFormat = dateFormat
+        return this
+    }
+
+    Log4jConsumer withDateConsumer(String dateFormat = null) {
+        if (!dateFormat) {
+            dateFormat = this.dateFormat
+        }
+        withGroupConsumer(DATE, DateConsumer.of(dateFormat, DATE))
+        return this
+    }
+
+    Log4jConsumer withMessageExceptionConsumer() {
+        withGroupConsumer(MESSAGE, new MessageExceptionConsumer(MESSAGE))
+        return this
+    }
+
+    Log4jConsumer withMessageConsumer(LogConsumer consumer) {
+        withGroupConsumer(MESSAGE, consumer)
+        return this
+    }
+
+    Log4jConsumer withMessageConsumer(Closure closure) {
+        return withMessageConsumer(new ClosureConsumer(closure))
+    }
+
+    static Log4jConsumer of(String conversionPattern) {
+        final consumer = new Log4jConsumer()
+        conversionPatternToRegex(consumer, conversionPattern)
+        return consumer
     }
 
     protected static void appendNonSpecifierChar(StringBuilder sb, char ch) {
@@ -73,7 +90,7 @@ class Log4jConsumer extends RegexConsumer {
     }
 
     protected
-    static int appendDateFormatRegex(Log4jConsumer processor, StringBuilder sb, int index, String specString) {
+    static int appendDateFormatRegex(Log4jConsumer consumer, StringBuilder sb, int index, String specString) {
         final pattern = ~/d(\{.+\})*/
         final matcher = pattern.matcher(specString.substring(index + 1))
         if (!matcher.find()) {
@@ -105,12 +122,12 @@ class Log4jConsumer extends RegexConsumer {
             dateFormat = ISO8601_DATE_FORMAT
         }
         sb.append('(').append(dateFormatToRegEx(dateFormat)).append(')')
-        processor.registerTimestamp(dateFormat)
+        consumer.dateGroup(dateFormat)
         return index
     }
 
     protected
-    static int appendSpecifierRegex(Log4jConsumer processor, StringBuilder sb, char ch, int i, String conversionPattern) {
+    static int appendSpecifierRegex(Log4jConsumer consumer, StringBuilder sb, char ch, int i, String conversionPattern) {
         final matcher = SPEC_PATTERN.matcher(conversionPattern.substring(i + 1))
         if (!matcher.find()) {
             throw new UnsupportedOperationException("Unsupported/unknown logging conversion pattern: '${conversionPattern.substring(i + 1)}'; of '$conversionPattern'")
@@ -123,56 +140,56 @@ class Log4jConsumer extends RegexConsumer {
         switch (ch) {
             case 'c': // logging event category
                 regEx = '[^ ]+'
-                processor.group(EVENT_CATEGORY)
+                consumer.group(EVENT_CATEGORY)
                 break
             case 'C': // fully qualified class name of the caller
                 regEx = '[^ ]+'
-                processor.group(CALLER_CLASS)
+                consumer.group(CALLER_CLASS)
                 break
             case 'd': // date of the logging event. The date conversion specifier may be followed by a date format specifier enclosed between braces. For example, %d{HH:mm:ss,SSS} or %d{dd MMM yyyy HH:mm:ss,SSS}. If no date format specifier is given then ISO8601 format is assumed.
-                i = appendDateFormatRegex(processor, sb, i, conversionPattern)
+                i = appendDateFormatRegex(consumer, sb, i, conversionPattern)
                 break
             case 'F': // file name where the logging request was issued.
                 regEx = '[^ ]+'
-                processor.group(CALLER_FILE_NAME)
+                consumer.group(CALLER_FILE_NAME)
                 break
             case 'l': // file name where the logging request was issued. The location information depends on the JVM implementation but usually consists of the fully qualified name of the calling method followed by the callers source the file name and line number between parentheses.
                 regEx = '[^ ]+'
-                processor.group(CALLER_LOCATION)
+                consumer.group(CALLER_LOCATION)
                 break
             case 'L': // line number from where the logging request was issued.
                 regEx = '[\\d^ ]+'
-                processor.group(CALLER_LINE)
+                consumer.group(CALLER_LINE)
                 break
             case 'm': // message
                 regEx = '.+'
-                processor.group(MESSAGE)
+                consumer.group(MESSAGE)
                 break
             case 'M': // method name where the logging request was issued.
                 regEx = '[^ ]+'
-                processor.group(CALLER_METHOD)
+                consumer.group(CALLER_METHOD)
                 break
             case 'n': // line break, skip it
                 return i + 2
             case 'p': // priority of the logging event.
                 regEx = '[\\w ]+'
-                processor.group(PRIORITY)
+                consumer.group(PRIORITY)
                 break
             case 'r': // number of milliseconds
                 regEx = '[\\d^ ]+'
-                processor.group(LOGGING_DURATION)
+                consumer.group(LOGGING_DURATION)
                 break
             case 't': // name of the thread that generated the logging event.
                 regEx = '.+'
-                processor.group(THREAD_NAME)
+                consumer.group(THREAD_NAME)
                 break
             case 'x': // NDC (nested diagnostic context) associated with the thread that generated the logging event.
                 regEx = '[^ ]*'
-                processor.group(THREAD_NDC)
+                consumer.group(THREAD_NDC)
                 break
             case 'X': // MDC (mapped diagnostic context) associated with the thread that generated the logging event. The X conversion character must be followed by the key for the map placed between braces, as in %X{clientNumber} where clientNumber is the key. The value in the MDC corresponding to the key will be output.
                 regEx = '[^ ]*'
-                processor.group(THREAD_MDC)
+                consumer.group(THREAD_MDC)
                 break
             default:
                 throw new UnsupportedOperationException("Unsupported/unknown logging conversion pattern: '${conversionPattern.substring(i + 1)}'; of '$conversionPattern'")
@@ -203,7 +220,7 @@ class Log4jConsumer extends RegexConsumer {
         return i + spec.length()
     }
 
-    static String conversionPatternToRegex(final Log4jConsumer processor, final String conversionPattern) {
+    protected static String conversionPatternToRegex(final Log4jConsumer consumer, final String conversionPattern) {
         final sb = new StringBuilder()
         final cs = '%' as char
         final length = conversionPattern.length()
@@ -217,19 +234,21 @@ class Log4jConsumer extends RegexConsumer {
                     i++
                     continue
                 }
-                i = appendSpecifierRegex(processor, sb, ch, i, conversionPattern)
+                i = appendSpecifierRegex(consumer, sb, ch, i, conversionPattern)
             } else {
                 appendNonSpecifierChar(sb, ch)
             }
         }
         final regex = sb.toString()
-        processor.pattern = ~/(?ms)$regex/
+        consumer.pattern = ~/(?ms)$regex/
         return regex
     }
 
-    protected static Map<String, String> toFileFilterConversionMap(List<String> lines) {
+    protected static Map<String, Map<String, String>> extractLog4jConsumerProperties(List<String> lines) {
         final Map<String, Map<String, String>> appenderProps = [:]
-        final Set<String> log4jSet = ['File', 'ConversionPattern'] as Set
+        final Set<String> log4jSet = [APPENDER_FILE_PROPERTY, APPENDER_CONVERSION_PATTERN_PROPERTY, 'builder', 'consumer'] as Set
+        final filePattern = ~/([^\/\\]+\..+)/
+
         for (String line : lines) {
             if (!line.startsWith('log4j.appender.')) {
                 continue
@@ -237,25 +256,37 @@ class Log4jConsumer extends RegexConsumer {
             line = line.substring('log4j.appender.'.length())
             final keys = line.split('=')
             final apps = keys[0].split('\\.')
+            String value = keys.length == 2 ? keys[1] : null
             if (apps.length == 1) {
                 appenderProps.put(apps[0], [:])
             } else {
-                final cat = apps.length == 2 && log4jSet.contains(apps[1]) ? apps[1] : apps.length == 3 && log4jSet.contains(apps[2]) ? apps[2] : null
+                final String cat
+                if (apps.length == 2 && log4jSet.contains(apps[1])) {
+                    cat = apps[1]
+                    value = toMap(filePattern, value, [fileFilter: 1]).get('fileFilter') + '*'
+                } else if (apps.length == 3) {
+                    if (log4jSet.contains(apps[1])) {
+                        cat = apps[1]
+                        value = apps[2]
+                    } else if (log4jSet.contains(apps[2])) {
+                        cat = apps[2]
+                    }
+                }
                 if (cat) {
-                    appenderProps.get(apps[0])?.put(cat, keys[1])
+                    appenderProps.get(apps[0])?.put(cat, value)
                 }
             }
         }
+        return appenderProps
+    }
+
+    protected static Map<String, String> toLog4jFileConversionPattern(Map<String, Map<String, String>> log4jConsumerProps) {
         final filterMap = [:]
-        final filePattern = ~/([^\/\\]+\..+)/
-        for (Map<String, String> log4jProps : appenderProps.values()) {
-            final file = log4jProps.get('File')
-            final conversionPattern = log4jProps.get('ConversionPattern')
+        for (Map<String, String> log4jProps : log4jConsumerProps.values()) {
+            final file = log4jProps.get(APPENDER_FILE_PROPERTY)
+            final conversionPattern = log4jProps.get(APPENDER_CONVERSION_PATTERN_PROPERTY)
             if (file && conversionPattern) {
-                final fileFilter = toMap(filePattern, file, [fileFilter: 1]).get('fileFilter')
-                if (fileFilter) {
-                    filterMap.put(fileFilter + '*', conversionPattern)
-                }
+                filterMap.put(file, conversionPattern)
             }
         }
         return filterMap

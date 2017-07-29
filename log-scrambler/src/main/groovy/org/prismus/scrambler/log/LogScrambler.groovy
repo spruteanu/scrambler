@@ -26,6 +26,9 @@ import java.util.stream.Collectors
 @CompileStatic
 @Log
 class LogScrambler implements Iterable<LogEntry> {
+    protected static final String LOG4J_ARG = '-log4j'
+    protected static final String REGEX_ARG = '-regex'
+
     private Map<LogEntry, LogConsumer> sourceConsumerMap = [:]
     private List<LogConsumer> consumers = new ArrayList<LogConsumer>()
     private List<Closeable> closeables = []
@@ -46,6 +49,11 @@ class LogScrambler implements Iterable<LogEntry> {
         return this
     }
 
+    LogScrambler forSource(LogEntry source, LogConsumer sourceConsumer) {
+        sourceConsumerMap.put(source, sourceConsumer)
+        return this
+    }
+
     LogScrambler withExecutorService(ExecutorService executorService, int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
         this.asynchUnit = unit
         this.asynchTimeout = timeout
@@ -53,11 +61,6 @@ class LogScrambler implements Iterable<LogEntry> {
             completionService = new ExecutorCompletionService<Void>(executorService)
             jobsCount = new AtomicInteger()
         }
-        return this
-    }
-
-    LogScrambler forSource(LogEntry source, LogConsumer sourceConsumer) {
-        sourceConsumerMap.put(source, sourceConsumer)
         return this
     }
 
@@ -82,7 +85,7 @@ class LogScrambler implements Iterable<LogEntry> {
         return this
     }
 
-    LogScrambler predicateConsumer(LogConsumer consumer, Predicate predicate) {
+    LogScrambler withPredicateConsumer(LogConsumer consumer, Predicate predicate) {
         return withConsumer(new PredicateConsumer(consumer, predicate))
     }
 
@@ -337,6 +340,7 @@ class LogScrambler implements Iterable<LogEntry> {
         ObjectProvider provider = new DefaultObjectProvider()
 
         private LogScrambler context
+        private final Map<String, Object> sourceNameConsumerMap = [:]
         private final Map<LogEntry, Object> sourceConsumerMap = [:]
         private final List<ConsumerBuilder> consumerBuilders = []
 
@@ -421,8 +425,8 @@ class LogScrambler implements Iterable<LogEntry> {
             return consumer instanceof AsynchronousProxyConsumer ? consumer as AsynchronousProxyConsumer : new AsynchronousProxyConsumer(context, consumer).awaitConsumption(timeout, unit)
         }
 
-        LogConsumer getConsumer(Object processorId, Object... args) {
-            return provider.get(processorId, args) as LogConsumer
+        LogConsumer getConsumer(Object consumerId, Object... args) {
+            return provider.get(consumerId, args) as LogConsumer
         }
 
         Builder asynchronousSources(int defaultTimeout = this.defaultTimeout, TimeUnit defaultUnit = this.defaultUnit) {
@@ -533,11 +537,18 @@ class LogScrambler implements Iterable<LogEntry> {
             return this
         }
 
-        protected Builder sourceConsumer(Object sourceConsumer) {
-            for (LogEntry source : sourceConsumerMap.keySet()) {
-                final sc = sourceConsumerMap.get(source)
+        protected void registerSourceConsumer(LogEntry sourceEntry, Object sourceConsumer, String sourceName = null) {
+            sourceConsumerMap.put(sourceEntry, sourceConsumer)
+            if (sourceName) {
+                sourceNameConsumerMap.put(sourceName, sourceConsumer)
+            }
+        }
+
+        protected Builder sourceConsumer(Object sourceConsumer, String sourceName = null) {
+            for (LogEntry sourceEntry : sourceConsumerMap.keySet()) {
+                final sc = sourceConsumerMap.get(sourceEntry)
                 if (sc == null) {
-                    sourceConsumerMap.put(source, sourceConsumer)
+                    registerSourceConsumer(sourceEntry, sourceConsumer, sourceName)
                 }
             }
             return this
@@ -545,39 +556,42 @@ class LogScrambler implements Iterable<LogEntry> {
 
         RegexConsumerBuilder sourceRegexConsumer(Pattern pattern) {
             final builder = new RegexConsumerBuilder(this, RegexConsumer.of(pattern))
-            sourceConsumer(builder)
+            sourceConsumer(builder, pattern.pattern())
             return builder
         }
 
         RegexConsumerBuilder sourceRegexConsumer(String regEx, int flags = 0) {
             final builder = new RegexConsumerBuilder(this, RegexConsumer.of(regEx, flags))
-            sourceConsumer(builder)
+            sourceConsumer(builder, regEx)
             return builder
         }
 
         Log4jConsumerBuilder sourceLog4jConsumer(String conversionPattern) {
-            final builder = new Log4jConsumerBuilder(this, Log4jConsumer.ofPattern(conversionPattern))
-            sourceConsumer(builder)
+            final builder = new Log4jConsumerBuilder(this, Log4jConsumer.of(conversionPattern))
+            sourceConsumer(builder, conversionPattern)
             return builder
+        }
+
+        protected void sourceFolder(ConsumerBuilder builder, String sourceName, File folder, String fileFilter, Comparator<Path> fileSorter) {
+            final files = listFolderFiles(folder, fileFilter, fileSorter)
+            for (File file : files) {
+                final logEntry = LineReader.newLogSource(new LogEntry(source: file), file.path)
+                registerSourceConsumer(logEntry, builder, sourceName)
+                registerSourceConsumer(logEntry, builder, fileFilter)
+            }
         }
 
         RegexConsumerBuilder regexSourceFolder(File folder, Pattern pattern,
                                                String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
-            final files = listFolderFiles(folder, fileFilter, fileSorter)
             final builder = sourceRegexConsumer(pattern)
-            for (File file : files) {
-                sourceConsumerMap.put(LineReader.newLogSource(new LogEntry(source: folder), file.path), builder)
-            }
+            sourceFolder(builder, pattern.pattern(), folder, fileFilter, fileSorter)
             return builder
         }
 
         Log4jConsumerBuilder log4jSourceFolder(File folder, String conversionPattern,
                                                String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
-            final files = listFolderFiles(folder, fileFilter, fileSorter)
             final builder = sourceLog4jConsumer(conversionPattern)
-            for (File file : files) {
-                sourceConsumerMap.put(LineReader.newLogSource(new LogEntry(source: file), file.path), builder)
-            }
+            sourceFolder(builder, conversionPattern, folder, fileFilter, fileSorter)
             return builder
         }
 
@@ -587,9 +601,18 @@ class LogScrambler implements Iterable<LogEntry> {
         }
 
         Builder log4jConfigSource(File folder, String log4jConfig, Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
-            final filterConversionMap = Log4jConsumer.toFileFilterConversionMap(readResourceText(log4jConfig).readLines())
+            final log4jConsumerProperties = Log4jConsumer.extractLog4jConsumerProperties(readResourceText(log4jConfig).readLines())
+            final filterConversionMap = Log4jConsumer.toLog4jFileConversionPattern(log4jConsumerProperties)
             for (Map.Entry<String, String> entry : filterConversionMap.entrySet()) {
                 log4jSourceFolder(folder, entry.value, entry.key, fileSorter)
+            }
+            for (Map.Entry<String, Map<String, String>> entry : log4jConsumerProperties.entrySet()) {
+                final loggerName = entry.key
+                final loggerProperties = entry.value
+                final log4jBuilder = getLog4jBuilder(loggerProperties.get(Log4jConsumer.APPENDER_CONVERSION_PATTERN_PROPERTY))
+                if (log4jBuilder) {
+                    sourceNameConsumerMap.put(loggerName, log4jBuilder)
+                }
             }
             return this
         }
@@ -604,9 +627,21 @@ class LogScrambler implements Iterable<LogEntry> {
             final files = listFolderFiles(folder, fileFilter, fileSorter)
             final builder = withConsumer(consumer)
             for (File file : files) {
-                sourceConsumerMap.put(LineReader.newLogSource(new LogEntry(source: folder), file.path), builder)
+                registerSourceConsumer(LineReader.newLogSource(new LogEntry(source: folder), file.path), builder)
             }
             return builder
+        }
+
+        public <T> T getSourceConsumer(String sourceName) {
+            return sourceNameConsumerMap.get(sourceName) as T
+        }
+
+        RegexConsumerBuilder getRegexBuilder(String regex) {
+            return getSourceConsumer(regex)
+        }
+
+        Log4jConsumerBuilder getLog4jBuilder(String sourceName) {
+            return getSourceConsumer(sourceName)
         }
 
         LogScrambler build() {
@@ -614,6 +649,7 @@ class LogScrambler implements Iterable<LogEntry> {
             buildSourceConsumers()
             buildLogEntryConsumers()
             sourceConsumerMap.clear()
+            sourceNameConsumerMap.clear()
             consumerBuilders.clear()
             return context
         }
@@ -622,13 +658,57 @@ class LogScrambler implements Iterable<LogEntry> {
             if (!args) {
                 return this
             }
+            final configTypes = [LOG4J_ARG, REGEX_ARG] as Set
+            final log4j_prop = 'log4j.properties'
+            final List<File> files = []
+            final Queue<List> configTuple = new LinkedList<List>()
+            final Collection<String> scripts = []
             final unknownArgs = []
-            for (String arg : args) {
+            for (int i = 0; i < args.length; i++) {
+                String arg = args[i];
                 if (arg.endsWith('groovy')) {
-                    initGroovyScriptBuilder(this, readGroovyResourceText(arg))
+                    scripts.add(arg)
                 } else {
-                    unknownArgs.add(arg)
+                    if (configTypes.contains(arg.toLowerCase())) {
+                        configTuple.add([arg, i == args.length - 1 ? i : ++i])
+                        continue
+                    }
+                    final file = new File(arg)
+                    if (file.exists()) {
+                        if (log4j_prop.equalsIgnoreCase(arg)) {
+                            configTuple.add([LOG4J_ARG, i])
+                        } else {
+                            files.add(file)
+                        }
+                    } else {
+                        unknownArgs.add(arg)
+                    }
                 }
+            }
+            for (final i = 0; i < files.size(); i++) {
+                final file = files.get(i)
+                List tuple = configTuple.peek() ?: [LOG4J_ARG, 0]
+                final configType = tuple[0]
+                if (file.isDirectory()) {
+                    switch (configType) {
+                        case LOG4J_ARG:
+//                            log4jConfigSource(file, )
+                            break
+                        case REGEX_ARG:
+//                            regexSourceFolder(file, )
+                            break
+                    }
+                } else {
+                    switch (configType) {
+                        case LOG4J_ARG:
+                            break
+                        case REGEX_ARG:
+                            break
+                    }
+                }
+            }
+            for (final script : scripts) {
+                initGroovyScriptBuilder(this, readGroovyResourceText(script))
             }
             if (unknownArgs) {
                 throw new IllegalArgumentException("Unsupported/unknown arguments: '${unknownArgs.join(', ')}'")

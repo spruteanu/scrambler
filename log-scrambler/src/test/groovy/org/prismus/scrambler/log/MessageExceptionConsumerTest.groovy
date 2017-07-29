@@ -49,8 +49,8 @@ java.lang.NullPointerException:
     }
 
     void 'verify message processor'() {
-        final processor = Log4jConsumer.ofPattern('%5p | %d | %F | %L | %m%n')
-                .groupConsumer(Log4jConsumer.MESSAGE, new MessageExceptionConsumer(Log4jConsumer.MESSAGE))
+        final processor = Log4jConsumer.of('%5p | %d | %F | %L | %m%n')
+                .withGroupConsumer(Log4jConsumer.MESSAGE, new MessageExceptionConsumer(Log4jConsumer.MESSAGE))
 
         LogEntry logEntry
         expect:
