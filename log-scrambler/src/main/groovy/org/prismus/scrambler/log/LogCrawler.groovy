@@ -611,6 +611,9 @@ class LogCrawler implements Iterable<LogEntry> {
 
         Builder log4jConfigSource(File folder, String log4jConfig, Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
             final log4jConsumerProperties = Log4jConsumer.extractLog4jConsumerProperties(readResourceText(log4jConfig).readLines())
+            if (log4jConsumerProperties.isEmpty()) {
+                throw new IllegalArgumentException("Either empty or there are no file loggers defined in '$log4jConfig'")
+            }
             final filterConversionMap = Log4jConsumer.toLog4jFileConversionPattern(log4jConsumerProperties)
             for (Map.Entry<String, String> entry : filterConversionMap.entrySet()) {
                 log4jSourceFolder(folder, entry.value, entry.key, fileSorter)
@@ -663,30 +666,29 @@ class LogCrawler implements Iterable<LogEntry> {
             return context
         }
 
-        private List toMethodTuple(String[] args, Queue<List> configTuple, int currentIdx, File file) {
+        private List toMethodTuple(String[] args, List<List> configTuple, int currentIdx, File file) {
             if (configTuple.isEmpty()) {
                 throw new IllegalArgumentException("Illegal arguments provided: '${args.join(', ')}'; source type is unknown")
             }
-
-            List cTuple
-            while (((cTuple = configTuple.peek())[1] as int) > currentIdx) configTuple.poll()
-            final String configType = cTuple[0] as String
-            final int configIdx = cTuple[1] as int
+            int i = configTuple.size() - 1
+            for (; i > 0 && (configTuple.get(i)[1] as int) > currentIdx; i--) { ; }
+            final String configType = configTuple.get(i)[0] as String
+            final int configIdx = configTuple.get(i)[1] as int
             final configValue = args[configIdx]
             final boolean configFile = new File(configValue).exists()
 
-            final List result = []
+            List result = null
             if (file.isDirectory()) {
                 switch (configType) {
                     case LOG4J_ARG:
                         if (configFile) {
-                            result.add(['log4jConfigSource', [file, configValue] as Object[]])
+                            result = ['log4jConfigSource', [file, configValue] as Object[]]
                         } else {
-                            result.add(['log4jSourceFolder', [file, configValue] as Object[]])
+                            result = ['log4jSourceFolder', [file, configValue] as Object[]]
                         }
                         break
                     case REGEX_ARG:
-                        result.add(['regexSourceFolder', [file, configValue] as Object[]])
+                        result = ['regexSourceFolder', [file, configValue] as Object[]]
                         break
                 }
             } else {
@@ -697,14 +699,14 @@ class LogCrawler implements Iterable<LogEntry> {
                             throw new UnsupportedOperationException("Unsupported log4j config file option: '$configValue' for a single file: '$file.path'. Only conversion pattern is supported here")
                         }
                         final builder = sourceLog4jConsumer(configValue)
-                        result.add(['registerSourceConsumer', [sourceEntry, builder, configValue] as Object[]])
+                        result = ['registerSourceConsumer', [sourceEntry, builder, configValue] as Object[]]
                         break
                     case REGEX_ARG:
-                        result.add(['registerSourceConsumer', [sourceEntry, sourceRegexConsumer(configValue), configValue] as Object[]])
+                        result = ['registerSourceConsumer', [sourceEntry, sourceRegexConsumer(configValue), configValue] as Object[]]
                         break
                 }
             }
-            if (result.isEmpty()) {
+            if (!result) {
                 throw new IllegalArgumentException("Illegal arguments provided: '${args.join(', ')}'; source type is unknown")
             }
             return result
@@ -712,12 +714,11 @@ class LogCrawler implements Iterable<LogEntry> {
 
         private Builder init(String... args) {
             if (!args) {
-                usage()
                 return this
             }
             final List<List> sourceMethodTuple = []
             final configTypes = [LOG4J_ARG, REGEX_ARG] as Set
-            final Queue<List> configTuple = new LinkedList<List>()
+            final List<List> configTuple = []
             final Collection<String> scripts = []
             final unknownArgs = []
             for (int i = 0; i < args.length; i++) {
@@ -729,7 +730,7 @@ class LogCrawler implements Iterable<LogEntry> {
                         if (args.length > i + 1) {
                             configTuple.add([arg, ++i])
                         } else {
-                            unknownArgs.add("$arg argument must be followed by option")
+                            unknownArgs.add("$arg argument must be followed by option and files to be applied")
                         }
                         continue
                     }
@@ -741,15 +742,18 @@ class LogCrawler implements Iterable<LogEntry> {
                     }
                 }
             }
+            if (sourceMethodTuple.isEmpty() && configTuple.size() > 0) {
+                unknownArgs.add('No source configuration options provided')
+            }
+            if (unknownArgs) {
+                throw new IllegalArgumentException("Unsupported/unknown arguments: '${unknownArgs.join(', ')}'; arguments: '${args.join(', ')}'")
+            }
             for (final i = 0; i < sourceMethodTuple.size(); i++) {
                 final tuple = sourceMethodTuple.get(i)
                 InvokerHelper.invokeMethod(this, tuple[0].toString(), tuple[1])
             }
             for (final script : scripts) {
                 initGroovyScriptBuilder(this, readGroovyResourceText(script))
-            }
-            if (unknownArgs) {
-                throw new IllegalArgumentException("Unsupported/unknown arguments: '${unknownArgs.join(', ')}'")
             }
             return this
         }
