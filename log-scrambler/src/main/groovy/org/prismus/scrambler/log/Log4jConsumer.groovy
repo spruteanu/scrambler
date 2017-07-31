@@ -347,11 +347,11 @@ class Log4jConsumer extends RegexConsumer {
             for (Map.Entry<String, List> entry : groupProcessorMap.entrySet()) {
                 final consumers = entry.value
                 for (Object obj : consumers) {
-                    final consumer = newConsumer(obj)
-                    if (consumer instanceof DateConsumer) {
-                        consumer.setDateFormat(new SimpleDateFormat(result.dateFormat))
+                    final LogConsumer cs = newConsumer(obj)
+                    if (cs instanceof DateConsumer) {
+                        ((DateConsumer) cs).setDateFormat(new SimpleDateFormat(result.dateFormat))
                     }
-                    result.withGroupConsumer(entry.key, consumer)
+                    result.withGroupConsumer(entry.key, cs)
                 }
             }
         }

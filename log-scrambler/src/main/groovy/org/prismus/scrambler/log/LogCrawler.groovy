@@ -514,20 +514,20 @@ class LogCrawler implements Iterable<LogEntry> {
             return withConsumer(CsvWriterConsumer.of(filePath, columns))
         }
 
-        ConsumerBuilder csvWriterBuilder(Writer writer, String... columns) {
-            final builder = new ConsumerBuilder(this, CsvWriterConsumer.of(writer, columns))
+        CsvWriterConsumer.Builder csvWriterBuilder(Writer writer, String... columns) {
+            final builder = new CsvWriterConsumer.Builder(this, CsvWriterConsumer.of(writer, columns))
             consumerBuilders.add(builder)
             return builder
         }
 
-        ConsumerBuilder csvWriterBuilder(File file, String... columns) {
-            final builder = new ConsumerBuilder(this, CsvWriterConsumer.of(file, columns))
+        CsvWriterConsumer.Builder csvWriterBuilder(File file, String... columns) {
+            final builder = new CsvWriterConsumer.Builder(this, CsvWriterConsumer.of(file, columns))
             consumerBuilders.add(builder)
             return builder
         }
 
-        ConsumerBuilder csvWriterBuilder(String filePath, String... columns) {
-            final builder = new ConsumerBuilder(this, CsvWriterConsumer.of(filePath, columns))
+        CsvWriterConsumer.Builder csvWriterBuilder(String filePath, String... columns) {
+            final builder = new CsvWriterConsumer.Builder(this, CsvWriterConsumer.of(filePath, columns))
             consumerBuilders.add(builder)
             return builder
         }

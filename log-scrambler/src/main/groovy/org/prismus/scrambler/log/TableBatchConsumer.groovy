@@ -357,7 +357,7 @@ class TableBatchConsumer implements LogConsumer, Closeable {
         return new TableBatchConsumer(dataSource).forTable(tableName, columns)
     }
 
-    static class Builder extends ConsumerBuilder {
+    static class Builder extends ConsumerBuilder<TableBatchConsumer> {
 //        private Sql sql
 //        private String tableName
 //        private List<String> columns
@@ -375,6 +375,35 @@ class TableBatchConsumer implements LogConsumer, Closeable {
             super(contextBuilder, consumer, args)
         }
 
+        Builder withBatchSize(int batchSize) {
+            getConsumer().setBatchSize(batchSize)
+            return this
+        }
+
+        Builder withDatasource(DataSource dataSource, String tableName, String... columns) {
+            getConsumer().withDatasource(dataSource, tableName, columns)
+            return this
+        }
+
+        Builder forTable(String tableName, String... columns) {
+            getConsumer().forTable(tableName, columns)
+            return this
+        }
+
+        Builder withCreateTableScript(String createTableScript, String statementSeparator = ';') {
+            getConsumer().withCreateTableScript(createTableScript, statementSeparator)
+            return this
+        }
+
+        Builder withDateFormat(SimpleDateFormat dateFormat) {
+            getConsumer().withDateFormat(dateFormat)
+            return this
+        }
+
+        Builder withDateFormat(String dateFormat) {
+            getConsumer().withDateFormat(dateFormat)
+            return this
+        }
     }
 
     @CompileStatic

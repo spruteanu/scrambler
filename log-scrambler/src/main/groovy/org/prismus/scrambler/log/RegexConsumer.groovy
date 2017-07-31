@@ -274,7 +274,7 @@ class RegexConsumer implements LogConsumer {
         }
 
         RegexConsumer build() {
-            final result = super.build() as RegexConsumer
+            final RegexConsumer result = super.build() as RegexConsumer
             if (groupIndexMap) {
                 result.indexedGroups(groupIndexMap)
             }
