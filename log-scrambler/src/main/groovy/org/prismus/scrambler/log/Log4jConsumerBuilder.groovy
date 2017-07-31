@@ -18,12 +18,12 @@ class Log4jConsumerBuilder extends RegexConsumerBuilder {
     }
 
     Log4jConsumerBuilder withDateConsumer(String dateFormat = null) {
-        withConsumer(Log4jConsumer.DATE, dateFormat ? DateConsumer.of(dateFormat) : new DateConsumer())
+        withConsumer(Log4jConsumer.DATE, dateFormat ? DateConsumer.of(dateFormat, Log4jConsumer.DATE) : new DateConsumer(null, Log4jConsumer.DATE))
         return this
     }
 
     Log4jConsumerBuilder withDateConsumer(SimpleDateFormat dateFormat) {
-        withConsumer(Log4jConsumer.DATE, DateConsumer.of(dateFormat))
+        withConsumer(Log4jConsumer.DATE, DateConsumer.of(dateFormat, Log4jConsumer.DATE))
         return this
     }
 

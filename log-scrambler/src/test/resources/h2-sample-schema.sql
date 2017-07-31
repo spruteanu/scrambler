@@ -1,0 +1,13 @@
+CREATE TABLE LogEntry(
+--   id INT IDENTITY(1,1) PRIMARY KEY  NOT NULL,
+  id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+  Date DATETIME NULL,
+  Priority VARCHAR(10) NULL,
+  thread VARCHAR(100) NULL,
+  eventCategory VARCHAR(100) NULL,
+  message VARCHAR(8000) NULL,
+  CallerFileName VARCHAR(400) NULL,
+  CallerLine INT NULL,
+  loggingDuration INT NULL,
+  Source VARCHAR(1024) NULL,
+)

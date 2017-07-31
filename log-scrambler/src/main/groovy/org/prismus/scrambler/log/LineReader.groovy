@@ -46,13 +46,13 @@ abstract class LineReader implements Closeable {
 
     @CompileStatic
     static LogEntry addSourceName(LogEntry entry, String sourceName) {
-        entry.putLogValue('SourceName', sourceName)
+        entry.put('SourceName', sourceName)
         return entry
     }
 
     @CompileStatic
     static String getSourceName(LogEntry entry) {
-        return entry.getLogValue('SourceName')
+        return entry.get('SourceName')
     }
 
     @CompileStatic

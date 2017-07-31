@@ -9,6 +9,7 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.springframework.context.ApplicationContext
 
+import javax.sql.DataSource
 import java.nio.file.FileVisitOption
 import java.nio.file.Files
 import java.nio.file.Path
@@ -86,8 +87,12 @@ class LogCrawler implements Iterable<LogEntry> {
         return this
     }
 
-    LogCrawler withPredicateConsumer(LogConsumer consumer, Predicate predicate) {
-        return withConsumer(new PredicateConsumer(consumer, predicate))
+    LogCrawler filterToConsumer(Predicate predicate, LogConsumer consumer) {
+        return withConsumer(new PredicateConsumer(predicate, consumer))
+    }
+
+    LogCrawler withBatchInsertConsumer(DataSource dataSource, String tableName = 'LogEntry', String... columns) {
+        return withConsumer(TableBatchInsertConsumer.of(dataSource, tableName, columns))
     }
 
     protected LogEntry consumeEntry(LogEntry entry) {
@@ -120,7 +125,7 @@ class LogCrawler implements Iterable<LogEntry> {
             }
         }
         if (errors) {
-            throw new ContextException('Failed to execute asychnronous jobs', errors)
+            throw new ContextException('Failed to execute asynchronous jobs', errors)
         }
     }
 
@@ -462,12 +467,12 @@ class LogCrawler implements Iterable<LogEntry> {
             return this
         }
 
-        Builder withPredicateConsumer(LogConsumer consumer, Predicate predicate) {
-            return withConsumer(new PredicateConsumer(consumer, predicate))
+        Builder withPredicateConsumer(Predicate predicate, LogConsumer consumer) {
+            return withConsumer(new PredicateConsumer(predicate, consumer))
         }
 
-        Builder withPredicateConsumer(Closure consumer, Closure predicate) {
-            return withPredicateConsumer(new ClosureConsumer(consumer), new ClosurePredicate(predicate))
+        Builder withPredicateConsumer(Closure predicate, Closure consumer) {
+            return withPredicateConsumer(new ClosurePredicate(predicate), new ClosureConsumer(consumer))
         }
 
         Builder withConsumer(Closure logEntryClosure) {
@@ -509,11 +514,11 @@ class LogCrawler implements Iterable<LogEntry> {
             return builder
         }
 
-        Builder dateFormatConsumer(SimpleDateFormat dateFormat, String group = DateConsumer.TIMESTAMP) {
+        Builder dateFormatConsumer(SimpleDateFormat dateFormat, String group = DateConsumer.DATE) {
             return withConsumer(DateConsumer.of(dateFormat, group))
         }
 
-        Builder dateFormatConsumer(String dateFormat, String group = DateConsumer.TIMESTAMP) {
+        Builder dateFormatConsumer(String dateFormat, String group = DateConsumer.DATE) {
             return withConsumer(DateConsumer.of(dateFormat, group))
         }
 
@@ -610,7 +615,7 @@ class LogCrawler implements Iterable<LogEntry> {
         }
 
         Builder log4jConfigSource(File folder, String log4jConfig, Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
-            final log4jConsumerProperties = Log4jConsumer.extractLog4jConsumerProperties(readResourceText(log4jConfig).readLines())
+            final log4jConsumerProperties = Log4jConsumer.extractLog4jConsumerProperties(Utils.readResourceText(log4jConfig).readLines())
             if (log4jConsumerProperties.isEmpty()) {
                 throw new IllegalArgumentException("Either empty or there are no file loggers defined in '$log4jConfig'")
             }
@@ -753,7 +758,7 @@ class LogCrawler implements Iterable<LogEntry> {
                 InvokerHelper.invokeMethod(this, tuple[0].toString(), tuple[1])
             }
             for (final script : scripts) {
-                initGroovyScriptBuilder(this, readGroovyResourceText(script))
+                initGroovyScriptBuilder(this, Utils.readGroovyResourceText(script))
             }
             return this
         }
@@ -780,26 +785,6 @@ class LogCrawler implements Iterable<LogEntry> {
         compilerConfiguration.addCompilationCustomizers(importCustomizer)
 
         return new GroovyShell(compilerConfiguration)
-    }
-
-    protected static String readResourceText(String resource) {
-        final URL url = LogCrawler.getResource(resource)
-        String text
-        if (url == null) {
-            final file = new File(resource)
-            if (!file.exists()) {
-                throw new IllegalArgumentException(String.format("Not found resource for: %s", resource))
-            } else {
-                text = file.text
-            }
-        } else {
-            text = url.text
-        }
-        return text
-    }
-
-    private static String readGroovyResourceText(String resource) {
-        return resource.endsWith('groovy') ? readResourceText(resource) : resource
     }
 
     private static Builder initGroovyScriptBuilder(Builder builder, String definitionText) {

@@ -21,7 +21,7 @@ class Log4jConsumer extends RegexConsumer {
 
     static final String EVENT_CATEGORY = 'EventCategory'
     static final String CALLER_CLASS = 'CallerClass'
-    static final String DATE = 'Date'
+    static final String DATE = 'DATE'
     static final String CALLER_FILE_NAME = 'CallerFileName'
     static final String CALLER_LOCATION = 'CallerLocation'
     static final String CALLER_LINE = 'CallerLine'

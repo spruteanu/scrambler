@@ -34,27 +34,27 @@ class LogEntry implements Cloneable {
         this.row = row
     }
 
-    LogEntry putLogValue(Object entryKey, Object value) {
+    LogEntry put(Object entryKey, Object value) {
         logValueMap.put(entryKey, value)
         return this
     }
 
-    Object getLogValue(Object entryKey) {
+    Object get(Object entryKey) {
         return logValueMap.get(entryKey)
     }
 
-    LogEntry removeLogValue(Object entryKey) {
+    LogEntry remove(Object entryKey) {
         logValueMap.remove(entryKey)
         return this
     }
 
     LogEntry sourceInfo(String value) {
-        putLogValue(SOURCE_INFO, value)
+        put(SOURCE_INFO, value)
         return this
     }
 
     String getSourceInfo() {
-        return getLogValue(SOURCE_INFO)
+        return get(SOURCE_INFO)
     }
 
     boolean isEmpty() {

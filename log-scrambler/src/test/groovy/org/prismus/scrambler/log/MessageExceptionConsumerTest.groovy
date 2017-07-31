@@ -7,11 +7,11 @@ import spock.lang.Specification
  */
 class MessageExceptionConsumerTest extends Specification {
 
-    void 'verify message consumer'() {
+    void 'verify message consumption with traces'() {
         given:
-        final consumer = new MessageExceptionConsumer('test')
-        final logEntry = new LogEntry().putLogValue('test', '''Sample fatal message
-java.lang.NullPointerException:
+        final consumer = new MessageExceptionConsumer('test').includeTraces()
+        final logEntry = new LogEntry().put('test', '''Sample fatal message
+java.lang.NullPointerException: Missed a null object check
     at com.example.myproject.Book.getTitle(Book.java:16)
     at com.example.myproject.Author.getBookTitles(Author.java:25)
     at com.example.myproject.Bootstrap.main(Bootstrap.java:14)
@@ -19,12 +19,18 @@ java.lang.NullPointerException:
         consumer.consume(logEntry)
 
         expect:
-        'Sample fatal message' == logEntry.getLogValue(MessageExceptionConsumer.ERROR_MESSAGE)
-        '''java.lang.NullPointerException:
+        'Sample fatal message' == logEntry.get(MessageExceptionConsumer.LOG_ERROR_MESSAGE)
+        '''java.lang.NullPointerException: Missed a null object check
     at com.example.myproject.Book.getTitle(Book.java:16)
     at com.example.myproject.Author.getBookTitles(Author.java:25)
-    at com.example.myproject.Bootstrap.main(Bootstrap.java:14)
-''' == logEntry.getLogValue(MessageExceptionConsumer.EXCEPTION)
+    at com.example.myproject.Bootstrap.main(Bootstrap.java:14)''' == logEntry.get(MessageExceptionConsumer.EXCEPTION)
+        'java.lang.NullPointerException' == logEntry.get(MessageExceptionConsumer.EXCEPTION_CLASS)
+        'Missed a null object check' == logEntry.get(MessageExceptionConsumer.EXCEPTION_MESSAGE)
+        3 == logEntry.get(MessageExceptionConsumer.EXCEPTION_TRACES).size()
+        [(MessageExceptionConsumer.CALLER_CLASS_METHOD): 'com.example.myproject.Book.getTitle',
+         (MessageExceptionConsumer.SOURCE_NAME)        : 'Book.java',
+         (MessageExceptionConsumer.SOURCE_LINE)        : '16'
+        ] == logEntry.get(MessageExceptionConsumer.EXCEPTION_TRACES)[0]
     }
 
     void 'verify message consumer different line breaks /windows/linux/macos/'() {
@@ -36,12 +42,12 @@ java.lang.NullPointerException:
                        '    at com.example.myproject.Bootstrap.main(Bootstrap.java:14)',]
         final consumer = new MessageExceptionConsumer('test')
 
-        final logEntry = new LogEntry().putLogValue('test', lines.join(lineBreak))
+        final logEntry = new LogEntry().put('test', lines.join(lineBreak))
         consumer.consume(logEntry)
 
         expect: "verify $os line endings"
-        'Sample fatal message' == logEntry.getLogValue(MessageExceptionConsumer.ERROR_MESSAGE)
-        lines.subList(1, lines.size()).join(lineBreak) == logEntry.getLogValue(MessageExceptionConsumer.EXCEPTION)
+        'Sample fatal message' == logEntry.get(MessageExceptionConsumer.LOG_ERROR_MESSAGE)
+        lines.subList(1, lines.size()).join(lineBreak) == logEntry.get(MessageExceptionConsumer.EXCEPTION)
 
         where:
         os << ['Windows', 'Linux', 'Macos']
@@ -56,7 +62,7 @@ java.lang.NullPointerException:
         expect:
         null != (logEntry = new LogEntry('INFO  | 2008-09-06 10:51:44,848 | XmlBeanDefinitionReader.java | 323 | Loading XML bean definitions from class path resource [tmfContext.xml]'))
         processor.consume(logEntry)
-        'Loading XML bean definitions from class path resource [tmfContext.xml]' == logEntry.getLogValue(Log4jConsumer.MESSAGE)
+        'Loading XML bean definitions from class path resource [tmfContext.xml]' == logEntry.get(Log4jConsumer.MESSAGE)
 
         and: 'verify processing message with exception'
         null != (logEntry = new LogEntry("""ERROR | 2008-09-06 10:51:45,473 | SQLErrorCodesFactory.java | 128 | OMG, Something bad happened
@@ -116,7 +122,7 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
 """))
         processor.consume(logEntry)
 
-        'OMG, Something bad happened' == logEntry.getLogValue(MessageExceptionConsumer.ERROR_MESSAGE)
+        'OMG, Something bad happened' == logEntry.get(MessageExceptionConsumer.LOG_ERROR_MESSAGE)
         """javax.servlet.ServletException: Something bad happened
     at com.example.myproject.OpenSessionInViewFilter.doFilter(OpenSessionInViewFilter.java:60)
     at com.example.myproject.ExceptionHandlerFilter.doFilter(ExceptionHandlerFilter.java:28)
@@ -169,7 +175,7 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
     at org.hsqldb.jdbc.jdbcPreparedStatement.executeUpdate(Unknown Source)
     at com.mchange.v2.c3p0.impl.NewProxyPreparedStatement.executeUpdate(NewProxyPreparedStatement.java:105)
     at org.hibernate.cacheKey.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:57)
-    ... 54 more""" == logEntry.getLogValue(MessageExceptionConsumer.EXCEPTION)
+    ... 54 more""" == logEntry.get(MessageExceptionConsumer.EXCEPTION)
     }
 
 }

@@ -10,7 +10,7 @@ import spock.lang.Specification
  */
 class ObjectProviderTest extends Specification {
 
-    void 'verify default definition provider'() {
+    void 'verify default object provider'() {
         expect:
         true == DefaultObjectProvider.isClassName(DefaultObjectProvider.class.name)
         null != new DefaultObjectProvider().get(CsvWriterConsumer.name)
@@ -43,7 +43,7 @@ class ObjectProviderTest extends Specification {
         } catch (Exception ignore) { }
     }
 
-    void 'verify spring definition provider'() {
+    void 'verify spring object provider'() {
         final provider = new SpringObjectProvider(new AnnotationConfigApplicationContext(SpringConfig))
 
         expect:

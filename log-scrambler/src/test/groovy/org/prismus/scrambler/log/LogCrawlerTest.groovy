@@ -32,8 +32,8 @@ class LogCrawlerTest extends Specification {
         expect:
         0 < stringWriter.toString().length()
         21 == listCollector.size()
-        null != listCollector[20].getLogValue(MessageExceptionConsumer.ERROR_MESSAGE)
-        null != listCollector[20].getLogValue(MessageExceptionConsumer.EXCEPTION)
+        null != listCollector[20].get(MessageExceptionConsumer.LOG_ERROR_MESSAGE)
+        null != listCollector[20].get(MessageExceptionConsumer.EXCEPTION)
 
         and: 'verify csv collector columns are populated with groups defined in source consumer'
         null != (logContext = new LogCrawler.Builder()
@@ -61,8 +61,8 @@ class LogCrawlerTest extends Specification {
         expect:
         0 < stringWriter.toString().length()
         21 == result.size()
-        null != result[20].getLogValue(MessageExceptionConsumer.ERROR_MESSAGE)
-        null != result[20].getLogValue(MessageExceptionConsumer.EXCEPTION)
+        null != result[20].get(MessageExceptionConsumer.LOG_ERROR_MESSAGE)
+        null != result[20].get(MessageExceptionConsumer.EXCEPTION)
 
         and: 'verify multiple sources iterator'
         null != (logContext = new LogCrawler.Builder()

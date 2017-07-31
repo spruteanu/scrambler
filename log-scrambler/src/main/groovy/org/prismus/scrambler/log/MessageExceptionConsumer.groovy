@@ -1,7 +1,6 @@
 package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
-import groovy.transform.PackageScope
 
 import java.util.regex.Pattern
 
@@ -10,67 +9,53 @@ import java.util.regex.Pattern
  */
 @CompileStatic
 class MessageExceptionConsumer implements LogConsumer {
-    @PackageScope
-    static final String EXCEPTION_REGEX = '^.+Exception[^\\r\\n]++(?:\\s+at .++)+'
+    protected static final String EXCEPTION_REGEX = '^.+Exception[^\\r\\n]++(?:\\s+at .++)+'
+
     private static final Pattern EXCEPTION_PATTERN = ~/(?ms)(${EXCEPTION_REGEX})/
     private static final Pattern MESSAGE_WITH_EXCEPTION_PATTERN = ~/(?ms)([^\r\n]+)[\r\n]+(${EXCEPTION_REGEX})/
+    private static final Pattern EXCEPTION_CLASS_MESSAGE_PATTERN = ~/^(.+Exception):([^\r\n]+)*/
+    private static final Pattern TRACE_CLASS_METHOD_SOURCE_PATTERN = ~/^\s* at\s(.+)\((.+):(\d+)\)/
 
-    static final String ERROR_MESSAGE = 'ErrorMessage'
+    static final String LOG_ERROR_MESSAGE = 'LogErrorMessage'
     static final String EXCEPTION = 'Exception'
+    static final String EXCEPTION_MESSAGE = 'ExceptionMessage'
+    static final String EXCEPTION_CLASS = 'ExceptionClass'
+    static final String EXCEPTION_TRACES = 'ExceptionTraces'
+    static final String CALLER_CLASS_METHOD = 'CallerClassMethod'
+    static final String SOURCE_NAME = 'SourceName'
+    static final String SOURCE_LINE = 'SourceLine'
+
     String group
+    boolean includeTraces
 
     MessageExceptionConsumer(String group = null) {
         this.group = group
     }
 
+    MessageExceptionConsumer includeTraces() {
+        includeTraces = true
+        return this
+    }
+
     @Override
     void consume(LogEntry entry) {
-        final value = entry.getLogValue(group)
+        final value = entry.get(group)
         if (value && EXCEPTION_PATTERN.matcher(value.toString()).matches()) {
-            String errorMessage = null
-            String exception = null
-
-            final matcher = MESSAGE_WITH_EXCEPTION_PATTERN.matcher(value.toString())
-            if (matcher.find()) {
-                errorMessage = matcher.group(1)
-                exception = matcher.group(2)
-            }
-            if (errorMessage) {
-                entry.putLogValue(ERROR_MESSAGE, errorMessage)
-            }
-            if (exception) {
-                entry.putLogValue(EXCEPTION, exception)
+            entry.logValueMap.putAll(RegexConsumer.toMap(MESSAGE_WITH_EXCEPTION_PATTERN, value.toString(), [(LOG_ERROR_MESSAGE): 1, (EXCEPTION): 2]))
+            if (entry.logValueMap.containsKey(EXCEPTION)) {
+                final exception = entry.get(EXCEPTION).toString()
+                final lines = exception.split('\r\n|\r|\n').toList()
+                entry.logValueMap.putAll(RegexConsumer.toMap(EXCEPTION_CLASS_MESSAGE_PATTERN, lines[0], [(EXCEPTION_CLASS): 1, (EXCEPTION_MESSAGE): 2]))
+                if (includeTraces) {
+                    final traces = []
+                    for (String traceLine : lines.subList(1, lines.size())) {
+                        traces.add(RegexConsumer.toMap(TRACE_CLASS_METHOD_SOURCE_PATTERN, traceLine, [(CALLER_CLASS_METHOD): 1, (SOURCE_NAME): 2, (SOURCE_LINE): 3]))
+                    }
+                    if (traces) {
+                        entry.put(EXCEPTION_TRACES, traces)
+                    }
+                }
             }
         }
     }
-
-    @PackageScope
-    Throwable toException(String exception) {
-        // todo Serge: is it needed to convert to exception object? possible yes, if to lookup for an exception of specific type
-        Throwable result = null
-        if (!exception) {
-            return result
-        }
-        final lines = exception.split('[\r\n]')
-        if (lines) {
-            final EXCEPTION_CLASS_MESSAGE_PATTERN = ~/^.+\s(.+Exception)(:\s.+[^\r\n])*/
-            final STACK_TRACE_PATTERN = ~/^\s* at\s(.+)\((.+):(\d+)\)/
-            String exceptionType = lines[0]
-            String detailedMessage = null
-
-            result = Class.forName(exceptionType) as Throwable
-            final stackTraces = []
-            for (final line : lines) {
-//                new StackTraceElement()
-            }
-            if (detailedMessage) {
-                DefaultObjectProvider.setInstanceProperties(result, [detailMessage: detailedMessage] as Map<String, Object>)
-            }
-            if (stackTraces) {
-                result.setStackTrace(stackTraces.toArray() as StackTraceElement[])
-            }
-        }
-        return result
-    }
-
 }

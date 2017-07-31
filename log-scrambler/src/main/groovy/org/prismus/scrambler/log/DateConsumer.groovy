@@ -6,15 +6,15 @@ import java.text.SimpleDateFormat
  * @author Serge Pruteanu
  */
 class DateConsumer implements LogConsumer {
-    static final String TIMESTAMP = 'Timestamp'
+    static final String DATE = 'DATE'
 
-    String group = TIMESTAMP
+    String group = DATE
     SimpleDateFormat dateFormat
 
     DateConsumer() {
     }
 
-    DateConsumer(SimpleDateFormat dateFormat, String group = TIMESTAMP) {
+    DateConsumer(SimpleDateFormat dateFormat, String group = DATE) {
         this.dateFormat = dateFormat
         this.group = group
     }
@@ -22,17 +22,17 @@ class DateConsumer implements LogConsumer {
     @Override
     void consume(LogEntry entry) {
         if (entry.logValueMap.containsKey(group)) {
-            final dateString = entry.getLogValue(group)
+            final dateString = entry.get(group)
             final date = dateFormat.parse(dateString.toString())
-            entry.putLogValue(group, date)
+            entry.put(group, date)
         }
     }
 
-    static DateConsumer of(SimpleDateFormat dateFormat, String group = TIMESTAMP) {
+    static DateConsumer of(SimpleDateFormat dateFormat, String group = DATE) {
         return new DateConsumer(dateFormat, group)
     }
 
-    static DateConsumer of(String dateFormat, String group = TIMESTAMP) {
+    static DateConsumer of(String dateFormat, String group = DATE) {
         return new DateConsumer(new SimpleDateFormat(dateFormat), group)
     }
 

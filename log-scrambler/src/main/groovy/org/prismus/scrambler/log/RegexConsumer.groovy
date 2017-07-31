@@ -108,7 +108,7 @@ class RegexConsumer implements LogConsumer {
     void consume(LogEntry entry) {
         final Matcher matcher
         if (group) {
-            final value = entry.getLogValue(group)
+            final value = entry.get(group)
             if (!value) {
                 return
             }
@@ -129,7 +129,7 @@ class RegexConsumer implements LogConsumer {
                     }
                 } catch (Exception ignore) { }
                 if (groupValue) {
-                    entry.putLogValue(key, groupValue.trim())
+                    entry.put(key, groupValue.trim())
                     final List<LogConsumer> consumers = getConsumer(key)
                     for (LogConsumer consumer : consumers) {
                         consumer.consume(entry)
