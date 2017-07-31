@@ -23,8 +23,8 @@ class LogCrawlerTest extends Specification {
         given:
         def logContext = new LogCrawler.Builder()
                 .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',)
-                .withDateConsumer().withMessageExceptionConsumer().recurContext()
-                .csvWriter(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .toDateConsumer().toExceptionConsumer().recurContext()
+                .writerToCsv(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .withConsumer({ LogEntry logEntry -> listCollector.add(logEntry) })
                 .build()
         logContext.consume()
@@ -32,13 +32,13 @@ class LogCrawlerTest extends Specification {
         expect:
         0 < stringWriter.toString().length()
         21 == listCollector.size()
-        null != listCollector[20].get(MessageExceptionConsumer.LOG_ERROR_MESSAGE)
-        null != listCollector[20].get(MessageExceptionConsumer.EXCEPTION)
+        null != listCollector[20].get(ExceptionConsumer.LOG_ERROR_MESSAGE)
+        null != listCollector[20].get(ExceptionConsumer.EXCEPTION)
 
         and: 'verify csv collector columns are populated with groups defined in source consumer'
         null != (logContext = new LogCrawler.Builder()
                 .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).recurContext()
-                .csvWriter(stringWriter)
+                .writerToCsv(stringWriter)
                 .build())
         [Log4jConsumer.PRIORITY, Log4jConsumer.DATE,
          Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE,
@@ -52,8 +52,8 @@ class LogCrawlerTest extends Specification {
         given:
         def logContext = new LogCrawler.Builder()
                 .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',)
-                .withDateConsumer().withMessageExceptionConsumer().recurContext()
-                .csvWriter(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .toDateConsumer().toExceptionConsumer().recurContext()
+                .writerToCsv(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .build()
         def iterator = logContext.iterator()
         List result = iterator.toList()
@@ -61,15 +61,15 @@ class LogCrawlerTest extends Specification {
         expect:
         0 < stringWriter.toString().length()
         21 == result.size()
-        null != result[20].get(MessageExceptionConsumer.LOG_ERROR_MESSAGE)
-        null != result[20].get(MessageExceptionConsumer.EXCEPTION)
+        null != result[20].get(ExceptionConsumer.LOG_ERROR_MESSAGE)
+        null != result[20].get(ExceptionConsumer.EXCEPTION)
 
         and: 'verify multiple sources iterator'
         null != (logContext = new LogCrawler.Builder()
                 .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).recurContext()
-                .csvWriter(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .writerToCsv(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .log4jSourceFolder(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).recurContext()
-                .csvWriter(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .writerToCsv(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .build())
         ['sample-1.log', 'sample-2.log'] == logContext.sourceConsumerMap.keySet().collect { LineReader.getSourceName(it)}.sort()
         null != (iterator = logContext.iterator())

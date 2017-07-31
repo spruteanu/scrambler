@@ -2,6 +2,7 @@ package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
 
+import java.text.SimpleDateFormat
 import java.util.regex.Pattern
 
 /**
@@ -61,7 +62,7 @@ class Log4jConsumer extends RegexConsumer {
     }
 
     Log4jConsumer withMessageExceptionConsumer() {
-        withGroupConsumer(MESSAGE, new MessageExceptionConsumer(MESSAGE))
+        withGroupConsumer(MESSAGE, new ExceptionConsumer(MESSAGE))
         return this
     }
 
@@ -300,4 +301,59 @@ class Log4jConsumer extends RegexConsumer {
         return set
     }
 
+    /**
+     * @author Serge Pruteanu
+     */
+    @CompileStatic
+    static class Builder extends RegexConsumer.Builder {
+
+        Builder() {
+        }
+
+        Builder(LogCrawler.Builder contextBuilder, def consumer) {
+            super(contextBuilder, consumer)
+        }
+
+        Builder toDateConsumer(String dateFormat = null) {
+            withConsumer(DATE, dateFormat ? DateConsumer.of(dateFormat, DATE) : new DateConsumer(null, DATE))
+            return this
+        }
+
+        Builder toDateConsumer(SimpleDateFormat dateFormat) {
+            withConsumer(DATE, DateConsumer.of(dateFormat, DATE))
+            return this
+        }
+
+        Builder toExceptionConsumer() {
+            withConsumer(MESSAGE, new ExceptionConsumer(MESSAGE))
+            return this
+        }
+
+        Builder withMessageConsumer(Closure closure) {
+            withConsumer(MESSAGE, closure)
+            return this
+        }
+
+        Builder withMessageConsumer(LogConsumer consumer) {
+            withConsumer(MESSAGE, consumer)
+            if (consumer instanceof RegexConsumer) {
+                ((RegexConsumer) consumer).group = MESSAGE
+            }
+            return this
+        }
+
+        protected void buildGroupConsumers(RegexConsumer instance) {
+            Log4jConsumer result = instance as Log4jConsumer
+            for (Map.Entry<String, List> entry : groupProcessorMap.entrySet()) {
+                final consumers = entry.value
+                for (Object obj : consumers) {
+                    final consumer = newConsumer(obj)
+                    if (consumer instanceof DateConsumer) {
+                        consumer.setDateFormat(new SimpleDateFormat(result.dateFormat))
+                    }
+                    result.withGroupConsumer(entry.key, consumer)
+                }
+            }
+        }
+    }
 }

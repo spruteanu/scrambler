@@ -1,6 +1,6 @@
-import org.prismus.scrambler.log.MessageExceptionConsumer
+import org.prismus.scrambler.log.ExceptionConsumer
 
 /**
  * @author Serge Pruteanu
  */
-withConsumer(new MessageExceptionConsumer("Message"))
+withConsumer(new ExceptionConsumer("Message"))

@@ -77,7 +77,7 @@ javax.servlet.ServletException: Something bad happened
                 .group('Caller', 3)
                 .group('Line', 4)
                 .group('Message', 5)
-                .withGroupConsumer('Message', new RegexConsumer(~/(?ms)(${MessageExceptionConsumer.EXCEPTION_REGEX})/, 'Message').group('Exception', 1))
+                .withGroupConsumer('Message', new RegexConsumer(~/(?ms)(${ExceptionConsumer.EXCEPTION_REGEX})/, 'Message').group('Exception', 1))
                 .consume(logEntry)
         false == logEntry.isEmpty()
         """OMG, Something bad happened

@@ -15,7 +15,7 @@ import java.text.SimpleDateFormat
  * @author Serge Pruteanu
  */
 @CompileStatic
-class TableBatchInsertConsumer implements LogConsumer, Closeable {
+class TableBatchConsumer implements LogConsumer, Closeable {
     private static Map<Integer, Class> jdbcTypeClassMap = [
             (Types.BIT)          : Boolean,
             (Types.TINYINT)      : Byte,
@@ -58,10 +58,10 @@ class TableBatchInsertConsumer implements LogConsumer, Closeable {
     int batchSize = 1024
     private List<LogEntry> batchQueue = new ArrayList<>(1024)
 
-    TableBatchInsertConsumer() {
+    TableBatchConsumer() {
     }
 
-    TableBatchInsertConsumer(DataSource dataSource, int batchSize = 1024) {
+    TableBatchConsumer(DataSource dataSource, int batchSize = 1024) {
         sql = new Sql(dataSource)
         setBatchSize(batchSize)
     }
@@ -71,12 +71,12 @@ class TableBatchInsertConsumer implements LogConsumer, Closeable {
         this.batchQueue = new ArrayList<>(batchSize)
     }
 
-    TableBatchInsertConsumer withDatasource(DataSource dataSource, String tableName, String... columns) {
+    TableBatchConsumer withDatasource(DataSource dataSource, String tableName, String... columns) {
         sql = new Sql(dataSource)
         return forTable(tableName, columns)
     }
 
-    TableBatchInsertConsumer forTable(String tableName, String... columns) {
+    TableBatchConsumer forTable(String tableName, String... columns) {
         this.tableName = tableName
         if (columns) {
             this.columns = columns.toList()
@@ -84,18 +84,18 @@ class TableBatchInsertConsumer implements LogConsumer, Closeable {
         return this
     }
 
-    TableBatchInsertConsumer withCreateTableScript(String createTableScript, String statementSeparator = ';') {
+    TableBatchConsumer withCreateTableScript(String createTableScript, String statementSeparator = ';') {
         this.createTableScript = createTableScript
         this.statementSeparator = statementSeparator
         return this
     }
 
-    TableBatchInsertConsumer withDateFormat(SimpleDateFormat dateFormat) {
+    TableBatchConsumer withDateFormat(SimpleDateFormat dateFormat) {
         this.dateFormat = dateFormat
         return this
     }
 
-    TableBatchInsertConsumer withDateFormat(String dateFormat) {
+    TableBatchConsumer withDateFormat(String dateFormat) {
         return withDateFormat(new SimpleDateFormat(dateFormat))
     }
 
@@ -149,7 +149,7 @@ class TableBatchInsertConsumer implements LogConsumer, Closeable {
         } else if (Double.isAssignableFrom(type)) {
             return Double.parseDouble(value.toString())
         } else if (Date.isAssignableFrom(type)) {
-            throw new UnsupportedOperationException("Either provide date format or use '${DateConsumer.name}' for column: '$column' transformation before definition of '${TableBatchInsertConsumer.name}' consumer")
+            throw new UnsupportedOperationException("Either provide date format or use '${DateConsumer.name}' for column: '$column' transformation before definition of '${TableBatchConsumer.name}' consumer")
         }
         return value.asType(type)
     }
@@ -353,8 +353,28 @@ class TableBatchInsertConsumer implements LogConsumer, Closeable {
         return props
     }
 
-    static TableBatchInsertConsumer of(DataSource dataSource, String tableName, String... columns) {
-        return new TableBatchInsertConsumer(dataSource).forTable(tableName, columns)
+    static TableBatchConsumer of(DataSource dataSource, String tableName, String... columns) {
+        return new TableBatchConsumer(dataSource).forTable(tableName, columns)
+    }
+
+    static class Builder extends ConsumerBuilder {
+//        private Sql sql
+//        private String tableName
+//        private List<String> columns
+//        private SimpleDateFormat dateFormat
+//
+//        private String createTableScript
+//        private String statementSeparator
+//
+//        int batchSize = 1024
+
+        Builder() {
+        }
+
+        Builder(LogCrawler.Builder contextBuilder, def consumer, Object... args) {
+            super(contextBuilder, consumer, args)
+        }
+
     }
 
     @CompileStatic

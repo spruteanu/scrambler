@@ -5,11 +5,11 @@ import spock.lang.Specification
 /**
  * @author Serge Pruteanu
  */
-class MessageExceptionConsumerTest extends Specification {
+class ExceptionConsumerTest extends Specification {
 
     void 'verify message consumption with traces'() {
         given:
-        final consumer = new MessageExceptionConsumer('test').includeTraces()
+        final consumer = new ExceptionConsumer('test').includeTraces()
         final logEntry = new LogEntry().put('test', '''Sample fatal message
 java.lang.NullPointerException: Missed a null object check
     at com.example.myproject.Book.getTitle(Book.java:16)
@@ -19,18 +19,18 @@ java.lang.NullPointerException: Missed a null object check
         consumer.consume(logEntry)
 
         expect:
-        'Sample fatal message' == logEntry.get(MessageExceptionConsumer.LOG_ERROR_MESSAGE)
+        'Sample fatal message' == logEntry.get(ExceptionConsumer.LOG_ERROR_MESSAGE)
         '''java.lang.NullPointerException: Missed a null object check
     at com.example.myproject.Book.getTitle(Book.java:16)
     at com.example.myproject.Author.getBookTitles(Author.java:25)
-    at com.example.myproject.Bootstrap.main(Bootstrap.java:14)''' == logEntry.get(MessageExceptionConsumer.EXCEPTION)
-        'java.lang.NullPointerException' == logEntry.get(MessageExceptionConsumer.EXCEPTION_CLASS)
-        'Missed a null object check' == logEntry.get(MessageExceptionConsumer.EXCEPTION_MESSAGE)
-        3 == logEntry.get(MessageExceptionConsumer.EXCEPTION_TRACES).size()
-        [(MessageExceptionConsumer.CALLER_CLASS_METHOD): 'com.example.myproject.Book.getTitle',
-         (MessageExceptionConsumer.SOURCE_NAME)        : 'Book.java',
-         (MessageExceptionConsumer.SOURCE_LINE)        : '16'
-        ] == logEntry.get(MessageExceptionConsumer.EXCEPTION_TRACES)[0]
+    at com.example.myproject.Bootstrap.main(Bootstrap.java:14)''' == logEntry.get(ExceptionConsumer.EXCEPTION)
+        'java.lang.NullPointerException' == logEntry.get(ExceptionConsumer.EXCEPTION_CLASS)
+        'Missed a null object check' == logEntry.get(ExceptionConsumer.EXCEPTION_MESSAGE)
+        3 == logEntry.get(ExceptionConsumer.EXCEPTION_TRACES).size()
+        [(ExceptionConsumer.CALLER_CLASS_METHOD): 'com.example.myproject.Book.getTitle',
+         (ExceptionConsumer.SOURCE_NAME)        : 'Book.java',
+         (ExceptionConsumer.SOURCE_LINE)        : '16'
+        ] == logEntry.get(ExceptionConsumer.EXCEPTION_TRACES)[0]
     }
 
     void 'verify message consumer different line breaks /windows/linux/macos/'() {
@@ -40,14 +40,14 @@ java.lang.NullPointerException: Missed a null object check
                        '    at com.example.myproject.Book.getTitle(Book.java:16)',
                        '    at com.example.myproject.Author.getBookTitles(Author.java:25)',
                        '    at com.example.myproject.Bootstrap.main(Bootstrap.java:14)',]
-        final consumer = new MessageExceptionConsumer('test')
+        final consumer = new ExceptionConsumer('test')
 
         final logEntry = new LogEntry().put('test', lines.join(lineBreak))
         consumer.consume(logEntry)
 
         expect: "verify $os line endings"
-        'Sample fatal message' == logEntry.get(MessageExceptionConsumer.LOG_ERROR_MESSAGE)
-        lines.subList(1, lines.size()).join(lineBreak) == logEntry.get(MessageExceptionConsumer.EXCEPTION)
+        'Sample fatal message' == logEntry.get(ExceptionConsumer.LOG_ERROR_MESSAGE)
+        lines.subList(1, lines.size()).join(lineBreak) == logEntry.get(ExceptionConsumer.EXCEPTION)
 
         where:
         os << ['Windows', 'Linux', 'Macos']
@@ -56,7 +56,7 @@ java.lang.NullPointerException: Missed a null object check
 
     void 'verify message processor'() {
         final processor = Log4jConsumer.of('%5p | %d | %F | %L | %m%n')
-                .withGroupConsumer(Log4jConsumer.MESSAGE, new MessageExceptionConsumer(Log4jConsumer.MESSAGE))
+                .withGroupConsumer(Log4jConsumer.MESSAGE, new ExceptionConsumer(Log4jConsumer.MESSAGE))
 
         LogEntry logEntry
         expect:
@@ -122,7 +122,7 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
 """))
         processor.consume(logEntry)
 
-        'OMG, Something bad happened' == logEntry.get(MessageExceptionConsumer.LOG_ERROR_MESSAGE)
+        'OMG, Something bad happened' == logEntry.get(ExceptionConsumer.LOG_ERROR_MESSAGE)
         """javax.servlet.ServletException: Something bad happened
     at com.example.myproject.OpenSessionInViewFilter.doFilter(OpenSessionInViewFilter.java:60)
     at com.example.myproject.ExceptionHandlerFilter.doFilter(ExceptionHandlerFilter.java:28)
@@ -175,7 +175,7 @@ Caused by: java.sql.SQLException: Violation of unique constraint MY_ENTITY_UK_1:
     at org.hsqldb.jdbc.jdbcPreparedStatement.executeUpdate(Unknown Source)
     at com.mchange.v2.c3p0.impl.NewProxyPreparedStatement.executeUpdate(NewProxyPreparedStatement.java:105)
     at org.hibernate.cacheKey.insert.AbstractSelectingDelegate.performInsert(AbstractSelectingDelegate.java:57)
-    ... 54 more""" == logEntry.get(MessageExceptionConsumer.EXCEPTION)
+    ... 54 more""" == logEntry.get(ExceptionConsumer.EXCEPTION)
     }
 
 }

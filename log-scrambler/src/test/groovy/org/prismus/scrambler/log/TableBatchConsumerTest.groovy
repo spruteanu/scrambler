@@ -9,7 +9,7 @@ import javax.sql.DataSource
 /**
  * @author Serge Pruteanu
  */
-class TableBatchInsertConsumerTest extends Specification {
+class TableBatchConsumerTest extends Specification {
     private static DataSource dataSource
 
     void setupSpec() {
@@ -21,7 +21,7 @@ class TableBatchInsertConsumerTest extends Specification {
 
     void 'log entry batch insertion consumer'() {
         given:
-        final tableConsumer = TableBatchInsertConsumer.of(dataSource, 'LogEntry')
+        final tableConsumer = TableBatchConsumer.of(dataSource, 'LogEntry')
                 .withCreateTableScript('/h2-sample-schema.sql')
         final logContext = LogCrawler.builder('/sample-folder-sources-log.groovy').withConsumer(tableConsumer).build()
 

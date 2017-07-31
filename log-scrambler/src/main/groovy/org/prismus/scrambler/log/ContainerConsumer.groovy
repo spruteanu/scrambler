@@ -7,23 +7,23 @@ import groovy.transform.CompileStatic
  */
 @CompileStatic
 class ContainerConsumer implements LogConsumer {
-    private List<LogConsumer> logConsumers
+    private List<LogConsumer> consumers
 
     ContainerConsumer() {
         this(new ArrayList<LogConsumer>())
     }
 
-    ContainerConsumer(List<LogConsumer> logConsumers) {
-        this.logConsumers = logConsumers
+    ContainerConsumer(List<LogConsumer> consumers) {
+        this.consumers = consumers
     }
 
     ContainerConsumer withConsumer(LogConsumer logConsumer) {
-        logConsumers.add(logConsumer)
+        consumers.add(logConsumer)
         return this
     }
 
     ContainerConsumer withConsumers(LogConsumer... logConsumers) {
-        this.logConsumers = logConsumers.toList()
+        this.consumers = logConsumers.toList()
         return this
     }
 
@@ -35,13 +35,30 @@ class ContainerConsumer implements LogConsumer {
     }
 
     ContainerConsumer withConsumers(List<LogConsumer> logConsumers) {
-        this.logConsumers = logConsumers
+        this.consumers = logConsumers
+        return this
+    }
+
+    ContainerConsumer addAll(LogConsumer... consumers) {
+        this.consumers.addAll(consumers)
+        return this
+    }
+
+    ContainerConsumer add(LogConsumer consumer) {
+        consumers.add(consumer)
+        return this
+    }
+
+    ContainerConsumer addAll(Closure... consumers) {
+        for (Closure closure : consumers) {
+            add(new ClosureConsumer(closure))
+        }
         return this
     }
 
     @Override
     void consume(LogEntry entry) {
-        for (LogConsumer consumer : logConsumers) {
+        for (LogConsumer consumer : consumers) {
             consumer.consume(entry)
         }
     }

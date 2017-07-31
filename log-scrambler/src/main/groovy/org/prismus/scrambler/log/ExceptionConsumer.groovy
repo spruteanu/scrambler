@@ -8,7 +8,7 @@ import java.util.regex.Pattern
  * @author Serge Pruteanu
  */
 @CompileStatic
-class MessageExceptionConsumer implements LogConsumer {
+class ExceptionConsumer implements LogConsumer {
     protected static final String EXCEPTION_REGEX = '^.+Exception[^\\r\\n]++(?:\\s+at .++)+'
 
     private static final Pattern EXCEPTION_PATTERN = ~/(?ms)(${EXCEPTION_REGEX})/
@@ -28,11 +28,11 @@ class MessageExceptionConsumer implements LogConsumer {
     String group
     boolean includeTraces
 
-    MessageExceptionConsumer(String group = null) {
+    ExceptionConsumer(String group = null) {
         this.group = group
     }
 
-    MessageExceptionConsumer includeTraces() {
+    ExceptionConsumer includeTraces() {
         includeTraces = true
         return this
     }
