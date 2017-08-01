@@ -5,7 +5,6 @@ import groovy.transform.PackageScope
 import groovy.util.logging.Log
 import org.apache.commons.lang3.StringUtils
 import org.codehaus.groovy.control.CompilerConfiguration
-import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
 import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.springframework.context.ApplicationContext
@@ -798,7 +797,6 @@ class LogCrawler implements Iterable<LogEntry> {
     private static GroovyShell checkCreateShell(Properties parserProperties = new Properties()) {
         final compilerConfiguration = (parserProperties != null && parserProperties.size() > 0) ? new CompilerConfiguration(parserProperties) : new CompilerConfiguration()
         compilerConfiguration.setScriptBaseClass(DelegatingScript.name)
-        compilerConfiguration.addCompilationCustomizers(new ASTTransformationCustomizer(CompileStatic))
 
         final importCustomizer = new ImportCustomizer()
         importCustomizer.addStarImports(LogCrawler.package.name)
