@@ -177,4 +177,21 @@ class LogCrawlerTest extends Specification {
         thrown(RuntimeException)
     }
 
+//    todo fix asynch
+//    void 'asynchronous sources consumption'() {
+//        given:
+//        final folder = new File(LogCrawlerTest.protectionDomain.codeSource.location.path)
+//        final logEntries = Collections.synchronizedList(new ArrayList())
+//        final logCrawler = LogCrawler.builder()
+//            .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).recurContext()
+//            .log4jSourceFolder(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).recurContext()
+//            .withConsumer(new ArrayListCollector(logEntries))
+//            .asynchronousSources()
+//            .build()
+//        logCrawler.consume()
+//
+//        expect:
+//        29 == logEntries.size()
+//    }
+
 }

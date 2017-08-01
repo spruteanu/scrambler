@@ -39,7 +39,7 @@ class LogCrawler implements Iterable<LogEntry> {
     private int asynchTimeout
     private TimeUnit asynchUnit
     private AtomicInteger jobsCount
-    boolean processContext = true
+    volatile boolean processContext = true
 
     boolean multiline = true
 
@@ -53,6 +53,15 @@ class LogCrawler implements Iterable<LogEntry> {
 
     LogCrawler forSource(LogEntry source, LogConsumer sourceConsumer) {
         sourceConsumerMap.put(source, sourceConsumer)
+        return this
+    }
+
+    @SuppressWarnings("GroovySynchronizationOnNonFinalField")
+    LogCrawler stopAsynchronous() {
+        processContext = false
+        synchronized (completionService) {
+            completionService.notifyAll()
+        }
         return this
     }
 
@@ -113,22 +122,28 @@ class LogCrawler implements Iterable<LogEntry> {
             return
         }
         List<Throwable> errors = []
-        while (jobsCount.get()) {
-            Future<Void> future
-            if (asynchTimeout) {
-                future = completionService.poll(asynchTimeout, asynchUnit)
-            } else {
-                future = completionService.poll()
-            }
-            if (future) {
-                try {
-                    future.get()
-                } catch (ExecutionException ignore) {
-                    errors.add(ignore.getCause())
-                } finally {
-                    jobsCount.decrementAndGet()
+        while (processContext && jobsCount.get()) {
+            try {
+                Future<Void> future
+                if (asynchTimeout) {
+                    future = completionService.poll(asynchTimeout, asynchUnit)
+                } else {
+                    future = completionService.poll()
                 }
-            }
+                if (future) {
+                    try {
+                        if (asynchTimeout) {
+                            future.get(asynchTimeout, asynchUnit)
+                        } else {
+                            future.get()
+                        }
+                    } catch (ExecutionException ignore) {
+                        errors.add(ignore.getCause())
+                    } finally {
+                        jobsCount.decrementAndGet()
+                    }
+                }
+            } catch (TimeoutException ignore) { }
         }
         if (errors) {
             throw new ContextException('Failed to execute asynchronous jobs', errors)
@@ -177,6 +192,14 @@ class LogCrawler implements Iterable<LogEntry> {
     }
 
     void consume() {
+        for (final entry : sourceConsumerMap.entrySet()) {
+            consumeSource(LineReader.toLineReader(entry.key), LineReader.getSourceName(entry.key), entry.value)
+        }
+        closeConsumers()
+    }
+
+//    todo fix asynch
+    private void consumeAsynchronous() {
         for (final entry : sourceConsumerMap.entrySet()) {
             consumeSource(LineReader.toLineReader(entry.key), LineReader.getSourceName(entry.key), entry.value)
         }
@@ -782,7 +805,7 @@ class LogCrawler implements Iterable<LogEntry> {
         }
 
         static class ContextThreadFactory implements ThreadFactory {
-            private AtomicInteger count
+            private final AtomicInteger count = new AtomicInteger()
 
             @Override
             Thread newThread(Runnable r) {
