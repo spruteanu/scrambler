@@ -18,6 +18,7 @@
 
 package org.prismus.scrambler.data
 
+import com.sun.org.apache.xpath.internal.operations.Bool
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 import org.codehaus.groovy.control.CompilerConfiguration
@@ -391,7 +392,6 @@ class GroovyDataDefinition {
         static <T extends Number> Data<T> random(T val, T minimum, T maximum) {
             return NumericScrambler.random(val, minimum, maximum)
         }
-
     }
 
     static class ObjectCategory {
@@ -488,115 +488,6 @@ class GroovyDataDefinition {
 
         static Data<Boolean> random(Boolean data) {
             return ObjectScrambler.random(data);
-        }
-
-    }
-
-    @CompileStatic
-    static class DataDefinitionCategory {
-
-        static DataDefinition definition(DataDefinition self, Data data) {
-            return self.definition(data)
-        }
-
-        static DataDefinition definition(DataDefinition self, InstanceData data) {
-            return self.definition(data)
-        }
-
-        static DataDefinition definition(DataDefinition self, Map<Object, Object> props) {
-            return self.definition(props)
-        }
-
-        static DataDefinition constant(DataDefinition self, Object data) {
-            return self.constant(data)
-        }
-
-        static DataDefinition constant(DataDefinition self, Map<Object, Object> props) {
-            return self.constant(props)
-        }
-
-        static DataDefinition definition(DataDefinition self, String propertyName, Object data) {
-            return self.definition(propertyName, data)
-        }
-
-        static DataDefinition definition(DataDefinition self, Pattern pattern, Object data) {
-            return self.definition(pattern, data)
-        }
-
-        static DataDefinition definition(DataDefinition self, Class type, Object data) {
-            return self.definition(type, data)
-        }
-
-        static DataDefinition definition(DataDefinition self, String propertyName, Data data) {
-            return self.definition(propertyName, data)
-        }
-
-        static DataDefinition definition(DataDefinition self, Pattern pattern, Data data) {
-            return self.definition(pattern, data)
-        }
-
-        static DataDefinition definition(DataDefinition self, Class type, Data data) {
-            return self.definition(type, data)
-        }
-
-        static DataDefinition definition(DataDefinition self, DataPredicate dataPredicate, Data data) {
-            return self.definition(dataPredicate, data)
-        }
-
-        static DataDefinition definition(DataDefinition self, DataPredicate dataPredicate, Object data) {
-            return self.definition(dataPredicate, data)
-        }
-
-        static DataDefinition reference(DataDefinition self, Class type) {
-            return self.reference(type)
-        }
-
-        static DataDefinition reference(DataDefinition self, Class type, String parentPredicate) {
-            return self.reference(type, parentPredicate)
-        }
-
-        static DataDefinition reference(DataDefinition self, Class type, Class parentPredicate) {
-            return self.reference(type, parentPredicate)
-        }
-
-        static DataDefinition reference(DataDefinition self, Class type, DataPredicate parentPredicate) {
-            return self.reference(type, parentPredicate)
-        }
-
-        static DataDefinition reference(DataDefinition self, String propertyName, Class parentPredicate) {
-            return self.reference(propertyName, parentPredicate)
-        }
-
-        static DataDefinition reference(DataDefinition self, Pattern pattern, Class parentPredicate) {
-            return self.reference(pattern, parentPredicate)
-        }
-
-        static DataDefinition reference(DataDefinition self, String propertyName) {
-            return self.reference(propertyName)
-        }
-
-        static DataDefinition reference(DataDefinition self, Pattern pattern) {
-            return self.reference(pattern)
-        }
-
-        static DataDefinition reference(DataDefinition self, DataPredicate dataPredicate, DataPredicate parentPredicate) {
-            return self.reference(dataPredicate, parentPredicate)
-        }
-
-        static Object getContextProperty(DataDefinition self, String propertyName, Object data = null) {
-            return self.getContextProperty(propertyName, data)
-        }
-
-        static DataDefinition usingDefinition(DataDefinition self, DataDefinition dataDefinition) {
-            return self.usingDefinition(dataDefinition)
-        }
-
-        static DataDefinition usingDefinition(DataDefinition self, String resource) {
-            return Holder.instance.doParseDefinitionText(self, loadResourceText(self, resource))
-        }
-
-        static DataDefinition usingDefinitions(DataDefinition self, String... definitions) {
-            return self.usingDefinitions(definitions)
         }
 
     }

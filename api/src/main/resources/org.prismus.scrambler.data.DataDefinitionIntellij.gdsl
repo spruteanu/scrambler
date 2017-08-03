@@ -68,7 +68,7 @@ contributor context(ctype: Boolean.name), {
 }
 
 contributor context(scope: scriptScope(name: ~/(?:.*definition|.*vd|.*dd).groovy/)), {
-    findClass('org.prismus.scrambler.data.GroovyDataDefinition.DataDefinitionCategory')?.methods?.each {
+    findClass('org.prismus.scrambler.data.DataDefinition')?.methods?.each {
         if (!it.isConstructor()) {
             add it
         }
