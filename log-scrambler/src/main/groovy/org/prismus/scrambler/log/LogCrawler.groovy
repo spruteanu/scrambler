@@ -102,14 +102,16 @@ class LogCrawler implements Iterable<LogEntry> {
         if (consumer instanceof CsvWriterConsumer) {
             final csvOutputConsumer = (CsvWriterConsumer) consumer
             if (!csvOutputConsumer.columns) {
+                final columns = new LinkedHashSet<String>()
                 for (LogConsumer sourceConsumer : sourceConsumerMap.values()) {
                     if (sourceConsumer instanceof RegexConsumer) {
-                        csvOutputConsumer.columns = ((RegexConsumer) sourceConsumer).groupIndexMap.keySet().toList()
+                        columns.addAll(((RegexConsumer) sourceConsumer).groupIndexMap.keySet().toList())
                     }
                 }
-                if (!csvOutputConsumer.columns) {
+                if (!columns) {
                     throw new RuntimeException('Columns are not defined for CsvOutputConsumer')
                 }
+                csvOutputConsumer.columns = columns.toList()
             }
         }
         return this

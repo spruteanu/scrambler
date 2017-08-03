@@ -36,7 +36,7 @@ class CsvWriterConsumer implements LogConsumer, Closeable {
     boolean writeHeader = true
     boolean allValues
     String separator = ','
-    String fieldSeparator = ''
+    String fieldSeparator = '"'
 
     CsvWriterConsumer() {
     }

@@ -260,7 +260,7 @@ class Log4jConsumer extends RegexConsumer {
             }
         }
         final regex = sb.toString()
-        consumer.pattern = ~/(?ms)$regex/
+        consumer.pattern = ~/^(?ms)$regex/
         return regex
     }
 
