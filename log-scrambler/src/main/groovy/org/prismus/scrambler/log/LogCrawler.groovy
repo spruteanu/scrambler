@@ -35,8 +35,6 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.attribute.BasicFileAttributes
 import java.text.SimpleDateFormat
-import java.util.concurrent.*
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Predicate
 import java.util.regex.Pattern
 import java.util.stream.Collectors
@@ -54,12 +52,6 @@ class LogCrawler implements Iterable<LogEntry> {
     private List<LogConsumer> consumers = new ArrayList<LogConsumer>()
     private List<Closeable> closeables = []
 
-    private CompletionService completionService
-    private int asynchTimeout
-    private TimeUnit asynchUnit
-    private AtomicInteger jobsCount
-    volatile boolean processContext = true
-
     boolean multiline = true
 
     private LogCrawler() {
@@ -72,25 +64,6 @@ class LogCrawler implements Iterable<LogEntry> {
 
     LogCrawler forSource(LogEntry source, LogConsumer sourceConsumer) {
         sourceConsumerMap.put(source, sourceConsumer)
-        return this
-    }
-
-    @SuppressWarnings("GroovySynchronizationOnNonFinalField")
-    LogCrawler stopAsynchronous() {
-        processContext = false
-        synchronized (completionService) {
-            completionService.notifyAll()
-        }
-        return this
-    }
-
-    LogCrawler withExecutorService(ExecutorService executorService, int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
-        this.asynchUnit = unit
-        this.asynchTimeout = timeout
-        if (executorService) {
-            completionService = new ExecutorCompletionService<Void>(executorService)
-            jobsCount = new AtomicInteger()
-        }
         return this
     }
 
@@ -131,51 +104,13 @@ class LogCrawler implements Iterable<LogEntry> {
         return withConsumer(TableBatchConsumer.of(dataSource, tableName, columns))
     }
 
-    protected LogEntry consumeEntry(LogEntry entry) {
-        for (LogConsumer consumer : consumers) {
-            consumer.consume(entry)
-        }
-        return entry
-    }
-
-    protected void awaitJobsCompletion() {
-        if (jobsCount == null) {
-            return
-        }
-        List<Throwable> errors = []
-        while (processContext && jobsCount.get()) {
-            try {
-                Future<Void> future
-                if (asynchTimeout) {
-                    future = completionService.poll(asynchTimeout, asynchUnit)
-                } else {
-                    future = completionService.poll()
-                }
-                if (future) {
-                    try {
-                        if (asynchTimeout) {
-                            future.get(asynchTimeout, asynchUnit)
-                        } else {
-                            future.get()
-                        }
-                    } catch (ExecutionException ignore) {
-                        errors.add(ignore.getCause())
-                    } finally {
-                        jobsCount.decrementAndGet()
-                    }
-                }
-            } catch (TimeoutException ignore) { }
-        }
-        if (errors) {
-            throw new ContextException('Failed to execute asynchronous jobs', errors)
-        }
-    }
-
-    protected void consumeEntry(LogConsumer sourceConsumer, LogEntry logEntry) {
+    protected void consumeEntry(LogEntry logEntry, LogConsumer sourceConsumer) {
         if (logEntry) {
             logEntry.sourceInfo("${Objects.toString(logEntry.source, '')}:($logEntry.row)".toString())
             sourceConsumer.consume(logEntry)
-            consumeEntry(logEntry)
+            for (LogConsumer consumer : consumers) {
+                consumer.consume(logEntry)
+            }
         }
     }
 
@@ -195,11 +130,11 @@ class LogCrawler implements Iterable<LogEntry> {
                     }
                 } else {
                     nEntries++
-                    consumeEntry(sourceConsumer, lastEntry)
+                    consumeEntry(lastEntry, sourceConsumer)
                     lastEntry = logEntry
                 }
             }
-            consumeEntry(sourceConsumer, lastEntry)
+            consumeEntry(lastEntry, sourceConsumer)
             log.finest("Done consuming '$sourceName' using: '$sourceConsumer'. Processed '$currentRow' rows, consumed '$nEntries' entries")
         } finally {
             Utils.closeQuietly(lineReader)
@@ -217,28 +152,6 @@ class LogCrawler implements Iterable<LogEntry> {
             consumeSource(LineReader.toLineReader(entry.key), LineReader.getSourceName(entry.key), entry.value)
         }
         closeConsumers()
-    }
-
-//    todo fix asynch
-    private void consumeAsynchronous() {
-        for (final entry : sourceConsumerMap.entrySet()) {
-            consumeSource(LineReader.toLineReader(entry.key), LineReader.getSourceName(entry.key), entry.value)
-        }
-        awaitJobsCompletion()
-        closeConsumers()
-    }
-
-    protected Future submitAsynchronous(Callable<Void> callable) {
-        final work = completionService.submit(callable)
-        jobsCount.incrementAndGet()
-        try {
-            work.get(1, TimeUnit.MILLISECONDS) // make sure that job is submitted
-        } catch (TimeoutException ignore) { }
-        return work
-    }
-
-    protected Future submitAsynchronous(LogConsumer consumer, LogEntry logEntry) {
-        return submitAsynchronous(new LogConsumerCallable(consumer, logEntry))
     }
 
     @Override
@@ -307,13 +220,13 @@ class LogCrawler implements Iterable<LogEntry> {
                     }
                 } else {
                     nEntries++
-                    consumeEntry(sourceConsumer, lastEntry)
+                    consumeEntry(lastEntry, sourceConsumer)
                     result = sourceOpen ? logEntry : lastEntry
                     lastEntry = logEntry
                 }
             }
             if (result == null) {
-                consumeEntry(sourceConsumer, lastEntry)
+                consumeEntry(lastEntry, sourceConsumer)
                 result = lastEntry
                 if (line == null) {
                     log.finest("Done consuming '$sourceName' using: '$sourceConsumer'. Processed '$currentRow' rows, consumed '$nEntries' entries")
@@ -327,36 +240,6 @@ class LogCrawler implements Iterable<LogEntry> {
         @Override
         LogEntry next() {
             return doNext()
-        }
-    }
-
-    private class LogConsumerCallable implements Callable<Void> {
-        final LogConsumer consumer
-        final LogEntry logEntry
-
-        LogConsumerCallable(LogConsumer consumer, LogEntry logEntry) {
-            this.consumer = consumer
-            this.logEntry = logEntry
-        }
-
-        @Override
-        Void call() throws Exception {
-            consumer.consume(logEntry)
-            return null
-        }
-    }
-
-    private static class ContextException extends RuntimeException implements Iterable<Throwable> {
-        private List<Throwable> throwables
-
-        ContextException(String message, List<Throwable> throwables) {
-            super(message)
-            this.throwables = throwables
-        }
-
-        @Override
-        Iterator<Throwable> iterator() {
-            return throwables.iterator()
         }
     }
 
@@ -401,17 +284,9 @@ class LogCrawler implements Iterable<LogEntry> {
         private final List<ConsumerBuilder> consumerBuilders = []
 
         private boolean asynchronousSources
-        private ExecutorService executorService
-        private int defaultTimeout
-        private TimeUnit defaultUnit = TimeUnit.MILLISECONDS
 
         Builder() {
             context = new LogCrawler()
-        }
-
-        @PackageScope
-        LogConsumer checkAsynchronousConsumer(LogConsumer result) {
-            return (asynchronousSources ? newAsynchronousConsumer(result) : result)
         }
 
         @PackageScope
@@ -433,7 +308,7 @@ class LogCrawler implements Iterable<LogEntry> {
                 }
                 if (sourceConsumer) {
                     final logEntry = entry.key
-                    context.forSource(logEntry, checkAsynchronousConsumer(sourceConsumer))
+                    context.forSource(logEntry, sourceConsumer)
                     final sourceName = LineReader.getSourceName(logEntry)
                     if (sourceName) {
                         sourceNames.add(sourceName)
@@ -473,23 +348,8 @@ class LogCrawler implements Iterable<LogEntry> {
             }
         }
 
-        protected AsynchronousProxyConsumer newAsynchronousConsumer(LogConsumer consumer, int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
-            if (executorService == null) {
-                executorService = Executors.newCachedThreadPool(new ContextThreadFactory())
-                context.withExecutorService(executorService, defaultTimeout, defaultUnit)
-            }
-            return consumer instanceof AsynchronousProxyConsumer ? consumer as AsynchronousProxyConsumer : new AsynchronousProxyConsumer(context, consumer).awaitConsumption(timeout, unit)
-        }
-
         LogConsumer getConsumer(Object consumerId, Object... args) {
             return provider.get(consumerId, args) as LogConsumer
-        }
-
-        Builder asynchronousSources(int defaultTimeout = this.defaultTimeout, TimeUnit defaultUnit = this.defaultUnit) {
-            asynchronousSources = true
-            this.defaultTimeout = defaultTimeout
-            this.defaultUnit = defaultUnit
-            return this
         }
 
         Builder withObjectProvider(ObjectProvider provider) {
@@ -519,11 +379,6 @@ class LogCrawler implements Iterable<LogEntry> {
 
         Builder withConsumer(Closure logEntryClosure) {
             return withConsumer(new ClosureConsumer(logEntryClosure))
-        }
-
-        Builder asynchronous(LogConsumer consumer) {
-            context.withConsumer(newAsynchronousConsumer(consumer))
-            return this
         }
 
         Builder filterTo(Predicate predicate, LogConsumer consumer, LogConsumer... consumers) {
@@ -724,7 +579,6 @@ class LogCrawler implements Iterable<LogEntry> {
         }
 
         LogCrawler build() {
-            context.withExecutorService(executorService, defaultTimeout, defaultUnit)
             buildSourceConsumers()
             buildConsumers()
             sourceConsumerMap.clear()
@@ -823,18 +677,6 @@ class LogCrawler implements Iterable<LogEntry> {
                 initGroovyScriptBuilder(this, Utils.readGroovyResourceText(script))
             }
             return this
-        }
-
-        static class ContextThreadFactory implements ThreadFactory {
-            private final AtomicInteger count = new AtomicInteger()
-
-            @Override
-            Thread newThread(Runnable r) {
-                final thread = new Thread(r)
-                thread.setDaemon(true)
-                thread.setName("LogContextThread${count.incrementAndGet()}")
-                return thread
-            }
         }
     }
 

@@ -33,7 +33,6 @@ class CsvWriterConsumer implements LogConsumer, Closeable {
     int flushAt
     private int nOutput
 
-    boolean writeHeader = true
     boolean allValues
     String separator = ','
     String fieldSeparator = '"'
@@ -49,11 +48,6 @@ class CsvWriterConsumer implements LogConsumer, Closeable {
     CsvWriterConsumer withSeparators(String separator, String fieldSeparator = '') {
         this.separator = separator
         setFieldSeparator(fieldSeparator)
-        return this
-    }
-
-    CsvWriterConsumer writeHeader() {
-        writeHeader = true
         return this
     }
 
@@ -84,7 +78,7 @@ class CsvWriterConsumer implements LogConsumer, Closeable {
     }
 
     protected synchronized void doWrite(List<String> values) {
-        if (writeHeader && !nOutput) {
+        if (!nOutput) {
             writeLine(buildLine(columns))
         }
         writeLine(buildLine(values))
@@ -148,11 +142,6 @@ class CsvWriterConsumer implements LogConsumer, Closeable {
 
         Builder withSeparators(String separator, String fieldSeparator = '') {
             getConsumer().withSeparators(separator, fieldSeparator)
-            return this
-        }
-
-        Builder writeHeader() {
-            getConsumer().writeHeader()
             return this
         }
 
