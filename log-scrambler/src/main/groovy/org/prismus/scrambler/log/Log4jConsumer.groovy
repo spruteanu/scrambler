@@ -80,7 +80,7 @@ class Log4jConsumer extends RegexConsumer {
         return this
     }
 
-    Log4jConsumer withMessageExceptionConsumer() {
+    Log4jConsumer withExceptionConsumer() {
         withGroupConsumer(MESSAGE, new ExceptionConsumer(MESSAGE))
         return this
     }

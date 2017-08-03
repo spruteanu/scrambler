@@ -40,6 +40,26 @@ class RegexConsumerTest extends Specification {
 
         '15:49:37,459' =~ /${RegexConsumer.dateFormatToRegEx('HH:mm:ss,SSS')}/
         '06 Nov 1994 08:49:37,459' =~ /${RegexConsumer.dateFormatToRegEx('dd MMM yyyy HH:mm:ss,SSS')}/
+
+        and: 'verify toMap method'
+        ['LogLevel' : 'DEBUG',
+         'Timestamp': '2008-09-06 10:51:44,817',
+         'Caller'   : 'DefaultBeanDefinitionDocumentReader.java',
+         'Line'     : '86',
+         'Message'  : 'Loading bean definitions'] == RegexConsumer.toMap(
+            ~/(\w+) \| (\w+-\w+-\w+ \w+:\w+:\w+.\w+) \| (\w+\.\w+) \| (\d+) \| (.+)/,
+            'DEBUG | 2008-09-06 10:51:44,817 | DefaultBeanDefinitionDocumentReader.java | 86 | Loading bean definitions',
+            'LogLevel', 'Timestamp', 'Caller', 'Line', 'Message'
+        )
+        ['LogLevel' : 'DEBUG',
+         'Timestamp': '2008-09-06 10:51:44,817',
+         'Caller'   : 'DefaultBeanDefinitionDocumentReader.java',
+         'Line'     : '86',
+         'Message'  : 'Loading bean definitions'] == RegexConsumer.toMap(
+                ~/(\w+) \| (\w+-\w+-\w+ \w+:\w+:\w+.\w+) \| (\w+\.\w+) \| (\d+) \| (.+)/,
+                'DEBUG | 2008-09-06 10:51:44,817 | DefaultBeanDefinitionDocumentReader.java | 86 | Loading bean definitions',
+                ['LogLevel': 1, 'Timestamp': 2, 'Caller': 3, 'Line': 4, 'Message': 5]
+        )
     }
 
     void 'verify regex consumer'() {

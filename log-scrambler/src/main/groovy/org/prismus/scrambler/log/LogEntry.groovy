@@ -80,8 +80,4 @@ class LogEntry implements Cloneable {
         return logValueMap.isEmpty()
     }
 
-    @Override
-    Object clone() {
-        return super.clone()
-    }
 }
