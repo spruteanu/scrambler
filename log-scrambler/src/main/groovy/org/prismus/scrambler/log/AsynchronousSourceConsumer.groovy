@@ -20,6 +20,7 @@
 package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletionService
@@ -31,78 +32,36 @@ import java.util.concurrent.Future
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * @author Serge Pruteanu
  */
 @CompileStatic
-class AsynchronousSourceConsumer implements LogConsumer {
-    final LogConsumer consumer
+@PackageScope
+class AsynchronousSourceConsumer {
 
     private final LogCrawler logContext
-    private boolean awaitConsumption
     private int timeout
     private TimeUnit unit = TimeUnit.MILLISECONDS
 
     private CompletionService completionService
-    private int asynchTimeout
-    private TimeUnit asynchUnit
     private AtomicInteger jobsCount
-    volatile boolean processContext = true
 
-    AsynchronousSourceConsumer(LogCrawler logContext, LogConsumer consumer) {
+    AsynchronousSourceConsumer(LogCrawler logContext) {
         this.logContext = logContext
-        this.consumer = consumer
     }
 
     AsynchronousSourceConsumer withExecutorService(ExecutorService executorService, int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
-        this.asynchUnit = unit
-        this.asynchTimeout = timeout
+        this.timeout = timeout
+        this.unit = unit
         if (executorService) {
             completionService = new ExecutorCompletionService<Void>(executorService)
             jobsCount = new AtomicInteger()
         }
         return this
     }
-
-    @SuppressWarnings("GroovySynchronizationOnNonFinalField")
-    AsynchronousSourceConsumer stopAsynchronous() {
-        processContext = false
-        synchronized (completionService) {
-            completionService.notifyAll()
-        }
-        return this
-    }
-
-    AsynchronousSourceConsumer awaitConsumption(int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
-        this.timeout = timeout
-        this.unit = unit
-        return this
-    }
-
-    @Override
-    void consume(final LogEntry entry) {
-        final work = submitAsynchronous(consumer, entry)
-        if (awaitConsumption) {
-            while (processContext) {
-                try {
-                    if (timeout) {
-                        work.get(timeout, unit)
-                    } else {
-                        work.get()
-                    }
-                    break
-                } catch (TimeoutException ignore) { }
-            }
-        }
-    }
-
-//    private void consumeAsynchronous() {
-//        for (final entry : sourceConsumerMap.entrySet()) {
-//            consumeSource(LineReader.toLineReader(entry.key), LineReader.getSourceName(entry.key), entry.value)
-//        }
-//    }
 
     protected Future submitAsynchronous(Callable<Void> callable) {
         final work = completionService.submit(callable)
@@ -113,30 +72,27 @@ class AsynchronousSourceConsumer implements LogConsumer {
         return work
     }
 
-    protected Future submitAsynchronous(LogConsumer consumer, LogEntry logEntry) {
+    protected Future submitAsynchronous(LogEntry logEntry, LogConsumer consumer) {
         return submitAsynchronous(new LogConsumerCallable(consumer, logEntry))
     }
 
-    protected void awaitJobsCompletion() {
+    void awaitJobsCompletion() {
         if (jobsCount == null) {
             return
         }
         List<Throwable> errors = []
-        while (processContext && jobsCount.get()) {
+        final processContext = logContext.processContext
+        while (processContext.get() && jobsCount.get()) {
             try {
                 Future<Void> future
-                if (asynchTimeout) {
-                    future = completionService.poll(asynchTimeout, asynchUnit)
+                if (timeout) {
+                    future = completionService.poll(timeout, unit)
                 } else {
                     future = completionService.poll()
                 }
                 if (future) {
                     try {
-                        if (asynchTimeout) {
-                            future.get(asynchTimeout, asynchUnit)
-                        } else {
-                            future.get()
-                        }
+                        future.get()
                     } catch (ExecutionException ignore) {
                         errors.add(ignore.getCause())
                     } finally {
@@ -150,7 +106,8 @@ class AsynchronousSourceConsumer implements LogConsumer {
         }
     }
 
-    private class LogConsumerCallable implements Callable<Void> {
+    @CompileStatic
+    private static class LogConsumerCallable implements Callable<Void> {
         final LogConsumer consumer
         final LogEntry logEntry
 
@@ -166,6 +123,7 @@ class AsynchronousSourceConsumer implements LogConsumer {
         }
     }
 
+    @CompileStatic
     private static class ContextException extends RuntimeException implements Iterable<Throwable> {
         private List<Throwable> throwables
 
@@ -180,6 +138,7 @@ class AsynchronousSourceConsumer implements LogConsumer {
         }
     }
 
+    @CompileStatic
     private static class ContextThreadFactory implements ThreadFactory {
         private final AtomicInteger count = new AtomicInteger()
 
@@ -192,6 +151,7 @@ class AsynchronousSourceConsumer implements LogConsumer {
         }
     }
 
+    @CompileStatic
     static class Builder {
         private ExecutorService executorService
         private int defaultTimeout

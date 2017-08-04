@@ -72,7 +72,7 @@ class LogCrawler implements Iterable<LogEntry> {
     }
 
     @SuppressWarnings("GroovySynchronizationOnNonFinalField")
-    LogCrawler stopAsynchronous() {
+    LogCrawler stop() {
         processContext.set(false)
         return this
     }
