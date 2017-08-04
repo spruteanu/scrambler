@@ -22,17 +22,7 @@ package org.prismus.scrambler.log
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 
-import java.util.concurrent.Callable
-import java.util.concurrent.CompletionService
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.ExecutorCompletionService
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
-import java.util.concurrent.ThreadFactory
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -40,32 +30,41 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 @CompileStatic
 @PackageScope
-class AsynchronousSourceConsumer {
+class AsynchronousJobs implements Closeable, AutoCloseable {
 
-    private final LogCrawler logContext
+    private final LogCrawler logCrawler
     private int timeout
     private TimeUnit unit = TimeUnit.MILLISECONDS
 
+    private ExecutorService executorService
     private CompletionService completionService
-    private AtomicInteger jobsCount
+    private AtomicInteger count
 
-    AsynchronousSourceConsumer(LogCrawler logContext) {
-        this.logContext = logContext
+    AsynchronousJobs(LogCrawler logCrawler) {
+        this.logCrawler = logCrawler
     }
 
-    AsynchronousSourceConsumer withExecutorService(ExecutorService executorService, int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
+    AsynchronousJobs withExecutorService(ExecutorService executorService, int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
+        this.executorService = executorService
         this.timeout = timeout
         this.unit = unit
         if (executorService) {
             completionService = new ExecutorCompletionService<Void>(executorService)
-            jobsCount = new AtomicInteger()
+            count = new AtomicInteger()
+        }
+        return this
+    }
+
+    AsynchronousJobs stop() {
+        if (executorService) {
+            executorService.shutdown()
         }
         return this
     }
 
     protected Future submitAsynchronous(Callable<Void> callable) {
         final work = completionService.submit(callable)
-        jobsCount.incrementAndGet()
+        count.incrementAndGet()
         try {
             work.get(1, TimeUnit.MILLISECONDS) // make sure that job is submitted
         } catch (TimeoutException ignore) { }
@@ -73,16 +72,16 @@ class AsynchronousSourceConsumer {
     }
 
     protected Future submitAsynchronous(LogEntry logEntry, LogConsumer consumer) {
-        return submitAsynchronous(new LogConsumerCallable(consumer, logEntry))
+        return submitAsynchronous(new LogConsumerCallable(logEntry, consumer))
     }
 
-    void awaitJobsCompletion() {
-        if (jobsCount == null) {
+    protected void awaitCompletion() {
+        if (count == null) {
             return
         }
         List<Throwable> errors = []
-        final processContext = logContext.processContext
-        while (processContext.get() && jobsCount.get()) {
+        final processContext = logCrawler.processContext
+        while (processContext.get() && count.get()) {
             try {
                 Future<Void> future
                 if (timeout) {
@@ -96,7 +95,7 @@ class AsynchronousSourceConsumer {
                     } catch (ExecutionException ignore) {
                         errors.add(ignore.getCause())
                     } finally {
-                        jobsCount.decrementAndGet()
+                        count.decrementAndGet()
                     }
                 }
             } catch (TimeoutException ignore) { }
@@ -106,12 +105,74 @@ class AsynchronousSourceConsumer {
         }
     }
 
+    @Override
+    void close() throws IOException {
+        awaitCompletion()
+    }
+
+    static Builder builder(LogCrawler logCrawler) {
+        return new Builder(new AsynchronousJobs(logCrawler))
+    }
+
+    @CompileStatic
+    static class Builder extends ConsumerBuilder {
+        private ExecutorService executorService
+        private int timeout
+        private TimeUnit unit = TimeUnit.MILLISECONDS
+        private final AsynchronousJobs jobs
+
+        Builder(AsynchronousJobs jobs) {
+            this.jobs = jobs
+        }
+
+        Builder withExecutorService(int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
+            return withExecutorService(Executors.newCachedThreadPool(new ContextThreadFactory()), timeout, unit)
+        }
+
+        Builder withExecutorService(ExecutorService executorService, int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
+            this.executorService = executorService
+            this.timeout = timeout
+            this.unit = unit
+            return this
+        }
+
+        LogConsumer build() {
+            if (!executorService) {
+                executorService = Executors.newCachedThreadPool(new ContextThreadFactory())
+            }
+            jobs.withExecutorService(executorService, timeout, unit)
+            final sourceConsumerMap = jobs.logCrawler.sourceConsumerMap
+            for (LogEntry logEntry : sourceConsumerMap.keySet()) {
+                sourceConsumerMap.put(logEntry, new AsynchronousJobConsumer(jobs, sourceConsumerMap.get(logEntry)))
+            }
+            jobs.logCrawler.checkCloseable(jobs)
+            return null
+        }
+    }
+
+    @CompileStatic
+    @PackageScope
+    static class AsynchronousJobConsumer implements LogConsumer {
+        final AsynchronousJobs jobs
+        final LogConsumer consumer
+
+        AsynchronousJobConsumer(AsynchronousJobs jobs, LogConsumer consumer) {
+            this.jobs = jobs
+            this.consumer = consumer
+        }
+
+        @Override
+        void consume(LogEntry entry) {
+            jobs.submitAsynchronous(new LogConsumerCallable(entry, consumer))
+        }
+    }
+
     @CompileStatic
     private static class LogConsumerCallable implements Callable<Void> {
-        final LogConsumer consumer
         final LogEntry logEntry
+        final LogConsumer consumer
 
-        LogConsumerCallable(LogConsumer consumer, LogEntry logEntry) {
+        LogConsumerCallable(LogEntry logEntry, LogConsumer consumer) {
             this.consumer = consumer
             this.logEntry = logEntry
         }
@@ -151,30 +212,4 @@ class AsynchronousSourceConsumer {
         }
     }
 
-    @CompileStatic
-    static class Builder {
-        private ExecutorService executorService
-        private int defaultTimeout
-        private TimeUnit defaultUnit = TimeUnit.MILLISECONDS
-
-//        protected AsynchronousSourceConsumer newAsynchronousConsumer(LogConsumer consumer, int timeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
-//            if (executorService == null) {
-//                executorService = Executors.newCachedThreadPool(new ContextThreadFactory())
-//                withExecutorService(executorService, defaultTimeout, defaultUnit)
-//            }
-//            return consumer instanceof AsynchronousSourceConsumer ? consumer as AsynchronousSourceConsumer : new AsynchronousSourceConsumer(context, consumer).awaitConsumption(timeout, unit)
-//        }
-//
-//        Builder asynchronousSources(int defaultTimeout = this.defaultTimeout, TimeUnit defaultUnit = this.defaultUnit) {
-//            asynchronousSources = true
-//            this.defaultTimeout = defaultTimeout
-//            this.defaultUnit = defaultUnit
-//            return this
-//        }
-//
-//        Builder asynchronous(LogConsumer consumer) {
-//            context.withConsumer(newAsynchronousConsumer(consumer))
-//            return this
-//        }
-    }
 }

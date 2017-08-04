@@ -130,7 +130,6 @@
                         <descriptor>src/main/assembly/assembly-zip.xml</descriptor>
                         <descriptor>src/main/assembly/assembly-tar.xml</descriptor>
                     </descriptors>
-                    <appendAssemblyId>true</appendAssemblyId>
                 </configuration>
                 <executions>
                     <execution>

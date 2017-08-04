@@ -50,9 +50,9 @@ class LogCrawler implements Iterable<LogEntry> {
     protected static final String LOG4J_ARG = '-log4j'
     protected static final String REGEX_ARG = '-regex'
 
-    private Map<LogEntry, LogConsumer> sourceConsumerMap = [:]
+    protected Map<LogEntry, LogConsumer> sourceConsumerMap = [:]
     private List<LogConsumer> consumers = new ArrayList<LogConsumer>()
-    private List<Closeable> closeables = []
+    private LinkedList<Closeable> closeables = []
 
     AtomicBoolean processContext = new AtomicBoolean(true)
 
@@ -77,16 +77,21 @@ class LogCrawler implements Iterable<LogEntry> {
         return this
     }
 
+    protected void checkCloseable(Object object) {
+        if (object instanceof Closeable) {
+            closeables.addFirst(object as Closeable)
+        }
+    }
+
     LogCrawler withConsumer(LogConsumer consumer) {
         consumers.add(consumer)
-        if (consumer instanceof Closeable) {
-            closeables.add(consumer as Closeable)
-        }
+        checkCloseable(consumer)
         if (consumer instanceof CsvWriterConsumer) {
             final csvOutputConsumer = (CsvWriterConsumer) consumer
             if (!csvOutputConsumer.columns) {
                 final columns = new LinkedHashSet<String>()
                 for (LogConsumer sourceConsumer : sourceConsumerMap.values()) {
+                    sourceConsumer = lookupWrappedConsumer(sourceConsumer)
                     if (sourceConsumer instanceof RegexConsumer) {
                         columns.addAll(((RegexConsumer) sourceConsumer).groupIndexMap.keySet().toList())
                     }
@@ -159,7 +164,7 @@ class LogCrawler implements Iterable<LogEntry> {
 
     void consume() {
         for (final entry : sourceConsumerMap.entrySet()) {
-            consumeSource(LineReader.toLineReader(entry.key), LineReader.getSourceName(entry.key), entry.value)
+            entry.value.consume(entry.key)
         }
         closeConsumers()
     }
@@ -177,6 +182,22 @@ class LogCrawler implements Iterable<LogEntry> {
 ////        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(), 0), false)
 //    }
 
+    static final Comparator<Path> CREATED_DT_COMPARATOR = { Path l, Path r ->
+        final leftCreated = Files.readAttributes(l, BasicFileAttributes.class).creationTime()
+        final rightCreated = Files.readAttributes(r, BasicFileAttributes.class).creationTime()
+        return leftCreated.compareTo(rightCreated)
+    } as Comparator<Path>
+
+    private static LogConsumer lookupWrappedConsumer(LogConsumer consumer) {
+        if (consumer instanceof AsynchronousJobs.AsynchronousJobConsumer) {
+            consumer = ((AsynchronousJobs.AsynchronousJobConsumer) consumer).consumer
+        }
+        if (consumer instanceof LineReaderConsumer) {
+            consumer = ((LineReaderConsumer) consumer).sourceConsumer
+        }
+        return consumer
+    }
+
     private class LogEntryIterator implements Iterator<LogEntry> {
         private Queue<Tuple> sources = new LinkedList<>()
 
@@ -189,7 +210,8 @@ class LogCrawler implements Iterable<LogEntry> {
 
         LogEntryIterator() {
             for (Map.Entry<LogEntry, LogConsumer> entry : sourceConsumerMap.entrySet()) {
-                sources.add(new Tuple(LineReader.toLineReader(entry.key), LineReader.getSourceName(entry.key), entry.value))
+                LogConsumer sourceConsumer = lookupWrappedConsumer(entry.value)
+                sources.add(new Tuple(LineReader.toLineReader(entry.key), LineReader.getSourceName(entry.key), sourceConsumer))
             }
         }
 
@@ -253,11 +275,21 @@ class LogCrawler implements Iterable<LogEntry> {
         }
     }
 
-    static final Comparator<Path> CREATED_DT_COMPARATOR = { Path l, Path r ->
-        final leftCreated = Files.readAttributes(l, BasicFileAttributes.class).creationTime()
-        final rightCreated = Files.readAttributes(r, BasicFileAttributes.class).creationTime()
-        return leftCreated.compareTo(rightCreated)
-    } as Comparator<Path>
+    @CompileStatic
+    private static class LineReaderConsumer implements LogConsumer {
+        private final LogCrawler logCrawler
+        private final LogConsumer sourceConsumer
+
+        LineReaderConsumer(LogCrawler logCrawler, LogConsumer sourceConsumer) {
+            this.sourceConsumer = sourceConsumer
+            this.logCrawler = logCrawler
+        }
+
+        @Override
+        void consume(LogEntry entry) {
+            logCrawler.consumeSource(LineReader.toLineReader(entry), LineReader.getSourceName(entry), sourceConsumer)
+        }
+    }
 
     protected static String fileFilterToRegex(String fileFilter) {
         String result = fileFilter.replaceAll('\\*', '.*')
@@ -288,17 +320,13 @@ class LogCrawler implements Iterable<LogEntry> {
     static class Builder {
         ObjectProvider provider = new DefaultObjectProvider()
 
-        private LogCrawler context
+        private LogCrawler logCrawler
         private final Map<String, Object> sourceNameConsumerMap = [:]
         private final Map<LogEntry, Object> sourceConsumerMap = [:]
         private final List<ConsumerBuilder> consumerBuilders = []
 
-        private boolean asynchronousSources
-        private int awaitTimeout
-        private TimeUnit unit = TimeUnit.MILLISECONDS
-
         Builder() {
-            context = new LogCrawler()
+            logCrawler = new LogCrawler()
         }
 
         @PackageScope
@@ -320,7 +348,7 @@ class LogCrawler implements Iterable<LogEntry> {
                 }
                 if (sourceConsumer) {
                     final logEntry = entry.key
-                    context.forSource(logEntry, sourceConsumer)
+                    logCrawler.forSource(logEntry, new LineReaderConsumer(logCrawler, sourceConsumer))
                     final sourceName = LineReader.getSourceName(logEntry)
                     if (sourceName) {
                         sourceNames.add(sourceName)
@@ -356,7 +384,10 @@ class LogCrawler implements Iterable<LogEntry> {
         @PackageScope
         void buildConsumers() {
             for (ConsumerBuilder builder : consumerBuilders) {
-                context.withConsumer(builder.build())
+                final logConsumer = builder.build()
+                if (logConsumer) {
+                    logCrawler.withConsumer(logConsumer)
+                }
             }
         }
 
@@ -365,9 +396,7 @@ class LogCrawler implements Iterable<LogEntry> {
         }
 
         Builder asynchronousSources(int awaitTimeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
-            asynchronousSources = true
-            this.awaitTimeout = awaitTimeout
-            this.unit = unit
+            consumerBuilders.add(AsynchronousJobs.builder(logCrawler).withExecutorService(awaitTimeout, unit))
             return this
         }
 
@@ -603,7 +632,7 @@ class LogCrawler implements Iterable<LogEntry> {
             sourceConsumerMap.clear()
             sourceNameConsumerMap.clear()
             consumerBuilders.clear()
-            return context
+            return logCrawler
         }
 
         private List toMethodTuple(String[] args, List<List> configTuple, int currentIdx, File file) {
