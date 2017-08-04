@@ -64,29 +64,6 @@ class RegexConsumer implements LogConsumer {
         return this
     }
 
-    RegexConsumer groups(Map<String, Object> groups) {
-        Objects.requireNonNull(groups, 'Groups must be provided')
-        int i = 0
-        for (Map.Entry<String, Object> entry : groups.entrySet()) {
-            final consumer = entry.value
-            final groupName = entry.key
-            if (consumer instanceof Closure) {
-                group(groupName, i + 1, new ClosureConsumer(consumer as Closure))
-            } else if (consumer instanceof LogConsumer) {
-                group(groupName, i + 1, consumer as LogConsumer)
-            } else {
-                group(groupName, i + 1)
-            }
-        }
-        return this
-    }
-
-    RegexConsumer indexedGroups(Map<String, Integer> groupIndexMap) {
-        Objects.requireNonNull(groupIndexMap, 'Group value map should not be null')
-        this.groupIndexMap.putAll(groupIndexMap)
-        return this
-    }
-
     RegexConsumer group(String group, Integer index = null, LogConsumer consumer = null) {
         assert index == null || index > 0, 'Group index should be a positive number'
         Objects.requireNonNull(group, 'Group value name should be provided')
@@ -228,36 +205,7 @@ class RegexConsumer implements LogConsumer {
             super(contextBuilder, consumer)
         }
 
-        Builder group(String group, LogConsumer consumer = null) {
-            return indexedGroup(group, null, consumer)
-        }
-
-        Builder groups(String... groups) {
-            Objects.requireNonNull(groups, 'Groups must be provided')
-            for (int i = 0; i < groups.length; i++) {
-                indexedGroup(groups[i], i + 1)
-            }
-            return this
-        }
-
-        Builder groups(Map<String, Object> groups) {
-            Objects.requireNonNull(groups, 'Groups must be provided')
-            int i = 0
-            for (Map.Entry<String, Object> entry : groups.entrySet()) {
-                final consumer = entry.value
-                final groupName = entry.key
-                if (consumer instanceof Closure) {
-                    indexedGroup(groupName, i + 1, new ClosureConsumer(consumer as Closure))
-                } else if (consumer instanceof LogConsumer) {
-                    indexedGroup(groupName, i + 1, consumer as LogConsumer)
-                } else {
-                    indexedGroup(groupName, i + 1)
-                }
-            }
-            return this
-        }
-
-        Builder indexedGroup(String group, Integer index = null, LogConsumer consumer = null) {
+        Builder group(String group, Integer index = null, LogConsumer consumer = null) {
             groupIndexMap.put(group, index)
             if (consumer) {
                 withConsumer(group, consumer)
@@ -265,8 +213,11 @@ class RegexConsumer implements LogConsumer {
             return this
         }
 
-        Builder indexedGroups(Map<String, Integer> groupIndexMap) {
-            this.groupIndexMap.putAll(groupIndexMap)
+        Builder groups(String... groups) {
+            Objects.requireNonNull(groups, 'Groups must be provided')
+            for (int i = 0; i < groups.length; i++) {
+                group(groups[i], i + 1)
+            }
             return this
         }
 
@@ -290,15 +241,13 @@ class RegexConsumer implements LogConsumer {
             return toDateConsumer(group, new SimpleDateFormat(dateFormat))
         }
 
-        Builder toDateConsumer(String group, SimpleDateFormat dateFormat) {
-            indexedGroup(group, (Integer)null)
-            withConsumer(group, new DateConsumer(dateFormat, group))
+        Builder toDateConsumer(String groupName, SimpleDateFormat dateFormat) {
+            group(groupName, (Integer)null, new DateConsumer(dateFormat, groupName))
             return this
         }
 
-        Builder toExceptionConsumer(String group) {
-            indexedGroup(group, (Integer)null)
-            withConsumer(group, new ExceptionConsumer(group))
+        Builder toExceptionConsumer(String groupName) {
+            group(groupName, (Integer)null, new ExceptionConsumer(groupName))
             return this
         }
 
@@ -310,9 +259,6 @@ class RegexConsumer implements LogConsumer {
 
         RegexConsumer build() {
             final RegexConsumer result = super.build() as RegexConsumer
-            if (groupIndexMap) {
-                result.indexedGroups(groupIndexMap)
-            }
             buildGroupConsumers(result)
             return result
         }

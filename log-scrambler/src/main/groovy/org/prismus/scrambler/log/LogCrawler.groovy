@@ -35,6 +35,8 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.attribute.BasicFileAttributes
 import java.text.SimpleDateFormat
+import java.util.concurrent.*
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Predicate
 import java.util.regex.Pattern
 import java.util.stream.Collectors
@@ -52,6 +54,8 @@ class LogCrawler implements Iterable<LogEntry> {
     private List<LogConsumer> consumers = new ArrayList<LogConsumer>()
     private List<Closeable> closeables = []
 
+    AtomicBoolean processContext = new AtomicBoolean(true)
+
     boolean multiline = true
 
     private LogCrawler() {
@@ -64,6 +68,12 @@ class LogCrawler implements Iterable<LogEntry> {
 
     LogCrawler forSource(LogEntry source, LogConsumer sourceConsumer) {
         sourceConsumerMap.put(source, sourceConsumer)
+        return this
+    }
+
+    @SuppressWarnings("GroovySynchronizationOnNonFinalField")
+    LogCrawler stopAsynchronous() {
+        processContext.set(false)
         return this
     }
 
@@ -198,10 +208,10 @@ class LogCrawler implements Iterable<LogEntry> {
 
         @Override
         boolean hasNext() {
-            if (lastEntry == null && sources.size() > 0) {
+            if (processContext && lastEntry == null && sources.size() > 0) {
                 openNextSource()
             }
-            boolean result = lastEntry != null
+            boolean result = processContext && lastEntry != null
             if (!result) {
                 LogCrawler.this.closeConsumers()
             }
@@ -284,6 +294,8 @@ class LogCrawler implements Iterable<LogEntry> {
         private final List<ConsumerBuilder> consumerBuilders = []
 
         private boolean asynchronousSources
+        private int awaitTimeout
+        private TimeUnit unit = TimeUnit.MILLISECONDS
 
         Builder() {
             context = new LogCrawler()
@@ -350,6 +362,13 @@ class LogCrawler implements Iterable<LogEntry> {
 
         LogConsumer getConsumer(Object consumerId, Object... args) {
             return provider.get(consumerId, args) as LogConsumer
+        }
+
+        Builder asynchronousSources(int awaitTimeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
+            asynchronousSources = true
+            this.awaitTimeout = awaitTimeout
+            this.unit = unit
+            return this
         }
 
         Builder withObjectProvider(ObjectProvider provider) {
