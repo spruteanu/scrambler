@@ -49,7 +49,7 @@ class RegexConsumer implements LogConsumer {
         this.group = group
     }
 
-    private void addConsumer(String group, LogConsumer consumer) {
+    private void add(String group, LogConsumer consumer) {
         if (!groupConsumerMap.containsKey(group)) {
             groupConsumerMap.put(group, new ArrayList<LogConsumer>())
         }
@@ -69,7 +69,7 @@ class RegexConsumer implements LogConsumer {
         Objects.requireNonNull(group, 'Group value name should be provided')
         groupIndexMap.put(group, index)
         if (consumer) {
-            addConsumer(group, consumer)
+            add(group, consumer)
         }
         return this
     }
@@ -77,7 +77,7 @@ class RegexConsumer implements LogConsumer {
     RegexConsumer group(String group, LogConsumer consumer) {
         Objects.requireNonNull(group, "Group Name can't be null")
         Objects.requireNonNull(consumer, 'Entry consumer instance should be provided')
-        addConsumer(group, consumer)
+        add(group, consumer)
         groupIndexMap.put(group, null)
         return this
     }
@@ -89,7 +89,7 @@ class RegexConsumer implements LogConsumer {
     RegexConsumer withGroupConsumer(String group, LogConsumer consumer) {
         Objects.requireNonNull(group, "Group Name can't be null")
         Objects.requireNonNull(consumer, 'Entry consumer instance should be provided')
-        addConsumer(group, consumer)
+        add(group, consumer)
         return this
     }
 
@@ -97,7 +97,7 @@ class RegexConsumer implements LogConsumer {
         return withGroupConsumer(group, new ClosureConsumer(closure))
     }
 
-    private List<LogConsumer> getConsumer(String key) {
+    private List<LogConsumer> get(String key) {
         return groupConsumerMap.containsKey(key) ? groupConsumerMap.get(key) : Collections.<LogConsumer>emptyList()
     }
 
@@ -127,7 +127,7 @@ class RegexConsumer implements LogConsumer {
                 } catch (Exception ignore) { }
                 if (groupValue) {
                     entry.put(key, groupValue.trim())
-                    final List<LogConsumer> consumers = getConsumer(key)
+                    final List<LogConsumer> consumers = get(key)
                     for (LogConsumer consumer : consumers) {
                         consumer.consume(entry)
                     }
@@ -237,21 +237,21 @@ class RegexConsumer implements LogConsumer {
             return new GroupConsumerBuilder(group, consumer, args)
         }
 
-        Builder toDateConsumer(String group, String dateFormat) {
-            return toDateConsumer(group, new SimpleDateFormat(dateFormat))
+        Builder date(String group, String dateFormat) {
+            return date(group, new SimpleDateFormat(dateFormat))
         }
 
-        Builder toDateConsumer(String groupName, SimpleDateFormat dateFormat) {
+        Builder date(String groupName, SimpleDateFormat dateFormat) {
             group(groupName, (Integer)null, new DateConsumer(dateFormat, groupName))
             return this
         }
 
-        Builder toExceptionConsumer(String groupName) {
+        Builder exception(String groupName) {
             group(groupName, (Integer)null, new ExceptionConsumer(groupName))
             return this
         }
 
-        protected void buildGroupConsumers(RegexConsumer result) {
+        protected void buildConsumers(RegexConsumer result) {
             for (Map.Entry<String, List> entry : groupProcessorMap.entrySet()) {
                 result.withGroupConsumer(entry.key, newConsumer(entry.value))
             }
@@ -259,7 +259,7 @@ class RegexConsumer implements LogConsumer {
 
         RegexConsumer build() {
             final RegexConsumer result = super.build() as RegexConsumer
-            buildGroupConsumers(result)
+            buildConsumers(result)
             return result
         }
 
@@ -271,16 +271,15 @@ class RegexConsumer implements LogConsumer {
                 this.group = group
             }
 
-            Builder recurBuilder() {
+            Builder regex() {
                 Builder.this.withConsumer(group, build())
                 return Builder.this
             }
 
-            LogCrawler.Builder recurContext() {
+            LogCrawler.Builder crawler() {
                 Builder.this.withConsumer(group, build())
                 return contextBuilder
             }
         }
-
     }
 }

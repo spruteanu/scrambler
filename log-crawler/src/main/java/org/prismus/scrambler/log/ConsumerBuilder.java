@@ -51,7 +51,7 @@ public class ConsumerBuilder<T extends LogConsumer> {
         return this;
     }
 
-    LogCrawler.Builder recurContext() {
+    LogCrawler.Builder crawler() {
         return contextBuilder;
     }
 
@@ -63,7 +63,7 @@ public class ConsumerBuilder<T extends LogConsumer> {
         } else if (object instanceof ConsumerBuilder) {
             result = (T) ((ConsumerBuilder) object).build();
         } else {
-            result = (T) contextBuilder.getConsumer(object, objArgs);
+            result = (T) contextBuilder.get(object, objArgs);
         }
         if (consumerProperties != null) {
             DefaultObjectProvider.setInstanceProperties(result, consumerProperties);

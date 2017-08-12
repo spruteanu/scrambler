@@ -66,7 +66,7 @@ class LogCrawler implements Iterable<LogEntry> {
         return this
     }
 
-    LogCrawler forSource(LogEntry source, LogConsumer sourceConsumer) {
+    LogCrawler source(LogEntry source, LogConsumer sourceConsumer) {
         sourceConsumerMap.put(source, sourceConsumer)
         return this
     }
@@ -91,7 +91,7 @@ class LogCrawler implements Iterable<LogEntry> {
             if (!csvOutputConsumer.columns) {
                 final columns = new LinkedHashSet<String>()
                 for (LogConsumer sourceConsumer : sourceConsumerMap.values()) {
-                    sourceConsumer = lookupWrappedConsumer(sourceConsumer)
+                    sourceConsumer = lookupWrapped(sourceConsumer)
                     if (sourceConsumer instanceof RegexConsumer) {
                         columns.addAll(((RegexConsumer) sourceConsumer).groupIndexMap.keySet().toList())
                     }
@@ -105,21 +105,21 @@ class LogCrawler implements Iterable<LogEntry> {
         return this
     }
 
-    LogCrawler filterTo(Predicate predicate, LogConsumer consumer, LogConsumer... consumers) {
+    LogCrawler filter(Predicate predicate, LogConsumer consumer, LogConsumer... consumers) {
         def cs = consumers ? ContainerConsumer.of(consumer).addAll(consumers) : consumer
         return withConsumer(new PredicateConsumer(predicate, cs))
     }
 
-    LogCrawler filterTo(Closure predicate, Closure consumer, Closure... consumers) {
+    LogCrawler filter(Closure predicate, Closure consumer, Closure... consumers) {
         def cs = consumers ? ContainerConsumer.of(consumer).addAll(consumers) : new ClosureConsumer(consumer)
-        return filterTo(new ClosurePredicate(predicate), cs)
+        return filter(new ClosurePredicate(predicate), cs)
     }
 
-    LogCrawler writeTo(DataSource dataSource, String tableName = 'LogEntry', String... columns) {
+    LogCrawler output(DataSource dataSource, String tableName = 'LogEntry', String... columns) {
         return withConsumer(TableBatchConsumer.of(dataSource, tableName, columns))
     }
 
-    protected void consumeEntry(LogEntry logEntry, LogConsumer sourceConsumer) {
+    protected void consume(LogEntry logEntry, LogConsumer sourceConsumer) {
         if (logEntry) {
             logEntry.sourceInfo("${Objects.toString(logEntry.source, '')}:($logEntry.row)".toString())
             sourceConsumer.consume(logEntry)
@@ -129,7 +129,7 @@ class LogCrawler implements Iterable<LogEntry> {
         }
     }
 
-    protected void consumeSource(LineReader lineReader, String sourceName, LogConsumer sourceConsumer) {
+    protected void consume(LineReader lineReader, String sourceName, LogConsumer sourceConsumer) {
         try {
             LogEntry lastEntry = null
             int currentRow = 0
@@ -145,18 +145,18 @@ class LogCrawler implements Iterable<LogEntry> {
                     }
                 } else {
                     nEntries++
-                    consumeEntry(lastEntry, sourceConsumer)
+                    consume(lastEntry, sourceConsumer)
                     lastEntry = logEntry
                 }
             }
-            consumeEntry(lastEntry, sourceConsumer)
+            consume(lastEntry, sourceConsumer)
             log.finest("Done consuming '$sourceName' using: '$sourceConsumer'. Processed '$currentRow' rows, consumed '$nEntries' entries")
         } finally {
             Utils.closeQuietly(lineReader)
         }
     }
 
-    protected void closeConsumers() {
+    protected void close() {
         for (Closeable closeable : closeables) {
             Utils.closeQuietly(closeable)
         }
@@ -166,7 +166,7 @@ class LogCrawler implements Iterable<LogEntry> {
         for (final entry : sourceConsumerMap.entrySet()) {
             entry.value.consume(entry.key)
         }
-        closeConsumers()
+        close()
     }
 
     @Override
@@ -188,7 +188,7 @@ class LogCrawler implements Iterable<LogEntry> {
         return leftCreated.compareTo(rightCreated)
     } as Comparator<Path>
 
-    private static LogConsumer lookupWrappedConsumer(LogConsumer consumer) {
+    private static LogConsumer lookupWrapped(LogConsumer consumer) {
         if (consumer instanceof AsynchronousJobs.AsynchronousJobConsumer) {
             consumer = ((AsynchronousJobs.AsynchronousJobConsumer) consumer).consumer
         }
@@ -210,12 +210,12 @@ class LogCrawler implements Iterable<LogEntry> {
 
         LogEntryIterator() {
             for (Map.Entry<LogEntry, LogConsumer> entry : sourceConsumerMap.entrySet()) {
-                LogConsumer sourceConsumer = lookupWrappedConsumer(entry.value)
+                LogConsumer sourceConsumer = lookupWrapped(entry.value)
                 sources.add(new Tuple(LineReader.toLineReader(entry.key), LineReader.getSourceName(entry.key), sourceConsumer))
             }
         }
 
-        protected void openNextSource() {
+        protected void nextSource() {
             lastEntry = null
             currentRow = nEntries = 0
             if (sources.size()) {
@@ -231,11 +231,11 @@ class LogCrawler implements Iterable<LogEntry> {
         @Override
         boolean hasNext() {
             if (processContext && lastEntry == null && sources.size() > 0) {
-                openNextSource()
+                nextSource()
             }
             boolean result = processContext && lastEntry != null
             if (!result) {
-                LogCrawler.this.closeConsumers()
+                LogCrawler.this.close()
             }
             return result
         }
@@ -252,13 +252,13 @@ class LogCrawler implements Iterable<LogEntry> {
                     }
                 } else {
                     nEntries++
-                    consumeEntry(lastEntry, sourceConsumer)
+                    consume(lastEntry, sourceConsumer)
                     result = sourceOpen ? logEntry : lastEntry
                     lastEntry = logEntry
                 }
             }
             if (result == null) {
-                consumeEntry(lastEntry, sourceConsumer)
+                consume(lastEntry, sourceConsumer)
                 result = lastEntry
                 if (line == null) {
                     log.finest("Done consuming '$sourceName' using: '$sourceConsumer'. Processed '$currentRow' rows, consumed '$nEntries' entries")
@@ -287,7 +287,7 @@ class LogCrawler implements Iterable<LogEntry> {
 
         @Override
         void consume(LogEntry entry) {
-            logCrawler.consumeSource(LineReader.toLineReader(entry), LineReader.getSourceName(entry), sourceConsumer)
+            logCrawler.consume(LineReader.toLineReader(entry), LineReader.getSourceName(entry), sourceConsumer)
         }
     }
 
@@ -298,7 +298,7 @@ class LogCrawler implements Iterable<LogEntry> {
         return result
     }
 
-    protected static List<File> listFolderFiles(File folder, String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+    protected static List<File> listFiles(File folder, String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
         assert folder.exists() && folder.isDirectory(), "Folder: '$folder.path' doesn't exists"
         log.finest("Scanning '$folder.path' for logging sources using: '$fileFilter' filter")
         final Pattern filePattern = ~/${fileFilterToRegex(fileFilter)}/
@@ -322,33 +322,33 @@ class LogCrawler implements Iterable<LogEntry> {
 
         private LogCrawler logCrawler
         private final Map<String, Object> sourceNameConsumerMap = [:]
-        private final Map<LogEntry, Object> sourceConsumerMap = [:]
-        private final List<ConsumerBuilder> consumerBuilders = []
+        private final Map<LogEntry, Object> sourceMap = [:]
+        private final List<ConsumerBuilder> builders = []
 
         Builder() {
             logCrawler = new LogCrawler()
         }
 
         @PackageScope
-        void buildSourceConsumers() {
+        void buildSources() {
             final List<String> sourceNames = new ArrayList<>()
-            final Map<Object, LogConsumer> builtConsumers = [:]
-            for (Map.Entry<LogEntry, Object> entry : sourceConsumerMap.entrySet()) {
+            final Map<Object, LogConsumer> consumers = [:]
+            for (Map.Entry<LogEntry, Object> entry : sourceMap.entrySet()) {
                 final value = entry.value
-                LogConsumer sourceConsumer = null
+                LogConsumer source = null
                 if (value instanceof LogConsumer) {
-                    sourceConsumer = value as LogConsumer
+                    source = value as LogConsumer
                 } else if (value instanceof ConsumerBuilder) {
-                    if (builtConsumers.containsKey(value)) {
-                        sourceConsumer = builtConsumers.get(value)
+                    if (consumers.containsKey(value)) {
+                        source = consumers.get(value)
                     } else {
-                        sourceConsumer = value.build()
-                        builtConsumers.put(value, sourceConsumer)
+                        source = value.build()
+                        consumers.put(value, source)
                     }
                 }
-                if (sourceConsumer) {
+                if (source) {
                     final logEntry = entry.key
-                    logCrawler.forSource(logEntry, new LineReaderConsumer(logCrawler, sourceConsumer))
+                    logCrawler.source(logEntry, new LineReaderConsumer(logCrawler, source))
                     final sourceName = LineReader.getSourceName(logEntry)
                     if (sourceName) {
                         sourceNames.add(sourceName)
@@ -357,7 +357,7 @@ class LogCrawler implements Iterable<LogEntry> {
             }
             int difference = StringUtils.indexOfDifference(sourceNames.toArray() as String[])
             if (difference > 0) {
-                for (LogEntry logEntry : sourceConsumerMap.keySet()) {
+                for (LogEntry logEntry : sourceMap.keySet()) {
                     final sourceName = LineReader.getSourceName(logEntry)
                     if (sourceName) {
                         int idx = indexOfLastFolderSeparator(sourceName)
@@ -383,7 +383,7 @@ class LogCrawler implements Iterable<LogEntry> {
 
         @PackageScope
         void buildConsumers() {
-            for (ConsumerBuilder builder : consumerBuilders) {
+            for (ConsumerBuilder builder : builders) {
                 final logConsumer = builder.build()
                 if (logConsumer) {
                     logCrawler.withConsumer(logConsumer)
@@ -391,37 +391,37 @@ class LogCrawler implements Iterable<LogEntry> {
             }
         }
 
-        LogConsumer getConsumer(Object consumerId, Object... args) {
+        LogConsumer get(Object consumerId, Object... args) {
             return provider.get(consumerId, args) as LogConsumer
         }
 
-        Builder asynchronousSources(int awaitTimeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
-            consumerBuilders.add(AsynchronousJobs.builder(logCrawler).withExecutorService(awaitTimeout, unit))
+        Builder parallel(int awaitTimeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
+            builders.add(AsynchronousJobs.builder(logCrawler).withExecutorService(awaitTimeout, unit))
             return this
         }
 
-        Builder withObjectProvider(ObjectProvider provider) {
+        Builder provider(ObjectProvider provider) {
             this.provider = provider
             return this
         }
 
-        Builder withSpringObjectProvider(ApplicationContext context) {
+        Builder provider(ApplicationContext context) {
             this.provider = SpringObjectProvider.of(context)
             return this
         }
 
-        Builder withSpringObjectProvider(Class... contextClass) {
+        Builder provider(Class... contextClass) {
             this.provider = SpringObjectProvider.of(contextClass)
             return this
         }
 
-        Builder withSpringObjectProvider(String... contextXml) {
+        Builder provider(String... contextXml) {
             this.provider = SpringObjectProvider.of(contextXml)
             return this
         }
 
         Builder withConsumer(LogConsumer consumer) {
-            consumerBuilders.add(new ConsumerBuilder().withConsumer(consumer))
+            builders.add(new ConsumerBuilder().withConsumer(consumer))
             return this
         }
 
@@ -429,169 +429,157 @@ class LogCrawler implements Iterable<LogEntry> {
             return withConsumer(new ClosureConsumer(logEntryClosure))
         }
 
-        Builder filterTo(Predicate predicate, LogConsumer consumer, LogConsumer... consumers) {
+        Builder filter(Predicate predicate, LogConsumer consumer, LogConsumer... consumers) {
             def cs = consumers ? ContainerConsumer.of(consumer).addAll(consumers) : consumer
             return withConsumer(new PredicateConsumer(predicate, cs))
         }
 
-        Builder filterTo(Closure predicate, Closure consumer, Closure... consumers) {
+        Builder filter(Closure predicate, Closure consumer, Closure... consumers) {
             def cs = consumers ? ContainerConsumer.of(consumer).addAll(consumers) : new ClosureConsumer(consumer)
-            return filterTo(new ClosurePredicate(predicate), cs)
+            return filter(new ClosurePredicate(predicate), cs)
         }
 
-        Builder writeTo(DataSource dataSource, String tableName = 'LogEntry', String... columns) {
-            return withConsumer(TableBatchConsumer.of(dataSource, tableName, columns))
-        }
-
-        TableBatchConsumer.Builder tableBatchBuilder(DataSource dataSource, String tableName = 'LogEntry', String... columns) {
+        TableBatchConsumer.Builder outputBuilder(DataSource dataSource, String tableName = 'LogEntry', String... columns) {
             final builder = new TableBatchConsumer.Builder(this, TableBatchConsumer.of(dataSource, tableName, columns))
-            consumerBuilders.add(builder)
+            builders.add(builder)
             return builder
         }
 
-        Builder writerToCsv(Writer writer, String... columns) {
+        Builder output(Writer writer, String... columns) {
             return withConsumer(CsvWriterConsumer.of(writer, columns))
         }
 
-        Builder writerToCsv(File file, String... columns) {
-            return withConsumer(CsvWriterConsumer.of(file, columns))
-        }
-
-        Builder writerToCsv(String filePath, String... columns) {
-            return withConsumer(CsvWriterConsumer.of(filePath, columns))
-        }
-
-        CsvWriterConsumer.Builder csvWriterBuilder(Writer writer, String... columns) {
+        CsvWriterConsumer.Builder outputBuilder(Writer writer, String... columns) {
             final builder = new CsvWriterConsumer.Builder(this, CsvWriterConsumer.of(writer, columns))
-            consumerBuilders.add(builder)
+            builders.add(builder)
             return builder
         }
 
-        CsvWriterConsumer.Builder csvWriterBuilder(File file, String... columns) {
+        CsvWriterConsumer.Builder outputBuilder(File file, String... columns) {
             final builder = new CsvWriterConsumer.Builder(this, CsvWriterConsumer.of(file, columns))
-            consumerBuilders.add(builder)
+            builders.add(builder)
             return builder
         }
 
-        CsvWriterConsumer.Builder csvWriterBuilder(String filePath, String... columns) {
+        CsvWriterConsumer.Builder outputBuilder(String filePath, String... columns) {
             final builder = new CsvWriterConsumer.Builder(this, CsvWriterConsumer.of(filePath, columns))
-            consumerBuilders.add(builder)
+            builders.add(builder)
             return builder
         }
 
-        Builder toDateConsumer(SimpleDateFormat dateFormat, String group = DateConsumer.DATE) {
+        Builder toDate(SimpleDateFormat dateFormat, String group = DateConsumer.DATE) {
             return withConsumer(DateConsumer.of(dateFormat, group))
         }
 
-        Builder toDateConsumer(String dateFormat, String group = DateConsumer.DATE) {
+        Builder toDate(String dateFormat, String group = DateConsumer.DATE) {
             return withConsumer(DateConsumer.of(dateFormat, group))
         }
 
         protected void addSource(LogEntry logEntry) {
-            sourceConsumerMap.put(logEntry, null)
+            sourceMap.put(logEntry, null)
         }
 
-        Builder logSource(RandomAccessFile rf, String sourceName = null) {
+        Builder source(RandomAccessFile rf, String sourceName = null) {
             addSource(LineReader.newLogSource(rf, sourceName))
             return this
         }
 
-        Builder logSource(InputStream inputStream, String sourceName = null) {
+        Builder source(InputStream inputStream, String sourceName = null) {
             addSource(LineReader.newLogSource(inputStream, sourceName))
             return this
         }
 
-        Builder logSource(Reader reader, String sourceName = null) {
+        Builder source(Reader reader, String sourceName = null) {
             addSource(LineReader.newLogSource(reader, sourceName))
             return this
         }
 
-        Builder logSource(File file, String sourceName = null) {
+        Builder source(File file, String sourceName = null) {
             addSource(LineReader.newLogSource(file, sourceName ?: file.path))
             return this
         }
 
-        Builder logSource(String content, String sourceName = null) {
+        Builder source(String content, String sourceName = null) {
             addSource(LineReader.newLogSource(content, sourceName))
             return this
         }
 
-        protected void registerSourceConsumer(LogEntry sourceEntry, Object sourceConsumer, String sourceName = null) {
-            sourceConsumerMap.put(sourceEntry, sourceConsumer)
+        protected void register(LogEntry sourceEntry, Object sourceConsumer, String sourceName = null) {
+            sourceMap.put(sourceEntry, sourceConsumer)
             if (sourceName) {
                 sourceNameConsumerMap.put(sourceName, sourceConsumer)
             }
         }
 
         protected Builder sourceConsumer(Object sourceConsumer, String sourceName = null) {
-            for (LogEntry sourceEntry : sourceConsumerMap.keySet()) {
-                final sc = sourceConsumerMap.get(sourceEntry)
+            for (LogEntry sourceEntry : sourceMap.keySet()) {
+                final sc = sourceMap.get(sourceEntry)
                 if (sc == null) {
-                    registerSourceConsumer(sourceEntry, sourceConsumer, sourceName)
+                    register(sourceEntry, sourceConsumer, sourceName)
                 }
             }
             return this
         }
 
-        RegexConsumer.Builder sourceRegexConsumer(Pattern pattern) {
+        RegexConsumer.Builder regex(Pattern pattern) {
             final builder = new RegexConsumer.Builder(this, RegexConsumer.of(pattern))
             sourceConsumer(builder, pattern.pattern())
             return builder
         }
 
-        RegexConsumer.Builder sourceRegexConsumer(String regEx, int flags = 0) {
+        RegexConsumer.Builder regex(String regEx, int flags = 0) {
             final builder = new RegexConsumer.Builder(this, RegexConsumer.of(regEx, flags))
             sourceConsumer(builder, regEx)
             return builder
         }
 
-        Log4jConsumer.Builder sourceLog4jConsumer(String conversionPattern) {
+        Log4jConsumer.Builder log4j(String conversionPattern) {
             final builder = new Log4jConsumer.Builder(this, Log4jConsumer.of(conversionPattern))
             sourceConsumer(builder, conversionPattern)
             return builder
         }
 
-        protected void sourceFolder(ConsumerBuilder builder, String sourceName, File folder, String fileFilter, Comparator<Path> fileSorter) {
-            final files = listFolderFiles(folder, fileFilter, fileSorter)
+        protected void source(ConsumerBuilder builder, String sourceName, File folder, String fileFilter, Comparator<Path> fileSorter) {
+            final files = listFiles(folder, fileFilter, fileSorter)
             for (File file : files) {
                 final logEntry = LineReader.newLogSource(new LogEntry(source: file), file.path)
-                registerSourceConsumer(logEntry, builder, sourceName)
-                registerSourceConsumer(logEntry, builder, fileFilter)
+                register(logEntry, builder, sourceName)
+                register(logEntry, builder, fileFilter)
             }
         }
 
-        RegexConsumer.Builder regexSourceFolder(File folder, Pattern pattern,
-                                                String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
-            final builder = sourceRegexConsumer(pattern)
-            sourceFolder(builder, pattern.pattern(), folder, fileFilter, fileSorter)
+        RegexConsumer.Builder regex(File folder, Pattern pattern,
+                                    String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+            final builder = regex(pattern)
+            source(builder, pattern.pattern(), folder, fileFilter, fileSorter)
             return builder
         }
 
-        Log4jConsumer.Builder log4jSourceFolder(File folder, String conversionPattern,
-                                                String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
-            final builder = sourceLog4jConsumer(conversionPattern)
-            sourceFolder(builder, conversionPattern, folder, fileFilter, fileSorter)
+        Log4jConsumer.Builder log4j(File folder, String conversionPattern,
+                                    String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+            final builder = log4j(conversionPattern)
+            source(builder, conversionPattern, folder, fileFilter, fileSorter)
             return builder
         }
 
-        Log4jConsumer.Builder log4jSourceFolder(String folder, String conversionPattern,
-                                                String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
-            return log4jSourceFolder(new File(folder), conversionPattern, fileFilter, fileSorter)
+        Log4jConsumer.Builder log4j(String folder, String conversionPattern,
+                                    String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+            return log4j(new File(folder), conversionPattern, fileFilter, fileSorter)
         }
 
-        Builder log4jConfigSource(File folder, String log4jConfig, Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+        Builder log4jSource(File folder, String log4jConfig, Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
             final log4jConsumerProperties = Log4jConsumer.extractLog4jConsumerProperties(Utils.readResourceText(log4jConfig).readLines())
             if (log4jConsumerProperties.isEmpty()) {
                 throw new IllegalArgumentException("Either empty or there are no file loggers defined in '$log4jConfig'")
             }
             final filterConversionMap = Log4jConsumer.toLog4jFileConversionPattern(log4jConsumerProperties)
             for (Map.Entry<String, String> entry : filterConversionMap.entrySet()) {
-                log4jSourceFolder(folder, entry.value, entry.key, fileSorter)
+                log4j(folder, entry.value, entry.key, fileSorter)
             }
             for (Map.Entry<String, Map<String, String>> entry : log4jConsumerProperties.entrySet()) {
                 final loggerName = entry.key
                 final loggerProperties = entry.value
-                final log4jBuilder = getLog4jBuilder(loggerProperties.get(Log4jConsumer.APPENDER_CONVERSION_PATTERN_PROPERTY))
+                final log4jBuilder = log4jBuilder(loggerProperties.get(Log4jConsumer.APPENDER_CONVERSION_PATTERN_PROPERTY))
                 if (log4jBuilder) {
                     sourceNameConsumerMap.put(loggerName, log4jBuilder)
                 }
@@ -599,39 +587,39 @@ class LogCrawler implements Iterable<LogEntry> {
             return this
         }
 
-        Builder log4jConfigSource(String folder, String log4jConfig, Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
-            return log4jConfigSource(new File(folder), log4jConfig, fileSorter)
+        Builder log4jSource(String folder, String log4jConfig, Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+            return log4jSource(new File(folder), log4jConfig, fileSorter)
         }
 
-        Builder sourceFolder(String path, LogConsumer consumer,
-                             String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+        Builder source(String path, LogConsumer consumer,
+                       String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
             final folder = new File(path)
-            final files = listFolderFiles(folder, fileFilter, fileSorter)
+            final files = listFiles(folder, fileFilter, fileSorter)
             final builder = withConsumer(consumer)
             for (File file : files) {
-                registerSourceConsumer(LineReader.newLogSource(new LogEntry(source: folder), file.path), builder)
+                register(LineReader.newLogSource(new LogEntry(source: folder), file.path), builder)
             }
             return builder
         }
 
-        public <T> T getSourceConsumer(String sourceName) {
+        public <T> T builder(String sourceName) {
             return sourceNameConsumerMap.get(sourceName) as T
         }
 
-        RegexConsumer.Builder getRegexBuilder(String regex) {
-            return getSourceConsumer(regex)
+        RegexConsumer.Builder regexBuilder(String regex) {
+            return builder(regex)
         }
 
-        Log4jConsumer.Builder getLog4jBuilder(String sourceName) {
-            return getSourceConsumer(sourceName)
+        Log4jConsumer.Builder log4jBuilder(String sourceName) {
+            return builder(sourceName)
         }
 
         LogCrawler build() {
-            buildSourceConsumers()
+            buildSources()
             buildConsumers()
-            sourceConsumerMap.clear()
+            sourceMap.clear()
             sourceNameConsumerMap.clear()
-            consumerBuilders.clear()
+            builders.clear()
             return logCrawler
         }
 
@@ -651,9 +639,9 @@ class LogCrawler implements Iterable<LogEntry> {
                 switch (configType) {
                     case LOG4J_ARG:
                         if (configFile) {
-                            result = ['log4jConfigSource', [file, configValue] as Object[]]
+                            result = ['log4jSource', [file, configValue] as Object[]]
                         } else {
-                            result = ['log4jSourceFolder', [file, configValue] as Object[]]
+                            result = ['log4j', [file, configValue] as Object[]]
                         }
                         break
                     case REGEX_ARG:
@@ -667,11 +655,11 @@ class LogCrawler implements Iterable<LogEntry> {
                         if (configFile) {
                             throw new UnsupportedOperationException("Unsupported log4j config file option: '$configValue' for a single file: '$file.path'. Only conversion pattern is supported here")
                         }
-                        final builder = sourceLog4jConsumer(configValue)
-                        result = ['registerSourceConsumer', [sourceEntry, builder, configValue] as Object[]]
+                        final builder = log4j(configValue)
+                        result = ['register', [sourceEntry, builder, configValue] as Object[]]
                         break
                     case REGEX_ARG:
-                        result = ['registerSourceConsumer', [sourceEntry, sourceRegexConsumer(configValue), configValue] as Object[]]
+                        result = ['register', [sourceEntry, regex(configValue), configValue] as Object[]]
                         break
                 }
             }

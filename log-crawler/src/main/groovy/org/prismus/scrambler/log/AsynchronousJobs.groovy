@@ -62,7 +62,7 @@ class AsynchronousJobs implements Closeable, AutoCloseable {
         return this
     }
 
-    protected Future submitAsynchronous(Callable<Void> callable) {
+    protected Future submit(Callable<Void> callable) {
         final work = completionService.submit(callable)
         count.incrementAndGet()
         try {
@@ -71,11 +71,11 @@ class AsynchronousJobs implements Closeable, AutoCloseable {
         return work
     }
 
-    protected Future submitAsynchronous(LogEntry logEntry, LogConsumer consumer) {
-        return submitAsynchronous(new LogConsumerCallable(logEntry, consumer))
+    protected Future submit(LogEntry logEntry, LogConsumer consumer) {
+        return submit(new LogConsumerCallable(logEntry, consumer))
     }
 
-    protected void awaitCompletion() {
+    protected void finish() {
         if (count == null) {
             return
         }
@@ -107,7 +107,7 @@ class AsynchronousJobs implements Closeable, AutoCloseable {
 
     @Override
     void close() throws IOException {
-        awaitCompletion()
+        finish()
     }
 
     static Builder builder(LogCrawler logCrawler) {
@@ -163,7 +163,7 @@ class AsynchronousJobs implements Closeable, AutoCloseable {
 
         @Override
         void consume(LogEntry entry) {
-            jobs.submitAsynchronous(new LogConsumerCallable(entry, consumer))
+            jobs.submit(new LogConsumerCallable(entry, consumer))
         }
     }
 

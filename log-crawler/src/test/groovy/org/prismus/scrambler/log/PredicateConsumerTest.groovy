@@ -34,10 +34,10 @@ class PredicateConsumerTest extends Specification {
         def exceptionCollector = new ArrayListCollector()
         def npeCollector = new ArrayListCollector()
         def logCrawler = new LogCrawler.Builder()
-                .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).toExceptionConsumer().recurContext()
-                .log4jSourceFolder(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).toExceptionConsumer().recurContext()
-                .filterTo({ LogEntry entry -> null != entry.get(ExceptionConsumer.EXCEPTION) }, exceptionCollector)
-                .filterTo({ LogEntry entry -> 'java.lang.NullPointerException' == entry.get(ExceptionConsumer.EXCEPTION_CLASS) }, npeCollector)
+                .log4j(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).exception().crawler()
+                .log4j(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).exception().crawler()
+                .filter({ LogEntry entry -> null != entry.get(ExceptionConsumer.EXCEPTION) }, exceptionCollector)
+                .filter({ LogEntry entry -> 'java.lang.NullPointerException' == entry.get(ExceptionConsumer.EXCEPTION_CLASS) }, npeCollector)
                 .build()
         logCrawler.consume()
 
@@ -49,9 +49,9 @@ class PredicateConsumerTest extends Specification {
         null != (exceptionCollector = new ArrayListCollector())
         null != (npeCollector = new ArrayListCollector())
         null != (logCrawler = new LogCrawler.Builder()
-                .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).toExceptionConsumer().recurContext()
-                .log4jSourceFolder(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).toExceptionConsumer().recurContext()
-                .filterTo({ LogEntry entry -> null != entry.get(ExceptionConsumer.EXCEPTION) },
+                .log4j(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).exception().crawler()
+                .log4j(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).exception().crawler()
+                .filter({ LogEntry entry -> null != entry.get(ExceptionConsumer.EXCEPTION) },
                     ContainerConsumer.of(
                             exceptionCollector, PredicateConsumer.of({ LogEntry entry -> 'java.lang.NullPointerException' == entry.get(ExceptionConsumer.EXCEPTION_CLASS) }, npeCollector))
                     )
@@ -62,7 +62,7 @@ class PredicateConsumerTest extends Specification {
 
         and: 'example of complex predicate: filter by entries of INFO or WARN level'
         null != (exceptionCollector = new ArrayListCollector())
-        LogCrawler.builder('/sample-folder-sources-log.groovy').filterTo(
+        LogCrawler.builder('/sample-folder-sources-log.groovy').filter(
                 ({'INFO' == it.get(Log4jConsumer.PRIORITY)} as Predicate<LogEntry>).or({'WARN' == it.get(Log4jConsumer.PRIORITY)}), exceptionCollector
         ).build().consume()
         5 == exceptionCollector.logEntries.size()

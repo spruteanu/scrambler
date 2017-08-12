@@ -29,9 +29,9 @@ class LogCrawlerTest extends Specification {
     void 'verify list files'() {
         final folder = new File(LogCrawlerTest.protectionDomain.codeSource.location.path)
         expect:
-        0 < LogCrawler.listFolderFiles(folder).size()
-        2 == LogCrawler.listFolderFiles(folder, '*.log').size()
-        1 == LogCrawler.listFolderFiles(folder, '*sample-1.log').size()
+        0 < LogCrawler.listFiles(folder).size()
+        2 == LogCrawler.listFiles(folder, '*.log').size()
+        1 == LogCrawler.listFiles(folder, '*sample-1.log').size()
     }
 
     void 'verify builders'() {
@@ -41,9 +41,9 @@ class LogCrawlerTest extends Specification {
 
         given:
         def logContext = new LogCrawler.Builder()
-                .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',)
-                .toDateConsumer().toExceptionConsumer().recurContext()
-                .writerToCsv(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .log4j(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',)
+                .date().exception().crawler()
+                .output(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .withConsumer({ LogEntry logEntry -> listCollector.add(logEntry) })
                 .build()
         logContext.consume()
@@ -56,8 +56,8 @@ class LogCrawlerTest extends Specification {
 
         and: 'verify csv collector columns are populated with groups defined in source consumer'
         null != (logContext = new LogCrawler.Builder()
-                .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).recurContext()
-                .writerToCsv(stringWriter)
+                .log4j(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).crawler()
+                .output(stringWriter)
                 .build())
         [Log4jConsumer.PRIORITY, Log4jConsumer.DATE,
          Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE,
@@ -70,9 +70,9 @@ class LogCrawlerTest extends Specification {
 
         given:
         def logContext = new LogCrawler.Builder()
-                .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',)
-                .toDateConsumer().toExceptionConsumer().recurContext()
-                .writerToCsv(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .log4j(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',)
+                .date().exception().crawler()
+                .output(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .build()
         def iterator = logContext.iterator()
         List result = iterator.toList()
@@ -85,10 +85,10 @@ class LogCrawlerTest extends Specification {
 
         and: 'verify multiple sources iterator'
         null != (logContext = new LogCrawler.Builder()
-                .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).recurContext()
-                .writerToCsv(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
-                .log4jSourceFolder(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).recurContext()
-                .writerToCsv(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .log4j(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).crawler()
+                .output(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .log4j(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).crawler()
+                .output(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .build())
         ['sample-1.log', 'sample-2.log'] == logContext.sourceConsumerMap.keySet().collect { LineReader.getSourceName(it)}.sort()
         null != (iterator = logContext.iterator())
@@ -108,21 +108,21 @@ class LogCrawlerTest extends Specification {
     void 'parse log entries using log4j config file'() {
         given:
         final folder = new File(LogCrawlerTest.protectionDomain.codeSource.location.path)
-        final builder = LogCrawler.builder().log4jConfigSource(folder, '/log4j.properties')
+        final builder = LogCrawler.builder().log4jSource(folder, '/log4j.properties')
 
         expect: 'verify registered builders'
-        null != builder.getLog4jBuilder('sample1')
-        null != builder.getLog4jBuilder('%5p | %d | %F | %L | %m%n')
-        null != builder.getLog4jBuilder('sample-1.log*')
+        null != builder.log4jBuilder('sample1')
+        null != builder.log4jBuilder('%5p | %d | %F | %L | %m%n')
+        null != builder.log4jBuilder('sample-1.log*')
 
-        null != builder.getLog4jBuilder('sample2')
-        null != builder.getLog4jBuilder('%-4r [%t] %-5p %c %x - %m%n')
-        null != builder.getLog4jBuilder('sample-2.log*')
+        null != builder.log4jBuilder('sample2')
+        null != builder.log4jBuilder('%-4r [%t] %-5p %c %x - %m%n')
+        null != builder.log4jBuilder('sample-2.log*')
 
         and: 'verify no sources found cause there is no such log source file'
-        null == builder.getLog4jBuilder('sample3')
-        null == builder.getLog4jBuilder('%d %5p %c [%t] - %m%n')
-        null == builder.getLog4jBuilder('sample-3.log*')
+        null == builder.log4jBuilder('sample3')
+        null == builder.log4jBuilder('%d %5p %c [%t] - %m%n')
+        null == builder.log4jBuilder('sample-3.log*')
 
         and: 'verify context is consumed properly'
         29 == builder.build().iterator().toList().size()
@@ -201,10 +201,10 @@ class LogCrawlerTest extends Specification {
         final folder = new File(LogCrawlerTest.protectionDomain.codeSource.location.path)
         final logEntries = Collections.synchronizedList(new ArrayList())
         final logCrawler = LogCrawler.builder()
-            .log4jSourceFolder(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).recurContext()
-            .log4jSourceFolder(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).recurContext()
+            .log4j(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).crawler()
+            .log4j(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).crawler()
             .withConsumer(new ArrayListCollector(logEntries))
-            .asynchronousSources()
+            .parallel()
             .build()
         logCrawler.consume()
 

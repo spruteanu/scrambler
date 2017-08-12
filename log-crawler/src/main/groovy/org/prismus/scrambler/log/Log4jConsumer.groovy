@@ -66,13 +66,13 @@ class Log4jConsumer extends RegexConsumer {
         return this
     }
 
-    Log4jConsumer dateGroup(String dateFormat) {
+    protected Log4jConsumer dateFormat(String dateFormat) {
         group(DATE)
         this.dateFormat = dateFormat
         return this
     }
 
-    Log4jConsumer withDateConsumer(String dateFormat = null) {
+    Log4jConsumer date(String dateFormat = null) {
         if (!dateFormat) {
             dateFormat = this.dateFormat
         }
@@ -80,18 +80,18 @@ class Log4jConsumer extends RegexConsumer {
         return this
     }
 
-    Log4jConsumer withExceptionConsumer() {
+    Log4jConsumer exception() {
         withGroupConsumer(MESSAGE, new ExceptionConsumer(MESSAGE))
         return this
     }
 
-    Log4jConsumer withMessageConsumer(LogConsumer consumer) {
+    Log4jConsumer message(LogConsumer consumer) {
         withGroupConsumer(MESSAGE, consumer)
         return this
     }
 
-    Log4jConsumer withMessageConsumer(Closure closure) {
-        return withMessageConsumer(new ClosureConsumer(closure))
+    Log4jConsumer message(Closure closure) {
+        return message(new ClosureConsumer(closure))
     }
 
     static Log4jConsumer of(String conversionPattern) {
@@ -142,7 +142,7 @@ class Log4jConsumer extends RegexConsumer {
             dateFormat = ISO8601_DATE_FORMAT
         }
         sb.append('(').append(dateFormatToRegEx(dateFormat)).append(')')
-        consumer.dateGroup(dateFormat)
+        consumer.dateFormat(dateFormat)
         return index
     }
 
@@ -333,27 +333,27 @@ class Log4jConsumer extends RegexConsumer {
             super(contextBuilder, consumer)
         }
 
-        Builder toDateConsumer(String dateFormat = null) {
+        Builder date(String dateFormat = null) {
             withConsumer(DATE, dateFormat ? DateConsumer.of(dateFormat, DATE) : new DateConsumer(null, DATE))
             return this
         }
 
-        Builder toDateConsumer(SimpleDateFormat dateFormat) {
+        Builder date(SimpleDateFormat dateFormat) {
             withConsumer(DATE, DateConsumer.of(dateFormat, DATE))
             return this
         }
 
-        Builder toExceptionConsumer() {
+        Builder exception() {
             withConsumer(MESSAGE, new ExceptionConsumer(MESSAGE))
             return this
         }
 
-        Builder withMessageConsumer(Closure closure) {
+        Builder message(Closure closure) {
             withConsumer(MESSAGE, closure)
             return this
         }
 
-        Builder withMessageConsumer(LogConsumer consumer) {
+        Builder message(LogConsumer consumer) {
             withConsumer(MESSAGE, consumer)
             if (consumer instanceof RegexConsumer) {
                 ((RegexConsumer) consumer).group = MESSAGE
@@ -361,7 +361,7 @@ class Log4jConsumer extends RegexConsumer {
             return this
         }
 
-        protected void buildGroupConsumers(RegexConsumer instance) {
+        protected void buildConsumers(RegexConsumer instance) {
             Log4jConsumer result = instance as Log4jConsumer
             for (Map.Entry<String, List> entry : groupProcessorMap.entrySet()) {
                 final consumers = entry.value
