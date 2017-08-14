@@ -136,7 +136,7 @@ class AsynchronousJobs implements Closeable, AutoCloseable {
             return this
         }
 
-        LogConsumer build() {
+        protected LogConsumer build() {
             if (!executorService) {
                 executorService = Executors.newCachedThreadPool(new ContextThreadFactory())
             }

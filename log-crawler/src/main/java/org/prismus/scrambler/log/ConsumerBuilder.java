@@ -79,7 +79,7 @@ public class ConsumerBuilder<T extends LogConsumer> {
         return consumer;
     }
 
-    public T build() {
+    protected T build() {
         return newConsumer(getConsumer());
     }
 

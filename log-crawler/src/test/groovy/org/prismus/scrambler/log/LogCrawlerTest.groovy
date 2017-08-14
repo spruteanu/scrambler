@@ -108,7 +108,7 @@ class LogCrawlerTest extends Specification {
     void 'parse log entries using log4j config file'() {
         given:
         final folder = new File(LogCrawlerTest.protectionDomain.codeSource.location.path)
-        final builder = LogCrawler.builder().log4jSource(folder, '/log4j.properties')
+        final builder = LogCrawler.builder().log4j(folder, '/log4j.properties')
 
         expect: 'verify registered builders'
         null != builder.log4jBuilder('sample1')

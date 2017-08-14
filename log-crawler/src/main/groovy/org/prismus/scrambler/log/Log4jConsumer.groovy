@@ -76,17 +76,17 @@ class Log4jConsumer extends RegexConsumer {
         if (!dateFormat) {
             dateFormat = this.dateFormat
         }
-        withGroupConsumer(DATE, DateConsumer.of(dateFormat, DATE))
+        add(DATE, DateConsumer.of(dateFormat, DATE))
         return this
     }
 
     Log4jConsumer exception() {
-        withGroupConsumer(MESSAGE, new ExceptionConsumer(MESSAGE))
+        add(MESSAGE, new ExceptionConsumer(MESSAGE))
         return this
     }
 
     Log4jConsumer message(LogConsumer consumer) {
-        withGroupConsumer(MESSAGE, consumer)
+        add(MESSAGE, consumer)
         return this
     }
 
@@ -334,27 +334,27 @@ class Log4jConsumer extends RegexConsumer {
         }
 
         Builder date(String dateFormat = null) {
-            withConsumer(DATE, dateFormat ? DateConsumer.of(dateFormat, DATE) : new DateConsumer(null, DATE))
+            group(DATE, dateFormat ? DateConsumer.of(dateFormat, DATE) : new DateConsumer(null, DATE))
             return this
         }
 
         Builder date(SimpleDateFormat dateFormat) {
-            withConsumer(DATE, DateConsumer.of(dateFormat, DATE))
+            group(DATE, DateConsumer.of(dateFormat, DATE))
             return this
         }
 
         Builder exception() {
-            withConsumer(MESSAGE, new ExceptionConsumer(MESSAGE))
+            group(MESSAGE, new ExceptionConsumer(MESSAGE))
             return this
         }
 
         Builder message(Closure closure) {
-            withConsumer(MESSAGE, closure)
+            group(MESSAGE, closure)
             return this
         }
 
         Builder message(LogConsumer consumer) {
-            withConsumer(MESSAGE, consumer)
+            super.group(MESSAGE, consumer)
             if (consumer instanceof RegexConsumer) {
                 ((RegexConsumer) consumer).group = MESSAGE
             }
@@ -363,14 +363,14 @@ class Log4jConsumer extends RegexConsumer {
 
         protected void buildConsumers(RegexConsumer instance) {
             Log4jConsumer result = instance as Log4jConsumer
-            for (Map.Entry<String, List> entry : groupProcessorMap.entrySet()) {
+            for (Map.Entry<String, List> entry : consumerMap.entrySet()) {
                 final consumers = entry.value
                 for (Object obj : consumers) {
                     final LogConsumer cs = newConsumer(obj)
                     if (cs instanceof DateConsumer) {
                         ((DateConsumer) cs).setDateFormat(new SimpleDateFormat(result.dateFormat))
                     }
-                    result.withGroupConsumer(entry.key, cs)
+                    result.group(entry.key, cs)
                 }
             }
         }

@@ -35,7 +35,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.attribute.BasicFileAttributes
 import java.text.SimpleDateFormat
-import java.util.concurrent.*
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Predicate
 import java.util.regex.Pattern
@@ -439,7 +439,7 @@ class LogCrawler implements Iterable<LogEntry> {
             return filter(new ClosurePredicate(predicate), cs)
         }
 
-        TableBatchConsumer.Builder outputBuilder(DataSource dataSource, String tableName = 'LogEntry', String... columns) {
+        TableBatchConsumer.Builder output(DataSource dataSource, String tableName = 'LogEntry', String... columns) {
             final builder = new TableBatchConsumer.Builder(this, TableBatchConsumer.of(dataSource, tableName, columns))
             builders.add(builder)
             return builder
@@ -467,11 +467,11 @@ class LogCrawler implements Iterable<LogEntry> {
             return builder
         }
 
-        Builder toDate(SimpleDateFormat dateFormat, String group = DateConsumer.DATE) {
+        Builder date(SimpleDateFormat dateFormat, String group = DateConsumer.DATE) {
             return withConsumer(DateConsumer.of(dateFormat, group))
         }
 
-        Builder toDate(String dateFormat, String group = DateConsumer.DATE) {
+        Builder date(String dateFormat, String group = DateConsumer.DATE) {
             return withConsumer(DateConsumer.of(dateFormat, group))
         }
 
@@ -521,20 +521,31 @@ class LogCrawler implements Iterable<LogEntry> {
             return this
         }
 
-        RegexConsumer.Builder regex(Pattern pattern) {
+        protected static void checkDelegateClosure(Closure closure, def builder) {
+            if (closure) {
+                closure.setDelegate(builder)
+                closure.call()
+            }
+        }
+
+        RegexConsumer.Builder regex(Pattern pattern, @DelegatesTo(RegexConsumer.Builder) Closure closure = null) {
             final builder = new RegexConsumer.Builder(this, RegexConsumer.of(pattern))
+            checkDelegateClosure(closure, builder)
             sourceConsumer(builder, pattern.pattern())
             return builder
         }
 
-        RegexConsumer.Builder regex(String regEx, int flags = 0) {
+        RegexConsumer.Builder regex(String regEx, int flags = 0,
+                                    @DelegatesTo(RegexConsumer.Builder) Closure closure = null) {
             final builder = new RegexConsumer.Builder(this, RegexConsumer.of(regEx, flags))
+            checkDelegateClosure(closure, builder)
             sourceConsumer(builder, regEx)
             return builder
         }
 
-        Log4jConsumer.Builder log4j(String conversionPattern) {
+        Log4jConsumer.Builder log4j(String conversionPattern, @DelegatesTo(Log4jConsumer.Builder) Closure closure = null) {
             final builder = new Log4jConsumer.Builder(this, Log4jConsumer.of(conversionPattern))
+            checkDelegateClosure(closure, builder)
             sourceConsumer(builder, conversionPattern)
             return builder
         }
@@ -549,25 +560,31 @@ class LogCrawler implements Iterable<LogEntry> {
         }
 
         RegexConsumer.Builder regex(File folder, Pattern pattern,
-                                    String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+                                    String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR,
+                                    @DelegatesTo(Log4jConsumer.Builder) Closure closure = null) {
             final builder = regex(pattern)
+            checkDelegateClosure(closure, builder)
             source(builder, pattern.pattern(), folder, fileFilter, fileSorter)
             return builder
         }
 
         Log4jConsumer.Builder log4j(File folder, String conversionPattern,
-                                    String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+                                    String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR,
+                                    @DelegatesTo(Log4jConsumer.Builder) Closure closure = null) {
             final builder = log4j(conversionPattern)
+            checkDelegateClosure(closure, builder)
             source(builder, conversionPattern, folder, fileFilter, fileSorter)
             return builder
         }
 
         Log4jConsumer.Builder log4j(String folder, String conversionPattern,
-                                    String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
-            return log4j(new File(folder), conversionPattern, fileFilter, fileSorter)
+                                    String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR,
+                                    @DelegatesTo(Log4jConsumer.Builder) Closure closure = null) {
+            return log4j(new File(folder), conversionPattern, fileFilter, fileSorter, closure)
         }
 
-        Builder log4jSource(File folder, String log4jConfig, Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+        Builder log4j(File folder, String log4jConfig, Comparator<Path> fileSorter = CREATED_DT_COMPARATOR,
+                      @DelegatesTo(Log4jConsumer.Builder) Closure closure = null) {
             final log4jConsumerProperties = Log4jConsumer.extractLog4jConsumerProperties(Utils.readResourceText(log4jConfig).readLines())
             if (log4jConsumerProperties.isEmpty()) {
                 throw new IllegalArgumentException("Either empty or there are no file loggers defined in '$log4jConfig'")
@@ -579,16 +596,18 @@ class LogCrawler implements Iterable<LogEntry> {
             for (Map.Entry<String, Map<String, String>> entry : log4jConsumerProperties.entrySet()) {
                 final loggerName = entry.key
                 final loggerProperties = entry.value
-                final log4jBuilder = log4jBuilder(loggerProperties.get(Log4jConsumer.APPENDER_CONVERSION_PATTERN_PROPERTY))
-                if (log4jBuilder) {
-                    sourceNameConsumerMap.put(loggerName, log4jBuilder)
+                final builder = log4jBuilder(loggerProperties.get(Log4jConsumer.APPENDER_CONVERSION_PATTERN_PROPERTY))
+                if (builder) {
+                    checkDelegateClosure(closure, builder)
+                    sourceNameConsumerMap.put(loggerName, builder)
                 }
             }
             return this
         }
 
-        Builder log4jSource(String folder, String log4jConfig, Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
-            return log4jSource(new File(folder), log4jConfig, fileSorter)
+        Builder log4j(String folder, String log4jConfig, Comparator<Path> fileSorter = CREATED_DT_COMPARATOR,
+                      @DelegatesTo(Log4jConsumer.Builder) Closure closure = null) {
+            return log4j(new File(folder), log4jConfig, fileSorter, closure)
         }
 
         Builder source(String path, LogConsumer consumer,
@@ -602,6 +621,7 @@ class LogCrawler implements Iterable<LogEntry> {
             return builder
         }
 
+        @SuppressWarnings("GrUnnecessaryPublicModifier")
         public <T> T builder(String sourceName) {
             return sourceNameConsumerMap.get(sourceName) as T
         }

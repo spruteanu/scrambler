@@ -75,7 +75,7 @@ java.lang.NullPointerException: Missed a null object check
 
     void 'verify message processor'() {
         final processor = Log4jConsumer.of('%5p | %d | %F | %L | %m%n')
-                .withGroupConsumer(Log4jConsumer.MESSAGE, new ExceptionConsumer(Log4jConsumer.MESSAGE))
+                .group(Log4jConsumer.MESSAGE, new ExceptionConsumer(Log4jConsumer.MESSAGE))
 
         LogEntry logEntry
         expect:

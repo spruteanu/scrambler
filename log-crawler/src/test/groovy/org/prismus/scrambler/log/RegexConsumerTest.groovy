@@ -21,6 +21,8 @@ package org.prismus.scrambler.log
 
 import spock.lang.Specification
 
+import java.util.regex.Pattern
+
 /**
  * @author Serge Pruteanu
  */
@@ -87,7 +89,7 @@ class RegexConsumerTest extends Specification {
                 .group('Caller', 3)
                 .group('Line', 4)
                 .group('Message', 5)
-                .withGroupConsumer('Message', new RegexConsumer(~/.+\[(.+)\]/, 'Message').group('SQLErrorCodes', 1))
+                .group('Message', new RegexConsumer(~/.+\[(.+)\]/, 'Message').group('SQLErrorCodes', 1))
                 .consume(logEntry)
         false == logEntry.isEmpty()
         'SQLErrorCodes loaded: [DB2, Derby, H2, HSQL, Informix, MS-SQL, MySQL, Oracle, PostgreSQL, Sybase]' == logEntry.get('Message')
@@ -116,7 +118,7 @@ javax.servlet.ServletException: Something bad happened
                 .group('Caller', 3)
                 .group('Line', 4)
                 .group('Message', 5)
-                .withGroupConsumer('Message', new RegexConsumer(~/(?ms)(${ExceptionConsumer.EXCEPTION_REGEX})/, 'Message').group('Exception', 1))
+                .group('Message', new RegexConsumer(~/(?ms)(${ExceptionConsumer.EXCEPTION_REGEX})/, 'Message').group('Exception', 1))
                 .consume(logEntry)
         false == logEntry.isEmpty()
         """OMG, Something bad happened
@@ -135,6 +137,25 @@ javax.servlet.ServletException: Something bad happened
     at org.mortbay.jetty.HttpParser.parseNext(HttpParser.java:756)
     at org.mortbay.jetty.HttpParser.parseAvailable(HttpParser.java:218)
     at org.mortbay.jetty.HttpConnection.consume(HttpConnection.java:404)""" == logEntry.get('Exception')
+    }
+
+    void 'lookup named groups regex'() {
+        given: '2 groups regex'
+        final regex = '(?<user>[a-zA-Z]+)(?<index>\\d+)'
+        final namedGroups = RegexConsumer.lookupNamedGroups(regex)
+
+        expect: 'check that groups are identified properly'
+        ['user', 'index'].toSet() == namedGroups
+
+        and: 'now verify groups matching'
+        [user: 'mumu', index: '12345'] == RegexConsumer.toMap(Pattern.compile(regex), 'mumu12345', [user: null, index: null])
+        [user: 'mumu', index: '12345'] == RegexConsumer.toMap(Pattern.compile(regex), 'mumu12345', [user: 1, index: 2])
+
+        and: 'check that no groups found'
+        !RegexConsumer.lookupNamedGroups('([a-zA-Z]+)(\\d+)')
+
+        and: 'check that regexConsumer identifies groups'
+        ['user', 'index'].toSet() == RegexConsumer.of(regex, 0).groupIndexMap.keySet()
     }
 
 }

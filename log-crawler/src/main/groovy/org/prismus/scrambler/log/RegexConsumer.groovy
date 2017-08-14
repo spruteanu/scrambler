@@ -32,7 +32,7 @@ import java.util.regex.Pattern
 class RegexConsumer implements LogConsumer {
 
     Pattern pattern
-    protected final Map<String, List<LogConsumer>> groupConsumerMap = new LinkedHashMap<>()
+    protected final Map<String, List<LogConsumer>> consumerMap = new LinkedHashMap<>()
     protected final Map<String, Integer> groupIndexMap = new LinkedHashMap<>()
 
     String group
@@ -45,15 +45,23 @@ class RegexConsumer implements LogConsumer {
     }
 
     RegexConsumer(Pattern pattern, Object group = null) {
-        this.pattern = pattern
         this.group = group
+        setPattern(pattern)
     }
 
-    private void add(String group, LogConsumer consumer) {
-        if (!groupConsumerMap.containsKey(group)) {
-            groupConsumerMap.put(group, new ArrayList<LogConsumer>())
+    void setPattern(Pattern pattern) {
+        this.pattern = pattern
+        final groupNames = lookupNamedGroups(pattern.pattern())
+        if (groupNames) {
+            groups(groupNames.toArray(new String[0]))
         }
-        groupConsumerMap.get(group).add(consumer)
+    }
+
+    protected void add(String group, LogConsumer consumer) {
+        if (!consumerMap.containsKey(group)) {
+            consumerMap.put(group, new ArrayList<LogConsumer>())
+        }
+        consumerMap.get(group).add(consumer)
     }
 
     RegexConsumer groups(String... groups) {
@@ -74,31 +82,19 @@ class RegexConsumer implements LogConsumer {
         return this
     }
 
-    RegexConsumer group(String group, LogConsumer consumer) {
-        Objects.requireNonNull(group, "Group Name can't be null")
-        Objects.requireNonNull(consumer, 'Entry consumer instance should be provided')
-        add(group, consumer)
-        groupIndexMap.put(group, null)
-        return this
-    }
-
     RegexConsumer group(String groupName, Closure closure) {
         return group(groupName, new ClosureConsumer(closure))
     }
 
-    RegexConsumer withGroupConsumer(String group, LogConsumer consumer) {
-        Objects.requireNonNull(group, "Group Name can't be null")
+    RegexConsumer group(String groupName, LogConsumer consumer) {
+        Objects.requireNonNull(groupName, "Group Name can't be null")
         Objects.requireNonNull(consumer, 'Entry consumer instance should be provided')
-        add(group, consumer)
+        add(groupName, consumer)
         return this
     }
 
-    RegexConsumer withGroupConsumer(String group, Closure closure) {
-        return withGroupConsumer(group, new ClosureConsumer(closure))
-    }
-
     private List<LogConsumer> get(String key) {
-        return groupConsumerMap.containsKey(key) ? groupConsumerMap.get(key) : Collections.<LogConsumer>emptyList()
+        return consumerMap.containsKey(key) ? consumerMap.get(key) : Collections.<LogConsumer>emptyList()
     }
 
     @Override
@@ -190,12 +186,21 @@ class RegexConsumer implements LogConsumer {
         return new RegexConsumer(Pattern.compile(regEx, flags))
     }
 
+    protected static Set<String> lookupNamedGroups(String regex) {
+        final namedGroups = new LinkedHashSet<>()
+        final matcher = Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z0-9]*)>").matcher(regex)
+        while (matcher.find()) {
+            namedGroups.add(matcher.group(1))
+        }
+        return namedGroups
+    }
+
     /**
      * @author Serge Pruteanu
      */
     @CompileStatic
     static class Builder extends ConsumerBuilder {
-        protected final Map<String, List> groupProcessorMap = new LinkedHashMap<>()
+        protected final Map<String, List> consumerMap = new LinkedHashMap<>()
         private final Map<String, Integer> groupIndexMap  = new LinkedHashMap<>()
 
         Builder() {
@@ -205,10 +210,10 @@ class RegexConsumer implements LogConsumer {
             super(contextBuilder, consumer)
         }
 
-        Builder group(String group, Integer index = null, LogConsumer consumer = null) {
-            groupIndexMap.put(group, index)
+        Builder group(String groupName, Integer index = null, LogConsumer consumer = null) {
+            groupIndexMap.put(groupName, index)
             if (consumer) {
-                withConsumer(group, consumer)
+                group(groupName, consumer)
             }
             return this
         }
@@ -221,20 +226,27 @@ class RegexConsumer implements LogConsumer {
             return this
         }
 
-        Builder withConsumer(String group, LogConsumer consumer) {
-            if (!groupProcessorMap.containsKey(group)) {
-                groupProcessorMap.put(group, new ArrayList())
+        Builder group(String groupName, LogConsumer consumer) {
+            if (!consumerMap.containsKey(groupName)) {
+                consumerMap.put(groupName, new ArrayList())
             }
-            groupProcessorMap.get(group).add(consumer)
+            consumerMap.get(groupName).add(consumer)
             return this
         }
 
-        Builder withConsumer(String group, Closure logEntryClosure) {
-            return withConsumer(group, new ClosureConsumer(logEntryClosure))
+        Builder group(String groupName, Closure logEntryClosure) {
+            return group(groupName, new ClosureConsumer(logEntryClosure))
         }
 
-        GroupConsumerBuilder withGroupBuilder(String group, def consumer, Object... args) {
-            return new GroupConsumerBuilder(group, consumer, args)
+        @SuppressWarnings("GrUnnecessaryPublicModifier")
+        public <T> Builder group(String groupName, T consumer, Object[] args = null, @DelegatesTo(T) Closure closure = null) {
+            final logConsumer = new ConsumerBuilder(contextBuilder, consumer, args).build()
+            if (closure) {
+                closure.setDelegate(logConsumer)
+                closure.call()
+            }
+            group(groupName, logConsumer)
+            return this
         }
 
         Builder date(String group, String dateFormat) {
@@ -252,34 +264,15 @@ class RegexConsumer implements LogConsumer {
         }
 
         protected void buildConsumers(RegexConsumer result) {
-            for (Map.Entry<String, List> entry : groupProcessorMap.entrySet()) {
-                result.withGroupConsumer(entry.key, newConsumer(entry.value))
+            for (Map.Entry<String, List> entry : consumerMap.entrySet()) {
+                result.group(entry.key, newConsumer(entry.value))
             }
         }
 
-        RegexConsumer build() {
+        protected RegexConsumer build() {
             final RegexConsumer result = super.build() as RegexConsumer
             buildConsumers(result)
             return result
-        }
-
-        class GroupConsumerBuilder extends ConsumerBuilder {
-            private String group
-
-            private GroupConsumerBuilder(String group, def consumer, Object... args) {
-                super(Builder.this.contextBuilder, consumer, args)
-                this.group = group
-            }
-
-            Builder regex() {
-                Builder.this.withConsumer(group, build())
-                return Builder.this
-            }
-
-            LogCrawler.Builder crawler() {
-                Builder.this.withConsumer(group, build())
-                return contextBuilder
-            }
         }
     }
 }
