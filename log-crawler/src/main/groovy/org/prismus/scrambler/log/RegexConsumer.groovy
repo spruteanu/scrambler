@@ -21,6 +21,7 @@ package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
 
+import java.nio.file.Path
 import java.text.SimpleDateFormat
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -203,7 +204,16 @@ class RegexConsumer implements LogConsumer {
         protected final Map<String, List> consumerMap = new LinkedHashMap<>()
         private final Map<String, Integer> groupIndexMap  = new LinkedHashMap<>()
 
+        File file
+        String pattern
+        String fileFilter
+        Comparator<Path> fileSorter = LogCrawler.CREATED_DT_COMPARATOR
+
         Builder() {
+        }
+
+        void setFile(String file) {
+            this.file = new File(file)
         }
 
         Builder(LogCrawler.Builder contextBuilder, def consumer) {

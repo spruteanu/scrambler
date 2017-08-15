@@ -108,7 +108,7 @@ class LogCrawlerTest extends Specification {
     void 'parse log entries using log4j config file'() {
         given:
         final folder = new File(LogCrawlerTest.protectionDomain.codeSource.location.path)
-        final builder = LogCrawler.builder().log4j(folder, '/log4j.properties')
+        def builder = LogCrawler.builder().log4jConfig(folder, '/log4j.properties')
 
         expect: 'verify registered builders'
         null != builder.log4jBuilder('sample1')
@@ -126,6 +126,10 @@ class LogCrawlerTest extends Specification {
 
         and: 'verify context is consumed properly'
         29 == builder.build().iterator().toList().size()
+
+        and:
+        null != (builder = LogCrawler.builder('/verify-builder-script-log.groovy').build())
+        29 == builder.iterator().toList().size()
     }
 
     void 'parse log entries using configuration option arguments'() {
