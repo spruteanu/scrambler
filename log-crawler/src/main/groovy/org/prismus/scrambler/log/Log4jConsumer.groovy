@@ -29,15 +29,15 @@ import java.util.regex.Pattern
  */
 @CompileStatic
 class Log4jConsumer extends RegexConsumer {
-    private static final String ABSOLUTE_LDF = '{ABSOLUTE}'
-    private static final String DATE_LDF = '{DATE}'
-    private static final String ISO8601_LDF = '{ISO8601}'
+    protected static final String ABSOLUTE_LDF = '{ABSOLUTE}'
+    protected static final String DATE_LDF = '{DATE}'
+    protected static final String ISO8601_LDF = '{ISO8601}'
     static final String ABSOLUTE_DATE_FORMAT = 'HH:mm:ss,SSS'
     static final String ISO8601_DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss,SSS' // ISO8601DateFormat
     static final String DATE_FORMAT = 'dd MMM yyyy HH:mm:ss,SSS'
 
     private static final Set<Character> REG_EX_CHARS_SET = toSet('[]{}\\^$|?*+()')
-    private static Pattern SPEC_PATTERN = ~/([-\d]*)([\.\d]*)[cCdFlLmMnprtxX]/
+    protected static Pattern SPEC_PATTERN = ~/([-\d]*)([\.\d]*)[cCdFlLmMnprtxX]/
 
     static final String EVENT_CATEGORY = 'EventCategory'
     static final String CALLER_CLASS = 'CallerClass'
@@ -110,7 +110,7 @@ class Log4jConsumer extends RegexConsumer {
     }
 
     protected
-    static int appendDateFormatRegex(Log4jConsumer consumer, StringBuilder sb, int index, String specString) {
+    static int dateFormatToRegex(Log4jConsumer consumer, StringBuilder sb, int index, String specString) {
         final pattern = ~/d(\{.+\})*/
         final matcher = pattern.matcher(specString.substring(index + 1))
         if (!matcher.find()) {
@@ -147,7 +147,7 @@ class Log4jConsumer extends RegexConsumer {
     }
 
     protected
-    static int appendSpecifierRegex(Log4jConsumer consumer, StringBuilder sb, char ch, int i, String conversionPattern) {
+    static int specifierToRegex(Log4jConsumer consumer, StringBuilder sb, char ch, int i, String conversionPattern) {
         final matcher = SPEC_PATTERN.matcher(conversionPattern.substring(i + 1))
         if (!matcher.find()) {
             throw new UnsupportedOperationException("Unsupported/unknown logging conversion pattern: '${conversionPattern.substring(i + 1)}'; of '$conversionPattern'")
@@ -167,7 +167,7 @@ class Log4jConsumer extends RegexConsumer {
                 consumer.group(CALLER_CLASS)
                 break
             case 'd': // date of the logging event. The date conversion specifier may be followed by a date format specifier enclosed between braces. For example, %d{HH:mm:ss,SSS} or %d{dd MMM yyyy HH:mm:ss,SSS}. If no date format specifier is given then ISO8601 format is assumed.
-                i = appendDateFormatRegex(consumer, sb, i, conversionPattern)
+                i = dateFormatToRegex(consumer, sb, i, conversionPattern)
                 break
             case 'F': // file name where the logging request was issued.
                 regEx = '[^ ]+'
@@ -254,7 +254,7 @@ class Log4jConsumer extends RegexConsumer {
                     i++
                     continue
                 }
-                i = appendSpecifierRegex(consumer, sb, ch, i, conversionPattern)
+                i = specifierToRegex(consumer, sb, ch, i, conversionPattern)
             } else {
                 appendNonSpecifierChar(sb, ch)
             }

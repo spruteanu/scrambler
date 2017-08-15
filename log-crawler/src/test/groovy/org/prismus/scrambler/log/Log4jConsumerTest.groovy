@@ -40,7 +40,7 @@ class Log4jConsumerTest extends Specification {
 
     void 'verify precision specifier to regex'() {
         final sb = new StringBuilder()
-        int idx = Log4jConsumer.appendSpecifierRegex(new Log4jConsumer(), sb, '%' as char, 0, specString)
+        int idx = Log4jConsumer.specifierToRegex(new Log4jConsumer(), sb, '%' as char, 0, specString)
 
         expect:
         expected == sb.toString()
