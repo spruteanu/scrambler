@@ -2,11 +2,71 @@ package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
 
+import java.nio.file.Path
+import java.nio.file.Paths
+
 /**
  * @author Serge Pruteanu
  */
 @CompileStatic
 class Log4jLogstash {
+    File file
+    Comparator<Path> fileSorter = LogCrawler.CREATED_DT_COMPARATOR
+
+    String elasticHost = 'localhost'
+    String elasticPort = '9200'
+    boolean debug = true
+
+    void toLogstashConfig(String log4jConfig) {
+        final log4jConsumerProperties = Log4jConsumer.extractLog4jConsumerProperties(Utils.readResourceText(log4jConfig).readLines())
+        if (log4jConsumerProperties.isEmpty()) {
+            throw new IllegalArgumentException("Either empty or there are no file loggers defined in '$log4jConfig'")
+        }
+        final folder = file ?: Paths.get('').toFile()
+        for (Map.Entry<String, Map<String, String>> entry : log4jConsumerProperties.entrySet()) {
+            final loggerName = entry.key
+            final log4jProps = entry.value
+            final file = log4jProps.get(Log4jConsumer.APPENDER_FILE_PROPERTY)
+            final conversionPattern = log4jProps.get(Log4jConsumer.APPENDER_CONVERSION_PATTERN_PROPERTY)
+            if (file && conversionPattern) {
+
+            }
+        }
+    }
+
+    protected writeInput(Writer writer, String filePath, boolean beginning = true) {
+        final lines = []
+        lines.add('input {')
+        lines.add("    file {")
+        lines.add("        path => \"$filePath\"")
+        if (beginning) {
+            lines.add("        start_position => \"beginning\"")
+        }
+        lines.add("    }")
+        lines.add('}')
+        writer.write(lines.join(LineReader.LINE_BREAK))
+    }
+
+    protected writeFilter(Writer writer, String grokMatch) {
+        final lines = []
+        lines.add('filter {')
+        lines.add("    grok {")
+        lines.add("        match => \"message\" => \"$grokMatch\"")
+        lines.add("    }")
+        lines.add('}')
+        writer.write(lines.join(LineReader.LINE_BREAK))
+    }
+
+    protected writeOutput(Writer writer) {
+        final lines = []
+        lines.add('output {')
+        lines.add("    elasticsearch { hosts => [\"$elasticHost:$elasticPort\"] }")
+        if (debug) {
+            lines.add('    stdout { codec => rubydebug }')
+        }
+        lines.add('}')
+        writer.write(lines.join(LineReader.LINE_BREAK))
+    }
 
     protected
     static int specifierToGrok(StringBuilder sb, char ch, int i, String conversionPattern) {
