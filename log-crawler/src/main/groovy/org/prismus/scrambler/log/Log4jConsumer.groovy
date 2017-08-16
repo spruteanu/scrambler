@@ -29,6 +29,7 @@ import java.util.regex.Pattern
  */
 @CompileStatic
 class Log4jConsumer extends RegexConsumer {
+//    protected static final String CLASS_REGEX = '(?:[a-zA-Z$_][a-zA-Z$_0-9]*\\.)*[a-zA-Z$_][a-zA-Z$_0-9]*'
     protected static final String ABSOLUTE_LDF = '{ABSOLUTE}'
     protected static final String DATE_LDF = '{DATE}'
     protected static final String ISO8601_LDF = '{ISO8601}'

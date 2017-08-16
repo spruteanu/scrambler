@@ -29,7 +29,11 @@ class Log4jLogstash {
             final file = log4jProps.get(Log4jConsumer.APPENDER_FILE_PROPERTY)
             final conversionPattern = log4jProps.get(Log4jConsumer.APPENDER_CONVERSION_PATTERN_PROPERTY)
             if (file && conversionPattern) {
-
+                new File(folder, loggerName + '.conf').withWriter { Writer writer ->
+                    writeInput(writer, folder.absolutePath + '//**' + file + '*')
+                    writeFilter(writer, conversionPatternToGrok(conversionPattern))
+                    writeOutput(writer)
+                }
             }
         }
     }
@@ -51,7 +55,7 @@ class Log4jLogstash {
         final lines = []
         lines.add('filter {')
         lines.add("    grok {")
-        lines.add("        match => \"message\" => \"$grokMatch\"")
+        lines.add("        match => \"logLine\" => \"$grokMatch\"")
         lines.add("    }")
         lines.add('}')
         writer.write(lines.join(LineReader.LINE_BREAK))
@@ -80,58 +84,46 @@ class Log4jLogstash {
         String maxLength = matcher.group(2)
         ch = spec.charAt(spec.length() - 1)
         switch (ch) {
-            case 'c': // logging event category
-                regEx = '[^ ]+'
-//                consumer.group(EVENT_CATEGORY)
+            case 'c': // logging event category (Logger logger = Logger.getLogger("foo.bar")),
+                regEx = "%{JAVACLASS:${Log4jConsumer.EVENT_CATEGORY}}%"
                 break
             case 'C': // fully qualified class name of the caller
-                regEx = '[^ ]+'
-//                consumer.group(CALLER_CLASS)
+                regEx = "%{JAVACLASS:${Log4jConsumer.CALLER_CLASS}}%"
                 break
             case 'd': // date of the logging event. The date conversion specifier may be followed by a date format specifier enclosed between braces. For example, %d{HH:mm:ss,SSS} or %d{dd MMM yyyy HH:mm:ss,SSS}. If no date format specifier is given then ISO8601 format is assumed.
-//                i = dateFormatToRegex(consumer, sb, i, conversionPattern)
+                i = dateFormatToRegex(sb, i, conversionPattern)
                 break
             case 'F': // file name where the logging request was issued.
-                regEx = '[^ ]+'
-//                consumer.group(CALLER_FILE_NAME)
+                regEx = "(?<${Log4jConsumer.CALLER_FILE_NAME}>[^ ]+)"
                 break
             case 'l': // file name where the logging request was issued. The location information depends on the JVM implementation but usually consists of the fully qualified name of the calling method followed by the callers source the file name and line number between parentheses.
-                regEx = '[^ ]+'
-//                consumer.group(CALLER_LOCATION)
+                regEx = "(?<${Log4jConsumer.CALLER_LOCATION}>[^ ]+)"
                 break
             case 'L': // line number from where the logging request was issued.
-                regEx = '[\\d^ ]+'
-//                consumer.group(CALLER_LINE)
+                regEx = "(?<${Log4jConsumer.CALLER_LOCATION}>[\\d^ ]+)"
                 break
             case 'm': // message
-                regEx = '.+'
-//                consumer.group(MESSAGE)
+                regEx = "(?<${Log4jConsumer.MESSAGE}>.+)"
                 break
             case 'M': // method name where the logging request was issued.
-                regEx = '[^ ]+'
-//                consumer.group(CALLER_METHOD)
+                regEx = "%{JAVAMETHOD:${Log4jConsumer.CALLER_METHOD}}%"
                 break
             case 'n': // line break, skip it
                 return i + 2
             case 'p': // priority of the logging event.
-                regEx = '[\\w ]+'
-//                consumer.group(PRIORITY)
+                regEx = "(?<${Log4jConsumer.PRIORITY}>[\\w ]+)"
                 break
             case 'r': // number of milliseconds
-                regEx = '[\\d^ ]+'
-//                consumer.group(LOGGING_DURATION)
+                regEx = "(?<${Log4jConsumer.LOGGING_DURATION}>[\\d^ ]+)"
                 break
             case 't': // name of the thread that generated the logging event.
-                regEx = '.+'
-//                consumer.group(THREAD_NAME)
+                regEx = "(?<${Log4jConsumer.THREAD_NAME}>.+)"
                 break
             case 'x': // NDC (nested diagnostic context) associated with the thread that generated the logging event.
-                regEx = '[^ ]*'
-//                consumer.group(THREAD_NDC)
+                regEx = "(?<${Log4jConsumer.THREAD_NDC}>[^ ]*)"
                 break
             case 'X': // MDC (mapped diagnostic context) associated with the thread that generated the logging event. The X conversion character must be followed by the key for the map placed between braces, as in %X{clientNumber} where clientNumber is the key. The value in the MDC corresponding to the key will be output.
-                regEx = '[^ ]*'
-//                consumer.group(THREAD_MDC)
+                regEx = "(?<${Log4jConsumer.THREAD_MDC}>[^ ]*)"
                 break
             default:
                 throw new UnsupportedOperationException("Unsupported/unknown logging conversion pattern: '${conversionPattern.substring(i + 1)}'; of '$conversionPattern'")
@@ -181,9 +173,7 @@ class Log4jLogstash {
                 Log4jConsumer.appendNonSpecifierChar(sb, ch)
             }
         }
-        final regex = sb.toString()
-//        consumer.pattern = ~/^(?ms)$regex/
-        return regex
+        return sb.toString()
     }
 
     protected
@@ -198,28 +188,27 @@ class Log4jLogstash {
         if (format) {
             switch (format.trim()) {
                 case Log4jConsumer.ABSOLUTE_LDF:
-                    dateFormat = Log4jConsumer.ABSOLUTE_DATE_FORMAT
+                    dateFormat = "(?<${Log4jConsumer.DATE}>${Log4jConsumer.dateFormatToRegEx(Log4jConsumer.ABSOLUTE_DATE_FORMAT)})"
                     index += Log4jConsumer.ABSOLUTE_LDF.length()
                     break
                 case Log4jConsumer.DATE_LDF:
-                    dateFormat = Log4jConsumer.DATE_FORMAT
+                    dateFormat = "%{TIMESTAMP_ISO8601:${Log4jConsumer.DATE}}%"
                     index += Log4jConsumer.DATE_LDF.length()
                     break
                 case Log4jConsumer.ISO8601_LDF:
-                    dateFormat = Log4jConsumer.ISO8601_DATE_FORMAT
+                    dateFormat = "%{TIMESTAMP_ISO8601:${Log4jConsumer.DATE}}%"
                     index += Log4jConsumer.ISO8601_LDF.length()
                     break
                 default:
-                    dateFormat = format.substring(1, format.length() - 1)
+                    dateFormat = "(?<${Log4jConsumer.DATE}>${Log4jConsumer.dateFormatToRegEx(format.substring(1, format.length() - 1))})"
                     index += dateFormat.length() + 2
                     break
             }
         }
         if (!dateFormat) {
-            dateFormat = Log4jConsumer.ISO8601_DATE_FORMAT
+            dateFormat = "%{TIMESTAMP_ISO8601:${Log4jConsumer.DATE}}%"
         }
-        sb.append('(').append(Log4jConsumer.dateFormatToRegEx(dateFormat)).append(')')
-//        consumer.dateFormat(dateFormat)
+        sb.append(dateFormat)
         return index
     }
 
