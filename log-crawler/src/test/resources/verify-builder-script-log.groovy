@@ -5,6 +5,6 @@ import org.prismus.scrambler.log.LogCrawlerTest
  */
 final folder = new File(LogCrawlerTest.protectionDomain.codeSource.location.path)
 log4j {
-    file = folder
+    path = folder
     pattern = new File(folder, 'log4j.properties').path
 }

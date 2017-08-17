@@ -20,6 +20,8 @@
 package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
+import groovy.transform.stc.ClosureParams
+import groovy.transform.stc.SimpleType
 
 import java.nio.file.Path
 import java.text.SimpleDateFormat
@@ -83,7 +85,7 @@ class RegexConsumer implements LogConsumer {
         return this
     }
 
-    RegexConsumer group(String groupName, Closure closure) {
+    RegexConsumer group(String groupName, @ClosureParams(value=SimpleType.class, options="org.prismus.scrambler.log.LogEntry") Closure closure) {
         return group(groupName, new ClosureConsumer(closure))
     }
 
@@ -204,7 +206,7 @@ class RegexConsumer implements LogConsumer {
         protected final Map<String, List> consumerMap = new LinkedHashMap<>()
         private final Map<String, Integer> groupIndexMap  = new LinkedHashMap<>()
 
-        File file
+        File path
         String pattern
         String fileFilter
         Comparator<Path> fileSorter = LogCrawler.CREATED_DT_COMPARATOR
@@ -212,8 +214,20 @@ class RegexConsumer implements LogConsumer {
         Builder() {
         }
 
-        void setFile(String file) {
-            this.file = new File(file)
+        void path(String path) {
+            this.path = new File(path)
+        }
+
+        void pattern(String pattern) {
+            this.pattern = pattern
+        }
+
+        void fileFilter(String fileFilter) {
+            this.fileFilter = fileFilter
+        }
+
+        void fileSorter(Comparator<Path> fileSorter) {
+            this.fileSorter = fileSorter
         }
 
         Builder(LogCrawler.Builder contextBuilder, def consumer) {

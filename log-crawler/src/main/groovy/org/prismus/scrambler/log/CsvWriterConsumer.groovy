@@ -130,18 +130,28 @@ class CsvWriterConsumer implements LogConsumer, Closeable {
             super(contextBuilder, consumer, args)
         }
 
-        Builder withWriter(Writer writer) {
+        Builder writer(Writer writer) {
             getConsumer().writer = writer
             return this
         }
 
-        Builder withColumns(List<String> columns) {
+        Builder columns(String... columns) {
+            getConsumer().columns = columns.toList()
+            return this
+        }
+
+        Builder columns(List<String> columns) {
             getConsumer().columns = columns
             return this
         }
 
-        Builder withSeparators(String separator, String fieldSeparator = '') {
+        Builder separators(String separator, String fieldSeparator = '') {
             getConsumer().withSeparators(separator, fieldSeparator)
+            return this
+        }
+
+        Builder fieldSeparator(String fieldSeparator) {
+            getConsumer().fieldSeparator = fieldSeparator
             return this
         }
 

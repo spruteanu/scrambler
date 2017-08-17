@@ -20,6 +20,8 @@
 package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
+import groovy.transform.stc.ClosureParams
+import groovy.transform.stc.SimpleType
 
 import java.text.SimpleDateFormat
 import java.util.regex.Pattern
@@ -91,7 +93,7 @@ class Log4jConsumer extends RegexConsumer {
         return this
     }
 
-    Log4jConsumer message(Closure closure) {
+    Log4jConsumer message(@ClosureParams(value=SimpleType.class, options="org.prismus.scrambler.log.LogEntry") Closure closure) {
         return message(new ClosureConsumer(closure))
     }
 
@@ -170,11 +172,11 @@ class Log4jConsumer extends RegexConsumer {
             case 'd': // date of the logging event. The date conversion specifier may be followed by a date format specifier enclosed between braces. For example, %d{HH:mm:ss,SSS} or %d{dd MMM yyyy HH:mm:ss,SSS}. If no date format specifier is given then ISO8601 format is assumed.
                 i = dateFormatToRegex(consumer, sb, i, conversionPattern)
                 break
-            case 'F': // file name where the logging request was issued.
+            case 'F': // path name where the logging request was issued.
                 regEx = '[^ ]+'
                 consumer.group(CALLER_FILE_NAME)
                 break
-            case 'l': // file name where the logging request was issued. The location information depends on the JVM implementation but usually consists of the fully qualified name of the calling method followed by the callers source the file name and line number between parentheses.
+            case 'l': // path name where the logging request was issued. The location information depends on the JVM implementation but usually consists of the fully qualified name of the calling method followed by the callers source the path name and line number between parentheses.
                 regEx = '[^ ]+'
                 consumer.group(CALLER_LOCATION)
                 break
@@ -349,7 +351,7 @@ class Log4jConsumer extends RegexConsumer {
             return this
         }
 
-        Builder message(Closure closure) {
+        Builder message(@ClosureParams(value=SimpleType.class, options="org.prismus.scrambler.log.LogEntry") Closure closure) {
             group(MESSAGE, closure)
             return this
         }

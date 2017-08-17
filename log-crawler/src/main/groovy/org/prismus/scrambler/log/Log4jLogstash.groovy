@@ -19,11 +19,12 @@ class Log4jLogstash {
     String elasticPort = '9200'
     boolean debug = true
 
-    protected void writeLogstashConfig(Writer writer, String destinationPath, String logFile, String conversionPattern) {
+    protected void writeLogstashConfig(Writer writer, String loggerName,
+                                       String destinationPath, String logFile, String conversionPattern) {
         final fields = [:]
         writeInput(writer, destinationPath + '/**' + logFile)
         writeFilter(writer, conversionPatternToGrok(conversionPattern, fields), fields)
-        writeOutput(writer)
+        writeOutput(writer, loggerName)
     }
 
     void toLogstashConfig(String log4jConfig) {
@@ -31,7 +32,7 @@ class Log4jLogstash {
         if (log4jConsumerProperties.isEmpty()) {
             throw new IllegalArgumentException("Either empty or there are no confFolder loggers defined in '$log4jConfig'")
         }
-        final folder = confFolder ?: Paths.get('').toFile()
+        final folder = confFolder ?: Paths.get('').toAbsolutePath().toFile()
         for (Map.Entry<String, Map<String, String>> entry : log4jConsumerProperties.entrySet()) {
             final loggerName = entry.key
             final log4jProps = entry.value
@@ -39,7 +40,7 @@ class Log4jLogstash {
             final conversionPattern = log4jProps.get(Log4jConsumer.APPENDER_CONVERSION_PATTERN_PROPERTY)
             if (file && conversionPattern) {
                 new File(folder, loggerName + '.conf').withWriter { Writer writer ->
-                    writeLogstashConfig(writer, folder.absolutePath, file, conversionPattern)
+                    writeLogstashConfig(writer, loggerName, folder.absolutePath, file, conversionPattern)
                 }
             }
         }
@@ -73,13 +74,15 @@ class Log4jLogstash {
         writer.write(lines.join(lfSeparator))
     }
 
-    protected writeOutput(Writer writer) {
+    protected writeOutput(Writer writer, String loggerName) {
         final lines = []
         writer.write(lfSeparator)
         lines.add('output {')
         lines.add("    elasticsearch { hosts => [\"$elasticHost:$elasticPort\"] }")
         if (debug) {
+            lines.add('    # Next lines are only for debugging.')
             lines.add('    stdout { codec => rubydebug }')
+            lines.add("    # file {path => \"${loggerName}.result\" codec => rubydebug}")
         }
         lines.add('}')
         writer.write(lines.join(lfSeparator))
@@ -97,10 +100,10 @@ class Log4jLogstash {
         ch = spec.charAt(spec.length() - 1)
         switch (ch) {
             case 'c': // logging event category (Logger logger = Logger.getLogger("foo.bar")),
-                regEx = "%{JAVACLASS:${Log4jConsumer.EVENT_CATEGORY}}%"
+                regEx = "%{JAVACLASS:${Log4jConsumer.EVENT_CATEGORY}}"
                 break
             case 'C': // fully qualified class name of the caller
-                regEx = "%{JAVACLASS:${Log4jConsumer.CALLER_CLASS}}%"
+                regEx = "%{JAVACLASS:${Log4jConsumer.CALLER_CLASS}}"
                 break
             case 'd': // date of the logging event. The date conversion specifier may be followed by a date format specifier enclosed between braces. For example, %d{HH:mm:ss,SSS} or %d{dd MMM yyyy HH:mm:ss,SSS}. If no date format specifier is given then ISO8601 format is assumed.
                 i = dateFormatToRegex(sb, i, conversionPattern, fields)
@@ -118,7 +121,7 @@ class Log4jLogstash {
                 regEx = "?<${Log4jConsumer.MESSAGE}>.+"
                 break
             case 'M': // method name where the logging request was issued.
-                regEx = "%{JAVAMETHOD:${Log4jConsumer.CALLER_METHOD}}%"
+                regEx = "%{JAVAMETHOD:${Log4jConsumer.CALLER_METHOD}}"
                 break
             case 'n': // line break, skip it
                 return i + 2
@@ -215,7 +218,7 @@ class Log4jLogstash {
                     break
                 case Log4jConsumer.ISO8601_LDF:
                     dateFormat = Log4jConsumer.ISO8601_DATE_FORMAT
-                    regex = "%{TIMESTAMP_ISO8601:${Log4jConsumer.DATE}}%"
+                    regex = "%{TIMESTAMP_ISO8601:${Log4jConsumer.DATE}}"
                     index += Log4jConsumer.ISO8601_LDF.length()
                     break
                 default:
@@ -226,7 +229,7 @@ class Log4jLogstash {
             }
         }
         if (!regex) {
-            regex = "%{TIMESTAMP_ISO8601:${Log4jConsumer.DATE}}%"
+            regex = "%{TIMESTAMP_ISO8601:${Log4jConsumer.DATE}}"
             dateFormat = Log4jConsumer.ISO8601_DATE_FORMAT
         }
         if (regex.startsWith('%')) {
@@ -238,8 +241,8 @@ class Log4jLogstash {
         return index
     }
 
-    private static String usage() {
-        return """
+    private static void usage() {
+        println """
 Converts log4j to log-stash config
 
 Usage:

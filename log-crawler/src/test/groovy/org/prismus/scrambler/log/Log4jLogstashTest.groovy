@@ -11,7 +11,7 @@ class Log4jLogstashTest extends Specification {
         given:
         final logstash = new Log4jLogstash(lfSeparator: '\n')
         final writer = new StringWriter()
-        logstash.writeLogstashConfig(writer, 'c:/temp', 'sample-3.log', '%d %5p %c [%t] - %m%n')
+        logstash.writeLogstashConfig(writer, 'sample3', 'c:/temp', 'sample-3.log', '%d %5p %c [%t] - %m%n')
 
         expect:
 '''
@@ -23,13 +23,15 @@ input {
 }
 filter {
     grok {
-        match => "logLine" => "%{TIMESTAMP_ISO8601:Date}% (?<Priority>[\\w ]{5,}) %{JAVACLASS:EventCategory}% \\[(?<Thread>.+)\\] - (?<Message>.+)"
+        match => "logLine" => "%{TIMESTAMP_ISO8601:Date} (?<Priority>[\\w ]{5,}) %{JAVACLASS:EventCategory} \\[(?<Thread>.+)\\] - (?<Message>.+)"
         # timestamp-format => yyyy-MM-dd HH:mm:ss,SSS
     }
 }
 output {
     elasticsearch { hosts => ["localhost:9200"] }
+    # Next lines are only for debugging.
     stdout { codec => rubydebug }
+    # file {path => "sample3.result" codec => rubydebug}
 }''' == writer.toString()
     }
 

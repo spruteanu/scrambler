@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 @CompileStatic
 @PackageScope
-class AsynchronousJobs implements Closeable, AutoCloseable {
+class AsynchronousJobs extends CloseableContainer {
 
     private final LogCrawler logCrawler
     private int timeout
@@ -39,6 +39,8 @@ class AsynchronousJobs implements Closeable, AutoCloseable {
     private ExecutorService executorService
     private CompletionService completionService
     private AtomicInteger count
+
+    protected LinkedList<Closeable> closeables = []
 
     AsynchronousJobs(LogCrawler logCrawler) {
         this.logCrawler = logCrawler
@@ -107,7 +109,11 @@ class AsynchronousJobs implements Closeable, AutoCloseable {
 
     @Override
     void close() throws IOException {
-        finish()
+        try {
+            finish()
+        } finally {
+            super.close()
+        }
     }
 
     static Builder builder(LogCrawler logCrawler) {

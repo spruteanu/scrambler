@@ -44,7 +44,7 @@ class LogCrawlerTest extends Specification {
                 .log4j(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',)
                 .date().exception().crawler()
                 .output(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
-                .withConsumer({ LogEntry logEntry -> listCollector.add(logEntry) })
+                .withConsumer({ listCollector.add(it) })
                 .build()
         logContext.consume()
 
