@@ -18,12 +18,76 @@ class Log4jLogstash {
     String elasticHost = 'localhost'
     String elasticPort = '9200'
     boolean debug = true
+    boolean oneLogstash = true
+
+    protected writeInput(Writer writer, String loggerName, String filePath, boolean beginning = true) {
+        final lines = []
+        writer.write(lfSeparator)
+        if (!oneLogstash) {
+            lines.add('input {')
+        }
+
+        lines.add("    file {")
+        lines.add("        path => \"$filePath\"")
+        lines.add("        type => \"$loggerName\"")
+        if (beginning) {
+            lines.add("        start_position => \"beginning\"")
+        }
+        lines.add("    }")
+
+        if (!oneLogstash) {
+            lines.add('}')
+        }
+        writer.write(lines.join(lfSeparator))
+    }
+
+    protected writeFilter(Writer writer, String loggerName, String grokMatch, Map<String, String> fields) {
+        final lines = []
+        writer.write(lfSeparator)
+        if (oneLogstash) {
+            lines.add("if [type] == \"$loggerName\"")
+        } else {
+            lines.add('filter {')
+        }
+
+        lines.add("#if [type] == \"$loggerName\" {")
+        lines.add("    #some matching here")
+        lines.add("#}")
+
+        lines.add("    grok {")
+        lines.add("        match => \"logLine\" => \"$grokMatch\"")
+        if (fields) {
+            lines.add("        # ${fields.entrySet().collect { "$it.key => $it.value" }.join('; ')}")
+        }
+        lines.add("    }")
+        lines.add('}')
+        writer.write(lines.join(lfSeparator))
+    }
+
+    protected writeOutput(Writer writer, String loggerName) {
+        final lines = []
+        writer.write(lfSeparator)
+        lines.add('output {')
+
+        lines.add("#if [type] == \"$loggerName\" {")
+        lines.add("    #some output here")
+        lines.add("#}")
+
+        lines.add("    elasticsearch { hosts => [\"$elasticHost:$elasticPort\"] }")
+        if (debug) {
+            lines.add('    # Next lines are only for debugging.')
+            lines.add('    stdout { codec => rubydebug }')
+            lines.add("    # file {path => \"${loggerName}.result\" codec => rubydebug}")
+        }
+        lines.add('}')
+        writer.write(lines.join(lfSeparator))
+    }
 
     protected void writeLogstashConfig(Writer writer, String loggerName,
                                        String destinationPath, String logFile, String conversionPattern) {
         final fields = [:]
-        writeInput(writer, destinationPath + '/**' + logFile)
-        writeFilter(writer, conversionPatternToGrok(conversionPattern, fields), fields)
+        writeInput(writer, loggerName, destinationPath + '/**' + logFile)
+        writeFilter(writer, loggerName, conversionPatternToGrok(conversionPattern, fields), fields)
         writeOutput(writer, loggerName)
     }
 
@@ -39,53 +103,12 @@ class Log4jLogstash {
             final file = log4jProps.get(Log4jConsumer.APPENDER_FILE_PROPERTY)
             final conversionPattern = log4jProps.get(Log4jConsumer.APPENDER_CONVERSION_PATTERN_PROPERTY)
             if (file && conversionPattern) {
-                new File(folder, loggerName + '.conf').withWriter { Writer writer ->
+                // todo Serge: implement one logstash configuration write
+                new File(folder, loggerName + '.rb').withWriter { Writer writer ->
                     writeLogstashConfig(writer, loggerName, folder.absolutePath, file, conversionPattern)
                 }
             }
         }
-    }
-
-    protected writeInput(Writer writer, String filePath, boolean beginning = true) {
-        final lines = []
-        writer.write(lfSeparator)
-        lines.add('input {')
-        lines.add("    file {")
-        lines.add("        path => \"$filePath\"")
-        if (beginning) {
-            lines.add("        start_position => \"beginning\"")
-        }
-        lines.add("    }")
-        lines.add('}')
-        writer.write(lines.join(lfSeparator))
-    }
-
-    protected writeFilter(Writer writer, String grokMatch, Map<String, String> fields) {
-        final lines = []
-        writer.write(lfSeparator)
-        lines.add('filter {')
-        lines.add("    grok {")
-        lines.add("        match => \"logLine\" => \"$grokMatch\"")
-        if (fields) {
-            lines.add("        # ${fields.entrySet().collect { "$it.key => $it.value" } .join('; ')}")
-        }
-        lines.add("    }")
-        lines.add('}')
-        writer.write(lines.join(lfSeparator))
-    }
-
-    protected writeOutput(Writer writer, String loggerName) {
-        final lines = []
-        writer.write(lfSeparator)
-        lines.add('output {')
-        lines.add("    elasticsearch { hosts => [\"$elasticHost:$elasticPort\"] }")
-        if (debug) {
-            lines.add('    # Next lines are only for debugging.')
-            lines.add('    stdout { codec => rubydebug }')
-            lines.add("    # file {path => \"${loggerName}.result\" codec => rubydebug}")
-        }
-        lines.add('}')
-        writer.write(lines.join(lfSeparator))
     }
 
     protected int specifierToGrok(StringBuilder sb, char ch, int i, String conversionPattern, Map<String, String> fields = [:]) {
