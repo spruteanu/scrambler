@@ -27,7 +27,7 @@ filter {
     #some matching here
 #}
     grok {
-        match => "logLine" => "%{TIMESTAMP_ISO8601:Date} (?<Priority>[\\w ]{5,}) %{JAVACLASS:EventCategory} \\[(?<Thread>.+)\\] - (?<Message>.+)"
+        match => { "logLine" => '%{TIMESTAMP_ISO8601:Date} (?<Priority>[\\w ]{5,}) %{JAVACLASS:EventCategory} \\[(?<Thread>.+)\\] - (?<Message>.+)' }
         # timestamp-format => yyyy-MM-dd HH:mm:ss,SSS
     }
 }
@@ -42,7 +42,7 @@ output {
 }''' == writer.toString()
     }
 
-    void 'verify log4j to grok config file conversion'() {
+    void 'verify each log4j appender to logstash config'() {
         given:
         final folder = new File(LogCrawlerTest.protectionDomain.codeSource.location.path)
         final logstash = new Log4jLogstash(confFolder: folder, oneLogstash: false)
@@ -50,6 +50,16 @@ output {
 
         expect:
         3 == LogCrawler.listFiles(folder, '*.rb').size()
+    }
+
+    void 'verify log4j appenders to one logstash config'() {
+        given:
+        final folder = new File(LogCrawlerTest.protectionDomain.codeSource.location.path)
+        final logstash = new Log4jLogstash(confFolder: folder)
+        logstash.toLogstashConfig(new File(folder, 'log4j.properties').path)
+
+        expect:
+        1 == LogCrawler.listFiles(folder, 'log4j.properties.rb').size()
     }
 
 }

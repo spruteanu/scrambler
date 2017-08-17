@@ -45,17 +45,16 @@ class Log4jLogstash {
         final lines = []
         writer.write(lfSeparator)
         if (oneLogstash) {
-            lines.add("if [type] == \"$loggerName\"")
+            lines.add("if [type] == \"$loggerName\" {")
         } else {
             lines.add('filter {')
+            lines.add("#if [type] == \"$loggerName\" {")
+            lines.add("    #some matching here")
+            lines.add("#}")
         }
 
-        lines.add("#if [type] == \"$loggerName\" {")
-        lines.add("    #some matching here")
-        lines.add("#}")
-
         lines.add("    grok {")
-        lines.add("        match => \"logLine\" => \"$grokMatch\"")
+        lines.add("        match => { \"logLine\" => '$grokMatch' }")
         if (fields) {
             lines.add("        # ${fields.entrySet().collect { "$it.key => $it.value" }.join('; ')}")
         }
@@ -91,23 +90,64 @@ class Log4jLogstash {
         writeOutput(writer, loggerName)
     }
 
-    void toLogstashConfig(String log4jConfig) {
-        final log4jConsumerProperties = Log4jConsumer.extractLog4jConsumerProperties(Utils.readResourceText(log4jConfig).readLines())
-        if (log4jConsumerProperties.isEmpty()) {
-            throw new IllegalArgumentException("Either empty or there are no confFolder loggers defined in '$log4jConfig'")
-        }
-        final folder = confFolder ?: Paths.get('').toAbsolutePath().toFile()
-        for (Map.Entry<String, Map<String, String>> entry : log4jConsumerProperties.entrySet()) {
+    protected void appenderLogstash(File folder, Map<String, Map<String, String>> log4jProperties) {
+        for (Map.Entry<String, Map<String, String>> entry : log4jProperties.entrySet()) {
             final loggerName = entry.key
             final log4jProps = entry.value
             final file = log4jProps.get(Log4jConsumer.APPENDER_FILE_PROPERTY)
             final conversionPattern = log4jProps.get(Log4jConsumer.APPENDER_CONVERSION_PATTERN_PROPERTY)
             if (file && conversionPattern) {
-                // todo Serge: implement one logstash configuration write
                 new File(folder, loggerName + '.rb').withWriter { Writer writer ->
                     writeLogstashConfig(writer, loggerName, folder.absolutePath, file, conversionPattern)
                 }
             }
+        }
+    }
+
+    protected void oneLogstash(String log4jConfig, File folder, Map<String, Map<String, String>> log4jProperties) {
+        final inputWriter = new StringWriter()
+        final filterWriter = new StringWriter()
+        final outputWriter = new StringWriter()
+        for (Map.Entry<String, Map<String, String>> entry : log4jProperties.entrySet()) {
+            final loggerName = entry.key
+            final log4jProps = entry.value
+            final file = log4jProps.get(Log4jConsumer.APPENDER_FILE_PROPERTY)
+            final conversionPattern = log4jProps.get(Log4jConsumer.APPENDER_CONVERSION_PATTERN_PROPERTY)
+            if (file && conversionPattern) {
+                final fields = [:]
+                writeInput(inputWriter, loggerName, folder.absolutePath.replaceAll('\\\\', '/') + '/**' + file)
+                writeFilter(filterWriter, loggerName, conversionPatternToGrok(conversionPattern, fields), fields)
+            }
+        }
+        new File(folder, new File(log4jConfig).name + '.rb').withWriter {
+            it.write('input {')
+            it.write(inputWriter.toString())
+            it.write(lfSeparator)
+            it.write("}")
+            it.write(lfSeparator)
+
+            it.write(lfSeparator)
+            it.write('filter {')
+            it.write(filterWriter.toString())
+            it.write(lfSeparator)
+            it.write("}")
+            it.write(lfSeparator)
+
+            writeOutput(it, 'some-file-name')
+            it.write(lfSeparator)
+        }
+    }
+
+    void toLogstashConfig(String log4jConfig) {
+        final log4jProperties = Log4jConsumer.extractLog4jConsumerProperties(Utils.readResourceText(log4jConfig).readLines())
+        if (log4jProperties.isEmpty()) {
+            throw new IllegalArgumentException("Either empty or there are no confFolder loggers defined in '$log4jConfig'")
+        }
+        final folder = confFolder ?: Paths.get('').toAbsolutePath().toFile()
+        if (oneLogstash) {
+            oneLogstash(log4jConfig, folder, log4jProperties)
+        } else {
+            appenderLogstash(folder, log4jProperties)
         }
     }
 
