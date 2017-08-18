@@ -2,9 +2,6 @@ package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
 
-import java.nio.file.Path
-import java.nio.file.Paths
-
 /**
  * @author Serge Pruteanu
  */
@@ -14,7 +11,6 @@ class Log4jLogstash {
 
     File confFolder
 
-    Comparator<Path> fileSorter = LogCrawler.CREATED_DT_COMPARATOR
     String elasticHost = 'localhost'
     String elasticPort = '9200'
     boolean debug = true
@@ -28,8 +24,10 @@ class Log4jLogstash {
         }
 
         lines.add("    file {")
-        lines.add("        path => \"$filePath\"")
+        lines.add("        path => \"${filePath.replaceAll('\\\\', '/')}\"")
         lines.add("        type => \"$loggerName\"")
+        lines.add("        # Bellow line is not for continuous log watch, path will be parsed always from start position")
+        lines.add("        sincedb_path => \"/dev/null\"")
         if (beginning) {
             lines.add("        start_position => \"beginning\"")
         }
@@ -54,11 +52,18 @@ class Log4jLogstash {
         }
 
         lines.add("    grok {")
-        lines.add("        match => { \"logLine\" => '$grokMatch' }")
+        lines.add("        match => { \"message\" => '$grokMatch' }")
         if (fields) {
             lines.add("        # ${fields.entrySet().collect { "$it.key => $it.value" }.join('; ')}")
         }
         lines.add("    }")
+
+        lines.add('    mutate {')
+        lines.add("        strip => \"${Log4jConsumer.MESSAGE}\"")
+        lines.add('        # Remove not needed fields')
+        lines.add("        remove_field => [ 'message', '@version', '@timestamp', 'host', 'path']")
+        lines.add('    }')
+
         lines.add('}')
         writer.write(lines.join(lfSeparator))
     }
@@ -73,6 +78,9 @@ class Log4jLogstash {
         lines.add("#}")
 
         lines.add("    elasticsearch { hosts => [\"$elasticHost:$elasticPort\"] }")
+        lines.add("    index => \"$loggerName-%{+YYYY.MM.dd}\"")
+        lines.add("    #template => \"absolute_file_path_of_logstash_json_config\"")
+        lines.add("    #document_id => \"document_id_if_needed\"")
         if (debug) {
             lines.add('    # Next lines are only for debugging.')
             lines.add('    stdout { codec => rubydebug }')
@@ -107,7 +115,6 @@ class Log4jLogstash {
     protected void oneLogstash(String log4jConfig, File folder, Map<String, Map<String, String>> log4jProperties) {
         final inputWriter = new StringWriter()
         final filterWriter = new StringWriter()
-        final outputWriter = new StringWriter()
         for (Map.Entry<String, Map<String, String>> entry : log4jProperties.entrySet()) {
             final loggerName = entry.key
             final log4jProps = entry.value
@@ -115,7 +122,7 @@ class Log4jLogstash {
             final conversionPattern = log4jProps.get(Log4jConsumer.APPENDER_CONVERSION_PATTERN_PROPERTY)
             if (file && conversionPattern) {
                 final fields = [:]
-                writeInput(inputWriter, loggerName, folder.absolutePath.replaceAll('\\\\', '/') + '/**' + file)
+                writeInput(inputWriter, loggerName, folder.absolutePath + '/**' + file)
                 writeFilter(filterWriter, loggerName, conversionPatternToGrok(conversionPattern, fields), fields)
             }
         }
@@ -143,7 +150,7 @@ class Log4jLogstash {
         if (log4jProperties.isEmpty()) {
             throw new IllegalArgumentException("Either empty or there are no confFolder loggers defined in '$log4jConfig'")
         }
-        final folder = confFolder ?: Paths.get('').toAbsolutePath().toFile()
+        final folder = confFolder ?: new File(log4jConfig).parentFile
         if (oneLogstash) {
             oneLogstash(log4jConfig, folder, log4jProperties)
         } else {
@@ -300,7 +307,7 @@ class Log4jLogstash {
         } else {
             sb.append('(').append(regex).append(')')
         }
-        fields.put('timestamp-format', dateFormat)
+        fields.put("${Log4jConsumer.DATE}-format".toString(), dateFormat)
         return index
     }
 

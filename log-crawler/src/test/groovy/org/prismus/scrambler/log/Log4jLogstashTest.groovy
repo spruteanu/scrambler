@@ -19,6 +19,8 @@ input {
     file {
         path => "c:/temp/**sample-3.log"
         type => "sample3"
+        # Bellow line is not for continuous log watch, path will be parsed always from start position
+        sincedb_path => "/dev/null"
         start_position => "beginning"
     }
 }
@@ -27,8 +29,13 @@ filter {
     #some matching here
 #}
     grok {
-        match => { "logLine" => '%{TIMESTAMP_ISO8601:Date} (?<Priority>[\\w ]{5,}) %{JAVACLASS:EventCategory} \\[(?<Thread>.+)\\] - (?<Message>.+)' }
-        # timestamp-format => yyyy-MM-dd HH:mm:ss,SSS
+        match => { "message" => '%{TIMESTAMP_ISO8601:Date} (?<Priority>[\\w ]{5,}) %{JAVACLASS:EventCategory} \\[(?<Thread>.+)\\] - (?<Message>.+)' }
+        # Date-format => yyyy-MM-dd HH:mm:ss,SSS
+    }
+    mutate {
+        strip => "Message"
+        # Remove not needed fields
+        remove_field => [ 'message', '@version', '@timestamp', 'host', 'path']
     }
 }
 output {
@@ -36,6 +43,9 @@ output {
     #some output here
 #}
     elasticsearch { hosts => ["localhost:9200"] }
+    index => "sample3-%{+YYYY.MM.dd}"
+    #template => "absolute_file_path_of_logstash_json_config"
+    #document_id => "document_id_if_needed"
     # Next lines are only for debugging.
     stdout { codec => rubydebug }
     # file {path => "sample3.result" codec => rubydebug}
@@ -49,7 +59,7 @@ output {
         logstash.toLogstashConfig(new File(folder, 'log4j.properties').path)
 
         expect:
-        3 == LogCrawler.listFiles(folder, '*.rb').size()
+        3 == LogCrawler.listFiles(folder, 'sample*.rb').size()
     }
 
     void 'verify log4j appenders to one logstash config'() {
