@@ -17,7 +17,7 @@ class Log4jLogstashTest extends Specification {
 '''
 input {
     file {
-        path => "c:/temp/**sample-3.log"
+        path => "c:/temp/**/sample-3.log"
         type => "sample3"
         # Bellow line is not for continuous log watch, path will be parsed always from start position
         sincedb_path => "/dev/null"
@@ -42,9 +42,9 @@ output {
 #if [type] == "sample3" {
     #some output here
 #}
-    elasticsearch { hosts => ["localhost:9200"] }
-    index => "sample3-%{+YYYY.MM.dd}"
-    #template => "absolute_file_path_of_logstash_json_config"
+    #elasticsearch { hosts => ["localhost:9200"] }
+    #index => "logs-sample3-%{+YYYY.MM.dd}"
+    #template => "c:/temp/sample3-es-template.json"
     #document_id => "document_id_if_needed"
     # Next lines are only for debugging.
     stdout { codec => rubydebug }

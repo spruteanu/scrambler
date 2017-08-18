@@ -68,7 +68,7 @@ class Log4jLogstash {
         writer.write(lines.join(lfSeparator))
     }
 
-    protected writeOutput(Writer writer, String loggerName) {
+    protected writeOutput(Writer writer, String loggerName, String destinationPath) {
         final lines = []
         writer.write(lfSeparator)
         lines.add('output {')
@@ -77,9 +77,9 @@ class Log4jLogstash {
         lines.add("    #some output here")
         lines.add("#}")
 
-        lines.add("    elasticsearch { hosts => [\"$elasticHost:$elasticPort\"] }")
-        lines.add("    index => \"$loggerName-%{+YYYY.MM.dd}\"")
-        lines.add("    #template => \"absolute_file_path_of_logstash_json_config\"")
+        lines.add("    #elasticsearch { hosts => [\"$elasticHost:$elasticPort\"] }")
+        lines.add("    #index => \"logs-$loggerName-%{+YYYY.MM.dd}\"")
+        lines.add("    #template => \"${destinationPath.replaceAll('\\\\', '/')}/$loggerName-es-template.json\"")
         lines.add("    #document_id => \"document_id_if_needed\"")
         if (debug) {
             lines.add('    # Next lines are only for debugging.')
@@ -93,9 +93,19 @@ class Log4jLogstash {
     protected void writeLogstashConfig(Writer writer, String loggerName,
                                        String destinationPath, String logFile, String conversionPattern) {
         final fields = [:]
-        writeInput(writer, loggerName, destinationPath + '/**' + logFile)
+        writeInput(writer, loggerName, destinationPath + '/**/' + logFile)
         writeFilter(writer, loggerName, conversionPatternToGrok(conversionPattern, fields), fields)
-        writeOutput(writer, loggerName)
+        writeOutput(writer, loggerName, destinationPath)
+        writeElasticTemplate(loggerName, destinationPath, fields)
+    }
+
+    protected void writeElasticTemplate(String loggerName, String destinationPath, Map<String, String> fields) {
+        String text = this.class.getResource('/es-logstash-template.json').text
+        final dtFormat = Log4jConsumer.DATE + '-format'
+        if (fields.containsKey(dtFormat)) {
+            text = text.replace('dateOptionalTime', fields.get(dtFormat))
+        }
+        new File(destinationPath, "$loggerName-es-template.json").write(text)
     }
 
     protected void appenderLogstash(File folder, Map<String, Map<String, String>> log4jProperties) {
@@ -115,6 +125,7 @@ class Log4jLogstash {
     protected void oneLogstash(String log4jConfig, File folder, Map<String, Map<String, String>> log4jProperties) {
         final inputWriter = new StringWriter()
         final filterWriter = new StringWriter()
+        final collectFields = [:]
         for (Map.Entry<String, Map<String, String>> entry : log4jProperties.entrySet()) {
             final loggerName = entry.key
             final log4jProps = entry.value
@@ -124,9 +135,11 @@ class Log4jLogstash {
                 final fields = [:]
                 writeInput(inputWriter, loggerName, folder.absolutePath + '/**' + file)
                 writeFilter(filterWriter, loggerName, conversionPatternToGrok(conversionPattern, fields), fields)
+                collectFields.putAll(fields)
             }
         }
-        new File(folder, new File(log4jConfig).name + '.rb').withWriter {
+        final loggerName = new File(log4jConfig).name
+        new File(folder, loggerName + '.rb').withWriter {
             it.write('input {')
             it.write(inputWriter.toString())
             it.write(lfSeparator)
@@ -140,9 +153,10 @@ class Log4jLogstash {
             it.write("}")
             it.write(lfSeparator)
 
-            writeOutput(it, 'some-file-name')
+            writeOutput(it, loggerName, folder.absolutePath)
             it.write(lfSeparator)
         }
+        writeElasticTemplate(loggerName, folder.absolutePath, collectFields)
     }
 
     void toLogstashConfig(String log4jConfig) {
