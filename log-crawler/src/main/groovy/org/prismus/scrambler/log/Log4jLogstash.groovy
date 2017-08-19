@@ -12,7 +12,7 @@ class Log4jLogstash {
     File confFolder
 
     String elasticHost = 'localhost'
-    String elasticPort = '9200'
+    String elasticPort = '9300'
     boolean debug = true
     boolean oneLogstash = true
 
@@ -26,6 +26,11 @@ class Log4jLogstash {
         lines.add("    file {")
         lines.add("        path => \"${filePath.replaceAll('\\\\', '/')}\"")
         lines.add("        type => \"$loggerName\"")
+        lines.add("        codec => multiline {")
+        lines.add("            pattern => \"^\\d\"")
+        lines.add("            what => \"previous\"")
+        lines.add("            negate => true")
+        lines.add("        }")
         lines.add("        # Bellow line is not for continuous log watch, path will be parsed always from start position")
         lines.add("        sincedb_path => \"/dev/null\"")
         if (beginning) {
@@ -64,6 +69,14 @@ class Log4jLogstash {
         lines.add("        remove_field => [ 'message', '@version', '@timestamp', 'host', 'path']")
         lines.add('    }')
 
+        lines.add("    if 'multiline' in [tags] {")
+        lines.add("        mutate {")
+        lines.add("            remove_field => [ 'tags' ]")
+        lines.add("        }")
+        lines.add("        ruby {")
+        lines.add("            code => \"event.set('Exception', event.get('Message').scan(/(?:[a-zA-Z\$_][a-zA-Z\$_0-9]*\\.)*[a-zA-Z\$_][a-zA-Z\$_0-9]*Exception/))\"")
+        lines.add("        }")
+        lines.add("    }")
         lines.add('}')
         writer.write(lines.join(lfSeparator))
     }
@@ -77,10 +90,12 @@ class Log4jLogstash {
         lines.add("    #some output here")
         lines.add("#}")
 
-        lines.add("    #elasticsearch { hosts => [\"$elasticHost:$elasticPort\"] }")
-        lines.add("    #index => \"logs-$loggerName-%{+YYYY.MM.dd}\"")
-        lines.add("    #template => \"${destinationPath.replaceAll('\\\\', '/')}/$loggerName-es-template.json\"")
-        lines.add("    #document_id => \"document_id_if_needed\"")
+        lines.add("    #elasticsearch {")
+        lines.add("        #hosts => \"$elasticHost\"")
+        lines.add("        #index => \"logs-$loggerName-%{+YYYY.MM.dd}\"")
+        lines.add("        #template => \"${destinationPath.replaceAll('\\\\', '/')}/$loggerName-es-template.json\"")
+        lines.add("        #document_id => \"document_id_if_needed\"")
+        lines.add("    #}")
         if (debug) {
             lines.add('    # Next lines are only for debugging.')
             lines.add('    stdout { codec => rubydebug }')

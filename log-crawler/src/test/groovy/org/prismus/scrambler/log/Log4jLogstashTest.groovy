@@ -19,6 +19,11 @@ input {
     file {
         path => "c:/temp/**/sample-3.log"
         type => "sample3"
+        codec => multiline {
+            pattern => "^\\d"
+            what => "previous"
+            negate => true
+        }
         # Bellow line is not for continuous log watch, path will be parsed always from start position
         sincedb_path => "/dev/null"
         start_position => "beginning"
@@ -37,15 +42,25 @@ filter {
         # Remove not needed fields
         remove_field => [ 'message', '@version', '@timestamp', 'host', 'path']
     }
+    if 'multiline' in [tags] {
+        mutate {
+            remove_field => [ 'tags' ]
+        }
+        ruby {
+            code => "event.set('Exception', event.get('Message').scan(/(?:[a-zA-Z$_][a-zA-Z$_0-9]*\\.)*[a-zA-Z$_][a-zA-Z$_0-9]*Exception/))"
+        }
+    }
 }
 output {
 #if [type] == "sample3" {
     #some output here
 #}
-    #elasticsearch { hosts => ["localhost:9200"] }
-    #index => "logs-sample3-%{+YYYY.MM.dd}"
-    #template => "c:/temp/sample3-es-template.json"
-    #document_id => "document_id_if_needed"
+    #elasticsearch {
+        #hosts => "localhost"
+        #index => "logs-sample3-%{+YYYY.MM.dd}"
+        #template => "c:/temp/sample3-es-template.json"
+        #document_id => "document_id_if_needed"
+    #}
     # Next lines are only for debugging.
     stdout { codec => rubydebug }
     # file {path => "sample3.result" codec => rubydebug}
