@@ -37,10 +37,13 @@ filter {
         match => { "message" => '%{TIMESTAMP_ISO8601:Date} (?<Priority>[\\w ]{5,}) %{JAVACLASS:EventCategory} \\[(?<Thread>.+)\\] - (?<Message>.+)' }
         # Date-format => yyyy-MM-dd HH:mm:ss,SSS
     }
+    date {
+        match => ['Date', 'yyyy-MM-dd HH:mm:ss,SSS']
+    }
     mutate {
         strip => "Message"
         # Remove not needed fields
-        remove_field => [ 'message', '@version', '@timestamp', 'host', 'path']
+        remove_field => [ 'message', '@version', 'Date', 'host', 'path']
     }
     if 'multiline' in [tags] {
         mutate {

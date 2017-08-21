@@ -1,63 +1,33 @@
 {
-  "template": "logs-*",
+  "template": "${loggerName}*",
   "settings": {
-    "number_of_shards": 1, "number_of_replicas": 0,
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
     "index.refresh_interval": "120s",
     "index": {
-      "query": { "default_field": "Date" },
-      "store": { "compress": { "stored": true, "tv": true } }
+      "query": {
+        "default_field": "@timestamp"
+      }
     }
   },
   "mappings": {
-    "_default_": {
-      "_all": { "enabled": false },
-      "_source": { "compress": true },
-      "dynamic_templates": [
-        {
-          "string_template": {
-            "match": "*", "match_mapping_type": "string",
-            "mapping": { "type": "string", "index": "not_analyzed" }
-          },
-          "message_field": {
-            "match": "*", "match_mapping_type": "string",
-            "mapping": { "type": "string", "index": "not_analyzed" }
-          }
-        },
-        {
-          "number_value": {
-            "match": "*_number",
-            "mapping": { "type": "string" }
-          }
-        },
-        {
-          "float_strings": {
-            "match_mapping_type": "float",
-            "mapping": { "type": "string" }
-          }
-        },
-        {
-          "date_strings": {
-            "match_mapping_type": "date",
-            "mapping": { "type": "string" }
-          }
-        },
-        {
-          "string_fields": {
-            "match": "*", "match_mapping_type": "string",
-            "mapping": { "type": "string", "index": "not_analyzed" }
-          }
-        }
-      ],
+    "logs": {
       "properties": {
-        "@tags": { "type": "string", "index": "not_analyzed" },
-        "Date": { "type": "date", "format": "dateOptionalTime", "index": "not_analyzed" },
-        "Message": { "type": "string", "index": "not_analyzed" },
+        "@timestamp" : { "type" : "date", "format" : "dateOptionalTime" },
         "Action": { "type": "string", "index": "not_analyzed" },
+        "Message": { "type": "string", "index": "not_analyzed" },
         "ExecutionTime": { "type": "float" },
         "EventCategory": { "type": "string", "index": "not_analyzed" },
+        "PackageID": { "type": "string" },
+        "Thread": { "type": "string" },
+        "TransmissionSID": { "type": "long" },
         "Priority": { "type": "string", "index": "not_analyzed" },
-        "Exception": { "type": "nested" },
-        "type": { "type": "string", "index": "not_analyzed" }
+        "Exceptions": {
+          "type": "nested",
+          "properties": { "Exception": { "type": "string" } }
+        },
+        "type": { "type": "string", "index": "not_analyzed" },
+        "@tags": { "type": "string", "index": "not_analyzed" }
       }
     }
   }

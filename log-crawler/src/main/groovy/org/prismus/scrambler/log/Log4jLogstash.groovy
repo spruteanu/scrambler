@@ -63,10 +63,16 @@ class Log4jLogstash {
         }
         lines.add("    }")
 
+        if (fields.containsKey(Log4jConsumer.DATE + '-format')) {
+            lines.add('    date {')
+            lines.add("        match => ['Date', '${fields.get(Log4jConsumer.DATE + '-format')}']")
+            lines.add("    }")
+        }
+
         lines.add('    mutate {')
         lines.add("        strip => \"${Log4jConsumer.MESSAGE}\"")
         lines.add('        # Remove not needed fields')
-        lines.add("        remove_field => [ 'message', '@version', '@timestamp', 'host', 'path']")
+        lines.add("        remove_field => [ 'message', '@version', 'Date', 'host', 'path']")
         lines.add('    }')
 
         lines.add("    if 'multiline' in [tags] {")
@@ -92,7 +98,7 @@ class Log4jLogstash {
 
         lines.add("    #elasticsearch {")
         lines.add("        #hosts => \"$elasticHost\"")
-        lines.add("        #index => \"logs-$loggerName-%{+YYYY.MM.dd}\"")
+        lines.add("        #index => \"logs-${loggerName.toLowerCase()}-%{+YYYY.MM.dd}\"")
         lines.add("        #template => \"${destinationPath.replaceAll('\\\\', '/')}/$loggerName-es-template.json\"")
         lines.add("        #document_id => \"document_id_if_needed\"")
         lines.add("    #}")
@@ -116,11 +122,15 @@ class Log4jLogstash {
 
     protected void writeElasticTemplate(String loggerName, String destinationPath, Map<String, String> fields) {
         String text = this.class.getResource('/es-logstash-template.json').text
-        final dtFormat = Log4jConsumer.DATE + '-format'
-        if (fields.containsKey(dtFormat)) {
-            text = text.replace('dateOptionalTime', fields.get(dtFormat))
+//        final dtFormat = Log4jConsumer.DATE + '-format'
+//        if (fields.containsKey(dtFormat)) {
+//            text = text.replaceAll('dateOptionalTime', fields.get(dtFormat))
+//        }
+        text = text.replace('${loggerName}', 'logs-' + loggerName.toLowerCase())
+        final file = new File(destinationPath, "$loggerName-es-template.json")
+        if (file.parentFile.exists()) {
+            file.write(text)
         }
-        new File(destinationPath, "$loggerName-es-template.json").write(text)
     }
 
     protected void appenderLogstash(File folder, Map<String, Map<String, String>> log4jProperties) {
