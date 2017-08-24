@@ -28,12 +28,14 @@ class DateConsumer implements LogConsumer {
     static final String DATE = 'DATE'
 
     String group = DATE
+    String target
     SimpleDateFormat dateFormat
 
     DateConsumer() {
     }
 
-    DateConsumer(SimpleDateFormat dateFormat, String group = DATE) {
+    DateConsumer(SimpleDateFormat dateFormat, String group = DATE, String target = null) {
+        this.target = target
         this.dateFormat = dateFormat
         this.group = group
     }
@@ -43,7 +45,11 @@ class DateConsumer implements LogConsumer {
         if (entry.logValueMap.containsKey(group)) {
             final dateString = entry.get(group)
             final date = dateFormat.parse(dateString.toString())
-            entry.put(group, date)
+            String grField = target
+            if (!grField) {
+                grField = group
+            }
+            entry.put(grField, date)
         }
     }
 

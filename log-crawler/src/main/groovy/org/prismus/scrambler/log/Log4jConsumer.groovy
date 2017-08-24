@@ -286,7 +286,7 @@ class Log4jConsumer extends RegexConsumer {
                 final String cat
                 if (apps.length == 2 && log4jSet.contains(apps[1])) {
                     cat = apps[1]
-                    value = toMap(filePattern, value, [fileFilter: 1]).get('fileFilter') + '*'
+                    value = toMap(filePattern, value, [fileFilter: 1]).get('fileFilter').toString() + '*'
                 } else if (apps.length == 3) {
                     if (log4jSet.contains(apps[1])) {
                         cat = apps[1]

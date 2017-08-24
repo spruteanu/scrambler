@@ -58,12 +58,25 @@ class LogEntry implements Cloneable {
         return this
     }
 
+    LogEntry put(MapEntry... entries) {
+        if (entries) {
+            for (MapEntry entry : entries) {
+                logValueMap.put(entry.key, entry.value)
+            }
+        }
+        return this
+    }
+
     Object get(Object entryKey) {
         return logValueMap.get(entryKey)
     }
 
-    LogEntry remove(Object entryKey) {
-        logValueMap.remove(entryKey)
+    LogEntry remove(Object... keys) {
+        if (keys) {
+            for (Object key : keys) {
+                logValueMap.remove(key)
+            }
+        }
         return this
     }
 

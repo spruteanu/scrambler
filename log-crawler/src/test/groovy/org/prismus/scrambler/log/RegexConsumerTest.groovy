@@ -62,6 +62,20 @@ class RegexConsumerTest extends Specification {
                 'DEBUG | 2008-09-06 10:51:44,817 | DefaultBeanDefinitionDocumentReader.java | 86 | Loading bean definitions',
                 ['LogLevel': 1, 'Timestamp': 2, 'Caller': 3, 'Line': 4, 'Message': 5]
         )
+
+        and: 'verify toMap method by index'
+        ['LogLevel' : 'DEBUG',
+         'Timestamp': '2008-09-06 10:51:44,817',
+         'Caller'   : 'DefaultBeanDefinitionDocumentReader.java',
+         'Line'     : '86',
+         'Message'  : 'Loading bean definitions'] == RegexConsumer.toMap(
+                ~/(\w+) \| (\w+-\w+-\w+ \w+:\w+:\w+.\w+) \| (\w+\.\w+) \| (\d+) \| (.+)/,
+                'DEBUG | 2008-09-06 10:51:44,817 | DefaultBeanDefinitionDocumentReader.java | 86 | Loading bean definitions',
+                ['LogLevel', 'Timestamp', 'Caller', 'Line', 'Message'].toArray(new String[0])
+        )
+
+        and: 'verify match all'
+        ['Words' : ['This', 'order', 'was', 'placed', 'for', 'me'] ] == RegexConsumer.toMap(~/(\w+)/, 'This order was placed for me!', 'Words')
     }
 
     void 'verify regex consumer'() {

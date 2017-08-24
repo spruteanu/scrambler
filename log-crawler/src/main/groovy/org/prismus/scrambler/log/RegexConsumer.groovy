@@ -112,6 +112,7 @@ class RegexConsumer implements LogConsumer {
         } else {
             matcher = pattern.matcher(entry.line)
         }
+        // todo Serge: replace it with org.prismus.scrambler.log.RegexConsumer.toMap(java.util.regex.Pattern, java.lang.String, java.util.Map<java.lang.String,java.lang.Integer>)
         while (matcher.find()) {
             for (Map.Entry<String, Integer> enr : groupIndexMap.entrySet()) {
                 final key = enr.key
@@ -143,10 +144,9 @@ class RegexConsumer implements LogConsumer {
         return result
     }
 
-    static Map<String, String> toMap(Pattern pattern, String line, Map<String, Integer> groupIndexMap) {
+    static Map<String, ?> toMap(Pattern pattern, String line, Map<String, Integer> groupIndexMap) {
         final resultMap = [:]
-        final Matcher matcher
-        matcher = pattern.matcher(line)
+        final Matcher matcher = pattern.matcher(line)
         while (matcher.find()) {
             for (Map.Entry<String, Integer> enr : groupIndexMap.entrySet()) {
                 final key = enr.key
@@ -158,27 +158,29 @@ class RegexConsumer implements LogConsumer {
                     groupValue = matcher.group(key)
                 }
                 if (groupValue) {
-                    resultMap.put(key, groupValue.trim())
+                    def entryValue = groupValue.trim()
+                    if (resultMap.containsKey(key)) {
+                        def val = resultMap.get(key)
+                        final List list
+                        if (val instanceof List) {
+                            list = val as List
+                        } else {
+                            list = []
+                            list.add(val)
+                        }
+                        list.add(groupValue)
+                        entryValue = list
+                    }
+                    resultMap.put(key, entryValue)
                 }
             }
         }
         return resultMap
     }
 
-    static Map<String, String> toMap(Pattern pattern, String line, String... groups) {
-        final resultMap = [:]
-        final Matcher matcher
-        matcher = pattern.matcher(line)
+    static Map<String, ?> toMap(Pattern pattern, String line, String... groups) {
         int i = 1
-        while (matcher.find()) {
-            for (String key : groups) {
-                String groupValue = matcher.group(i++)
-                if (groupValue) {
-                    resultMap.put(key, groupValue.trim())
-                }
-            }
-        }
-        return resultMap
+        return toMap(pattern, line, groups.collectEntries { [it, i++] })
     }
 
     static RegexConsumer of(Pattern pattern) {
@@ -273,12 +275,12 @@ class RegexConsumer implements LogConsumer {
             return this
         }
 
-        Builder date(String group, String dateFormat) {
-            return date(group, new SimpleDateFormat(dateFormat))
+        Builder date(String group, String dateFormat, String target = null) {
+            return date(group, new SimpleDateFormat(dateFormat), target)
         }
 
-        Builder date(String groupName, SimpleDateFormat dateFormat) {
-            group(groupName, (Integer)null, new DateConsumer(dateFormat, groupName))
+        Builder date(String field, SimpleDateFormat dateFormat, String target = null) {
+            group(field, (Integer)null, new DateConsumer(dateFormat, field, target))
             return this
         }
 
