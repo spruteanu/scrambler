@@ -10,29 +10,29 @@ import java.util.regex.Pattern
 /**
  * @author Serge Pruteanu
  */
-log4j {
-    path 'D:/work/tm/bugs/Case124586_BCBSNC/RTETLLogs'
-    pattern 'D:/work/tm/bugs/Case124586_BCBSNC/RTETLLogs/TMLogger.cfg'
-    message new EtlMessageConsumer()
-}
+//log4j {
+//    path 'D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs/'
+//    pattern 'D:/work/tm/bugs/Case124586_BCBSNC/RTETLLogs/TMLogger.cfg'
+//    message new EtlMessageConsumer()
+//}
 
 log4j {
-    path 'D:/work/tm/bugs/Case122498_BCBSNC'
-    pattern '%d %5p %37c [%t] - %m%n'
-    fileFilter '*.log*'
-    // todo Serge: simplify bellow
-    message(RegexConsumer.of(~/(.*)FileID[: =\)]{1,}\s*(\d+)(.+)\s+(\d+)\s+ms/)
+    path 'D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs/'
+    pattern '%d %5p %37c - %m%n'
+    fileFilter 'TM*.log*'
+    message RegexConsumer.of(~/(.*)FileID[: =\)]{1,}\s*(\d+)(.+)\s+(\d+)\s+ms/)
             .groups('Action', 'FileID', 'Execution', 'ExecutionTime')
             .group('Execution', { LogEntry e ->
         if (!e.get('Action')) {
             e.put('Action', e.get('Execution'))
         }
         e.remove('Execution')
-    }))
+    })
 }
-parallel()
 
-output('D:/work/tm/bugs/Case124586_BCBSNC/RTETLLogs/etl-log.csv',
+//parallel()
+
+output('D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs-log.csv',
             Log4jConsumer.DATE, 'Action', 'TransmissionSID', 'PackageID', 'FileID', 'ExecutionTime', Log4jConsumer.THREAD_NAME, LogEntry.SOURCE_INFO, Log4jConsumer.MESSAGE
 )
 

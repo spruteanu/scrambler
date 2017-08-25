@@ -8,7 +8,7 @@ import org.prismus.scrambler.log.RegexConsumer
 log4j {
     path 'D:/work/tm/bugs/Case122498_BCBSNC'
     pattern '%d %5p %37c [%t] - %m%n'
-    fileFilter '*.log*'
+    fileFilter 'TM*.log*'
     message RegexConsumer.of(~/(.*)FileID[: =\)]{1,}\s*(\d+)(.+)\s+(\d+)\s+ms/)
             .groups('Action', 'FileID', 'Execution', 'ExecutionTime')
             .group('Execution', { LogEntry e ->

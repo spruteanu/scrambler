@@ -1,5 +1,5 @@
 {
-  "template": "${loggerName}*",
+  "template": "logs-*",
   "settings": {
     "number_of_shards": 1,
     "number_of_replicas": 0,
@@ -21,6 +21,7 @@
         "PackageID": { "type": "string" },
         "Thread": { "type": "string" },
         "TransmissionSID": { "type": "long" },
+        "FileID": { "type": "long" },
         "Priority": { "type": "string", "index": "not_analyzed" },
         "Exceptions": {
           "type": "nested",
