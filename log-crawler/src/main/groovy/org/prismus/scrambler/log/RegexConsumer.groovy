@@ -102,36 +102,21 @@ class RegexConsumer implements LogConsumer {
 
     @Override
     void consume(LogEntry entry) {
-        final Matcher matcher
+        final Map<String, ?> map
         if (group) {
             final value = entry.get(group)
             if (!value) {
                 return
             }
-            matcher = pattern.matcher(value.toString())
+            map = toMap(pattern, value.toString(), groupIndexMap)
         } else {
-            matcher = pattern.matcher(entry.line)
+            map = toMap(pattern, entry.line, groupIndexMap)
         }
-        // todo Serge: replace it with org.prismus.scrambler.log.RegexConsumer.toMap(java.util.regex.Pattern, java.lang.String, java.util.Map<java.lang.String,java.lang.Integer>)
-        while (matcher.find()) {
-            for (Map.Entry<String, Integer> enr : groupIndexMap.entrySet()) {
-                final key = enr.key
-                Integer idx = enr.value
-                String groupValue = null
-                try {
-                    if (idx) {
-                        groupValue = matcher.group(idx)
-                    } else {
-                        groupValue = matcher.group(key)
-                    }
-                } catch (Exception ignore) { }
-                if (groupValue) {
-                    entry.put(key, groupValue.trim())
-                    final List<LogConsumer> consumers = get(key)
-                    for (LogConsumer consumer : consumers) {
-                        consumer.consume(entry)
-                    }
-                }
+        entry.logValueMap.putAll(map)
+        for (final key : map.keySet()) {
+            final List<LogConsumer> consumers = get(key)
+            for (LogConsumer consumer : consumers) {
+                consumer.consume(entry)
             }
         }
     }

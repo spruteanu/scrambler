@@ -67,14 +67,14 @@ output {
 #if [type] == "some-file-name" {
     #some output here
 #}
-    elasticsearch {
-		hosts => ["localhost:9200"]
-		index => "logs-etl-logger-%{+YYYY.MM.dd}"
-		template => "c:/work/temp/1/EtlLogger-es-template.json"
-		template_overwrite => true
-		#document_id => "document_id_if_needed"
-	}
+    # elasticsearch {
+	# 	hosts => ["localhost:9200"]
+	# 	index => "logs-etl-logger-%{+YYYY.MM.dd}"
+	# 	template => "c:/work/temp/1/EtlLogger-es-template.json"
+	# 	template_overwrite => true
+	# 	#document_id => "document_id_if_needed"
+	# }
     # Next lines are only for debugging.
     stdout { codec => rubydebug }
-    #file {path => "c:/work/temp/1/etlLogger.result" codec => rubydebug}
+    file {path => "c:/work/temp/1/etlLogger.result" codec => rubydebug}
 }
