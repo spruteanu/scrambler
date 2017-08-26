@@ -21,6 +21,7 @@ package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
 
+import java.text.SimpleDateFormat
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -29,6 +30,8 @@ import java.util.concurrent.ConcurrentHashMap
 @CompileStatic
 class LogEntry extends Expando implements Cloneable {
     public static final String SOURCE_INFO = 'Source'
+    private static final Map<Object, SimpleDateFormat> dateFormatMap = new ConcurrentHashMap<>()
+
     String line
 
     Object source
@@ -91,6 +94,90 @@ class LogEntry extends Expando implements Cloneable {
 
     boolean isEmpty() {
         return logValueMap.isEmpty()
+    }
+
+    LogEntry toInteger(Object entryKey, Object targetEntry = null) {
+        final target = targetEntry ?: entryKey
+        final value = logValueMap.get(entryKey)
+        if (value) {
+            logValueMap.put(target, value as Integer)
+        }
+        return this
+    }
+
+    LogEntry toLong(Object entryKey, Object targetEntry = null) {
+        final target = targetEntry ?: entryKey
+        final value = logValueMap.get(entryKey)
+        if (value) {
+            logValueMap.put(target, value as Long)
+        }
+        return this
+    }
+
+    LogEntry toShort(Object entryKey, Object targetEntry = null) {
+        final target = targetEntry ?: entryKey
+        final value = logValueMap.get(entryKey)
+        if (value) {
+            logValueMap.put(target, value as Short)
+        }
+        return this
+    }
+
+    LogEntry toByte(Object entryKey, Object targetEntry = null) {
+        final target = targetEntry ?: entryKey
+        final value = logValueMap.get(entryKey)
+        if (value) {
+            logValueMap.put(target, value as Byte)
+        }
+        return this
+    }
+
+    LogEntry toFloat(Object entryKey, Object targetEntry = null) {
+        final target = targetEntry ?: entryKey
+        final value = logValueMap.get(entryKey)
+        if (value) {
+            logValueMap.put(target, value as Float)
+        }
+        return this
+    }
+
+    LogEntry toDouble(Object entryKey, Object targetEntry = null) {
+        final target = targetEntry ?: entryKey
+        final value = logValueMap.get(entryKey)
+        if (value) {
+            logValueMap.put(target, value as Double)
+        }
+        return this
+    }
+
+    LogEntry toBigDecimal(Object entryKey, Object targetEntry = null) {
+        final target = targetEntry ?: entryKey
+        final value = logValueMap.get(entryKey)
+        if (value) {
+            logValueMap.put(target, value as BigDecimal)
+        }
+        return this
+    }
+
+    LogEntry toDate(Object entryKey, SimpleDateFormat dateFormat, Object targetEntry = null) {
+        final target = targetEntry ?: entryKey
+        final value = logValueMap.get(entryKey)
+        if (value) {
+            logValueMap.put(target, dateFormat.parse(value.toString()))
+        }
+        return this
+    }
+
+    LogEntry toDate(Object entryKey, String dateFormat, Object targetEntry = null) {
+        final target = targetEntry ?: entryKey
+        final value = logValueMap.get(entryKey)
+        if (value) {
+            if (!dateFormatMap.containsKey(entryKey)) {
+                dateFormatMap.put(entryKey, new SimpleDateFormat(dateFormat))
+            }
+            logValueMap.put(target, dateFormatMap.get(entryKey).parse(value.toString()))
+        }
+        return this
     }
 
     def propertyMissing(String entryKey) {

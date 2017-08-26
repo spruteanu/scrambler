@@ -21,6 +21,8 @@ package org.prismus.scrambler.log
 
 import spock.lang.Specification
 
+import java.text.SimpleDateFormat
+
 /**
  * @author Serge Pruteanu
  */
@@ -227,14 +229,42 @@ class LogCrawlerTest extends Specification {
 
         and: 'verify LogEntry fields are accessed from consumer closure'
         new ClosureConsumer({
+
             if (get('test1') == '1') {
                 test11 = '11'
                 put('test12', '12') // this is recommended, optimal way to set log entry fields
             }
             remove('test3')
+
+            // and now do some type conversion
+            toInteger('test1', '_testI')
+            toLong('test1', '_testL')
+            toShort('test1', '_testS')
+            toByte('test1', '_testB')
+            toFloat('test1', '_testF')
+            toDouble('test1', '_testD')
+            toBigDecimal('test1', '_testBD')
+
+            put('testDate', '2017-01-01')
+            put('testDateReplace', '2017-01-02')
+            toDate('testDate', new SimpleDateFormat('yyyy-MM-dd'), '_testDate')
+            toDate('testDate', 'yyyy-MM-dd', '_testDateFormat')
+            toDate('testDateReplace', 'yyyy-MM-dd')
         }).consume(logEntry)
+
         '11' == logEntry.get('test11')
         null == logEntry.get('test3')
+
+        1 == logEntry.get('_testI')
+        Short.valueOf('1') == logEntry.get('_testS')
+        Byte.valueOf('1') == logEntry.get('_testB')
+        Float.valueOf(1) == logEntry.get('_testF')
+        Double.valueOf(1) == logEntry.get('_testD')
+        BigDecimal.valueOf(1) == logEntry.get('_testBD')
+
+        new SimpleDateFormat('yyyy-MM-dd').parse('2017-01-01') == logEntry.get('_testDate')
+        new SimpleDateFormat('yyyy-MM-dd').parse('2017-01-01') == logEntry.get('_testDateFormat')
+        new SimpleDateFormat('yyyy-MM-dd').parse('2017-01-02') == logEntry.get('testDateReplace')
     }
 
 }
