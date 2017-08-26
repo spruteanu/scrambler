@@ -20,8 +20,6 @@
 package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
-import groovy.transform.stc.ClosureParams
-import groovy.transform.stc.SimpleType
 
 import java.nio.file.Path
 import java.text.SimpleDateFormat
@@ -85,7 +83,7 @@ class RegexConsumer implements LogConsumer {
         return this
     }
 
-    RegexConsumer group(String groupName, @ClosureParams(value=SimpleType.class, options="org.prismus.scrambler.log.LogEntry") Closure closure) {
+    RegexConsumer group(String groupName, @DelegatesTo(LogEntry) Closure closure) {
         return group(groupName, new ClosureConsumer(closure))
     }
 
@@ -245,7 +243,7 @@ class RegexConsumer implements LogConsumer {
             return this
         }
 
-        Builder group(String groupName, Closure logEntryClosure) {
+        Builder group(String groupName, @DelegatesTo(LogEntry) Closure logEntryClosure) {
             return group(groupName, new ClosureConsumer(logEntryClosure))
         }
 
@@ -272,6 +270,12 @@ class RegexConsumer implements LogConsumer {
         Builder exception(String groupName) {
             group(groupName, (Integer)null, new ExceptionConsumer(groupName))
             return this
+        }
+
+        Builder match(String groupName, Pattern pattern, @DelegatesTo(Builder) Closure closure = null) {
+            final builder = new Builder(contextBuilder, of(pattern))
+            LogCrawler.checkDelegateClosure(closure, builder)
+            return group(groupName, builder.build())
         }
 
         protected void buildConsumers(RegexConsumer result) {

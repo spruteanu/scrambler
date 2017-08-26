@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap
  * @author Serge Pruteanu
  */
 @CompileStatic
-class LogEntry implements Cloneable {
+class LogEntry extends Expando implements Cloneable {
     public static final String SOURCE_INFO = 'Source'
     String line
 
@@ -93,4 +93,11 @@ class LogEntry implements Cloneable {
         return logValueMap.isEmpty()
     }
 
+    def propertyMissing(String entryKey) {
+        return logValueMap.get(entryKey)
+    }
+
+    void setProperty(String entryKey, Object value) {
+        logValueMap.put(entryKey, value)
+    }
 }

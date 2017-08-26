@@ -31,11 +31,11 @@ class PredicateConsumer implements LogConsumer {
     final LogConsumer consumer
     final Predicate<LogEntry> filter
 
-    PredicateConsumer(Closure filter, Closure consumer) {
+    PredicateConsumer(@DelegatesTo(LogEntry) Closure<Boolean> filter, @DelegatesTo(LogEntry) Closure consumer) {
         this(new ClosurePredicate(filter), new ClosureConsumer(consumer))
     }
 
-    PredicateConsumer(Closure filter, LogConsumer consumer) {
+    PredicateConsumer(@DelegatesTo(LogEntry) Closure<Boolean> filter, LogConsumer consumer) {
         this(new ClosurePredicate(filter), consumer)
     }
 
@@ -51,11 +51,11 @@ class PredicateConsumer implements LogConsumer {
         }
     }
 
-    static PredicateConsumer of(Closure filter, Closure consumer) {
+    static PredicateConsumer of(@DelegatesTo(LogEntry) Closure<Boolean> filter, @DelegatesTo(LogEntry) Closure consumer) {
         return new PredicateConsumer(new ClosurePredicate(filter), new ClosureConsumer(consumer))
     }
 
-    static PredicateConsumer of(Closure filter, LogConsumer consumer) {
+    static PredicateConsumer of(@DelegatesTo(LogEntry) Closure<Boolean> filter, LogConsumer consumer) {
         return new PredicateConsumer(new ClosurePredicate(filter), consumer)
     }
 

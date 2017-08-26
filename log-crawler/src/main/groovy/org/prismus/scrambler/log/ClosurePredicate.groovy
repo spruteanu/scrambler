@@ -28,15 +28,15 @@ import java.util.function.Predicate
  */
 @CompileStatic
 class ClosurePredicate implements Predicate<LogEntry> {
-    final Closure closure
+    final Closure<Boolean> closure
 
-    ClosurePredicate(Closure closure) {
+    ClosurePredicate(@DelegatesTo(LogEntry) Closure<Boolean> closure) {
         this.closure = closure
     }
 
     @Override
     boolean test(LogEntry logEntry) {
-        return closure.call(logEntry)
+        return logEntry.with(closure)
     }
 
 }

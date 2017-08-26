@@ -216,4 +216,25 @@ class LogCrawlerTest extends Specification {
         29 == logEntries.size()
     }
 
+    void 'verify closure predicates and consumers'() {
+        given:
+        final logEntry = new LogEntry(logValueMap: [test1: '1', test2: '2', test3: '3'])
+
+        expect: 'verify LogEntry fields are accessed from predicate closure'
+        new ClosurePredicate({
+            test1 == '1' && get('test1') == '1' // this is recommended, optimal way to get log entry fields
+        }).test(logEntry)
+
+        and: 'verify LogEntry fields are accessed from consumer closure'
+        new ClosureConsumer({
+            if (get('test1') == '1') {
+                test11 = '11'
+                put('test12', '12') // this is recommended, optimal way to set log entry fields
+            }
+            remove('test3')
+        }).consume(logEntry)
+        '11' == logEntry.get('test11')
+        null == logEntry.get('test3')
+    }
+
 }

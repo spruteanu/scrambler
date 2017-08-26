@@ -117,7 +117,7 @@ class LogCrawler implements Iterable<LogEntry> {
         return withConsumer(new PredicateConsumer(predicate, cs))
     }
 
-    LogCrawler filter(Closure predicate, @ClosureParams(value=SimpleType.class, options="org.prismus.scrambler.log.LogEntry") Closure consumer, @ClosureParams(value=SimpleType.class, options="org.prismus.scrambler.log.LogEntry") Closure... consumers) {
+    LogCrawler filter(@DelegatesTo(LogEntry) Closure<Boolean> predicate, @DelegatesTo(LogEntry) Closure consumer, @DelegatesTo(LogEntry) Closure... consumers) {
         def cs = consumers ? ContainerConsumer.of(consumer).addAll(consumers) : new ClosureConsumer(consumer)
         return filter(new ClosurePredicate(predicate), cs)
     }
@@ -318,6 +318,14 @@ class LogCrawler implements Iterable<LogEntry> {
         return results
     }
 
+    protected static void checkDelegateClosure(Closure closure, def builder) {
+        if (closure) {
+            closure.setDelegate(builder)
+            closure.setResolveStrategy(Closure.DELEGATE_ONLY)
+            closure.call()
+        }
+    }
+
     /**
      * @author Serge Pruteanu
      */
@@ -439,7 +447,7 @@ class LogCrawler implements Iterable<LogEntry> {
             return withConsumer(new PredicateConsumer(predicate, cs))
         }
 
-        Builder filter(@ClosureParams(value=SimpleType.class, options="org.prismus.scrambler.log.LogEntry") Closure predicate, Closure consumer, Closure... consumers) {
+        Builder filter(@DelegatesTo(LogEntry) Closure<Boolean> predicate, @DelegatesTo(LogEntry) Closure consumer, @DelegatesTo(LogEntry) Closure... consumers) {
             def cs = consumers ? ContainerConsumer.of(consumer).addAll(consumers) : new ClosureConsumer(consumer)
             return filter(new ClosurePredicate(predicate), cs)
         }
@@ -529,14 +537,6 @@ class LogCrawler implements Iterable<LogEntry> {
                 }
             }
             return this
-        }
-
-        protected static void checkDelegateClosure(Closure closure, def builder) {
-            if (closure) {
-                closure.setDelegate(builder)
-                closure.setResolveStrategy(Closure.DELEGATE_ONLY)
-                closure.call()
-            }
         }
 
         RegexConsumer.Builder regex(Pattern pattern, @DelegatesTo(RegexConsumer.Builder) Closure closure = null) {

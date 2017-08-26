@@ -30,13 +30,13 @@ import groovy.transform.PackageScope
 class ClosureConsumer implements LogConsumer {
     private final Closure closure
 
-    ClosureConsumer(Closure closure) {
+    ClosureConsumer(@DelegatesTo(LogEntry) Closure closure) {
         this.closure = closure
     }
 
     @Override
     void consume(LogEntry entry) {
-        closure.call(entry)
+        entry.with closure
     }
 
 }
