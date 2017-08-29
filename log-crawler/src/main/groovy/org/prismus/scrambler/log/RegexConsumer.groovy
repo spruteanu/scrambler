@@ -280,7 +280,11 @@ class RegexConsumer implements LogConsumer {
 
         protected void buildConsumers(RegexConsumer result) {
             for (Map.Entry<String, List> entry : consumerMap.entrySet()) {
-                result.group(entry.key, newConsumer(entry.value))
+                final consumers = entry.value
+                final groupName = entry.key
+                for (Object consumer : consumers ) {
+                    result.group(groupName, newConsumer(consumer))
+                }
             }
         }
 
