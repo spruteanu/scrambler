@@ -42,7 +42,7 @@ class TableBatchConsumerTest extends Specification {
         given:
         final tableConsumer = TableBatchConsumer.of(dataSource, 'LogEntry')
                 .withCreateTableScript('/h2-sample-schema.sql')
-        final logContext = LogCrawler.builder('/sample-folder-sources-log.groovy').withConsumer(tableConsumer).build()
+        final logContext = LogCrawler.builder('/sample-folder-sources-log.groovy').using(tableConsumer).build()
 
         expect: 'verify table check/creation'
         false == tableConsumer.lookupExistingTables(dataSource).collect {it.toLowerCase()}.contains('logentry')

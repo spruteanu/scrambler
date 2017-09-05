@@ -23,6 +23,7 @@ import groovy.transform.CompileStatic
 
 import java.text.SimpleDateFormat
 import java.util.concurrent.ConcurrentHashMap
+import java.util.regex.Pattern
 
 /**
  * @author Serge Pruteanu
@@ -37,7 +38,7 @@ class LogEntry extends Expando implements Cloneable {
     Object source
     int row
 
-    Map logValueMap = new ConcurrentHashMap()
+    Map<String, Object> logValueMap = new ConcurrentHashMap<String, Object>()
 
     LogEntry() {
     }
@@ -56,7 +57,7 @@ class LogEntry extends Expando implements Cloneable {
         this.row = row
     }
 
-    LogEntry put(Object entryKey, Object value) {
+    LogEntry put(String entryKey, Object value) {
         logValueMap.put(entryKey, value)
         return this
     }
@@ -64,10 +65,19 @@ class LogEntry extends Expando implements Cloneable {
     LogEntry put(MapEntry... entries) {
         if (entries) {
             for (MapEntry entry : entries) {
-                logValueMap.put(entry.key, entry.value)
+                logValueMap.put(entry.key.toString(), entry.value)
             }
         }
         return this
+    }
+
+    LogEntry putAll(Map values) {
+        logValueMap.putAll(values)
+        return this
+    }
+
+    Map match(Pattern pattern, String line) {
+        return RegexConsumer.toMap(pattern, line)
     }
 
     Object get(Object entryKey) {
@@ -96,7 +106,7 @@ class LogEntry extends Expando implements Cloneable {
         return logValueMap.isEmpty()
     }
 
-    LogEntry toInteger(Object entryKey, Object targetEntry = null) {
+    LogEntry toInteger(String entryKey, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
         if (value) {
@@ -105,7 +115,7 @@ class LogEntry extends Expando implements Cloneable {
         return this
     }
 
-    LogEntry toLong(Object entryKey, Object targetEntry = null) {
+    LogEntry toLong(String entryKey, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
         if (value) {
@@ -114,7 +124,7 @@ class LogEntry extends Expando implements Cloneable {
         return this
     }
 
-    LogEntry toShort(Object entryKey, Object targetEntry = null) {
+    LogEntry toShort(String entryKey, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
         if (value) {
@@ -123,7 +133,7 @@ class LogEntry extends Expando implements Cloneable {
         return this
     }
 
-    LogEntry toByte(Object entryKey, Object targetEntry = null) {
+    LogEntry toByte(String entryKey, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
         if (value) {
@@ -132,7 +142,7 @@ class LogEntry extends Expando implements Cloneable {
         return this
     }
 
-    LogEntry toFloat(Object entryKey, Object targetEntry = null) {
+    LogEntry toFloat(String entryKey, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
         if (value) {
@@ -141,7 +151,7 @@ class LogEntry extends Expando implements Cloneable {
         return this
     }
 
-    LogEntry toDouble(Object entryKey, Object targetEntry = null) {
+    LogEntry toDouble(String entryKey, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
         if (value) {
@@ -150,7 +160,7 @@ class LogEntry extends Expando implements Cloneable {
         return this
     }
 
-    LogEntry toBigDecimal(Object entryKey, Object targetEntry = null) {
+    LogEntry toBigDecimal(String entryKey, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
         if (value) {
@@ -159,7 +169,7 @@ class LogEntry extends Expando implements Cloneable {
         return this
     }
 
-    LogEntry toDate(Object entryKey, SimpleDateFormat dateFormat, Object targetEntry = null) {
+    LogEntry toDate(String entryKey, SimpleDateFormat dateFormat, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
         if (value) {
@@ -168,7 +178,7 @@ class LogEntry extends Expando implements Cloneable {
         return this
     }
 
-    LogEntry toDate(Object entryKey, String dateFormat, Object targetEntry = null) {
+    LogEntry toDate(String entryKey, String dateFormat, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
         if (value) {
@@ -187,4 +197,13 @@ class LogEntry extends Expando implements Cloneable {
     void setProperty(String entryKey, Object value) {
         logValueMap.put(entryKey, value)
     }
+
+    Object getAt(String property) {
+        return logValueMap.get(property)
+    }
+
+    void putAt(String key, Object value) {
+        logValueMap.put(key, value)
+    }
+
 }

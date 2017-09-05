@@ -65,4 +65,21 @@ class Utils {
         return resource.endsWith('groovy') ? readResourceText(resource) : resource
     }
 
+    static int indexOfFileFilter(String path) {
+        int idx = -1
+        if (path.matches('[\\*\\?]')) {
+            idx = path.lastIndexOf('/')
+            if (idx < 0) {
+                idx = path.lastIndexOf('\\')
+            }
+            if (idx < 0) {
+                idx = 0
+            }
+        }
+        return idx
+    }
+
+    static String defaultFolderFilter(String path, String fileFilter, String defaultFilter = '*') {
+        return new File(path).isDirectory() && !fileFilter ? fileFilter = defaultFilter : fileFilter
+    }
 }

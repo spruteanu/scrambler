@@ -268,7 +268,7 @@ class Log4jConsumer extends RegexConsumer {
     protected static Map<String, Map<String, String>> extractLog4jConsumerProperties(List<String> lines) {
         final Map<String, Map<String, String>> appenderProps = [:]
         final Set<String> log4jSet = [APPENDER_FILE_PROPERTY, APPENDER_CONVERSION_PATTERN_PROPERTY, 'builder', 'consumer'] as Set
-        final filePattern = ~/([^\/\\]+\..+)/
+        final filePattern = ~/(?<fileFilter>[^\/\\]+\..+)/
 
         for (String line : lines) {
             if (!line.startsWith('log4j.appender.')) {
@@ -284,7 +284,7 @@ class Log4jConsumer extends RegexConsumer {
                 final String cat
                 if (apps.length == 2 && log4jSet.contains(apps[1])) {
                     cat = apps[1]
-                    value = toMap(filePattern, value, [fileFilter: 1]).get('fileFilter').toString() + '*'
+                    value = toMap(filePattern, value).get('fileFilter').toString() + '*'
                 } else if (apps.length == 3) {
                     if (log4jSet.contains(apps[1])) {
                         cat = apps[1]

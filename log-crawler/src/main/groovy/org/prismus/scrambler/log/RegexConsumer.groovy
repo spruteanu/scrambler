@@ -162,6 +162,9 @@ class RegexConsumer implements LogConsumer {
     }
 
     static Map<String, ?> toMap(Pattern pattern, String line, String... groups) {
+        if (!groups) {
+            groups = lookupNamedGroups(pattern.pattern()).toArray(new String[0])
+        }
         int i = 1
         return toMap(pattern, line, groups.collectEntries { [it, i++] })
     }
@@ -191,24 +194,40 @@ class RegexConsumer implements LogConsumer {
         protected final Map<String, List> consumerMap = new LinkedHashMap<>()
         private final Map<String, Integer> groupIndexMap  = new LinkedHashMap<>()
 
-        File path
         String pattern
-        String fileFilter
+        String path
+        private String fileFilter
+
         Comparator<Path> fileSorter = LogCrawler.CREATED_DT_COMPARATOR
 
         Builder() {
         }
 
-        void path(String path) {
-            this.path = new File(path)
+        String getFileFilter() {
+            return fileFilter
+        }
+
+        Builder path(String path) {
+            setPath(path)
+            return this
+        }
+
+        String getPath() {
+            return path
+        }
+
+        void setPath(String path) {
+            int idx = Utils.indexOfFileFilter(path)
+            if (idx >= 0) {
+                fileFilter = path.substring(idx, path.length())
+                path = path.substring(0, idx)
+            }
+            this.path = path
+            this.fileFilter = Utils.defaultFolderFilter(path, fileFilter)
         }
 
         void pattern(String pattern) {
             this.pattern = pattern
-        }
-
-        void fileFilter(String fileFilter) {
-            this.fileFilter = fileFilter
         }
 
         void fileSorter(Comparator<Path> fileSorter) {

@@ -90,7 +90,7 @@ class CsvWriterConsumer implements LogConsumer, Closeable {
 
     @Override
     void consume(LogEntry entry) {
-        final values = new ArrayList<String>(columns.size())
+        final values = new ArrayList(columns.size())
         final logValueMap = entry.logValueMap
         for (String column : columns) {
             values.add(Objects.toString(logValueMap.get(column)?.toString(), ''))

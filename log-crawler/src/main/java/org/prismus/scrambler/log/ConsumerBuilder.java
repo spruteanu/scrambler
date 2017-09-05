@@ -41,7 +41,7 @@ public class ConsumerBuilder<T extends LogConsumer> {
         this.args = args;
     }
 
-    ConsumerBuilder withConsumer(T consumer) {
+    ConsumerBuilder using(T consumer) {
         this.consumer = consumer;
         return this;
     }

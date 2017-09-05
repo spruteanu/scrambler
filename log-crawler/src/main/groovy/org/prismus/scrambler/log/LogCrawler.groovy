@@ -21,8 +21,6 @@ package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
-import groovy.transform.stc.ClosureParams
-import groovy.transform.stc.SimpleType
 import groovy.util.logging.Log
 import org.apache.commons.lang3.StringUtils
 import org.codehaus.groovy.control.CompilerConfiguration
@@ -90,7 +88,7 @@ class LogCrawler implements Iterable<LogEntry> {
         }
     }
 
-    LogCrawler withConsumer(LogConsumer consumer) {
+    LogCrawler using(LogConsumer consumer) {
         consumers.add(consumer)
         checkCloseable(consumer)
         if (consumer instanceof CsvWriterConsumer) {
@@ -114,7 +112,7 @@ class LogCrawler implements Iterable<LogEntry> {
 
     LogCrawler filter(Predicate predicate, LogConsumer consumer, LogConsumer... consumers) {
         def cs = consumers ? ContainerConsumer.of(consumer).addAll(consumers) : consumer
-        return withConsumer(new PredicateConsumer(predicate, cs))
+        return using(new PredicateConsumer(predicate, cs))
     }
 
     LogCrawler filter(@DelegatesTo(LogEntry) Closure<Boolean> predicate, @DelegatesTo(LogEntry) Closure consumer, @DelegatesTo(LogEntry) Closure... consumers) {
@@ -123,7 +121,7 @@ class LogCrawler implements Iterable<LogEntry> {
     }
 
     LogCrawler output(DataSource dataSource, String tableName = 'LogEntry', String... columns) {
-        return withConsumer(TableBatchConsumer.of(dataSource, tableName, columns))
+        return using(TableBatchConsumer.of(dataSource, tableName, columns))
     }
 
     protected void consume(LogEntry logEntry, LogConsumer sourceConsumer) {
@@ -399,7 +397,7 @@ class LogCrawler implements Iterable<LogEntry> {
             for (ConsumerBuilder builder : builders) {
                 final logConsumer = builder.build()
                 if (logConsumer) {
-                    logCrawler.withConsumer(logConsumer)
+                    logCrawler.using(logConsumer)
                 }
             }
         }
@@ -433,18 +431,18 @@ class LogCrawler implements Iterable<LogEntry> {
             return this
         }
 
-        Builder withConsumer(LogConsumer consumer) {
-            builders.add(new ConsumerBuilder().withConsumer(consumer))
+        Builder using(LogConsumer consumer) {
+            builders.add(new ConsumerBuilder().using(consumer))
             return this
         }
 
-        Builder withConsumer(@ClosureParams(value=SimpleType.class, options="org.prismus.scrambler.log.LogEntry") Closure logEntryClosure) {
-            return withConsumer(new ClosureConsumer(logEntryClosure))
+        Builder using(@DelegatesTo(LogEntry) Closure logEntryClosure) {
+            return using(new ClosureConsumer(logEntryClosure))
         }
 
         Builder filter(Predicate predicate, LogConsumer consumer, LogConsumer... consumers) {
             def cs = consumers ? ContainerConsumer.of(consumer).addAll(consumers) : consumer
-            return withConsumer(new PredicateConsumer(predicate, cs))
+            return using(new PredicateConsumer(predicate, cs))
         }
 
         Builder filter(@DelegatesTo(LogEntry) Closure<Boolean> predicate, @DelegatesTo(LogEntry) Closure consumer, @DelegatesTo(LogEntry) Closure... consumers) {
@@ -460,11 +458,11 @@ class LogCrawler implements Iterable<LogEntry> {
         }
 
         Builder output(Writer writer, String... columns) {
-            return withConsumer(CsvWriterConsumer.of(writer, columns))
+            return using(CsvWriterConsumer.of(writer, columns))
         }
 
         Builder output(File writer, String... columns) {
-            return withConsumer(CsvWriterConsumer.of(writer, columns))
+            return using(CsvWriterConsumer.of(writer, columns))
         }
 
         CsvWriterConsumer.Builder output(File file, @DelegatesTo(CsvWriterConsumer.Builder) Closure closure = null) {
@@ -475,7 +473,7 @@ class LogCrawler implements Iterable<LogEntry> {
         }
 
         Builder output(String writer, String... columns) {
-            return withConsumer(CsvWriterConsumer.of(writer, columns))
+            return using(CsvWriterConsumer.of(writer, columns))
         }
 
         CsvWriterConsumer.Builder output(String filePath, @DelegatesTo(CsvWriterConsumer.Builder) Closure closure = null) {
@@ -486,11 +484,11 @@ class LogCrawler implements Iterable<LogEntry> {
         }
 
         Builder date(SimpleDateFormat dateFormat, String group = DateConsumer.DATE) {
-            return withConsumer(DateConsumer.of(dateFormat, group))
+            return using(DateConsumer.of(dateFormat, group))
         }
 
         Builder date(String dateFormat, String group = DateConsumer.DATE) {
-            return withConsumer(DateConsumer.of(dateFormat, group))
+            return using(DateConsumer.of(dateFormat, group))
         }
 
         protected void addSource(LogEntry logEntry) {
@@ -543,7 +541,7 @@ class LogCrawler implements Iterable<LogEntry> {
             final builder = new RegexConsumer.Builder(this, RegexConsumer.of(pattern))
             checkDelegateClosure(closure, builder)
             if (builder.path) {
-                source(builder, pattern.pattern(), builder.path, builder.fileFilter, builder.fileSorter)
+                source(builder, pattern.pattern(), new File(builder.path), builder.fileFilter, builder.fileSorter)
             } else {
                 sourceConsumer(builder, pattern.pattern())
             }
@@ -555,7 +553,7 @@ class LogCrawler implements Iterable<LogEntry> {
             final builder = new RegexConsumer.Builder(this, RegexConsumer.of(regEx, flags))
             checkDelegateClosure(closure, builder)
             if (builder.path) {
-                source(builder, regEx, builder.path, builder.fileFilter, builder.fileSorter)
+                source(builder, regEx, new File(builder.path), builder.fileFilter, builder.fileSorter)
             } else {
                 sourceConsumer(builder, regEx)
             }
@@ -569,7 +567,7 @@ class LogCrawler implements Iterable<LogEntry> {
                 throw new IllegalArgumentException('Regex pattern must be defined, please set it in configuration')
             }
             if (builder.path) {
-                source(builder, builder.pattern, builder.path, builder.fileFilter, builder.fileSorter)
+                source(builder, builder.pattern, new File(builder.path), builder.fileFilter, builder.fileSorter)
             } else {
                 sourceConsumer(builder, builder.pattern)
             }
@@ -580,7 +578,7 @@ class LogCrawler implements Iterable<LogEntry> {
             final builder = new Log4jConsumer.Builder(this, Log4jConsumer.of(conversionPattern))
             checkDelegateClosure(closure, builder)
             if (builder.path) {
-                source(builder, conversionPattern, builder.path, builder.fileFilter, builder.fileSorter)
+                source(builder, conversionPattern, new File(builder.path), builder.fileFilter, builder.fileSorter)
             } else {
                 sourceConsumer(builder, conversionPattern)
             }
@@ -612,10 +610,10 @@ class LogCrawler implements Iterable<LogEntry> {
         }
 
         Log4jConsumer.Builder log4j(String folder, String conversionPattern,
-                                    String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR,
+                                    Comparator<Path> fileSorter = CREATED_DT_COMPARATOR,
                                     @DelegatesTo(Log4jConsumer.Builder) Closure closure = null) {
-            final builder = log4j(conversionPattern, closure)
-            source(builder, conversionPattern, new File(folder), fileFilter, fileSorter)
+            final builder = log4j(conversionPattern, closure).path(folder) as Log4jConsumer.Builder
+            source(builder, conversionPattern, new File(folder), builder.fileFilter, fileSorter)
             return builder
         }
 
@@ -660,11 +658,18 @@ class LogCrawler implements Iterable<LogEntry> {
             return this
         }
 
-        Builder source(String path, LogConsumer consumer,
-                       String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+        Builder source(String path, LogConsumer consumer, Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
+            int idx = Utils.indexOfFileFilter(path)
+            String fileFilter = null
+            if (idx >= 0) {
+                fileFilter = path.substring(idx, path.length())
+                path = path.substring(0, idx)
+            }
+            fileFilter = Utils.defaultFolderFilter(path, fileFilter, '*')
+
             final folder = new File(path)
             final files = listFiles(folder, fileFilter, fileSorter)
-            final builder = withConsumer(consumer)
+            final builder = using(consumer)
             for (File file : files) {
                 register(LineReader.newLogSource(new LogEntry(source: folder), file.path), builder)
             }

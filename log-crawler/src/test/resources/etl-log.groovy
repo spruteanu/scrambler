@@ -10,31 +10,50 @@ import java.util.regex.Pattern
 /**
  * @author Serge Pruteanu
  */
-//log4j {
-//    path 'D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs/'
-//    pattern 'D:/work/tm/bugs/Case124586_BCBSNC/RTETLLogs/TMLogger.cfg'
-//    message new EtlMessageConsumer()
-//}
-
 log4j {
     path 'D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs/'
-    pattern '%d %5p %37c - %m%n'
-    fileFilter 'TM*.log*'
-    message RegexConsumer.of(~/(.*)FileID[: =\)]{1,}\s*(\d+)(.+)\s+(\d+)\s+ms/)
-            .groups('Action', 'FileID', 'Execution', 'ExecutionTime')
-            .group('Execution', { LogEntry e ->
-        if (!e.get('Action')) {
-            e.put('Action', e.get('Execution'))
+    pattern 'D:/work/tm/bugs/Case124586_BCBSNC/RTETLLogs/TMLogger.cfg'
+    message {
+        final message = get('Message') as String
+        if (message.endsWith('second(s).')) {
+            putAll match(~/.+\s+(?<Action>\w+\s+to process the file)\s+(?<PackageID>.+)\s+\((?<TransmissionSID>\d+)\).+(?<Hours>\d+) hour\(s\)\s+(?<Minutes>\d+) minute\(s\)\s+(?<Seconds>.+) second\(s\)./, message)
+            put 'ExecutionTime', toFloat('Hours') * 3600 + toFloat('Minutes') * 60 + toFloat('Seconds')
+        } else if (message.startsWith('Move failed package')) {
+            put 'Action', 'Failed move package'
+            putAll match(~/.+ZIP_(?<PackageID>.+) to Failed Queue./, message)
+        } else if (message.startsWith('Subcomponent')) {
+            put 'Action', 'Failed processing'
+            putAll match(~/.+\s+(?<PackageID>.+)\s+\((?<TransmissionSID>\d+)\)/, message)
+        } else if (message.startsWith('Created Transmission')) {
+            put 'Action', 'Created Transmission'
+            putAll match(~/.+:\s+(?<TransmissionSID>\d+)\s+for ETL package: (?:ID:|ZIP_)(?<PackageID>.*)/, message)
+        } else {
+            final map = match(~/.+started to process the transmission (?<PackageID>.+)\s+\((?<TransmissionSID>\d+)\)/, message)
+            if (map) {
+                put 'Action', 'Started transmission processing'
+                putAll map
+            }
         }
-        e.remove('Execution')
+    }
+}
+
+log4j {
+    path 'D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs/TM*.log*'
+    pattern '%d %5p %37c - %m%n'
+    message match(~/(?<Action>.*)FileID[: =\)]{1,}\s*(?<FileID>\d+)(?<Execution>.+)\s+(?<ExecutionTime>\d+)\s+ms/, {
+        group 'Execution', {
+            if (!get('Action')) {
+                put 'Action', get('Execution')
+            }
+            remove 'Execution'
+        }
     })
 }
 
 //parallel()
 
-output('D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs-log.csv',
+output'D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs-log.csv',
             Log4jConsumer.DATE, 'Action', 'TransmissionSID', 'PackageID', 'FileID', 'ExecutionTime', Log4jConsumer.THREAD_NAME, LogEntry.SOURCE_INFO, Log4jConsumer.MESSAGE
-)
 
 @CompileStatic
 class EtlMessageConsumer implements LogConsumer {

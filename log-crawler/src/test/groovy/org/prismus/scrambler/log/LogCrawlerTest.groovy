@@ -46,7 +46,7 @@ class LogCrawlerTest extends Specification {
                 .log4j(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',)
                 .date().exception().crawler()
                 .output(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
-                .withConsumer({ listCollector.add(it) })
+                .using({ listCollector.add(it) })
                 .build()
         logContext.consume()
 
@@ -209,7 +209,7 @@ class LogCrawlerTest extends Specification {
         final logCrawler = LogCrawler.builder()
             .log4j(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).crawler()
             .log4j(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).crawler()
-            .withConsumer(new ArrayListCollector(logEntries))
+            .using(new ArrayListCollector(logEntries))
             .parallel()
             .build()
         logCrawler.consume()
@@ -229,12 +229,19 @@ class LogCrawlerTest extends Specification {
 
         and: 'verify LogEntry fields are accessed from consumer closure'
         new ClosureConsumer({
-
             if (get('test1') == '1') {
                 test11 = '11'
                 put('test12', '12') // this is recommended, optimal way to set log entry fields
             }
             remove('test3')
+
+            if ("$test11" == '11') {
+                test13 = '13'
+            }
+
+            if ("$test11".startsWith("11")) {
+                it['test14'] = '14'
+            }
 
             // and now do some type conversion
             toInteger('test1', '_testI')
@@ -253,6 +260,8 @@ class LogCrawlerTest extends Specification {
         }).consume(logEntry)
 
         '11' == logEntry.get('test11')
+        '13' == logEntry.get('test13')
+        '14' == logEntry.get('test14')
         null == logEntry.get('test3')
 
         1 == logEntry.get('_testI')

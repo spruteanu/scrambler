@@ -1,7 +1,6 @@
 log4j {
-    path 'D:/work/tm/bugs/Case122498_BCBSNC'
+    path 'D:/work/tm/bugs/Case122498_BCBSNC/TM*.log*'
     pattern '%d %5p %37c [%t] - %m%n'
-    fileFilter 'TM*.log*'
     message match(~/(?<Action>.*)FileID[: =\)]{1,}\s*(?<FileID>\d+)(?<Execution>.+)\s+(?<ExecutionTime>\d+)\s+ms/, {
         group 'Execution', {
             if (!get('Action')) {

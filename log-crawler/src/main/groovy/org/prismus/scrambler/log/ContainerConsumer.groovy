@@ -36,24 +36,24 @@ class ContainerConsumer implements LogConsumer {
         this.consumers = consumers
     }
 
-    ContainerConsumer withConsumer(LogConsumer logConsumer) {
+    ContainerConsumer using(LogConsumer logConsumer) {
         consumers.add(logConsumer)
         return this
     }
 
-    ContainerConsumer withConsumers(LogConsumer... logConsumers) {
+    ContainerConsumer using(LogConsumer... logConsumers) {
         this.consumers = logConsumers.toList()
         return this
     }
 
-    ContainerConsumer withConsumers(Closure... logConsumers) {
+    ContainerConsumer using(Closure... logConsumers) {
         for (Closure closure : logConsumers) {
-            withConsumer(new ClosureConsumer(closure))
+            using(new ClosureConsumer(closure))
         }
         return this
     }
 
-    ContainerConsumer withConsumers(List<LogConsumer> logConsumers) {
+    ContainerConsumer using(List<LogConsumer> logConsumers) {
         this.consumers = logConsumers
         return this
     }
@@ -87,10 +87,10 @@ class ContainerConsumer implements LogConsumer {
     }
 
     static ContainerConsumer of(LogConsumer... logConsumers) {
-        return new ContainerConsumer().withConsumers(logConsumers)
+        return new ContainerConsumer().using(logConsumers)
     }
 
     static ContainerConsumer of(Closure... logConsumers) {
-        return new ContainerConsumer().withConsumers(logConsumers)
+        return new ContainerConsumer().using(logConsumers)
     }
 }
