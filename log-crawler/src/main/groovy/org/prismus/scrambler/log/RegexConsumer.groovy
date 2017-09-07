@@ -292,9 +292,15 @@ class RegexConsumer implements LogConsumer {
         }
 
         Builder match(String groupName, Pattern pattern, @DelegatesTo(Builder) Closure closure = null) {
-            final builder = new Builder(contextBuilder, of(pattern))
+            final builder = new RegexConsumer.Builder(contextBuilder, of(pattern))
             LogCrawler.checkDelegateClosure(closure, builder)
             return group(groupName, builder.build())
+        }
+
+        RegexConsumer match(Pattern pattern, @DelegatesTo(Builder) Closure closure = null) {
+            final builder = new RegexConsumer.Builder(contextBuilder, of(pattern))
+            LogCrawler.checkDelegateClosure(closure, builder)
+            return builder.build()
         }
 
         protected void buildConsumers(RegexConsumer result) {

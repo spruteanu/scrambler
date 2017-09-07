@@ -366,6 +366,16 @@ class Log4jConsumer extends RegexConsumer {
             return message(builder.build())
         }
 
+        Builder message(String pattern, @DelegatesTo(RegexConsumer.Builder) Closure closure = null) {
+            return message(Pattern.compile(pattern), closure)
+        }
+
+        Builder message(Pattern pattern, @DelegatesTo(RegexConsumer.Builder) Closure closure = null) {
+            final builder = new RegexConsumer.Builder(contextBuilder, of(pattern))
+            LogCrawler.checkDelegateClosure(closure, builder)
+            return message(builder)
+        }
+
         RegexConsumer match(Pattern pattern, @DelegatesTo(RegexConsumer.Builder) Closure closure = null) {
             final builder = new RegexConsumer.Builder(contextBuilder, of(pattern))
             LogCrawler.checkDelegateClosure(closure, builder)
