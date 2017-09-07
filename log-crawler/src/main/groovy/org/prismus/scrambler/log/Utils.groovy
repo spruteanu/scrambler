@@ -67,13 +67,15 @@ class Utils {
 
     static int indexOfFileFilter(String path) {
         int idx = -1
-        if (path.matches('[\\*\\?]')) {
+        if (path.matches('.+[\\*\\?]')) {// todo Serge: fix to consider matching sub-folders
             idx = path.lastIndexOf('/')
             if (idx < 0) {
                 idx = path.lastIndexOf('\\')
             }
             if (idx < 0) {
                 idx = 0
+            } else {
+                idx++
             }
         }
         return idx
