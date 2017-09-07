@@ -244,19 +244,19 @@ class LogCrawlerTest extends Specification {
             }
 
             // and now do some type conversion
-            toInteger('test1', '_testI')
-            toLong('test1', '_testL')
-            toShort('test1', '_testS')
-            toByte('test1', '_testB')
-            toFloat('test1', '_testF')
-            toDouble('test1', '_testD')
-            toBigDecimal('test1', '_testBD')
+            putInteger('test1', '_testI')
+            putLong('test1', '_testL')
+            putShort('test1', '_testS')
+            putByte('test1', '_testB')
+            putFloat('test1', '_testF')
+            putDouble('test1', '_testD')
+            putBigDecimal('test1', '_testBD')
 
             put('testDate', '2017-01-01')
             put('testDateReplace', '2017-01-02')
-            toDate('testDate', new SimpleDateFormat('yyyy-MM-dd'), '_testDate')
-            toDate('testDate', 'yyyy-MM-dd', '_testDateFormat')
-            toDate('testDateReplace', 'yyyy-MM-dd')
+            putDate('testDate', new SimpleDateFormat('yyyy-MM-dd'), '_testDate')
+            putDate('testDate', 'yyyy-MM-dd', '_testDateFormat')
+            putDate('testDateReplace', 'yyyy-MM-dd')
         }).consume(logEntry)
 
         '11' == logEntry.get('test11')

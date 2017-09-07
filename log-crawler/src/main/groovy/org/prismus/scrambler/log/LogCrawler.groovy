@@ -23,6 +23,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 import groovy.util.logging.Log
 import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.time.DurationFormatUtils
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.codehaus.groovy.runtime.InvokerHelper
@@ -833,7 +834,9 @@ WHERE:
 
     static void main(String[] args) {
         try {
+            final startTime = System.currentTimeMillis()
             builder(args).build().consume()
+            log.info("Crawled using: '${args.join(', ')}'; Execution time: ${DurationFormatUtils.formatDurationWords(System.currentTimeMillis() - startTime, true, true)}")
         } catch (IllegalArgumentException | UnsupportedOperationException ignore) {
             System.err.println(ignore)
             usage()

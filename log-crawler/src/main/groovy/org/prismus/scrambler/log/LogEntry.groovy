@@ -71,22 +71,32 @@ class LogEntry extends Expando implements Cloneable {
         return this
     }
 
-    LogEntry putAll(Map values) {
+    LogEntry putAll(Map<String, ?> values) {
         logValueMap.putAll(values)
         return this
     }
 
-    Map match(Pattern pattern, String line) {
-        return RegexConsumer.toMap(pattern, line)
+    boolean match(String entryKey, Pattern pattern, @DelegatesTo(LogEntry) Closure closure = null) {
+        final line = get(entryKey)
+        if (!line) {
+            return false
+        }
+        final map = RegexConsumer.toMap(pattern, line.toString())
+        putAll map
+        final matched = map.size() > 0
+        if (matched && closure) {
+            with closure
+        }
+        return matched
     }
 
-    Object get(Object entryKey) {
+    Object get(String entryKey) {
         return logValueMap.get(entryKey)
     }
 
-    LogEntry remove(Object... keys) {
+    LogEntry remove(String... keys) {
         if (keys) {
-            for (Object key : keys) {
+            for (String key : keys) {
                 logValueMap.remove(key)
             }
         }
@@ -106,88 +116,106 @@ class LogEntry extends Expando implements Cloneable {
         return logValueMap.isEmpty()
     }
 
-    LogEntry toInteger(String entryKey, String targetEntry = null) {
+    Integer putInteger(String entryKey, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
+        Integer var = null
         if (value) {
-            logValueMap.put(target, value as Integer)
+            var = value as Integer
+            logValueMap.put(target, var)
         }
-        return this
+        return var
     }
 
-    LogEntry toLong(String entryKey, String targetEntry = null) {
+    Long putLong(String entryKey, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
+        Long var = null
         if (value) {
-            logValueMap.put(target, value as Long)
+            var = value as Long
+            logValueMap.put(target, var)
         }
-        return this
+        return var
     }
 
-    LogEntry toShort(String entryKey, String targetEntry = null) {
+    Short putShort(String entryKey, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
+        Short var = null
         if (value) {
-            logValueMap.put(target, value as Short)
+            var = value as Short
+            logValueMap.put(target, var)
         }
-        return this
+        return var
     }
 
-    LogEntry toByte(String entryKey, String targetEntry = null) {
+    Byte putByte(String entryKey, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
+        Byte var = null
         if (value) {
-            logValueMap.put(target, value as Byte)
+            var = value as Byte
+            logValueMap.put(target, var)
         }
-        return this
+        return var
     }
 
-    LogEntry toFloat(String entryKey, String targetEntry = null) {
+    Float putFloat(String entryKey, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
+        Float var = null
         if (value) {
-            logValueMap.put(target, value as Float)
+            var = value as Float
+            logValueMap.put(target, var)
         }
-        return this
+        return var
     }
 
-    LogEntry toDouble(String entryKey, String targetEntry = null) {
+    Double putDouble(String entryKey, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
+        Double var = null
         if (value) {
-            logValueMap.put(target, value as Double)
+            var = value as Double
+            logValueMap.put(target, var)
         }
-        return this
+        return var
     }
 
-    LogEntry toBigDecimal(String entryKey, String targetEntry = null) {
+    BigDecimal putBigDecimal(String entryKey, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
+        BigDecimal var = null
         if (value) {
-            logValueMap.put(target, value as BigDecimal)
+            var = value as BigDecimal
+            logValueMap.put(target, var)
         }
-        return this
+        return var
     }
 
-    LogEntry toDate(String entryKey, SimpleDateFormat dateFormat, String targetEntry = null) {
+    Date putDate(String entryKey, SimpleDateFormat dateFormat, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
+        Date var = null
         if (value) {
-            logValueMap.put(target, dateFormat.parse(value.toString()))
+            var = dateFormat.parse(value.toString())
+            logValueMap.put(target, var)
         }
-        return this
+        return var
     }
 
-    LogEntry toDate(String entryKey, String dateFormat, String targetEntry = null) {
+    Date putDate(String entryKey, String dateFormat, String targetEntry = null) {
         final target = targetEntry ?: entryKey
         final value = logValueMap.get(entryKey)
+        Date var = null
         if (value) {
             if (!dateFormatMap.containsKey(entryKey)) {
                 dateFormatMap.put(entryKey, new SimpleDateFormat(dateFormat))
             }
-            logValueMap.put(target, dateFormatMap.get(entryKey).parse(value.toString()))
+            var = dateFormatMap.get(entryKey).parse(value.toString())
+            logValueMap.put(target, var)
         }
-        return this
+        return var
     }
 
     def propertyMissing(String entryKey) {
