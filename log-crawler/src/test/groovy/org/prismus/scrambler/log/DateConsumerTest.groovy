@@ -34,7 +34,7 @@ class DateConsumerTest extends Specification {
         processor.consume(entry)
 
         expect:
-        Date.isInstance(entry.get(Log4jConsumer.DATE))
+        Date.isInstance(entry._get(Log4jConsumer.DATE))
     }
 
 }

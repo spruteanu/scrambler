@@ -4,7 +4,7 @@ log4j {
     path 'D:/work/tm/bugs/Case122498_BCBSNC/TM*.log*'
     pattern '%d %5p %37c [%t] - %m%n'
     message {
-        if (get(Log4jConsumer.EVENT_CATEGORY).toString().startsWith('com.edifecs.shared.filestore')) {
+        if (get(Log4jConsumer.EVENT_CATEGORY).startsWith('com.edifecs.shared.filestore')) {
             match 'Message', ~/(?<Action>.*)FileID[: =\)]{1,}\s*(?<FileID>\d+)(?<Execution>.+)\s+(?<ExecutionTime>\d+)\s+ms/, {
                 if (!get('Action')) {
                     put 'Action', get('Execution')

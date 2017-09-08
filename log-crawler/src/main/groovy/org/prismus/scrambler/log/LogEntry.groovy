@@ -90,7 +90,11 @@ class LogEntry extends Expando implements Cloneable {
         return matched
     }
 
-    Object get(String entryKey) {
+    String get(String entryKey) {
+        return logValueMap.get(entryKey)
+    }
+
+    Object _get(String entryKey) {
         return logValueMap.get(entryKey)
     }
 

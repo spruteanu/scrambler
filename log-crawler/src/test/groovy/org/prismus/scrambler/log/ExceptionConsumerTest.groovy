@@ -45,11 +45,11 @@ java.lang.NullPointerException: Missed a null object check
     at com.example.myproject.Bootstrap.main(Bootstrap.java:14)''' == logEntry.get(ExceptionConsumer.EXCEPTION)
         'java.lang.NullPointerException' == logEntry.get(ExceptionConsumer.EXCEPTION_CLASS)
         'Missed a null object check' == logEntry.get(ExceptionConsumer.EXCEPTION_MESSAGE)
-        3 == logEntry.get(ExceptionConsumer.EXCEPTION_TRACES).size()
+        3 == logEntry._get(ExceptionConsumer.EXCEPTION_TRACES).size()
         [(ExceptionConsumer.CALLER_CLASS_METHOD): 'com.example.myproject.Book.getTitle',
          (ExceptionConsumer.SOURCE_NAME)        : 'Book.java',
          (ExceptionConsumer.SOURCE_LINE)        : '16'
-        ] == logEntry.get(ExceptionConsumer.EXCEPTION_TRACES)[0]
+        ] == logEntry._get(ExceptionConsumer.EXCEPTION_TRACES)[0]
     }
 
     void 'verify message consumer different line breaks /windows/linux/macos/'() {

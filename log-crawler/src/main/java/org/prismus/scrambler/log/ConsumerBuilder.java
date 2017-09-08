@@ -63,7 +63,7 @@ public class ConsumerBuilder<T extends LogConsumer> {
         } else if (object instanceof ConsumerBuilder) {
             result = (T) ((ConsumerBuilder) object).build();
         } else {
-            result = (T) contextBuilder.get(object, objArgs);
+            result = (T) contextBuilder.getConsumer(object, objArgs);
         }
         if (consumerProperties != null) {
             DefaultObjectProvider.setInstanceProperties(result, consumerProperties);

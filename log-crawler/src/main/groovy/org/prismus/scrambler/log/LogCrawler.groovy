@@ -36,6 +36,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.attribute.BasicFileAttributes
 import java.text.SimpleDateFormat
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Predicate
@@ -135,13 +136,13 @@ class LogCrawler implements Iterable<LogEntry> {
         }
     }
 
-    protected void consume(LineReader lineReader, String sourceName, LogConsumer sourceConsumer) {
+    protected int consume(LineReader lineReader, String sourceName, LogConsumer sourceConsumer) {
         try {
             LogEntry lastEntry = null
             int currentRow = 0
             int nEntries = 0
             String line
-            log.finest("Consuming '$sourceName' using: '$sourceConsumer'")
+            log.info("Consuming '$sourceName'")
             while ((line = lineReader.readLine()) != null) {
                 final logEntry = new LogEntry(sourceName, line, ++currentRow)
                 sourceConsumer.consume(logEntry)
@@ -156,7 +157,8 @@ class LogCrawler implements Iterable<LogEntry> {
                 }
             }
             consume(lastEntry, sourceConsumer)
-            log.finest("Done consuming '$sourceName' using: '$sourceConsumer'. Processed '$currentRow' rows, consumed '$nEntries' entries")
+            log.info("Done consuming '$sourceName'. Processed '$currentRow' rows, consumed '$nEntries' entries")
+            return nEntries
         } finally {
             Utils.closeQuietly(lineReader)
         }
@@ -227,7 +229,7 @@ class LogCrawler implements Iterable<LogEntry> {
                 lineReader = tuple.get(0) as LineReader
                 sourceName = tuple.get(1)
                 sourceConsumer = tuple.get(2) as LogConsumer
-                log.finest("Consuming '$sourceName' using: '$sourceConsumer'")
+                log.info("Consuming '$sourceName'")
                 doNext(true)
             }
         }
@@ -265,7 +267,7 @@ class LogCrawler implements Iterable<LogEntry> {
                 consume(lastEntry, sourceConsumer)
                 result = lastEntry
                 if (line == null) {
-                    log.finest("Done consuming '$sourceName' using: '$sourceConsumer'. Processed '$currentRow' rows, consumed '$nEntries' entries")
+                    log.info("Done consuming '$sourceName'. Processed '$currentRow' rows, consumed '$nEntries' entries")
                     Utils.closeQuietly(lineReader)
                     lastEntry = null
                 }
@@ -304,15 +306,15 @@ class LogCrawler implements Iterable<LogEntry> {
 
     protected static List<File> listFiles(File folder, String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
         assert folder.exists() && folder.isDirectory(), "Folder: '$folder.path' doesn't exists"
-        log.finest("Scanning '$folder.path' for logging sources using: '$fileFilter' filter")
+        log.info("Scanning '$folder.path' for logging sources using: '$fileFilter' filter")
         final Pattern filePattern = ~/${fileFilterToRegex(fileFilter)}/
         final results = Files.find(Paths.get(folder.toURI()), 999,
                 { Path p, BasicFileAttributes bfa -> bfa.isRegularFile() && filePattern.matcher(p.getFileName().toString()).matches() }, FileVisitOption.FOLLOW_LINKS
         ).sorted(fileSorter).map({ it.toFile() }).collect(Collectors.toList())
         if (results) {
-            log.finest("Found '${results.size()}' files in '$folder.path'")
+            log.info("Found '${results.size()}' files in '$folder.path'")
         } else {
-            log.finest("No files found in '$folder.path' using '$fileFilter' filter")
+            log.info("No files found in '$folder.path' using '$fileFilter' filter")
         }
         return results
     }
@@ -403,12 +405,17 @@ class LogCrawler implements Iterable<LogEntry> {
             }
         }
 
-        LogConsumer get(Object consumerId, Object... args) {
+        LogConsumer getConsumer(Object consumerId, Object... args) {
             return provider.get(consumerId, args) as LogConsumer
         }
 
         Builder parallel(int awaitTimeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
             builders.add(AsynchronousJobs.builder(logCrawler).withExecutorService(awaitTimeout, unit))
+            return this
+        }
+
+        Builder parallel(ExecutorService executorService, int awaitTimeout = 0, TimeUnit unit = TimeUnit.MILLISECONDS) {
+            builders.add(AsynchronousJobs.builder(logCrawler).withExecutorService(executorService, awaitTimeout, unit))
             return this
         }
 

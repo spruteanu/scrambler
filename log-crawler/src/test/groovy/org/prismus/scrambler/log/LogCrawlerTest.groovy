@@ -264,16 +264,16 @@ class LogCrawlerTest extends Specification {
         '14' == logEntry.get('test14')
         null == logEntry.get('test3')
 
-        1 == logEntry.get('_testI')
-        Short.valueOf('1') == logEntry.get('_testS')
-        Byte.valueOf('1') == logEntry.get('_testB')
-        Float.valueOf(1) == logEntry.get('_testF')
-        Double.valueOf(1) == logEntry.get('_testD')
-        BigDecimal.valueOf(1) == logEntry.get('_testBD')
+        1 == logEntry._get('_testI')
+        Short.valueOf('1') == logEntry._get('_testS')
+        Byte.valueOf('1') == logEntry._get('_testB')
+        Float.valueOf(1) == logEntry._get('_testF')
+        Double.valueOf(1) == logEntry._get('_testD')
+        BigDecimal.valueOf(1) == logEntry._get('_testBD')
 
-        new SimpleDateFormat('yyyy-MM-dd').parse('2017-01-01') == logEntry.get('_testDate')
-        new SimpleDateFormat('yyyy-MM-dd').parse('2017-01-01') == logEntry.get('_testDateFormat')
-        new SimpleDateFormat('yyyy-MM-dd').parse('2017-01-02') == logEntry.get('testDateReplace')
+        new SimpleDateFormat('yyyy-MM-dd').parse('2017-01-01') == logEntry._get('_testDate')
+        new SimpleDateFormat('yyyy-MM-dd').parse('2017-01-01') == logEntry._get('_testDateFormat')
+        new SimpleDateFormat('yyyy-MM-dd').parse('2017-01-02') == logEntry._get('testDateReplace')
     }
 
 }
