@@ -160,22 +160,22 @@ class Log4jConsumer extends RegexConsumer {
         ch = spec.charAt(spec.length() - 1)
         switch (ch) {
             case 'c': // logging event category
-                regEx = '[^ ]+'
+                regEx = '[\\w\\W]+'
                 consumer.group(EVENT_CATEGORY)
                 break
             case 'C': // fully qualified class name of the caller
-                regEx = '[^ ]+'
+                regEx = '[\\w\\W]+'
                 consumer.group(CALLER_CLASS)
                 break
             case 'd': // date of the logging event. The date conversion specifier may be followed by a date format specifier enclosed between braces. For example, %d{HH:mm:ss,SSS} or %d{dd MMM yyyy HH:mm:ss,SSS}. If no date format specifier is given then ISO8601 format is assumed.
                 i = dateFormatToRegex(consumer, sb, i, conversionPattern)
                 break
             case 'F': // path name where the logging request was issued.
-                regEx = '[^ ]+'
+                regEx = '[\\w\\W]+'
                 consumer.group(CALLER_FILE_NAME)
                 break
             case 'l': // path name where the logging request was issued. The location information depends on the JVM implementation but usually consists of the fully qualified name of the calling method followed by the callers source the path name and line number between parentheses.
-                regEx = '[^ ]+'
+                regEx = '[\\w\\W]+'
                 consumer.group(CALLER_LOCATION)
                 break
             case 'L': // line number from where the logging request was issued.
@@ -187,7 +187,7 @@ class Log4jConsumer extends RegexConsumer {
                 consumer.group(MESSAGE)
                 break
             case 'M': // method name where the logging request was issued.
-                regEx = '[^ ]+'
+                regEx = '[\\w\\W]+'
                 consumer.group(CALLER_METHOD)
                 break
             case 'n': // line break, skip it
@@ -205,11 +205,11 @@ class Log4jConsumer extends RegexConsumer {
                 consumer.group(THREAD_NAME)
                 break
             case 'x': // NDC (nested diagnostic context) associated with the thread that generated the logging event.
-                regEx = '[^ ]*'
+                regEx = '[\\w\\W]*'
                 consumer.group(THREAD_NDC)
                 break
             case 'X': // MDC (mapped diagnostic context) associated with the thread that generated the logging event. The X conversion character must be followed by the key for the map placed between braces, as in %X{clientNumber} where clientNumber is the key. The value in the MDC corresponding to the key will be output.
-                regEx = '[^ ]*'
+                regEx = '[\\w\\W]*'
                 consumer.group(THREAD_MDC)
                 break
             default:
