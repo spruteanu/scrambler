@@ -160,11 +160,11 @@ class Log4jConsumer extends RegexConsumer {
         ch = spec.charAt(spec.length() - 1)
         switch (ch) {
             case 'c': // logging event category
-                regEx = '[\\w\\W]+'
+                regEx = '[a-zA-Z$_\\\\.\\d\\\\/ ]+'
                 consumer.group(EVENT_CATEGORY)
                 break
             case 'C': // fully qualified class name of the caller
-                regEx = '[\\w\\W]+'
+                regEx = '[a-zA-Z$_\\\\.\\d\\\\/ ]+'
                 consumer.group(CALLER_CLASS)
                 break
             case 'd': // date of the logging event. The date conversion specifier may be followed by a date format specifier enclosed between braces. For example, %d{HH:mm:ss,SSS} or %d{dd MMM yyyy HH:mm:ss,SSS}. If no date format specifier is given then ISO8601 format is assumed.
