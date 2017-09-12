@@ -1,6 +1,6 @@
 input {
     file {
-        path => "c:/work/temp/1/**/TM.log*"
+        path => "D:/work/tm/bugs/Case122498_BCBSNC/**/*.log*"
         #type => "fileStoreLog"
         start_position => "beginning"
         sincedb_path => "/dev/null"
@@ -15,7 +15,8 @@ input {
 filter {
 
     grok {
-        match => { "message" => '%{TIMESTAMP_ISO8601:Date} (?<Priority>[\w ]{5,}) %{JAVACLASS:EventCategory{37,} - (?<Message>.+)' }
+        # match => { "message" => '%{TIMESTAMP_ISO8601:Date} (?<Priority>[\w ]{5,}) (?<EventCategory>[a-zA-Z$_\\.\d\\/ ]{37,}) - (?<Message>.+)' }
+        match => { "message" => '%{TIMESTAMP_ISO8601:Date} (?<Priority>[\w ]{5,}) (?<EventCategory>[a-zA-Z$_\\.\d\\/ ]{37,}) \[(?<Thread>.+)\] - (?<Message>.+)' }
         # timestamp-format => yyyy-MM-dd HH:mm:ss,SSS
     }
 
@@ -41,15 +42,15 @@ filter {
         match => [ 'Message', '(?<Action>.*)FileID[: =\)]{1,}\s*(?<FileID>\d+)(?<Execution>.+)\s+(?<ExecutionTime>\d+)\s+ms' ]
     }
 
-    mutate {
-        if ![Action] {
-            copy => { 'Execution' => 'Action' }
-        }
-        remove_field => [ 'Execution' ]
-        if [ExecutionTime] {
-            convert => { 'ExecutionTime' => 'integer' }
-        }
-    }
+    # mutate {
+    #     if ![Action] {
+    #         copy => { 'Execution' => 'Action' }
+    #     }
+    #     remove_field => [ 'Execution' ]`
+    #     if [ExecutionTime] {
+    #         convert => { 'ExecutionTime' => 'integer' }
+    #     }
+    # }
 }
 
 output {
@@ -65,5 +66,5 @@ output {
     # }
     # Next lines are only for debugging.
     stdout { codec => rubydebug }
-    file {path => "c:/work/temp/1/etlLogger.result" codec => rubydebug}
+    file {path => "D:/work/tm/bugs/Case122498_BCBSNC/traces.result" codec => rubydebug}
 }
