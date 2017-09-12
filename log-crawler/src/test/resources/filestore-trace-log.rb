@@ -1,6 +1,6 @@
 input {
     file {
-        path => "D:/work/tm/bugs/Case122498_BCBSNC/**/*.log*"
+        path => "C:/work/temp/Case122498_BCBSNC/**/*.log*"
         #type => "fileStoreLog"
         start_position => "beginning"
         sincedb_path => "/dev/null"
@@ -15,7 +15,6 @@ input {
 filter {
 
     grok {
-        # match => { "message" => '%{TIMESTAMP_ISO8601:Date} (?<Priority>[\w ]{5,}) (?<EventCategory>[a-zA-Z$_\\.\d\\/ ]{37,}) - (?<Message>.+)' }
         match => { "message" => '%{TIMESTAMP_ISO8601:Date} (?<Priority>[\w ]{5,}) (?<EventCategory>[a-zA-Z$_\\.\d\\/ ]{37,}) \[(?<Thread>.+)\] - (?<Message>.+)' }
         # timestamp-format => yyyy-MM-dd HH:mm:ss,SSS
     }
@@ -42,29 +41,33 @@ filter {
         match => [ 'Message', '(?<Action>.*)FileID[: =\)]{1,}\s*(?<FileID>\d+)(?<Execution>.+)\s+(?<ExecutionTime>\d+)\s+ms' ]
     }
 
-    # mutate {
-    #     if ![Action] {
-    #         copy => { 'Execution' => 'Action' }
-    #     }
-    #     remove_field => [ 'Execution' ]`
-    #     if [ExecutionTime] {
-    #         convert => { 'ExecutionTime' => 'integer' }
-    #     }
-    # }
+    if ![Action] {
+        mutate {
+            copy => { 'Execution' => 'Action' }
+        }
+    }
+    mutate {
+        remove_field => [ 'Execution' ]
+    }
+    if [ExecutionTime] {
+        mutate {
+            convert => { 'ExecutionTime' => 'integer' }
+        }
+    }
 }
 
 output {
 #if [type] == "some-file-name" {
     #some output here
 #}
-    # elasticsearch {
-    #     hosts => ["localhost:9200"]
-    #     index => "logs-etl-logger-%{+YYYY.MM.dd}"
-    #     template => "c:/work/temp/1/EtlLogger-es-template.json"
-    #     template_overwrite => true
-    #     #document_id => "document_id_if_needed"
-    # }
+    elasticsearch {
+        hosts => ["localhost:9200"]
+        index => "logs-tracer-%{+YYYY.MM.dd}"
+        template => "C:\work\proj\scrambler\log-crawler\src\main\resources\es-logstash-template.json"
+        template_overwrite => true
+        #document_id => "document_id_if_needed"
+    }
     # Next lines are only for debugging.
     stdout { codec => rubydebug }
-    file {path => "D:/work/tm/bugs/Case122498_BCBSNC/traces.result" codec => rubydebug}
+    # file {path => "C:/work/temp/Case122498_BCBSNC/traces.result" codec => rubydebug}
 }
