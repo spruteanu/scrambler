@@ -1,6 +1,6 @@
 input {
     file {
-        path => "C:/work/temp/Case122498_BCBSNC/**/*.log*"
+        path => "d:/work/tm/bugs/Case122498_BCBSNC/**/*.log*"
         #type => "fileStoreLog"
         start_position => "beginning"
         sincedb_path => "/dev/null"
@@ -37,8 +37,16 @@ filter {
         }
     }
 
-    grok {
-        match => [ 'Message', '(?<Action>.*)FileID[: =\)]{1,}\s*(?<FileID>\d+)(?<Execution>.+)\s+(?<ExecutionTime>\d+)\s+ms' ]
+    if 'com.edifecs.shared.filestore' in [EventCategory] {
+        if 'FileID' in [Message] {
+            grok {
+                match => [ 'Message', '(?<Action>.*)FileID[: =\)]{1,}\s*(?<FileID>\d+)(?<Execution>.+)\s+(?<ExecutionTime>\d+)\s+ms' ]
+            }
+        } else if 'ms' in [Message] {
+            grok {
+                match => [ 'Message', '(?<Action>.*);\s+(?:\w+\s*)*:\s(?<ExecutionTime>\d+)\s+ms' ]
+            }
+        }
     }
 
     if ![Action] {
@@ -63,11 +71,11 @@ output {
     elasticsearch {
         hosts => ["localhost:9200"]
         index => "logs-tracer-%{+YYYY.MM.dd}"
-        template => "C:\work\proj\scrambler\log-crawler\src\main\resources\es-logstash-template.json"
+        template => "D:/work/proj/scrambler/log-crawler/src/main/resources/es-logstash-template.json"
         template_overwrite => true
         #document_id => "document_id_if_needed"
     }
     # Next lines are only for debugging.
     stdout { codec => rubydebug }
-    # file {path => "C:/work/temp/Case122498_BCBSNC/traces.result" codec => rubydebug}
+    # file {path => "d:/work/tm/bugs/Case122498_BCBSNC/traces.result" codec => rubydebug}
 }

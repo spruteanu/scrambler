@@ -20,6 +20,7 @@
 package org.prismus.scrambler.log
 
 import groovy.transform.CompileStatic
+import groovy.util.logging.Log
 
 import java.nio.file.Path
 import java.text.SimpleDateFormat
@@ -30,6 +31,7 @@ import java.util.regex.Pattern
  * @author Serge Pruteanu
  */
 @CompileStatic
+@Log
 class RegexConsumer implements LogConsumer {
 
     Pattern pattern
@@ -157,6 +159,9 @@ class RegexConsumer implements LogConsumer {
                     resultMap.put(key, entryValue)
                 }
             }
+        }
+        if (!resultMap) {
+            log.warning("No match with pattern: '${pattern.pattern()}' for line: $line")
         }
         return resultMap
     }

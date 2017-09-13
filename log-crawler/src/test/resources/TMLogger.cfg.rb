@@ -1,123 +1,123 @@
 input {
     file {
-        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs/**TM.log*"
+        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/MDC-fs/**TM.log*"
         type => "TMLogger"
         start_position => "beginning"
         sincedb_path => "/dev/null"
         codec => multiline {
             pattern => "^\d"
             what => "previous"
-			negate => true
+			      negate => true
         }
     }
     file {
-        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs/**ecdatabase.log*"
+        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/MDC-fs/**ecdatabase.log*"
         type => "TMSQLLogger"
         start_position => "beginning"
         sincedb_path => "/dev/null"
         codec => multiline {
             pattern => "^\d"
             what => "previous"
-			negate => true
+			      negate => true
         }
     }
     file {
-        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs/**etl.log*"
+        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/MDC-fs/**etl.log*"
         type => "ETLLogger"
         start_position => "beginning"
         sincedb_path => "/dev/null"
         codec => multiline {
             pattern => "^\d"
             what => "previous"
-			negate => true
+			      negate => true
         }
     }
     file {
-        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs/**BusinessItemService.log*"
+        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/MDC-fs/**BusinessItemService.log*"
         type => "BISLogger"
         start_position => "beginning"
         sincedb_path => "/dev/null"
         codec => multiline {
             pattern => "^\d"
             what => "previous"
-			negate => true
+			      negate => true
         }
     }
     file {
-        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs/**trackinginfo.log*"
+        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/MDC-fs/**trackinginfo.log*"
         type => "trackinginfo"
         start_position => "beginning"
         sincedb_path => "/dev/null"
         codec => multiline {
             pattern => "^\d"
             what => "previous"
-			negate => true
+			      negate => true
         }
     }
     file {
-        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs/**hibernate.log*"
+        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/MDC-fs/**hibernate.log*"
         type => "HibernateFileAppender"
         start_position => "beginning"
         sincedb_path => "/dev/null"
         codec => multiline {
             pattern => "^\d"
             what => "previous"
-			negate => true
+			      negate => true
         }
     }
     file {
-        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs/**sql.log*"
+        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/MDC-fs/**sql.log*"
         type => "sql"
         start_position => "beginning"
         sincedb_path => "/dev/null"
         codec => multiline {
             pattern => "^\d"
             what => "previous"
-			negate => true
+			      negate => true
         }
     }
     file {
-        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs/**sqltiming.log*"
+        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/MDC-fs/**sqltiming.log*"
         type => "sqltiming"
         start_position => "beginning"
         sincedb_path => "/dev/null"
         codec => multiline {
             pattern => "^\d"
             what => "previous"
-			negate => true
+			      negate => true
         }
     }
     file {
-        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs/**jdbc.log*"
+        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/MDC-fs/**jdbc.log*"
         type => "jdbc"
         start_position => "beginning"
         sincedb_path => "/dev/null"
         codec => multiline {
             pattern => "^\d"
             what => "previous"
-			negate => true
+			      negate => true
         }
     }
     file {
-        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs/**edifecs-security-audit.log*"
+        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/MDC-fs/**edifecs-security-audit.log*"
         type => "securityAuditAppender"
         start_position => "beginning"
         sincedb_path => "/dev/null"
         codec => multiline {
             pattern => "^\d"
             what => "previous"
-			negate => true
+			      negate => true
         }
     }
     file {
-        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/nc-fs/**workflow.log*"
+        path => "D:/work/tm/bugs/Case124586_BCBSNC/NC-archiver-logs/MDC-fs/**workflow.log*"
         type => "workflowAppender"
         start_position => "beginning"
         sincedb_path => "/dev/null"
         codec => multiline {
             pattern => "^\d"
             what => "previous"
-			negate => true
+			      negate => true
         }
     }
 }
@@ -136,7 +136,7 @@ if [type] == "TMLogger" {
         match => [ 'Message', '(?<Action>.*)FileID[: =\)]{1,}\s*(?<FileID>\d+)(?<Execution>.+)\s+(?<ExecutionTime>\d+)\s+ms' ]
     }
 
-if [Action] == "" {
+if ![Action] {
     mutate {
         copy => { 'Execution' => 'Action' }
     }
@@ -284,7 +284,7 @@ output {
 #}
     elasticsearch {
         hosts => ["localhost:9200"]
-        index => "logs-nc-fs-%{+YYYY.MM.dd}"
+        index => "logs-mdc-fs-%{+YYYY.MM.dd}"
         template => "D:/work/proj/scrambler/log-crawler/src/main/resources/es-logstash-template.json"
         template_overwrite => true
         #document_id => "document_id_if_needed"
