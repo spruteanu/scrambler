@@ -161,7 +161,7 @@ class RegexConsumer implements LogConsumer {
             }
         }
         if (!resultMap) {
-            log.warning("No match with pattern: '${pattern.pattern()}' for line: $line")
+            log.warning("No match for pattern: '${pattern.pattern()}'; line: '$line'")
         }
         return resultMap
     }

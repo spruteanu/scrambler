@@ -70,7 +70,7 @@ output {
 #}
     elasticsearch {
         hosts => ["localhost:9200"]
-        index => "logs-tracer-%{+YYYY.MM.dd}"
+        index => "logs-tm-fs-%{+YYYY.MM.dd}"
         template => "D:/work/proj/scrambler/log-crawler/src/main/resources/es-logstash-template.json"
         template_overwrite => true
         #document_id => "document_id_if_needed"
