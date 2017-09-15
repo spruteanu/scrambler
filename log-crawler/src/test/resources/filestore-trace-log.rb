@@ -1,8 +1,9 @@
 input {
     file {
-        path => "d:/work/tm/bugs/Case122498_BCBSNC/**/*.log*"
+        path => "C:\work\temp\1/**/*.log*"
         #type => "fileStoreLog"
         start_position => "beginning"
+        # Debugging purpose only, does not store logging cursors.
         sincedb_path => "/dev/null"
         codec => multiline {
             pattern => "^\d"
@@ -29,11 +30,11 @@ filter {
     }
 
     if 'multiline' in [tags] {
-        mutate {
-            remove_field => [ 'tags' ]
-        }
         ruby {
             code => "event.set('Exceptions', event.get('Message').scan(/(?:[a-zA-Z$_][a-zA-Z$_0-9]*\.)*[a-zA-Z$_][a-zA-Z$_0-9]*Exception/))"
+        }
+        mutate {
+            remove_field => [ 'tags' ]
         }
     }
 
@@ -65,17 +66,14 @@ filter {
 }
 
 output {
-#if [type] == "some-file-name" {
-    #some output here
-#}
     elasticsearch {
         hosts => ["localhost:9200"]
-        index => "logs-tracer-%{+YYYY.MM.dd}"
-        template => "D:/work/proj/scrambler/log-crawler/src/main/resources/es-logstash-template.json"
+        index => "logs-tm-tracer-%{+YYYY.MM.dd}"
+        template => "C:/work/proj/scrambler/log-crawler/src/main/resources/es-logstash-template.json"
         template_overwrite => true
         #document_id => "document_id_if_needed"
     }
     # Next lines are only for debugging.
-    stdout { codec => rubydebug }
-    # file {path => "d:/work/tm/bugs/Case122498_BCBSNC/traces.result" codec => rubydebug}
+    # stdout { codec => rubydebug }
+    # file {path => "C:\work\temp\1/traces.result" codec => rubydebug}
 }

@@ -1,7 +1,7 @@
 import org.prismus.scrambler.log.*
 
 log4j {
-    path 'D:/work/tm/bugs/Case122498_BCBSNC/*.log*'
+    path 'c:/work/temp/Case122498_BCBSNC/*.log*'
     pattern '%d %5p %37c [%t] - %m%n'
     message {
         if (get(Log4jConsumer.EVENT_CATEGORY).startsWith('com.edifecs.shared.filestore')) {
@@ -24,7 +24,7 @@ log4j {
     }
 }
 
-output 'D:/work/tm/bugs/Case122498_BCBSNC/traces.csv', {
+output 'c:/work/temp/Case122498_BCBSNC/traces.csv', {
     columns 'Date', 'FileID', 'ExecutionTime', 'Action', 'Thread', 'Source', 'Message'
     fieldSeparator '"'
 }
