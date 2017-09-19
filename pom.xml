@@ -19,7 +19,6 @@
         <module>dictionary-ext</module>
         <module>jdbc-ext</module>
         <module>box-test-ext</module>
-        <module>log-crawler</module>
     </modules>
 
     <developers>
